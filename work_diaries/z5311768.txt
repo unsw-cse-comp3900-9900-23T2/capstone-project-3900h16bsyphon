@@ -1,2 +1,12 @@
+Week 1
+- Writing project proposal
+- Ran an Actix workshop for my team (with help from hussain)
 Week 2
-- 
+- edited proposal
+- finished user stories for the Queue-related epics: Queue management, Queue Requests Management, Queue Request Lodging
+Week 3
+- Created figma pages for Queue Creation, Tutor screen + dashboard (with help from hussain)
+- Finalised user stories
+- Set up repo to run a frontend, and a small backend with connected db, run under docker
+- described how our user stories are related to objective
+- described how some of our user stories are novel
