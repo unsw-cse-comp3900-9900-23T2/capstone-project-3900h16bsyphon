@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - '3000:3000'
+    env_file:
+      - ./frontend/.env
+    volumes:
+      # Bind mount volume for live frontend updates while developing
+      - ./frontend/src:/client/src
+    networks:
+      - net
+  database:
+    image: 'postgres:latest'
+    ports:
+      - 5432:5432
+    env_file:
+      - ./backend/.env
+    networks:
+      - net
+  backend:
+    build:
+      context: backend
+    env_file:
+      - backend/.env
+    ports:
+      - 8000:8000
+    networks:
+      - net
+    volumes:
+      # Bind mount volume for live backend updates while developing
+      - ./backend:/app
+
+networks:
+  net:
