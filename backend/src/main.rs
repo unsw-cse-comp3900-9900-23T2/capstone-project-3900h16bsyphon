@@ -1,20 +1,22 @@
-use actix_web::{get, post, web::{self, Json}, App, HttpResponse, HttpServer, Responder};
+use actix_web::{
+    get, post,
+    web::{self, Json},
+    App, HttpResponse, HttpServer, Responder,
+};
 use rand::{thread_rng, Rng};
 use serde::Deserialize;
 
-use crate::{database_utils::establish_connection};
+use crate::database_utils::establish_connection;
 mod database_utils;
 mod entities;
 use entities::prelude::*;
 use sea_orm::ActiveValue;
 use sea_orm::*;
 
-
-
 #[derive(Deserialize)]
 struct UserPost {
     title: String,
-    text: String
+    text: String,
 }
 
 #[get("/")]
@@ -35,7 +37,7 @@ async fn add_post(req_body: Json<UserPost>) -> impl Responder {
     let new: entities::post::ActiveModel = entities::post::ActiveModel {
         text: ActiveValue::Set(req_body.text.clone()),
         title: ActiveValue::Set(req_body.title.clone()),
-        id: ActiveValue::Set(thread_rng().gen())
+        id: ActiveValue::Set(thread_rng().gen()),
     };
     Post::insert(new).exec(&connection).await.expect("go away");
     println!("inserted!");
