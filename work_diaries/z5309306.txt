@@ -6,3 +6,12 @@ week debating the idea of using Rust for the backend. Since majority of the grou
 experience with Rust, we decided to do a quick crash course on the basics of Rust to see if it was
 wise for us to use. 
 
+Week 2
+This week, our main aim was to get our custom project approved by our tutor and the lecturer. Due to 
+this we had to make many last minute updates in order to ensure that the project was in fact broad
+enough for a proper product to be produced. Once approved, our team had a meeting where we finalised 
+our objectives, novel features and assigned user stories. The week concluded with us meeting to finalised
+all user stories and ensuring that the Jira tickets are accurate and up to date with epics, objectives
+and user stories. I focussed on working on Peter with the proposal as well as completing epics for
+User History novel feature. 
+
