@@ -1,0 +1,8 @@
+Week 1
+This week we chose Peter as the scrum master and created the repo, Jira as well as formed groups on
+Moodle. We confirmed that we wanted to create a Queue Management System used primarily for the 
+purpose of help sessions and then did brainstorming of what possible tech stack we used. We ended the
+week debating the idea of using Rust for the backend. Since majority of the group has no previous
+experience with Rust, we decided to do a quick crash course on the basics of Rust to see if it was
+wise for us to use. 
+
