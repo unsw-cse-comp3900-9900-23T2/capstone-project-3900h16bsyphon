@@ -1,6 +1,11 @@
 //! This file contains all the prelude imports for the project.
 //! Helps in keeping `main.rs` clean.
 
+/// Secret used to hash passwords.
+/// Requires `SECRET` to be set as and environemnt variable or in
+/// a `.env` file in the root of the project, or a parent folder.
+pub const SECRET: &'static str = dotenv_codegen::dotenv!("SECRET");
+
 pub fn host_port_from_env() -> (String, u16) {
     let host = std::env::var("HOST_URL").unwrap_or("0.0.0.0".into());
     let port = std::env::var("PORT")
