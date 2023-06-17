@@ -11,3 +11,5 @@ rand = "0.8.5"
 serde = { version = "1.0.163", features = ["derive"] }
 sea-orm = { version = "^0.9.0", features = [ "sqlx-postgres", "runtime-async-std-native-tls", "macros" ] }
 futures = "0.3.28"
+env_logger = "0.10.0"
+log = "0.4.19"
