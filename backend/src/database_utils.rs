@@ -1,8 +1,7 @@
 use std::env;
 
-
 use futures::executor::block_on;
-use sea_orm::{Database, DbErr, DatabaseConnection};
+use sea_orm::{Database, DatabaseConnection, DbErr};
 
 async fn run() -> Result<DatabaseConnection, DbErr> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
