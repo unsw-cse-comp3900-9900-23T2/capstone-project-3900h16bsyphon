@@ -16,14 +16,16 @@ async fn main() -> std::io::Result<()> {
     startup_logger();
     std::env::var("SECRET").expect("SECRET must be set");
 
-    let auth_mw = HttpAuthentication::bearer(validator);
+    // Auth middleware
+    let amw = HttpAuthentication::bearer(validator);
 
     HttpServer::new(move || {
         App::new()
             .wrap(middleware::Logger::default())
             .service(server::echo)
             .route("/", web::get().to(server::hello))
-            .route("/name", web::get().to(server::hello).wrap(auth_mw.clone()))
+            .route("/name", web::get().to(server::hello).wrap(amw.clone()))
+            .route("/signup", web::post().to(server::auth::create_user))
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
     })

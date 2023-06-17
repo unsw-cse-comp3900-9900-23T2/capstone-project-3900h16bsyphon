@@ -59,22 +59,27 @@ pub async fn validator(
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct CreateUserBody {
+pub struct CreateUserBody {
     name: String,
     zid: String,
     password: String,
 }
 
-async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
+pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
     let user = body.into_inner();
 
     let hash = argonautica::Hasher::default()
-        .with_password(user.password)
+        .with_secret_key(SECRET)
+        .with_password(user.password.clone())
         .hash()
-        .map_err(|_| log::warn!("failed to hash password"))
-        .unwrap();
+        .map_err(|e| {
+            log::warn!("failed to hash password: {}", e);
+            return HttpResponse::InternalServerError().body("AHHHH ME BROKEY BAD");
+        })
+        .expect("If error, we already returned");
 
-    todo!("create user and insert into database");
+    log::debug!("Hashed: {}", hash);
+    log::warn!("TODO: create user and insert into database");
 
     HttpResponse::Ok().json(user)
 }
