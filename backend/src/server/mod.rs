@@ -4,6 +4,8 @@ use actix_web::{get, post, HttpResponse, Responder};
 
 use crate::prelude::in_release_build;
 
+pub mod auth;
+
 #[post("/echo")]
 pub async fn echo(req_body: String) -> impl Responder {
     HttpResponse::Ok().body(req_body)
