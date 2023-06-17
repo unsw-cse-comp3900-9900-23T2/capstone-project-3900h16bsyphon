@@ -31,12 +31,12 @@ pub fn startup_logger() {
 
 #[cfg(debug_assertions)]
 #[inline(always)]
-const fn in_release_build() -> bool {
+pub const fn in_release_build() -> bool {
     false
 }
 
 #[cfg(not(debug_assertions))]
 #[inline(always)]
-const fn in_release_build() -> bool {
+pub const fn in_release_build() -> bool {
     true
 }

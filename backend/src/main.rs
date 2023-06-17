@@ -15,6 +15,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(server::echo)
             .route("/", web::get().to(server::hello))
+            .route("/{tail:.*}", web::get().to(server::res404))
+            .route("/{tail:.*}", web::post().to(server::res404))
     })
     .bind(("0.0.0.0", 8000))?
     .run()
