@@ -1,6 +1,19 @@
 //! This file contains all the prelude imports for the project.
 //! Helps in keeping `main.rs` clean.
 
+pub fn host_port_from_env() -> (String, u16) {
+    let host = std::env::var("HOST_URL").unwrap_or("0.0.0.0".into());
+    let port = std::env::var("PORT")
+        .as_ref()
+        .map(String::as_str)
+        .map(str::parse::<u16>)
+        .ok()
+        .map(Result::ok)
+        .unwrap_or(None)
+        .unwrap_or(8000);
+    dbg!((host, port))
+}
+
 /// Instantiates `env_logger` with the appropriate settings based on the environment.
 /// Otherwise uses the defaults based on the build type (debug / release).
 pub fn startup_logger() {

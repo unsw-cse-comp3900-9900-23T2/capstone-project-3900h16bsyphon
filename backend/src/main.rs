@@ -10,6 +10,7 @@ use crate::prelude::*;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     startup_logger();
+    dotenv::dotenv().ok();
 
     HttpServer::new(|| {
         App::new()
@@ -18,7 +19,7 @@ async fn main() -> std::io::Result<()> {
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
     })
-    .bind(("0.0.0.0", 8000))?
+    .bind(host_port_from_env())?
     .run()
     .await?;
 
