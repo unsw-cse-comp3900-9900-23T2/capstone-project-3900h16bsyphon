@@ -33,7 +33,7 @@ services:
       - net
     volumes:
       # Bind mount volume for live backend updates while developing
-      - ./backend:/app
+      - ./backend/src:/app/src
 
 networks:
   net:
