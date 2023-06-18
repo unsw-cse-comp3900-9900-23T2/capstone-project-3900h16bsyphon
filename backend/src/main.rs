@@ -26,6 +26,7 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(server::hello))
             .route("/name", web::get().to(server::hello).wrap(amw.clone()))
             .route("/signup", web::post().to(server::auth::create_user))
+            .route("/login", web::post().to(server::auth::auth))
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
     })

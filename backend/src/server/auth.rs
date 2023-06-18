@@ -1,23 +1,11 @@
-use std::hash::Hasher;
+use argon2::password_hash::{PasswordHasher, PasswordVerifier};
 
-use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
-    Argon2,
-};
+use actix_web::{dev::ServiceRequest, web, HttpMessage, HttpResponse, Responder};
 
-use actix_web::{
-    dev::ServiceRequest,
-    error::Error,
-    web::{self, Data},
-    App, HttpMessage, HttpResponse, HttpServer, Responder,
-};
-
-use actix_web_httpauth::{
-    extractors::{
-        bearer::{self, BearerAuth},
-        AuthenticationError,
-    },
-    middleware::HttpAuthentication,
+use actix_web_httpauth::extractors::{
+    basic::BasicAuth,
+    bearer::{self, BearerAuth},
+    AuthenticationError,
 };
 
 use hmac::{Hmac, Mac};
@@ -65,14 +53,78 @@ pub async fn validator(
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CreateUserBody {
-    name: String,
+    first_name: String,
+    last_name: String,
     zid: String,
     password: String,
 }
 
+impl CreateUserBody {
+    pub fn verify_user(&self) -> Result<(), HttpResponse> {
+        Self::verify_name(&self.first_name)?;
+        Self::verify_name(&self.last_name)?;
+        Self::verify_password(&self.password)?;
+        Ok(())
+    }
+
+    fn verify_name(name: &str) -> Result<(), HttpResponse> {
+        match name {
+            n if !(3..=16).contains(&n.len()) => {
+                Err(HttpResponse::BadRequest().body("name too short"))
+            }
+            n if !n.chars().all(|c| c.is_ascii_alphabetic() && c != ' ') => {
+                Err(HttpResponse::BadRequest().body("name must be alphanumeric or space"))
+            }
+            _ => Ok(()),
+        }
+    }
+
+    fn verify_password(pass: &str) -> Result<(), HttpResponse> {
+        match pass {
+            p if !(8..=24).contains(&p.len()) => {
+                Err(HttpResponse::BadRequest().body("password must be 8 chars"))
+            }
+            p if !p.is_ascii() => Err(HttpResponse::BadRequest().body("password must be ascii")),
+            p if !p.chars().any(|c| c.is_ascii_uppercase()) => {
+                Err(HttpResponse::BadRequest().body("password must have uppercase"))
+            }
+            p if !p.chars().any(|c| c.is_ascii_lowercase()) => {
+                Err(HttpResponse::BadRequest().body("password must have lowercase"))
+            }
+            p if !p.chars().any(|c| c.is_ascii_digit()) => {
+                Err(HttpResponse::BadRequest().body("password must have digit"))
+            }
+            _ => Ok(()),
+        }
+    }
+}
+/// Hit this endpoint with BasicAuth info to get a BearerAuth token
+/// Use that token in the Authorization header to access other endpoints
+pub async fn auth(credentials: BasicAuth) -> impl Responder {
+    // let jwt_secret: Hmac<Sha256> = Hmac::new_from_slice(SECRET.as_bytes()).expect("valid hash");
+    // let username = credentials.user_id();
+    let pass = credentials.password();
+
+    match pass {
+        None => HttpResponse::Unauthorized().body("no password"),
+        Some(_pass) => {
+            // 1. check user in db
+            // 2. build a verifier
+            // let mut is_valid = Verfier::default()
+            //  .with_hash(user.pass)
+            //  .with_pass(pass)
+            //  .with_secret_key(hash_secret)
+            //  .verify(
+            //  .unwrap()
+            // todo!("check id and pass are valid from DB");
+            todo!("Create token claims and sign with key and return if valid")
+        }
+    }
+}
+
 pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
     let user = body.into_inner();
-    if let Err(e) = verify_user(&user) {
+    if let Err(e) = user.verify_user() {
         log::debug!("failed to verify user:{:?}", e);
         return e;
     }
@@ -93,39 +145,4 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
     log::warn!("TODO: create user and insert into database");
 
     HttpResponse::Ok().json(user)
-}
-
-fn verify_user(user: &CreateUserBody) -> Result<(), HttpResponse> {
-    match &user.name {
-        n if !(3..=16).contains(&n.len()) => {
-            return Err(HttpResponse::BadRequest().body("name too short"))
-        }
-        n if !n.chars().all(|c| c.is_ascii_alphabetic() && c != ' ') => {
-            return Err(HttpResponse::BadRequest().body("name must be alphanumeric or space"))
-        }
-        _ => {}
-    }
-    match &user.password {
-        p if !(8..=24).contains(&p.len()) => {
-            return Err(HttpResponse::BadRequest().body("password must be 8 chars"))
-        }
-        p if !p.is_ascii() => return Err(HttpResponse::BadRequest().body("password must be ascii")),
-        p if !p.chars().any(|c| c.is_ascii_uppercase()) => {
-            return Err(HttpResponse::BadRequest().body("password must have uppercase"))
-        }
-        p if !p.chars().any(|c| c.is_ascii_lowercase()) => {
-            return Err(HttpResponse::BadRequest().body("password must have lowercase"))
-        }
-        p if !p.chars().any(|c| c.is_ascii_digit()) => {
-            return Err(HttpResponse::BadRequest().body("password must have digit"))
-        }
-        _ => {}
-    }
-    if !user.password.is_ascii() {
-        return Err(HttpResponse::BadRequest().body("password must be ascii"));
-    }
-    if user.password.len() < 8 {
-        return Err(HttpResponse::BadRequest().body("password too short (min 8)"));
-    }
-    Ok(())
 }
