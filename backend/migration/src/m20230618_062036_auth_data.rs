@@ -1,4 +1,6 @@
 use sea_orm_migration::prelude::*;
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -19,6 +21,11 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(UserData::Name).string().not_null())
                     .col(ColumnDef::new(UserData::HashedPw).string().not_null())
+                    .col(
+                        ColumnDef::new(UserData::Perms)
+                            .enumeration(UserData::Perms, UserType::iter())
+                            .not_null(),
+                    )
                     .to_owned(),
             )
             .await
@@ -41,4 +48,11 @@ enum UserData {
     Zid,
     Name,
     HashedPw,
+    Perms,
+}
+
+#[derive(Iden, EnumIter)]
+enum UserType {
+    SuperAdmin,
+    Normal,
 }
