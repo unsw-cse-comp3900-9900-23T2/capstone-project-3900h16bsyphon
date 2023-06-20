@@ -1,6 +1,8 @@
-use sea_orm_migration::prelude::*;
-use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
+use sea_orm::entity::prelude::*;
+use sea_orm_migration::{
+    prelude::{ColumnDef, *},
+    sea_orm::{DeriveActiveEnum, EnumIter, Schema},
+};
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -8,6 +10,9 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        let db = manager.get_database_backend();
+        let s = Schema::new(db);
+        // s.create_enum_from_entity(db);
         manager
             .create_table(
                 Table::create()
@@ -21,11 +26,14 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(UserData::Name).string().not_null())
                     .col(ColumnDef::new(UserData::HashedPw).string().not_null())
-                    .col(
-                        ColumnDef::new(UserData::Perms)
-                            .enumeration(UserData::Perms, UserType::iter())
-                            .not_null(),
-                    )
+                    // .col(
+                    //     ColumnDef::new(UserData::AdminStatus)
+                    //         .enumeration(
+                    //             UserData::AdminStatus,
+                    //             vec![UserType::SuperAdmin, UserType::Normal],
+                    //         )
+                    //         .not_null(),
+                    // )
                     .to_owned(),
             )
             .await
@@ -48,11 +56,14 @@ enum UserData {
     Zid,
     Name,
     HashedPw,
-    Perms,
+    AdminStatus,
 }
 
-#[derive(Iden, EnumIter)]
+#[derive(Iden, EnumIter, DeriveActiveEnum)]
+#[sea_orm(rs_type = "i32", db_type = "Integer")]
 enum UserType {
+    #[sea_orm(num_value = 0)]
     SuperAdmin,
+    #[sea_orm(num_value = 1)]
     Normal,
 }
