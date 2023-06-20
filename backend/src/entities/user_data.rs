@@ -10,6 +10,7 @@ pub struct Model {
     pub zid: i32,
     pub name: String,
     pub hashed_pw: String,
+    pub is_user_admin: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
