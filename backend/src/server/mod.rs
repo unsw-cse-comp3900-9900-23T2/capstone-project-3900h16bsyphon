@@ -3,6 +3,7 @@
 use actix_web::{get, post, HttpResponse, Responder};
 
 use crate::prelude::in_release_build;
+use crate::database_utils::establish_connection;
 
 #[post("/echo")]
 pub async fn echo(req_body: String) -> impl Responder {
@@ -10,6 +11,7 @@ pub async fn echo(req_body: String) -> impl Responder {
 }
 
 pub async fn hello() -> impl Responder {
+    establish_connection();
     "Hello there"
 }
 
