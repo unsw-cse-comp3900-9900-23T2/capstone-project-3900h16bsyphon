@@ -17,9 +17,15 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(UserData::Name).string().not_null())
+                    .col(ColumnDef::new(UserData::FirstName).string().not_null())
+                    .col(ColumnDef::new(UserData::LastName).string().not_null())
                     .col(ColumnDef::new(UserData::HashedPw).string().not_null())
-                    .col(ColumnDef::new(UserData::IsUserAdmin).boolean().not_null())
+                    .col(
+                        ColumnDef::new(UserData::IsUserAdmin)
+                            .boolean()
+                            .default(false)
+                            .not_null(),
+                    )
                     .to_owned(),
             )
             .await
@@ -37,7 +43,8 @@ impl MigrationTrait for Migration {
 enum UserData {
     Table,
     Zid,
-    Name,
+    FirstName,
+    LastName,
     HashedPw,
     IsUserAdmin,
 }

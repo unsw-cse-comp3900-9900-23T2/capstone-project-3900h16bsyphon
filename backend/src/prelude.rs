@@ -58,3 +58,12 @@ pub const fn in_release_build() -> bool {
 pub const fn in_release_build() -> bool {
     true
 }
+
+/// Takes any generic type and returns a unit value
+/// Effective to an implicit call of drop for the T
+/// But, allows this to be passed in to anything requiring
+/// a `Fn` trait, without needing to create a closure
+/// or worry about typing
+pub fn discard<T>(value: T) {
+    drop(value);
+}
