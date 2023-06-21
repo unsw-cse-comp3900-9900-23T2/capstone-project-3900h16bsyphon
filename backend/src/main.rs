@@ -19,14 +19,12 @@ async fn main() -> std::io::Result<()> {
     // Auth middleware
     let amw = HttpAuthentication::bearer(validator);
 
-    dbg!(SECRET);
-
     HttpServer::new(move || {
         App::new()
             .wrap(middleware::Logger::default())
             .service(server::echo)
             .route("/", web::get().to(server::hello))
-            .route("/name", web::get().to(server::hello).wrap(amw.clone()))
+            .route("/hellosafe", web::get().to(server::hello).wrap(amw.clone()))
             .route("/signup", web::post().to(server::auth::create_user))
             .route("/signup", web::get().to(server::hello))
             .route("/login", web::post().to(server::auth::auth))

@@ -9,7 +9,7 @@ use actix_web_httpauth::extractors::{
 use base64::Engine;
 use hmac::{Hmac, Mac};
 use jwt::VerifyWithKey;
-use sea_orm::{ActiveModelTrait, ActiveValue, ConnectionTrait, EntityTrait};
+use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 
@@ -19,7 +19,7 @@ pub struct TokenClaims {
     pub password: String,
 }
 
-use crate::{database_utils::establish_connection, prelude::discard, SECRET};
+use crate::{database_utils::establish_connection, SECRET};
 
 /// Handler that validates a bearer token. This is used as the source
 /// for our `HttpAuthentication` middleware.
@@ -106,7 +106,7 @@ impl CreateUserBody {
 
     fn verify_password(pass: &str) -> Result<(), HttpResponse> {
         match pass {
-            p if !(8..=24).contains(&p.len()) => {
+            p if !(8..=28).contains(&p.len()) => {
                 Err(HttpResponse::BadRequest().body("password must be 8 chars"))
             }
             p if !p.is_ascii() => Err(HttpResponse::BadRequest().body("password must be ascii")),
@@ -157,37 +157,18 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
     }
 
     let mut output_buffer = [0u8; 64];
-    let b64_encoded_pw = dbg!(base64::engine::general_purpose::STANDARD
+    let b64_encoded_pw = base64::engine::general_purpose::STANDARD
         .encode_slice(user.password, &mut output_buffer)
         .unwrap()
-        .to_ne_bytes());
+        .to_ne_bytes();
 
     let hash = argon2::hash_encoded(
         &b64_encoded_pw,
         SECRET.as_bytes(),
         &argon2::Config::default(),
     )
-    .expect("hash properly");
+    .expect("pw is ascii only");
 
-    // let hash = argon2::Argon2::default()
-    //     .hash_password(
-    //         // user.password.clone().as_bytes(),
-    //         // "abcdefghist".as_bytes(),
-    //         &dbg!(output_buffer),
-    //         argon2::password_hash::Salt::from_b64("12345asdf123445").expect("salt must be valid"),
-    //     )
-    //     .map_err(|e| {
-    //         dbg!(e);
-    //         log::warn!("failed to hash password: {}", e);
-    //         return HttpResponse::InternalServerError().body("AHHHH ME BROKEY BAD");
-    //     })
-    //     .map(|h| h.to_string());
-    //
-    // let hash = match hash {
-    //     Ok(h) => h,
-    //     Err(e) => return e,
-    // };
-    //
     let actual_zid = CreateUserBody::verify_zid(&user.zid).expect("already verified");
     let db = &establish_connection();
 
