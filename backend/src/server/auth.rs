@@ -1,5 +1,3 @@
-use argon2::password_hash::{PasswordHasher, PasswordVerifier};
-
 use actix_web::{dev::ServiceRequest, web, HttpMessage, HttpResponse, Responder};
 
 use actix_web_httpauth::extractors::{
@@ -8,6 +6,7 @@ use actix_web_httpauth::extractors::{
     AuthenticationError,
 };
 
+use base64::Engine;
 use hmac::{Hmac, Mac};
 use jwt::VerifyWithKey;
 use sea_orm::{ActiveModelTrait, ActiveValue, ConnectionTrait, EntityTrait};
@@ -65,7 +64,7 @@ impl CreateUserBody {
         Self::verify_name(&self.first_name)?;
         Self::verify_name(&self.last_name)?;
         Self::verify_password(&self.password)?;
-        Self::verify_zid(&self.password)?;
+        Self::verify_zid(&self.zid)?;
         Ok(())
     }
 
@@ -79,7 +78,12 @@ impl CreateUserBody {
             _ => zid,
         };
         if zid.len() != 7 {
-            return Err(HttpResponse::BadRequest().body("zid must be 7 chars"));
+            return Err(HttpResponse::BadRequest().body(format!(
+                "zid must be 7 chars. Got: {:?}, len = {}: {}",
+                zid,
+                zid.len(),
+                std::str::from_utf8(zid).unwrap(),
+            )));
         }
         std::str::from_utf8(zid)
             .expect("Was ascii before")
@@ -152,18 +156,38 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
         return e;
     }
 
-    let hash = argon2::Argon2::default()
-        .hash_password(
-            user.password.clone().as_bytes(),
-            argon2::password_hash::Salt::from_b64(&SECRET).expect("salt must be valid"),
-        )
-        .map_err(|e| {
-            log::warn!("failed to hash password: {}", e);
-            return HttpResponse::InternalServerError().body("AHHHH ME BROKEY BAD");
-        })
-        .expect("already returned if err")
-        .to_string();
+    let mut output_buffer = [0u8; 64];
+    let b64_encoded_pw = dbg!(base64::engine::general_purpose::STANDARD
+        .encode_slice(user.password, &mut output_buffer)
+        .unwrap()
+        .to_ne_bytes());
 
+    let hash = argon2::hash_encoded(
+        &b64_encoded_pw,
+        SECRET.as_bytes(),
+        &argon2::Config::default(),
+    )
+    .expect("hash properly");
+
+    // let hash = argon2::Argon2::default()
+    //     .hash_password(
+    //         // user.password.clone().as_bytes(),
+    //         // "abcdefghist".as_bytes(),
+    //         &dbg!(output_buffer),
+    //         argon2::password_hash::Salt::from_b64("12345asdf123445").expect("salt must be valid"),
+    //     )
+    //     .map_err(|e| {
+    //         dbg!(e);
+    //         log::warn!("failed to hash password: {}", e);
+    //         return HttpResponse::InternalServerError().body("AHHHH ME BROKEY BAD");
+    //     })
+    //     .map(|h| h.to_string());
+    //
+    // let hash = match hash {
+    //     Ok(h) => h,
+    //     Err(e) => return e,
+    // };
+    //
     let actual_zid = CreateUserBody::verify_zid(&user.zid).expect("already verified");
     let db = &establish_connection();
 
@@ -172,13 +196,17 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
         .one(db)
         .await
         .map_err(|e| {
-            log::warn!("DB Brokee when finding user ??: {}", e);
+            log::warn!("DB Brokee when finding user ??:\n\t{}", e);
             HttpResponse::InternalServerError().body("AHHHH ME BROKEY BAD")
-        })
-        .expect("alrdy returned if err");
-    if let Some(prev_user) = prev_user_res {
-        return HttpResponse::BadRequest().body(format!("User {} already exists", prev_user.zid));
-    }
+        });
+    match prev_user_res {
+        Err(e) => return e,
+        Ok(Some(prev_user)) => {
+            return HttpResponse::BadRequest()
+                .body(format!("User {} already exists", prev_user.zid))
+        }
+        Ok(_) => {}
+    };
 
     // Insert the new user into Db
     let active_user: user_data::ActiveModel = user_data::ActiveModel {
