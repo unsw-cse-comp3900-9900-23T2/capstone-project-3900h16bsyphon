@@ -28,8 +28,8 @@ async fn main() -> std::io::Result<()> {
             .route("/signup", web::post().to(server::auth::create_user))
             .route("/signup", web::get().to(server::hello))
             .route("/login", web::post().to(server::auth::auth))
-        // .route("/{tail:.*}", web::get().to(server::res404))
-        // .route("/{tail:.*}", web::post().to(server::res404))
+            .route("/{tail:.*}", web::get().to(server::res404))
+            .route("/{tail:.*}", web::post().to(server::res404))
     })
     .bind(host_port_from_env())?
     .run()

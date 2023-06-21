@@ -8,15 +8,24 @@ use actix_web_httpauth::extractors::{
 
 use base64::Engine;
 use hmac::{Hmac, Mac};
-use jwt::VerifyWithKey;
+use jwt::{SignWithKey, VerifyWithKey};
 use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TokenClaims {
-    pub username: String,
+    pub username: i32,
     pub password: String,
+}
+
+impl TokenClaims {
+    fn new(username: i32, password: impl Into<String>) -> Self {
+        Self {
+            username,
+            password: password.into(),
+        }
+    }
 }
 
 use crate::{database_utils::establish_connection, SECRET};
@@ -49,6 +58,99 @@ pub async fn validator(
             Err((AuthenticationError::from(config_data).into(), req))
         }
     }
+}
+
+/// Hit this endpoint with BasicAuth info to get a BearerAuth token
+/// Use that token in the Authorization header to access other endpoints
+pub async fn auth(credentials: BasicAuth) -> impl Responder {
+    let pass = credentials.password();
+    let zid = match CreateUserBody::verify_zid(credentials.user_id()) {
+        Ok(zid) => zid,
+        Err(e) => return e,
+    };
+
+    let jwt_secret = Hmac::<Sha256>::new_from_slice(SECRET.as_bytes()).unwrap();
+    let jwt_secret = dbg!(&jwt_secret);
+    match pass {
+        None => HttpResponse::Unauthorized().body("no password"),
+        Some(pass) => {
+            // 1. check user in db
+            let db = &establish_connection();
+            let db_user = user_data::Entity::find_by_id(dbg!(zid))
+                .one(db)
+                .await
+                .map_err(|e| {
+                    log::warn!("DB Brokee when finding user ??:\n\t{}", e);
+                    HttpResponse::InternalServerError().body("AHHHH ME BROKEY BAD")
+                });
+            let user: user_data::Model = match db_user {
+                Err(e) => return e,
+                Ok(None) => return HttpResponse::Unauthorized().body(dbg!("Bad user/pass")),
+                Ok(Some(user)) => user,
+            };
+
+            // Verify Pw Validity
+            let is_pw_valid = user.hashed_pw.as_bytes() == hash_pass(pass).unwrap().as_bytes();
+            dbg!(user.hashed_pw.clone(), hash_pass(pass).unwrap());
+
+            if !is_pw_valid {
+                return HttpResponse::Unauthorized().body("sike, thats the wrong pw");
+            }
+
+            // Create Claims Token
+            let token_claim = TokenClaims::new(user.zid, user.hashed_pw);
+            let signed_token = token_claim
+                .sign_with_key(jwt_secret)
+                .expect("Sign is valid");
+
+            return HttpResponse::Ok().json(signed_token);
+        }
+    }
+}
+
+use crate::entities::user_data;
+
+pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
+    let user = body.into_inner();
+    if let Err(e) = user.verify_user() {
+        log::debug!("failed to verify user:{:?}", e);
+        return e;
+    }
+
+    let hash = hash_pass(&user.password).expect("validates hashability");
+
+    let actual_zid = CreateUserBody::verify_zid(&user.zid).expect("already verified");
+    let db = &establish_connection();
+
+    // Check if user already exists
+    let prev_user_res = user_data::Entity::find_by_id(actual_zid)
+        .one(db)
+        .await
+        .map_err(|e| {
+            log::warn!("DB Brokee when finding user ??:\n\t{}", e);
+            HttpResponse::InternalServerError().body("AHHHH ME BROKEY BAD")
+        });
+    match prev_user_res {
+        Err(e) => return e,
+        Ok(Some(prev_user)) => {
+            return HttpResponse::BadRequest()
+                .body(format!("User {} already exists", prev_user.zid))
+        }
+        Ok(_) => {}
+    };
+
+    // Insert the new user into Db
+    let active_user: user_data::ActiveModel = user_data::ActiveModel {
+        zid: ActiveValue::Set(actual_zid),
+        first_name: ActiveValue::Set(user.first_name),
+        last_name: ActiveValue::Set(user.last_name),
+        hashed_pw: ActiveValue::Set(hash.clone()),
+        is_user_admin: ActiveValue::Set(false),
+    };
+
+    let created_user = active_user.insert(db).await.expect("Db broke");
+
+    HttpResponse::Ok().json(created_user)
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -123,82 +225,17 @@ impl CreateUserBody {
         }
     }
 }
-/// Hit this endpoint with BasicAuth info to get a BearerAuth token
-/// Use that token in the Authorization header to access other endpoints
-pub async fn auth(credentials: BasicAuth) -> impl Responder {
-    // let jwt_secret: Hmac<Sha256> = Hmac::new_from_slice(SECRET.as_bytes()).expect("valid hash");
-    // let username = credentials.user_id();
-    let pass = credentials.password();
 
-    match pass {
-        None => HttpResponse::Unauthorized().body("no password"),
-        Some(_pass) => {
-            // 1. check user in db
-            // 2. build a verifier
-            // let mut is_valid = Verfier::default()
-            //  .with_hash(user.pass)
-            //  .with_pass(pass)
-            //  .with_secret_key(hash_secret)
-            //  .verify(
-            //  .unwrap()
-            // todo!("check id and pass are valid from DB");
-            todo!("Create token claims and sign with key and return if valid")
-        }
-    }
-}
-
-use crate::entities::user_data;
-
-pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
-    let user = body.into_inner();
-    if let Err(e) = user.verify_user() {
-        log::debug!("failed to verify user:{:?}", e);
-        return e;
-    }
-
+fn hash_pass(pass: &str) -> Result<String, argon2::Error> {
     let mut output_buffer = [0u8; 64];
     let b64_encoded_pw = base64::engine::general_purpose::STANDARD
-        .encode_slice(user.password, &mut output_buffer)
+        .encode_slice(pass, &mut output_buffer)
         .unwrap()
         .to_ne_bytes();
 
-    let hash = argon2::hash_encoded(
-        &b64_encoded_pw,
+    argon2::hash_encoded(
+        pass.as_bytes(),
         SECRET.as_bytes(),
         &argon2::Config::default(),
     )
-    .expect("pw is ascii only");
-
-    let actual_zid = CreateUserBody::verify_zid(&user.zid).expect("already verified");
-    let db = &establish_connection();
-
-    // Check if user already exists
-    let prev_user_res = user_data::Entity::find_by_id(actual_zid)
-        .one(db)
-        .await
-        .map_err(|e| {
-            log::warn!("DB Brokee when finding user ??:\n\t{}", e);
-            HttpResponse::InternalServerError().body("AHHHH ME BROKEY BAD")
-        });
-    match prev_user_res {
-        Err(e) => return e,
-        Ok(Some(prev_user)) => {
-            return HttpResponse::BadRequest()
-                .body(format!("User {} already exists", prev_user.zid))
-        }
-        Ok(_) => {}
-    };
-
-    // Insert the new user into Db
-    let active_user: user_data::ActiveModel = user_data::ActiveModel {
-        zid: ActiveValue::Set(actual_zid),
-        first_name: ActiveValue::Set(user.first_name),
-        last_name: ActiveValue::Set(user.last_name),
-        hashed_pw: ActiveValue::Set(hash.clone()),
-        is_user_admin: ActiveValue::Set(false),
-    };
-
-    let created_user = active_user.insert(db).await.expect("Db broke");
-
-    HttpResponse::Ok().json(created_user)
 }
