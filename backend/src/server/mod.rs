@@ -1,6 +1,6 @@
 //! Entry point for the server routes
 
-use actix_web::{get, post, HttpResponse, Responder};
+use actix_web::{post, HttpResponse, Responder};
 
 use crate::prelude::in_release_build;
 

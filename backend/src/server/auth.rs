@@ -6,12 +6,14 @@ use actix_web_httpauth::extractors::{
     AuthenticationError,
 };
 
-use base64::Engine;
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
+
+use crate::{database_utils::establish_connection, entities, SECRET};
+use entities::user_data;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TokenClaims {
@@ -27,8 +29,6 @@ impl TokenClaims {
         }
     }
 }
-
-use crate::{database_utils::establish_connection, SECRET};
 
 /// Handler that validates a bearer token. This is used as the source
 /// for our `HttpAuthentication` middleware.
@@ -90,10 +90,10 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
             };
 
             // Verify Pw Validity
-            let is_pw_valid = user.hashed_pw.as_bytes() == hash_pass(pass).unwrap().as_bytes();
-            dbg!(user.hashed_pw.clone(), hash_pass(pass).unwrap());
-
-            if !is_pw_valid {
+            if let Err(e) = CreateUserBody::verify_password(pass) {
+                return e;
+            }
+            if user.hashed_pw != hash_pass(pass).unwrap() {
                 return HttpResponse::Unauthorized().body("sike, thats the wrong pw");
             }
 
@@ -107,8 +107,6 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
         }
     }
 }
-
-use crate::entities::user_data;
 
 pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
     let user = body.into_inner();
@@ -227,12 +225,6 @@ impl CreateUserBody {
 }
 
 fn hash_pass(pass: &str) -> Result<String, argon2::Error> {
-    let mut output_buffer = [0u8; 64];
-    let b64_encoded_pw = base64::engine::general_purpose::STANDARD
-        .encode_slice(pass, &mut output_buffer)
-        .unwrap()
-        .to_ne_bytes();
-
     argon2::hash_encoded(
         pass.as_bytes(),
         SECRET.as_bytes(),

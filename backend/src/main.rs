@@ -24,10 +24,12 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .service(server::echo)
             .route("/", web::get().to(server::hello))
-            .route("/hellosafe", web::get().to(server::hello).wrap(amw.clone()))
-            .route("/signup", web::post().to(server::auth::create_user))
-            .route("/signup", web::get().to(server::hello))
-            .route("/login", web::post().to(server::auth::auth))
+            .route("/auth/signup", web::post().to(server::auth::create_user))
+            .route("/auth/login", web::post().to(server::auth::auth))
+            .route(
+                "/auth/hello",
+                web::get().to(server::hello).wrap(amw.clone()),
+            )
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
     })
