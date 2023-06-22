@@ -70,7 +70,6 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
     };
 
     let jwt_secret = Hmac::<Sha256>::new_from_slice(SECRET.as_bytes()).unwrap();
-    let jwt_secret = dbg!(&jwt_secret);
     match pass {
         None => HttpResponse::Unauthorized().body("no password"),
         Some(pass) => {
@@ -100,7 +99,7 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
             // Create Claims Token
             let token_claim = TokenClaims::new(user.zid, user.hashed_pw);
             let signed_token = token_claim
-                .sign_with_key(jwt_secret)
+                .sign_with_key(&jwt_secret)
                 .expect("Sign is valid");
 
             return HttpResponse::Ok().json(signed_token);
@@ -143,7 +142,7 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
         first_name: ActiveValue::Set(user.first_name),
         last_name: ActiveValue::Set(user.last_name),
         hashed_pw: ActiveValue::Set(hash.clone()),
-        is_super_user: ActiveValue::Set(false),
+        is_org_admin: ActiveValue::Set(false),
     };
 
     let created_user = active_user.insert(db).await.expect("Db broke");

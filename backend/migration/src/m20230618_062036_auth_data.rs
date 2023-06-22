@@ -21,7 +21,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(UserData::LastName).string().not_null())
                     .col(ColumnDef::new(UserData::HashedPw).string().not_null())
                     .col(
-                        ColumnDef::new(UserData::IsSuperUser)
+                        ColumnDef::new(UserData::IsOrgAdmin)
                             .boolean()
                             .default(false)
                             .not_null(),
@@ -46,5 +46,5 @@ enum UserData {
     FirstName,
     LastName,
     HashedPw,
-    IsSuperUser,
+    IsOrgAdmin,
 }
