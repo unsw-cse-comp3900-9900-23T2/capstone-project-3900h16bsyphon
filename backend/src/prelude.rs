@@ -5,9 +5,11 @@
 /// Requires `SECRET` to be set as and environemnt variable or in
 /// a `.env` file in the root of the project, or a parent folder.
 pub const SECRET: &'static str = dotenv_codegen::dotenv!("SECRET");
+const DEFAULT_PORT: u16 = 8000;
+const DEFAULT_HOST: &'static str = "0.0.0.0";
 
 pub fn host_port_from_env() -> (String, u16) {
-    let host = std::env::var("HOST_URL").unwrap_or("0.0.0.0".into());
+    let host = std::env::var("HOST_URL").unwrap_or(DEFAULT_HOST.into());
     let port = std::env::var("PORT")
         .as_ref()
         .map(String::as_str)
@@ -15,8 +17,8 @@ pub fn host_port_from_env() -> (String, u16) {
         .ok()
         .map(Result::ok)
         .unwrap_or(None)
-        .unwrap_or(8000);
-    dbg!((host, port))
+        .unwrap_or(DEFAULT_PORT);
+    (host, port)
 }
 
 /// Instantiates `env_logger` with the appropriate settings based on the environment.
@@ -45,6 +47,8 @@ pub fn startup_logger() {
     log::info!("");
     log::info!("");
     log::info!("Logger set up successfully!");
+    log::info!("");
+    log::info!("");
 }
 
 #[cfg(debug_assertions)]

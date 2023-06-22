@@ -33,7 +33,11 @@ async fn main() -> std::io::Result<()> {
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
     })
-    .bind(host_port_from_env())?
+    .bind({
+        let host = host_port_from_env();
+        log::info!("Starting server at (Host, Port): {:?}", host);
+        host
+    })?
     .run()
     .await?;
 

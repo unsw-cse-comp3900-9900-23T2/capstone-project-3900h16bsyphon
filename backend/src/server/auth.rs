@@ -75,7 +75,7 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
         Some(pass) => {
             // 1. check user in db
             let db = &establish_connection();
-            let db_user = user_data::Entity::find_by_id(dbg!(zid))
+            let db_user = user_data::Entity::find_by_id(zid)
                 .one(db)
                 .await
                 .map_err(|e| {
@@ -84,7 +84,7 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
                 });
             let user: user_data::Model = match db_user {
                 Err(e) => return e,
-                Ok(None) => return HttpResponse::Unauthorized().body(dbg!("Bad user/pass")),
+                Ok(None) => return HttpResponse::Unauthorized().body("Bad user/pass"),
                 Ok(Some(user)) => user,
             };
 
