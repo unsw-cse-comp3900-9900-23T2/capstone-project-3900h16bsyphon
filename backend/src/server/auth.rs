@@ -143,7 +143,7 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
         first_name: ActiveValue::Set(user.first_name),
         last_name: ActiveValue::Set(user.last_name),
         hashed_pw: ActiveValue::Set(hash.clone()),
-        is_user_admin: ActiveValue::Set(false),
+        is_super_user: ActiveValue::Set(false),
     };
 
     let created_user = active_user.insert(db).await.expect("Db broke");

@@ -11,7 +11,7 @@ pub struct Model {
     pub first_name: String,
     pub last_name: String,
     pub hashed_pw: String,
-    pub is_user_admin: bool,
+    pub is_super_user: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
