@@ -1,0 +1,15 @@
+Week 1:
+- Discussed about custom project and helped write custom project proposal
+- Learnt rust from workshop run by Hussain and Peter
+
+Week 2:
+- Edited proposal
+- Wrote up user stories for authentication + permissions management
+
+Week 3:
+- Created figma wireframes for landing page, log in, sign up, user profile and create request pages
+- Helped create user flows for student, tutor and course admin perspectives
+- Helped finalise project proposal
+
+Week 4:
+- Setup linting for frontend repo

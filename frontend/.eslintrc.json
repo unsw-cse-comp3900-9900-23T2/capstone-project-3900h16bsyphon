@@ -1,3 +1,26 @@
 {
-  "extends": "next/core-web-vitals"
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "jest": true
+  },
+  "extends": ["eslint:recommended", "next"],
+  "plugins": ["eslint-plugin-react-hooks", "eslint-plugin-react"],
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true,
+      "modules": true
+    }
+  },
+  "rules": {
+    "eqeqeq": ["error", "always"],
+    "eol-last": ["error", "always"],
+    "no-duplicate-imports": "error",
+    "no-unused-expressions": "error",
+    "no-unneeded-ternary": "error",
+    "no-unused-vars": "warn",
+    "quotes": ["error", "single"]
+  }
 }
