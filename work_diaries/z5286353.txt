@@ -1,0 +1,14 @@
+Week 1:
+- Pitched the virtual queue system management idea to the team.
+- The team discussed the project request form to get approved
+- Rust 101 workshop
+
+Week 2:
+- The team wrote the proposal draft and got feedback from the tutor
+- We also split and wrote user stories on Jira. 
+
+Week 3:
+- Did some figma
+- The team finalised the proposal and submitted
+- Set up dev environment
+
