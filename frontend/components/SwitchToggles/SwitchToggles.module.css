@@ -1,0 +1,11 @@
+.switchToggles {
+  display: flex;
+  align-self: baseline;
+  align-items: baseline;
+  justify-content: baseline;
+  margin-left: 4em;
+  margin-top: 1em;
+  flex-direction: column;
+  gap: 1em;
+}
+
