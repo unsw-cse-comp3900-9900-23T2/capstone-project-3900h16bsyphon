@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 
 use crate::{database_utils::establish_connection, entities, SECRET};
-use entities::user_data;
+use entities::users;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TokenClaims {
@@ -75,14 +75,14 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
         Some(pass) => {
             // 1. check user in db
             let db = &establish_connection();
-            let db_user = user_data::Entity::find_by_id(zid)
+            let db_user = users::Entity::find_by_id(zid)
                 .one(db)
                 .await
                 .map_err(|e| {
                     log::warn!("DB Brokee when finding user ??:\n\t{}", e);
                     HttpResponse::InternalServerError().body("AHHHH ME BROKEY BAD")
                 });
-            let user: user_data::Model = match db_user {
+            let user: users::Model = match db_user {
                 Err(e) => return e,
                 Ok(None) => return HttpResponse::Unauthorized().body("Bad user/pass"),
                 Ok(Some(user)) => user,
@@ -120,7 +120,7 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
     let db = &establish_connection();
 
     // Check if user already exists
-    let prev_user_res = user_data::Entity::find_by_id(actual_zid)
+    let prev_user_res = users::Entity::find_by_id(actual_zid)
         .one(db)
         .await
         .map_err(|e| {
@@ -137,7 +137,7 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
     };
 
     // Insert the new user into Db
-    let active_user: user_data::ActiveModel = user_data::ActiveModel {
+    let active_user: users::ActiveModel = users::ActiveModel {
         zid: ActiveValue::Set(actual_zid),
         first_name: ActiveValue::Set(user.first_name),
         last_name: ActiveValue::Set(user.last_name),
