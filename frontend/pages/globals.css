@@ -9,9 +9,18 @@ a {
 }
 
 :root {
-  --colour-main-blue-900: #091133;
+  --colour-main-navy-900: #091133;
+  --colour-main-blue-200: #BCD1F4;
+  --colour-main-blue-900: #30415C;
   --colour-main-blue-400:  #6F7CB2;
+  --colour-main-grey-200: #D3D3D3;
+  --colour-main-grey-400: #C7C7C7;
   --colour-main-grey-600: #5D6970;
+  --colour-main-green-200: #B6EDB8;
+  --colour-main-green-400: #9DE0A0;
+  --colour-main-green-900: #006644;
+  --colour-main-yellow-300: #F4BC4D;
+  --colour-main-yellow-500: #EDB549;
 }
 
 @media (prefers-color-scheme: light) {

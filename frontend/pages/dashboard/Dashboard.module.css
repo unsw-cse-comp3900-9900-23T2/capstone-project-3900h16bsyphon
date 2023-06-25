@@ -1,0 +1,26 @@
+.coursesTutor {
+  display: flex;
+  flex-direction: row;
+  gap: 60%;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Lato', sans-serif;
+  width: 90%;
+  margin: 0 auto;
+}
+
+.cards {
+  display: grid;
+  /* TODO: clean up styles */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}

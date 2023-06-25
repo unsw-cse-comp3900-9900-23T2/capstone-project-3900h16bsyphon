@@ -1,0 +1,65 @@
+.heading {
+  font-family: 'Lato', sans-serif;
+  font-weight: 600;
+}
+
+.queueBtn {
+  background-color: var(--colour-main-green-200);
+  color: var(--colour-main-green-900);
+}
+
+.queueBtn:hover {
+  background-color: var(--colour-main-green-400);
+}
+
+.analyticsBtn {
+  background-color: var(--colour-main-blue-200);
+  color: var(--colour-main-blue-600);
+}
+
+.analyticsBtn:Hover {
+  background-color: var(--colour-main-blue-400);
+}
+
+.tutorPageBtn {
+  background-color: var(--colour-main-yellow-300);
+}
+
+.tutorPageBtn:hover {
+  background-color: var(--colour-main-yellow-500);
+}
+
+.tutorLinkBtn {
+  background-color: var(--colour-main-grey-200);
+  color: black;
+}
+
+.tutorLinkBtn:hover {
+  background-color: var(--colour-main-grey-400);
+}
+
+.container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 25%;
+  background-color: whitesmoke;
+  box-shadow: 24px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 40px;
+  font-family: 'Lato', sans-serif;
+}
+
+.button {
+  font-family: 'Lato', sans-serif;
+}
+
+.invite {
+  display: flex;
+  flex-direction: row;
+  gap: 60%;
+}
