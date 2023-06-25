@@ -1,9 +1,6 @@
 html,
 body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-family: 'Lato';
 }
 
 a {
@@ -11,8 +8,10 @@ a {
   text-decoration: none;
 }
 
-* {
-  box-sizing: border-box;
+:root {
+  --colour-main-blue-900: #091133;
+  --colour-main-blue-400:  #6F7CB2;
+  --colour-main-grey-600: #5D6970;
 }
 
 @media (prefers-color-scheme: light) {
