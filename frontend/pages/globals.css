@@ -1,0 +1,25 @@
+html,
+body {
+  font-family: 'Lato';
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:root {
+  --colour-main-blue-900: #091133;
+  --colour-main-blue-400:  #6F7CB2;
+  --colour-main-grey-600: #5D6970;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: light;
+  }
+  body {
+    color: white;
+    background: black;
+  }
+}

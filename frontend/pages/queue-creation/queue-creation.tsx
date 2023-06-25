@@ -21,7 +21,7 @@ const QueueCreationPage = () => {
 
     return (
         <div className={style.container}> 
-            <Typography variant="h5" style={{margin: "30px"}}>Create a new Queue for {course}</Typography>
+            <Typography variant="h5" className={style.title}>Create a new Queue for {course}</Typography>
             <FormGroup className={style.formGroup} row={true}>
                 <Typography variant="body1" style={{marginRight: "35px"}}>Title</Typography>
                 <Box className={style.textField}>

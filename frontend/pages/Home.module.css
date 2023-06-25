@@ -1,0 +1,89 @@
+.main {
+  flex: 1;
+  flex-direction: column;
+  display: flex;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  padding-top: 10px;
+  padding-right: 20px;
+}
+
+.side {
+  display: flex;
+  flex-grow: 1;
+  gap: 30px;
+  justify-content: flex-end;
+}
+
+.title {
+  justify-self: center;
+  text-align: center;
+  color: #000;
+  font-size: 100px;
+  font-family: Lato;
+  font-weight: 700;
+}
+
+.description {
+  display: flex;
+  text-align: center;
+  align-self: center;
+  color: #000;
+  font-size: 24px;
+  font-family: Lato;
+  font-weight: 500;
+}
+
+.offerings {
+  display: flex;
+  flex-direction: row;
+  margin-inline: 20%;
+}
+
+.whatWeOffer {
+  color: var(--colour-main-blue-900, #091133);
+  font-size: 36px;
+  font-family: Lato;
+  font-weight: 500;
+  line-height: 48px;
+}
+
+.whatWeOfferBody {
+  display: flex;
+  flex-grow: 1;
+  font-family: Lato;
+  line-height: 26px;
+}
+
+.offeringsBody {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+}
+
+.homeImage {
+  display: flex;
+  width: 200%;
+  height: 200%;
+}
+
+.whatWeOfferDescription {
+  color: var(--colour-main-blue-400,  #6F7CB2);
+  margin-bottom: 8vh;
+  font-size: 16px; 
+}
+
+.featureGrid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+@media only screen and (max-width: 1500px) {
+  .homeImage {
+      display: none;
+  }
+}
