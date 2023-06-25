@@ -17,6 +17,7 @@
   "rules": {
     "eqeqeq": ["error", "always"],
     "eol-last": ["error", "always"],
+    "semi": ["error", "always"],
     "no-duplicate-imports": "error",
     "no-unused-expressions": "error",
     "no-unneeded-ternary": "error",
