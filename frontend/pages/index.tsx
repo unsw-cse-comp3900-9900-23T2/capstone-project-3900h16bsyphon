@@ -5,6 +5,7 @@ import Logo from '../components/Logo';
 import Button from '../components/Button';
 import Image from 'next/image';
 import FeatureGrid from '../components/FeatureGrid';
+
 const Home: NextPage = () => {
   return (
     <div>
