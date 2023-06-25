@@ -1,0 +1,11 @@
+
+
+.pageContainer {
+    flex: 1;
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: pink;
+    padding-top: 5%;
+}

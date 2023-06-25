@@ -1,0 +1,28 @@
+
+
+.cardBox {
+    width: 35%;
+}
+
+.cardHeader {
+    padding: 25px 0px;
+}
+
+.cardContainer {
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cardContent {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
+}
+
+.nameContainer {
+    /* padding-top: 7%; */
+    /* background-color: pink; */
+}
