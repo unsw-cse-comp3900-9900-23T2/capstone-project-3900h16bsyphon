@@ -2,7 +2,7 @@ import React, {useState} from "react"
 import dayjs, { Dayjs } from 'dayjs';
 import style from './queue-creation.module.css'
 import TextField from '@mui/material/TextField';
-import { FormGroup, Box, Typography} from "@mui/material";
+import { FormGroup, Box, Typography, Button} from "@mui/material";
 import SyphonDatePicker from "../../components/SyphonDatePicker";
 import SwitchToggles from "../../components/SwitchToggles";
 import SyphonTimePicker from "../../components/SyphonTimePicker";
@@ -50,6 +50,7 @@ const QueueCreationPage = () => {
             />
 
             <FAQs />
+            <Button variant="contained" className={style.button}>Create Queue</Button>
 
         </div>
     )
