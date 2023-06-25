@@ -28,8 +28,8 @@
 }
 
 .description {
-  width: 760px;
   display: flex;
+  text-align: center;
   align-self: center;
   color: #000;
   font-size: 24px;
@@ -72,6 +72,7 @@
 
 .whatWeOfferDescription {
   color: var(--colour-main-blue-400,  #6F7CB2);
+  margin-bottom: 8vh;
   font-size: 16px; 
 }
 
@@ -79,4 +80,10 @@
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+}
+
+@media only screen and (max-width: 1500px) {
+  .homeImage {
+      display: none;
+  }
 }

@@ -1,3 +1,3 @@
-export default function Example() {
-  return <div>Hi!</div>;
-}
+const Example = () => (<div>Hi!</div>);
+
+export default Example;

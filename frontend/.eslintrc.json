@@ -9,6 +9,7 @@
   "parserOptions": {
     "ecmaVersion": 6,
     "sourceType": "module",
+    "warnOnUnsupportedTypeScriptVersion": false,
     "ecmaFeatures": {
       "jsx": true,
       "modules": true

@@ -13,12 +13,12 @@ const theme = createTheme({
   }
 });
 
-function MyApp({ Component, pageProps }: AppProps) {
+const MyApp = ({ Component, pageProps }: AppProps) => {
   return (
     <ThemeProvider theme={theme}>
       <Component {...pageProps} />
     </ThemeProvider>
   );
-}
+};
 
 export default MyApp;

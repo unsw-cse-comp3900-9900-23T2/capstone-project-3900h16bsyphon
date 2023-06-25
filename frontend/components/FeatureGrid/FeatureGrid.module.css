@@ -19,7 +19,8 @@
 
 .container {
     display: flex;
-    width: 306px; /* a bit shit */
+    width: 50%;
+    margin-bottom: 1vh;
     justify-items: flex-start;
     align-items: baseline;
     flex-direction: column;
