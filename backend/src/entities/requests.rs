@@ -36,8 +36,6 @@ pub enum Relation {
     Queues,
     #[sea_orm(has_many = "super::request_images::Entity")]
     RequestImages,
-    #[sea_orm(has_many = "super::request_tags::Entity")]
-    RequestTags,
     #[sea_orm(
         belongs_to = "super::users::Entity",
         from = "Column::Zid",
@@ -78,15 +76,18 @@ impl Related<super::request_images::Entity> for Entity {
     }
 }
 
-impl Related<super::request_tags::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::RequestTags.def()
-    }
-}
-
 impl Related<super::users::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Users.def()
+    }
+}
+
+impl Related<super::tags::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::request_tags::Relation::Tags.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::request_tags::Relation::Requests.def().rev())
     }
 }
 

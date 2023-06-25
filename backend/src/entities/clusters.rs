@@ -6,7 +6,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "clusters")]
 pub struct Model {
+    #[sea_orm(primary_key, auto_increment = false)]
     pub request_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub cluster_id: i32,
 }
 

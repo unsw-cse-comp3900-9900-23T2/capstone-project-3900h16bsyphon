@@ -77,6 +77,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(ColumnDef::new(Tutors::Zid).integer().not_null())
                     .col(ColumnDef::new(Tutors::CourseOfferingId).integer().not_null())
+                    .col(ColumnDef::new(Tutors::IsCourseAdmin).boolean().not_null().default(false))
                     .foreign_key(
                         ForeignKey::create()
                             .from(Tutors::Table, Tutors::Zid)
@@ -87,28 +88,7 @@ impl MigrationTrait for Migration {
                             .from(Tutors::Table, Tutors::CourseOfferingId)
                             .to(CourseOfferings::Table, CourseOfferings::CourseOfferingId),
                     )
-                    .to_owned(),
-            )
-            .await?;
-
-        // course admin table
-        manager
-            .create_table(
-                Table::create()
-                    .table(CourseAdmins::Table)
-                    .if_not_exists()
-                    .col(ColumnDef::new(CourseAdmins::Zid).integer().not_null())
-                    .col(ColumnDef::new(CourseAdmins::CourseOfferingId).integer().not_null())
-                    .foreign_key(
-                        ForeignKey::create()
-                            .to(Users::Table, Users::Zid)
-                            .from(CourseAdmins::Table, CourseAdmins::Zid),
-                    )
-                    .foreign_key(
-                        ForeignKey::create()
-                            .to(CourseOfferings::Table, CourseOfferings::CourseOfferingId)
-                            .from(CourseAdmins::Table, CourseAdmins::CourseOfferingId),
-                    )
+                    .primary_key(Index::create().col(Tutors::Zid).col(Tutors::CourseOfferingId))
                     .to_owned(),
             )
             .await?;
@@ -159,6 +139,7 @@ impl MigrationTrait for Migration {
                             .to(Queues::Table, Queues::QueueId)
                             .from(QueueTutors::Table, QueueTutors::QueueId),
                     )
+                    .primary_key(Index::create().col(QueueTutors::Zid).col(QueueTutors::QueueId))
                     .to_owned(),
             )
             .await?;
@@ -176,6 +157,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(Faqs::Answer).string().not_null())
                     .col(ColumnDef::new(Faqs::Question).string().not_null())
+                    .primary_key(Index::create().col(Faqs::CourseOfferingId))
                     .to_owned(),
             )
             .await?;
@@ -227,14 +209,21 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Logs::Table)
                     .if_not_exists()
+                    .col(
+                        ColumnDef::new(Logs::LogId)
+                            .integer()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
                     .col(ColumnDef::new(Logs::RequestId).integer().not_null())
                     .col(ColumnDef::new(Logs::Status).enumeration(Statuses::Table, Statuses::iter().skip(1)))
+                    .col(ColumnDef::new(Logs::EventTime).date_time().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .to(Requests::Table, Requests::RequestId)
                             .from(Logs::Table, Logs::RequestId),
                     )
-                    .col(ColumnDef::new(Logs::EventTime).date_time().not_null())
                     .to_owned(),
             )
             .await?;
@@ -247,10 +236,11 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Clusters::RequestId).integer().not_null())
                     .foreign_key(
                         ForeignKey::create()
-                            .to(Requests::Table, Requests::RequestId)
-                            .from(Clusters::Table, Clusters::RequestId),
+                        .to(Requests::Table, Requests::RequestId)
+                        .from(Clusters::Table, Clusters::RequestId),
                     )
                     .col(ColumnDef::new(Clusters::ClusterId).integer().not_null())
+                    .primary_key(Index::create().col(Clusters::ClusterId).col(Clusters::RequestId))
                     .to_owned(),
             )
             .await?;
@@ -267,6 +257,7 @@ impl MigrationTrait for Migration {
                             .from(RequestImages::Table, RequestImages::RequestId),
                     )
                     .col(ColumnDef::new(RequestImages::ImageUrl).string().not_null())
+                    .primary_key(Index::create().col(RequestImages::RequestId).col(RequestImages::ImageUrl))
                     .to_owned(),
             )
             .await?;
@@ -311,6 +302,7 @@ impl MigrationTrait for Migration {
                             .to(Tags::Table, Tags::TagId)
                             .from(RequestTags::Table, RequestTags::TagId),
                     )
+                    .primary_key(Index::create().col(RequestTags::RequestId).col(RequestTags::TagId))
                     .to_owned(),
             )
             .await?;
@@ -425,9 +417,6 @@ impl MigrationTrait for Migration {
             .drop_table(Table::drop().table(Tutors::Table).to_owned())
             .await?;
         manager
-            .drop_table(Table::drop().table(CourseAdmins::Table).to_owned())
-            .await?;
-        manager
             .drop_table(Table::drop().table(CourseOfferings::Table).to_owned())
             .await?;
         manager
@@ -462,13 +451,7 @@ enum Tutors {
     Table,
     Zid,
     CourseOfferingId,
-}
-
-#[derive(Iden)]
-enum CourseAdmins {
-    Table,
-    Zid,
-    CourseOfferingId,
+    IsCourseAdmin
 }
 
 #[derive(Iden)]
@@ -511,6 +494,7 @@ enum Faqs {
 #[derive(Iden)]
 enum Logs {
     Table,
+    LogId,
     RequestId,
     EventTime,
     Status,

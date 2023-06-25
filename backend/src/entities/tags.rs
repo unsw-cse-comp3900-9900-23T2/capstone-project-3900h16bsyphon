@@ -23,8 +23,6 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Queues,
-    #[sea_orm(has_many = "super::request_tags::Entity")]
-    RequestTags,
 }
 
 impl Related<super::queues::Entity> for Entity {
@@ -33,9 +31,12 @@ impl Related<super::queues::Entity> for Entity {
     }
 }
 
-impl Related<super::request_tags::Entity> for Entity {
+impl Related<super::requests::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::RequestTags.def()
+        super::request_tags::Relation::Requests.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::request_tags::Relation::Tags.def().rev())
     }
 }
 

@@ -3,7 +3,6 @@
 pub mod prelude;
 
 pub mod clusters;
-pub mod course_admins;
 pub mod course_offerings;
 pub mod faqs;
 pub mod logs;

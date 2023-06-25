@@ -6,7 +6,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "queue_tutors")]
 pub struct Model {
+    #[sea_orm(primary_key, auto_increment = false)]
     pub zid: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub queue_id: i32,
 }
 

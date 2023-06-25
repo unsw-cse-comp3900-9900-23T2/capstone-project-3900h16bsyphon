@@ -6,8 +6,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "tutors")]
 pub struct Model {
+    #[sea_orm(primary_key, auto_increment = false)]
     pub zid: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub course_offering_id: i32,
+    pub is_course_admin: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

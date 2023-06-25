@@ -16,33 +16,15 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::course_admins::Entity")]
-    CourseAdmins,
     #[sea_orm(has_many = "super::messages::Entity")]
     Messages,
-    #[sea_orm(has_many = "super::queue_tutors::Entity")]
-    QueueTutors,
     #[sea_orm(has_many = "super::requests::Entity")]
     Requests,
-    #[sea_orm(has_many = "super::tutors::Entity")]
-    Tutors,
-}
-
-impl Related<super::course_admins::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::CourseAdmins.def()
-    }
 }
 
 impl Related<super::messages::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Messages.def()
-    }
-}
-
-impl Related<super::queue_tutors::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::QueueTutors.def()
     }
 }
 
@@ -52,9 +34,21 @@ impl Related<super::requests::Entity> for Entity {
     }
 }
 
-impl Related<super::tutors::Entity> for Entity {
+impl Related<super::course_offerings::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Tutors.def()
+        super::tutors::Relation::CourseOfferings.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::tutors::Relation::Users.def().rev())
+    }
+}
+
+impl Related<super::queues::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::queue_tutors::Relation::Queues.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::queue_tutors::Relation::Users.def().rev())
     }
 }
 

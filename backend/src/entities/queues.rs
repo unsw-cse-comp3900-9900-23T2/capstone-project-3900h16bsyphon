@@ -27,8 +27,6 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     CourseOfferings,
-    #[sea_orm(has_many = "super::queue_tutors::Entity")]
-    QueueTutors,
     #[sea_orm(has_many = "super::requests::Entity")]
     Requests,
     #[sea_orm(has_many = "super::tags::Entity")]
@@ -41,12 +39,6 @@ impl Related<super::course_offerings::Entity> for Entity {
     }
 }
 
-impl Related<super::queue_tutors::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::QueueTutors.def()
-    }
-}
-
 impl Related<super::requests::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Requests.def()
@@ -56,6 +48,15 @@ impl Related<super::requests::Entity> for Entity {
 impl Related<super::tags::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Tags.def()
+    }
+}
+
+impl Related<super::users::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::queue_tutors::Relation::Users.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::queue_tutors::Relation::Queues.def().rev())
     }
 }
 
