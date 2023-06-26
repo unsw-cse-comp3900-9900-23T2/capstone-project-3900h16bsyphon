@@ -1,0 +1,30 @@
+.heading {
+  font-family: 'Lato', sans-serif;
+  font-weight: 600;
+}
+
+.queueBtn {
+  background-color: var(--colour-main-green-200);
+  color: var(--colour-main-green-900);
+}
+
+.queueBtn:hover {
+  background-color: var(--colour-main-green-400);
+}
+
+.analyticsBtn {
+  background-color: var(--colour-main-blue-200);
+  color: var(--colour-main-blue-600);
+}
+
+.analyticsBtn:hover {
+  background-color: var(--colour-main-blue-400);
+}
+
+.tutorPageBtn {
+  background-color: var(--colour-main-yellow-300);
+}
+
+.tutorPageBtn:hover {
+  background-color: var(--colour-main-yellow-500);
+}
