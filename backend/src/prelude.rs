@@ -1,15 +1,12 @@
 //! This file contains all the prelude imports for the project.
 //! Helps in keeping `main.rs` clean.
 
-
 use actix_web::web::Json;
+use crate::server::auth::{create_user, CreateUserBody};
+
 /// Secret used to hash passwords.
 /// Requires `SECRET` to be set as and environemnt variable or in
 /// a `.env` file in the root of the project, or a parent folder.
-use serde::{Deserialize, Serialize};
-
-use crate::server::auth::{create_user, CreateUserBody};
-
 pub const SECRET: &'static str = dotenv_codegen::dotenv!("SECRET");
 const DEFAULT_PORT: u16 = 8000;
 const DEFAULT_HOST: &'static str = "0.0.0.0";
@@ -25,11 +22,6 @@ pub fn host_port_from_env() -> (String, u16) {
         .unwrap_or(None)
         .unwrap_or(DEFAULT_PORT);
     (host, port)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Config {
-    pub org_admins: Vec<CreateUserBody>,
 }
 
 pub async fn register_org_admins() {
