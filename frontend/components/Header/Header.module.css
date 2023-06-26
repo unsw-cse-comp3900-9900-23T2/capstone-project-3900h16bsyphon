@@ -1,0 +1,20 @@
+.header {
+  width: 100%;
+  background-color: white;
+  font-family: 'Lato', sans-serif;
+  padding-bottom: 4px;
+  display: flex;
+  flex-direction: row;
+  gap: 73%;
+  align-items: center;
+  justify-content: center;
+}
+
+.right {
+  display: flex;
+  flex-direction: row;
+}
+
+.button {
+  font-family: 'Lato', sans-serif;
+}

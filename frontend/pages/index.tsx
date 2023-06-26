@@ -4,11 +4,14 @@ import Logo from '../components/Logo';
 import Button from '../components/Button';
 import Image from 'next/image';
 import FeatureGrid from '../components/FeatureGrid';
+import MetaData from '../components/MetaData';
 import { useRouter } from 'next/router';
+
 const Home: NextPage = () => {
   let router = useRouter();
   return (
     <div>
+      <MetaData />
       <main className={styles.main}>
         <div className={styles.header}>
           <Logo />
