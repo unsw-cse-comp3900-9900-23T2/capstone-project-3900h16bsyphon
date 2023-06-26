@@ -25,6 +25,17 @@
   font-family: 'Lato', sans-serif;
   width: 90%;
   margin: 0 auto;
+  padding-top: 30px;
+  background-color: #f2f2f2;
+  padding-bottom: 80px;
+}
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 auto;
+  height: 100%;
+  background-color: #f2f2f2;
 }
 
 .cards {

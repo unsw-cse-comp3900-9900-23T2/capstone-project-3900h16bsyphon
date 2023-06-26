@@ -1,11 +1,13 @@
 import { NextPage } from 'next/types';
-import Head from 'next/head';
 import styles from './Dashboard.module.css';
 import JoinTutorModal from '../../components/JoinTutorModal';
 import CourseOfferingCard from '../../components/CourseOfferingCard';
 import AddIcon from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
 import CourseCard from '../../components/CourseCard';
+import Header from '../../components/Header';
+import MetaData from '../../components/MetaData';
+import Footer from '../../components/Footer';
 
 const data = [
   {
@@ -21,12 +23,9 @@ const data = [
 
 const Dashboard: NextPage = () => {
   return (
-    <div>
-      <Head>
-        <title>Syphon</title>
-        <meta name='description' content='A fountain of knowledge to syphon off for yourself 😎' />
-        <link rel='icon' href='/favicon.ico' />
-      </Head>
+    <div className={styles.container}>
+      <MetaData />
+      <Header />
       <div className={styles.dashboard}>
         <div className={styles.courseOffering}>
           <h1 className={styles.heading}>Select course offering</h1>
@@ -54,6 +53,7 @@ const Dashboard: NextPage = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

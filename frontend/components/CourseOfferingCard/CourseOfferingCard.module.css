@@ -23,6 +23,7 @@
 
 .tutorPageBtn {
   background-color: var(--colour-main-yellow-300);
+  color: white;
 }
 
 .tutorPageBtn:hover {

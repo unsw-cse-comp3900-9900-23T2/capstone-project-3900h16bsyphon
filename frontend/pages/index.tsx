@@ -1,20 +1,15 @@
 import type { NextPage } from 'next';
-import Head from 'next/head';
 import styles from './Home.module.css';
 import Logo from '../components/Logo';
 import Button from '../components/Button';
 import Image from 'next/image';
 import FeatureGrid from '../components/FeatureGrid';
+import MetaData from '../components/MetaData';
 
 const Home: NextPage = () => {
   return (
     <div>
-      <Head>
-        <title>Syphon</title>
-        <meta name='description' content='A fountain of knowledge to syphon off for yourself 😎' />
-        <link rel='icon' href='/favicon.ico' />
-      </Head>
-
+      <MetaData />
       <main className={styles.main}>
         <div className={styles.header}>
           <Logo />

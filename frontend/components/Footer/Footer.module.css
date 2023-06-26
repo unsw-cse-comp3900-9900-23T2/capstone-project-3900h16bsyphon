@@ -1,0 +1,11 @@
+.footer {
+  width: 100%;
+  background-color: #E7ECFF;
+  font-family: 'Lato', sans-serif;
+  display: flex;
+  flex-direction: row;
+  gap: 73%;
+  align-items: center;
+  justify-content: center;
+  min-height: 10vh;
+}
