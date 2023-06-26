@@ -1,25 +1,20 @@
 import type { NextPage } from 'next';
-import Head from 'next/head';
 import styles from './Home.module.css';
 import Logo from '../components/Logo';
 import Button from '../components/Button';
 import Image from 'next/image';
 import FeatureGrid from '../components/FeatureGrid';
+import { useRouter } from 'next/router';
 const Home: NextPage = () => {
+  let router = useRouter();
   return (
     <div>
-      <Head>
-        <title>Syphon</title>
-        <meta name='description' content='A fountain of knowledge to syphon off for yourself 😎' />
-        <link rel='icon' href='/favicon.ico' />
-      </Head>
-
       <main className={styles.main}>
         <div className={styles.header}>
           <Logo />
           <div className={styles.side}>
-            <Button> Sign up </Button>
-            <Button variant='contained'> Log in </Button>
+            <Button onClick={() => router.push('/sign-up')}> Sign up </Button>
+            <Button onClick={() => router.push('/log-in')} variant='contained'> Log in </Button>
           </div>
         </div>
         <h1 className={styles.title}>Syphon</h1>

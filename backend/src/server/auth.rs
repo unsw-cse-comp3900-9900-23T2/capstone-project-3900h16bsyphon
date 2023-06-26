@@ -178,16 +178,14 @@ impl CreateUserBody {
         };
         if zid.len() != 7 {
             return Err(HttpResponse::BadRequest().body(format!(
-                "zid must be 7 chars. Got: {:?}, len = {}: {}",
-                zid,
-                zid.len(),
-                std::str::from_utf8(zid).unwrap(),
+                "zid must be 8 chars. Got zid of length {}",
+                zid.len()
             )));
         }
         std::str::from_utf8(zid)
             .expect("Was ascii before")
             .parse::<u32>()
-            .map_err(|_| HttpResponse::BadRequest().body("zid wont parse to number"))
+            .map_err(|_| HttpResponse::BadRequest().body("zid must be z followed by numbers"))
             .map(|z| z as i32)
     }
 
