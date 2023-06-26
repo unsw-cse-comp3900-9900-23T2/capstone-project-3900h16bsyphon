@@ -5,8 +5,10 @@ import Button from '../components/Button';
 import Image from 'next/image';
 import FeatureGrid from '../components/FeatureGrid';
 import MetaData from '../components/MetaData';
+import { useRouter } from 'next/router';
 
 const Home: NextPage = () => {
+  let router = useRouter();
   return (
     <div>
       <MetaData />
@@ -14,8 +16,8 @@ const Home: NextPage = () => {
         <div className={styles.header}>
           <Logo />
           <div className={styles.side}>
-            <Button> Sign up </Button>
-            <Button variant='contained'> Log in </Button>
+            <Button onClick={() => router.push('/sign-up')}> Sign up </Button>
+            <Button onClick={() => router.push('/log-in')} variant='contained'> Log in </Button>
           </div>
         </div>
         <h1 className={styles.title}>Syphon</h1>
