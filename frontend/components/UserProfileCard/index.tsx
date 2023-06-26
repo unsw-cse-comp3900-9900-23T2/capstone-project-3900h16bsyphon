@@ -1,7 +1,8 @@
-import { Box, Card, CardContent, TextField, Typography, CardActions, Button } from '@mui/material';
+import { Box, Card, CardContent, TextField, Typography, Button } from '@mui/material';
 import UserPermissionsBox from '../UserPermissionBox';
 import styles from './UserProfileCard.module.css';
 import { useRouter } from 'next/router';
+import AddCoursePermissionsModal from '../AddCoursePermissionsModal';
 
 interface UserProfileCardProps {
   zid: string;
@@ -105,10 +106,9 @@ export default function UserProfileCard({
             ))}
           </div>
 
-          <div className={styles.backButtonContainer}>
-            <CardActions>
-              <Button onClick={navigateToDashboard} className={styles.backButton} variant='contained' size='medium'>Back</Button>
-            </CardActions>
+          <div className={styles.buttonContainer}>
+            <AddCoursePermissionsModal tutor={tutor} />
+            <Button onClick={navigateToDashboard} className={styles.backButton} variant='contained' size='medium'>Back</Button>
           </div>
         </CardContent>
       </Card>

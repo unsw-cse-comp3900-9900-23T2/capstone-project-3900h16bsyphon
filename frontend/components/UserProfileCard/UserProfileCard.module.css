@@ -39,10 +39,11 @@
     padding-left: 10px;
 }
 
-.backButtonContainer {
+.buttonContainer {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 25px;
 }
 
 .backButton {
