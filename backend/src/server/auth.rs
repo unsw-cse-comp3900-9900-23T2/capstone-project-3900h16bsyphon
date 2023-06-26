@@ -107,7 +107,7 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
     }
 }
 
-pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
+pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse  {
     let user = body.into_inner();
     if let Err(e) = user.verify_user() {
         log::debug!("failed to verify user:{:?}", e);
@@ -130,8 +130,7 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
     match prev_user_res {
         Err(e) => return e,
         Ok(Some(prev_user)) => {
-            return HttpResponse::BadRequest()
-                .body(format!("User {} already exists", prev_user.zid))
+            return HttpResponse::Conflict().body(format!("User Already Exists: {}", prev_user.zid))
         }
         Ok(_) => {}
     };
@@ -150,12 +149,36 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
     HttpResponse::Ok().json(created_user)
 }
 
+pub async fn make_admin(zid: &str) {
+    let zid = CreateUserBody::verify_zid(&zid).expect("Admin zid must be valid z0000000");
+    log::info!("Making {} an admin", zid);
+    let db = &establish_connection();
+
+    let user = user_data::Entity::find_by_id(zid)
+        .one(db)
+        .await
+        .map_err(|e| {
+            log::warn!("DB Broke when finding admin ??:\n\t{}", e);
+        })
+        .unwrap()
+        .unwrap();
+
+    user_data::ActiveModel {
+        is_org_admin: ActiveValue::Set(true),
+        ..user.into()
+    }
+    .update(db)
+    .await
+    .expect("Db broke");
+    log::info!("Made {} an admin", zid);
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CreateUserBody {
-    first_name: String,
-    last_name: String,
-    zid: String,
-    password: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub zid: String,
+    pub password: String,
 }
 
 impl CreateUserBody {
@@ -196,8 +219,8 @@ impl CreateUserBody {
             n if !(3..=16).contains(&n.len()) => {
                 Err(HttpResponse::BadRequest().body("name too short"))
             }
-            n if !n.chars().all(|c| c.is_ascii_alphabetic() && c != ' ') => {
-                Err(HttpResponse::BadRequest().body("name must be alphanumeric or space"))
+            n if !n.chars().all(|c| c.is_ascii_alphabetic()) => {
+                Err(HttpResponse::BadRequest().body("name must be alphanumeric"))
             }
             _ => Ok(()),
         }

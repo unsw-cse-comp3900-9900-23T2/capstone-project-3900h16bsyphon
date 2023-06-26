@@ -44,7 +44,7 @@
 }
 
 .whatWeOffer {
-  color: var(--colour-main-blue-900, #091133);
+  color: var(--colour-main-navy-900);
   font-size: 36px;
   font-family: Lato;
   font-weight: 500;
@@ -71,7 +71,7 @@
 }
 
 .whatWeOfferDescription {
-  color: var(--colour-main-blue-400,  #6F7CB2);
+  color: var(--colour-main-blue-400);
   margin-bottom: 8vh;
   font-size: 16px; 
 }
