@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, SetStateAction } from 'react';
 import styles from './CreateCourseQueueModal.module.css';
 import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
@@ -95,12 +95,13 @@ const CreateCourseOfferingModal = () => {
           </div>
           <TextField value={input} onChange={handleInputChange} multiline rows={4}/>
           <p>Admins</p>
-          {/* TODO: figure out how to add multiple tags into use state  */}
           <Autocomplete
             multiple
             id="tags-standard"
             options={data}
             getOptionLabel={(option) => option}
+            // i hate typescript
+            onChange={() => handleAdminChange(event as unknown as ChangeEvent<HTMLInputElement>)}
             renderInput={(params) => (
               <TextField
                 {...params}
