@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::Sha256;
 
-use crate::{database_utils::establish_connection, entities, SECRET};
+use crate::{database_utils::db_connection, entities, SECRET};
 use entities::users;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -75,7 +75,7 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
         None => HttpResponse::Unauthorized().body("no password"),
         Some(pass) => {
             // 1. check user in db
-            let db = &establish_connection();
+            let db = &db_connection().await;
             let db_user = users::Entity::find_by_id(zid)
                 .one(db)
                 .await
@@ -118,7 +118,7 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse  {
     let hash = hash_pass(&user.password).expect("validates hashability");
 
     let actual_zid = CreateUserBody::verify_zid(&user.zid).expect("already verified");
-    let db = &establish_connection();
+    let db = &db_connection().await;
 
     // Check if user already exists
     let prev_user_res = users::Entity::find_by_id(actual_zid)
