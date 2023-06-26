@@ -38,3 +38,14 @@
     padding-top: 10px;
     padding-left: 10px;
 }
+
+.backButtonContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.backButton {
+    font-family: lato;
+    padding: 7px 15px;
+}

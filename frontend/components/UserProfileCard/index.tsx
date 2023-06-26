@@ -1,6 +1,7 @@
-import { Box, Card, CardContent, TextField, Typography } from '@mui/material';
+import { Box, Card, CardContent, TextField, Typography, CardActions, Button } from '@mui/material';
 import UserPermissionsBox from '../UserPermissionBox';
 import styles from './UserProfileCard.module.css';
+import { useRouter } from 'next/router';
 
 interface UserProfileCardProps {
   zid: string;
@@ -19,6 +20,13 @@ export default function UserProfileCard({
   tutor,
   courseAdmin,
 }: UserProfileCardProps) {
+
+  const router = useRouter();
+
+  const navigateToDashboard = () => {
+    router.push('/dashboard');
+  };
+
   return (
     <Box className={styles.cardBox}>
       <Card className={styles.cardContainer}>
@@ -95,6 +103,12 @@ export default function UserProfileCard({
                 courseOffering={course}
               />
             ))}
+          </div>
+
+          <div className={styles.backButtonContainer}>
+            <CardActions>
+              <Button onClick={navigateToDashboard} className={styles.backButton} variant='contained' size='medium'>Back</Button>
+            </CardActions>
           </div>
         </CardContent>
       </Card>
