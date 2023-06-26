@@ -14,14 +14,23 @@ const SignIn: NextPage = () => {
   let [confirmPassword, setConfirmPassword] = useState('');
   let [firstName, setFirstName] = useState('');
   let [lastName, setLastName] = useState('');
-  let [error, setError] = useState('');
+  let [error, setError] = useState({
+    zid: '',
+    password: '',
+    firstName: '',
+    lastName: ''
+  });
   let router = useRouter();
 
   const submit = async () => {
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError((oldState) => ({
+        ...oldState,
+        password: 'Passwords do not match'
+      }));
       return;
     }
+
     let res = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}/auth/signup`, {
         method: 'POST',
@@ -36,12 +45,18 @@ const SignIn: NextPage = () => {
           password
         })
       });
-    let response = await res.text();
+    let response = await res.json();
     if (!res.ok) {
       setError(response);
       return;
     }
-    setError('');
+    setError({
+      zid: '',
+      password: '',
+      firstName: '',
+      lastName: ''
+    });
+
     // sign in directly
     let loginRes = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}/auth/login`, {
@@ -50,13 +65,8 @@ const SignIn: NextPage = () => {
           Authorization: 'Basic ' + Buffer.from(zid + ':' + password).toString('base64'),
         }
       });
-
-    if (!loginRes.ok) {
-      setError('Failed to sign in, please try signing in manually');
-      return;
-    }
-    let loginResponse = await loginRes.text();
-    setToken(loginResponse.replace(/"/g, ''));
+    let loginResponse = await loginRes.json();
+    setToken(loginResponse);
     router.push('/dashboard');
   };
 
@@ -66,13 +76,12 @@ const SignIn: NextPage = () => {
         <Typography variant='h1' className={styles.title}>Syphon</Typography>
         <Typography variant='h3'>Sign up to start attending help sessions</Typography>
         <FormGroup className={styles.form}>
-          <TextInput label='First Name' value={firstName} setValue={setFirstName} />
-          <TextInput label='Last Name' value={lastName} setValue={setLastName} />
-          <TextInput label='zId' value={zid} setValue={setZid} />
-          <TextInput label='Password' value={password} setValue={setPassword} type='password' />
-          <TextInput label='Confirm Password' value={confirmPassword} setValue={setConfirmPassword} type='password' />
+          <TextInput label='First Name' value={firstName} setValue={setFirstName} error={error.firstName} />
+          <TextInput label='Last Name' value={lastName} setValue={setLastName} error={error.lastName} />
+          <TextInput label='zId' value={zid} setValue={setZid} error={error.zid} />
+          <TextInput label='Password' value={password} setValue={setPassword} type='password' error={error.password} />
+          <TextInput label='Confirm Password' value={confirmPassword} setValue={setConfirmPassword} type='password' error={error.password} />
         </FormGroup>
-        {error && <Typography className={styles.error}>{error}</Typography>}
         <Button onClick={submit} variant='contained'> Sign up </Button>
         <Typography className={styles.accountText}>Have an account? <Link className={styles.logIn} href='/log-in'>Log in</Link></Typography>
       </main>

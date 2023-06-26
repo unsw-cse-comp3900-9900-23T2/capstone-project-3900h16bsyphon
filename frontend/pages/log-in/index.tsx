@@ -10,7 +10,10 @@ import { setToken } from '../../utils';
 const SignIn: NextPage = () => {
   let [zid, setZid] = useState('');
   let [password, setPassword] = useState('');
-  let [error, setError] = useState('');
+  let [error, setError] = useState({
+    zid: '',
+    password: '',
+  });
   let router = useRouter();
 
   const submit = async () => {
@@ -22,12 +25,15 @@ const SignIn: NextPage = () => {
           Authorization: `Basic ${basicAuth}`,
         }
       });
-    let response = await res.text();
+    let response = await res.json();
     if (!res.ok) {
       setError(response);
       return;
     }
-    setError('');
+    setError({
+      zid: '',
+      password: '',
+    });
     setToken(response);
     router.push('/dashboard');
 
@@ -38,10 +44,9 @@ const SignIn: NextPage = () => {
       <main className={styles.main}>
         <Typography variant='h1' className={styles.title}>Log in to Syphon</Typography>
         <FormGroup className={styles.form}>
-          <TextInput label='zId' value={zid} setValue={setZid} />
-          <TextInput label='Password' value={password} setValue={setPassword} type='password' />
+          <TextInput label='zId' value={zid} setValue={setZid} error={error.zid} />
+          <TextInput label='Password' value={password} setValue={setPassword} type='password' error={error.password} />
         </FormGroup>
-        {error && <Typography className={styles.error}>{error}</Typography>}
         <Button onClick={submit} variant='contained'> Log in </Button>
         <Typography className={styles.accountText}>Don’t have an account? <Link className={styles.signUp} href='/sign-up'>Sign up</Link></Typography>
       </main>

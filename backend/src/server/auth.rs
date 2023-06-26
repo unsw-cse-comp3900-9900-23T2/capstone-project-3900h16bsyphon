@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use actix_web::{dev::ServiceRequest, web, HttpMessage, HttpResponse, Responder};
 
 use actix_web_httpauth::extractors::{
@@ -66,7 +68,11 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
     let pass = credentials.password();
     let zid = match CreateUserBody::verify_zid(credentials.user_id()) {
         Ok(zid) => zid,
-        Err(e) => return e,
+        Err(e) => {
+            let mut errors = HashMap::new();
+            errors.insert("zid", e);
+            return HttpResponse::BadRequest().json(errors);
+        },
     };
 
     let jwt_secret = Hmac::<Sha256>::new_from_slice(SECRET.as_bytes()).unwrap();
@@ -84,16 +90,24 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
                 });
             let user: user_data::Model = match db_user {
                 Err(e) => return e,
-                Ok(None) => return HttpResponse::Unauthorized().body("Bad user/pass"),
+                Ok(None) => {
+                    let mut errors = HashMap::new();
+                    errors.insert("zid", "user not found");
+                    return HttpResponse::Unauthorized().json(errors)
+                },
                 Ok(Some(user)) => user,
             };
 
             // Verify Pw Validity
             if let Err(e) = CreateUserBody::verify_password(pass) {
-                return e;
+                let mut errors = HashMap::new();
+                errors.insert("password", e);
+                return HttpResponse::Unauthorized().json(errors);
             }
             if user.hashed_pw != hash_pass(pass).unwrap() {
-                return HttpResponse::Unauthorized().body("sike, thats the wrong pw");
+                let mut errors = HashMap::new();
+                errors.insert("password", "incorrect password");
+                return HttpResponse::Unauthorized().json(errors);
             }
 
             // Create Claims Token
@@ -160,16 +174,24 @@ pub struct CreateUserBody {
 
 impl CreateUserBody {
     pub fn verify_user(&self) -> Result<(), HttpResponse> {
-        Self::verify_name(&self.first_name)?;
-        Self::verify_name(&self.last_name)?;
-        Self::verify_password(&self.password)?;
-        Self::verify_zid(&self.zid)?;
+        let first_name_verification = Self::verify_name(&self.first_name);
+        let last_name_verification = Self::verify_name(&self.last_name);
+        let password_verification = Self::verify_password(&self.password);
+        let zid_verification = Self::verify_zid(&self.zid);
+        let mut errors = HashMap::new();
+        errors.insert("first_name", first_name_verification.err());
+        errors.insert("last_name", last_name_verification.err());
+        errors.insert("password", password_verification.err());
+        errors.insert("zid", zid_verification.err());
+        if errors.values().any(|e| e.is_some()) {
+            return Err(HttpResponse::BadRequest().json(errors));
+        }
         Ok(())
     }
 
-    pub fn verify_zid(zid: &str) -> Result<i32, HttpResponse> {
+    pub fn verify_zid(zid: &str) -> Result<i32, String> {
         if !zid.chars().all(|c| c.is_ascii_alphanumeric()) {
-            return Err(HttpResponse::BadRequest().body("zid must be ascii alphanumeric only"));
+            return Err("zid must be ascii alphanumeric only".to_string());
         }
         let zid = zid.as_bytes();
         let zid = match zid.get(0) {
@@ -177,44 +199,44 @@ impl CreateUserBody {
             _ => zid,
         };
         if zid.len() != 7 {
-            return Err(HttpResponse::BadRequest().body(format!(
-                "zid must be 8 chars. Got zid of length {}",
+            return Err(format!(
+                "zid must have 7 numbers. Got zid with {} numbers",
                 zid.len()
-            )));
+            ));
         }
         std::str::from_utf8(zid)
             .expect("Was ascii before")
             .parse::<u32>()
-            .map_err(|_| HttpResponse::BadRequest().body("zid must be z followed by numbers"))
+            .map_err(|_| "zid must be z followed by numbers".to_string())
             .map(|z| z as i32)
     }
 
-    fn verify_name(name: &str) -> Result<(), HttpResponse> {
+    fn verify_name(name: &str) -> Result<(), String> {
         match name {
             n if !(3..=16).contains(&n.len()) => {
-                Err(HttpResponse::BadRequest().body("name too short"))
+                Err("name too short".to_string())
             }
             n if !n.chars().all(|c| c.is_ascii_alphabetic() && c != ' ') => {
-                Err(HttpResponse::BadRequest().body("name must be alphanumeric or space"))
+                Err("name must be alphanumeric or space".to_string())
             }
             _ => Ok(()),
         }
     }
 
-    fn verify_password(pass: &str) -> Result<(), HttpResponse> {
+    fn verify_password(pass: &str) -> Result<(), String> {
         match pass {
             p if !(8..=28).contains(&p.len()) => {
-                Err(HttpResponse::BadRequest().body("password must be 8 chars"))
+                Err("password must be 8 chars".to_string())
             }
-            p if !p.is_ascii() => Err(HttpResponse::BadRequest().body("password must be ascii")),
+            p if !p.is_ascii() => Err("password must be ascii".to_string()),
             p if !p.chars().any(|c| c.is_ascii_uppercase()) => {
-                Err(HttpResponse::BadRequest().body("password must have uppercase"))
+                Err("password must have uppercase".to_string())
             }
             p if !p.chars().any(|c| c.is_ascii_lowercase()) => {
-                Err(HttpResponse::BadRequest().body("password must have lowercase"))
+                Err("password must have lowercase".to_string())
             }
             p if !p.chars().any(|c| c.is_ascii_digit()) => {
-                Err(HttpResponse::BadRequest().body("password must have digit"))
+                Err("password must have digit".to_string())
             }
             _ => Ok(()),
         }
