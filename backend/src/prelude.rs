@@ -39,7 +39,7 @@ pub async fn register_org_admins() {
         actix_web::http::StatusCode::INTERNAL_SERVER_ERROR => {
             return log::error!("Internal Error While Creating Admin")
         }
-        _ => return log::error!("Error when creating admin: {:?}", created_res),
+        _ => return log::error!("Error when creating admin: {:?}, {:?}", created_res, created_res.body()),
     }
     // Add Admin Perms
     crate::server::auth::make_admin("z0000000").await;
