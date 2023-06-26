@@ -42,7 +42,7 @@ const ViewQueue = () => {
       <div className={styles.container}>
         <Typography variant="h3" className={styles.title}>COMP1000: 23T2</Typography>
         <div className={styles.section}>
-          <Typography variant="h4" className={styles.heading}>Live</Typography>
+          <h1 className={styles.heading}>Live</h1>
           <Button startIcon={<AddIcon />} className={styles.newQueueBtn}>New Queue</Button>
         </div>
         <div className={styles.cards}>
@@ -51,13 +51,13 @@ const ViewQueue = () => {
           ))}
         </div>
         <div className={styles.section}>
-          <Typography variant="h4" className={styles.title}>Upcoming</Typography>
+          <h1 className={styles.title}>Upcoming</h1>
         </div>
         <div className={styles.cards}>
           {data.map((d, index) => <QueueCard key={index} title={d.title} location={d.location} courseAdmins={d.courseAdmins} isEdit={d.isEdit}/>)}
         </div>
         <div className={styles.section}>
-          <Typography variant="h4" className={styles.title}>Previous</Typography>
+          <h1 className={styles.title}>Previous</h1>
         </div>
         <div className={styles.cards}>
           {data.map((d, index) => <QueueCard key={index} title={d.title} location={d.location} courseAdmins={d.courseAdmins} seen={d.seen} unseen={d.unseen}/> )}

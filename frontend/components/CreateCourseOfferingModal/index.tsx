@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, SetStateAction } from 'react';
+import { useState, ChangeEvent } from 'react';
 import styles from './CreateCourseQueueModal.module.css';
 import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
@@ -54,7 +54,7 @@ const CreateCourseOfferingModal = () => {
 
   const handleSubmit = () => {
     if (!validate()) return;
-    console.log('input has gone through');
+    console.log(`input has gone through ${input} ${admin}`);
     handleClose();
   };
 
