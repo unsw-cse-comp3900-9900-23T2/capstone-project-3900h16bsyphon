@@ -22,7 +22,10 @@
     width: 100%;
 }
 
-.nameContainer {
-    /* padding-top: 7%; */
-    /* background-color: pink; */
+
+.userPermissions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
 }

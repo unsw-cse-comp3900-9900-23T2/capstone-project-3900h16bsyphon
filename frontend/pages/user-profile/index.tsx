@@ -18,7 +18,7 @@ const userInformation: UserProfileCardProps = {
     lastName: 'Doe',
     isUserAdmin: false,
     tutor: [ 'COMP1521', 'COMP2041' ],
-    courseAdmin: [ ],
+    courseAdmin: [ 'COMP1010' ],
 };
 
 export default function UserProfile() {

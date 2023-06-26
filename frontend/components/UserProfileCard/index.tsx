@@ -1,4 +1,5 @@
 import { Box, Card, CardContent, TextField, CardHeader } from '@mui/material';
+import UserPermissionsBox from '../UserPermissionBox';
 import styles from './UserProfileCard.module.css';
 
 interface UserProfileCardProps {
@@ -50,6 +51,25 @@ export default function UserProfileCard({
             }}
             fullWidth
           />
+          <div
+            className={styles.userPermissions}
+          >
+            {tutor.map( (course, i) =>           
+            <UserPermissionsBox 
+              key={i}
+              permission='Tutor'
+              courseOffering={course}
+            />)}
+
+            {courseAdmin.map( (course, i) =>           
+            <UserPermissionsBox 
+              key={i}
+              permission='Course Admin'
+              courseOffering={course}
+            />)}
+          </div>
+
+
         </CardContent>
       </Card>
     </Box>
