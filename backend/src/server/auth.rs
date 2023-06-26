@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use actix_web::{dev::ServiceRequest, web, HttpMessage, HttpResponse, Responder};
 
 use actix_web_httpauth::extractors::{
@@ -12,6 +10,7 @@ use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait};
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use sha2::Sha256;
 
 use crate::{database_utils::establish_connection, entities, SECRET};
@@ -68,11 +67,7 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
     let pass = credentials.password();
     let zid = match CreateUserBody::verify_zid(credentials.user_id()) {
         Ok(zid) => zid,
-        Err(e) => {
-            let mut errors = HashMap::new();
-            errors.insert("zid", e);
-            return HttpResponse::BadRequest().json(errors);
-        },
+        Err(e) => return HttpResponse::BadRequest().json(json!{{"zid": e}}),
     };
 
     let jwt_secret = Hmac::<Sha256>::new_from_slice(SECRET.as_bytes()).unwrap();
@@ -90,24 +85,16 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
                 });
             let user: user_data::Model = match db_user {
                 Err(e) => return e,
-                Ok(None) => {
-                    let mut errors = HashMap::new();
-                    errors.insert("zid", "user not found");
-                    return HttpResponse::Unauthorized().json(errors)
-                },
+                Ok(None) => return HttpResponse::Unauthorized().json(json!{{"zid": "user not found"}}),
                 Ok(Some(user)) => user,
             };
 
             // Verify Pw Validity
             if let Err(e) = CreateUserBody::verify_password(pass) {
-                let mut errors = HashMap::new();
-                errors.insert("password", e);
-                return HttpResponse::Unauthorized().json(errors);
+                return HttpResponse::BadRequest().json(json!{{"password": e}});
             }
             if user.hashed_pw != hash_pass(pass).unwrap() {
-                let mut errors = HashMap::new();
-                errors.insert("password", "incorrect password");
-                return HttpResponse::Unauthorized().json(errors);
+                return HttpResponse::BadRequest().json(json!{{"password": "incorrect password"}});
             }
 
             // Create Claims Token
@@ -197,19 +184,16 @@ pub struct CreateUserBody {
 
 impl CreateUserBody {
     pub fn verify_user(&self) -> Result<(), HttpResponse> {
-        let first_name_verification = Self::verify_name(&self.first_name);
-        let last_name_verification = Self::verify_name(&self.last_name);
-        let password_verification = Self::verify_password(&self.password);
-        let zid_verification = Self::verify_zid(&self.zid);
-        let mut errors = HashMap::new();
-        errors.insert("first_name", first_name_verification.err());
-        errors.insert("last_name", last_name_verification.err());
-        errors.insert("password", password_verification.err());
-        errors.insert("zid", zid_verification.err());
-        if errors.values().any(|e| e.is_some()) {
-            return Err(HttpResponse::BadRequest().json(errors));
+        let errs = json!({
+            "first_name": Self::verify_name(&self.first_name),
+            "last_name": Self::verify_name(&self.last_name),
+            "password": Self::verify_password(&self.password),
+            "zid": Self::verify_zid(&self.zid),
+        });
+        match errs.as_object().unwrap().iter().all(|(_, v)| v.is_null()) {
+            true => Ok(()),
+            false => Err(HttpResponse::BadRequest().json(errs))
         }
-        Ok(())
     }
 
     pub fn verify_zid(zid: &str) -> Result<i32, String> {
