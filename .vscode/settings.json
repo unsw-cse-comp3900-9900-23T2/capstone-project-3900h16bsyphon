@@ -3,6 +3,7 @@
         "./frontend"
     ],
     "rust-analyzer.linkedProjects": [
-        "./backend/migration/Cargo.toml"
+        "./backend/migration/Cargo.toml",
+        "./backend/Cargo.toml"
     ]
 }
