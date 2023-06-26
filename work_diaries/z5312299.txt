@@ -13,3 +13,7 @@ Week 3:
 
 Week 4:
 - Setup linting for frontend repo
+- Started working on creating the dashboard UI
+
+Week 5:
+- Finished dashboard UI
