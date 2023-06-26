@@ -3,7 +3,7 @@ import styles from './Button.module.css';
 
 const Button = ({ children, ...props }: ButtonProps) => {
   return (
-    <MuiButton className={styles.button} {...props}>
+    <MuiButton className={[styles.button, props.className].join(' ')} {...props}>
       {children}
     </MuiButton>
   );

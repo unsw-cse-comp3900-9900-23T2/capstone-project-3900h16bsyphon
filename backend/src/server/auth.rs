@@ -10,6 +10,7 @@ use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait};
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use sha2::Sha256;
 
 use crate::{database_utils::establish_connection, entities, SECRET};
@@ -66,7 +67,7 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
     let pass = credentials.password();
     let zid = match CreateUserBody::verify_zid(credentials.user_id()) {
         Ok(zid) => zid,
-        Err(e) => return e,
+        Err(e) => return HttpResponse::BadRequest().json(json!{{"zid": e}}),
     };
 
     let jwt_secret = Hmac::<Sha256>::new_from_slice(SECRET.as_bytes()).unwrap();
@@ -84,16 +85,16 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
                 });
             let user: users::Model = match db_user {
                 Err(e) => return e,
-                Ok(None) => return HttpResponse::Unauthorized().body("Bad user/pass"),
+                Ok(None) => return HttpResponse::Unauthorized().json(json!{{"zid": "user not found"}}),
                 Ok(Some(user)) => user,
             };
 
             // Verify Pw Validity
             if let Err(e) = CreateUserBody::verify_password(pass) {
-                return e;
+                return HttpResponse::BadRequest().json(json!{{"password": e}});
             }
             if user.hashed_pw != hash_pass(pass).unwrap() {
-                return HttpResponse::Unauthorized().body("sike, thats the wrong pw");
+                return HttpResponse::BadRequest().json(json!{{"password": "incorrect password"}});
             }
 
             // Create Claims Token
@@ -107,7 +108,7 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
     }
 }
 
-pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
+pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse  {
     let user = body.into_inner();
     if let Err(e) = user.verify_user() {
         log::debug!("failed to verify user:{:?}", e);
@@ -130,8 +131,7 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
     match prev_user_res {
         Err(e) => return e,
         Ok(Some(prev_user)) => {
-            return HttpResponse::BadRequest()
-                .body(format!("User {} already exists", prev_user.zid))
+            return HttpResponse::Conflict().body(format!("User Already Exists: {}", prev_user.zid))
         }
         Ok(_) => {}
     };
@@ -150,26 +150,55 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> impl Responder {
     HttpResponse::Ok().json(created_user)
 }
 
+pub async fn make_admin(zid: &str) {
+    let zid = CreateUserBody::verify_zid(&zid).expect("Admin zid must be valid z0000000");
+    log::info!("Making {} an admin", zid);
+    let db = &establish_connection();
+
+    let user = user_data::Entity::find_by_id(zid)
+        .one(db)
+        .await
+        .map_err(|e| {
+            log::warn!("DB Broke when finding admin ??:\n\t{}", e);
+        })
+        .unwrap()
+        .unwrap();
+
+    user_data::ActiveModel {
+        is_org_admin: ActiveValue::Set(true),
+        ..user.into()
+    }
+    .update(db)
+    .await
+    .expect("Db broke");
+    log::info!("Made {} an admin", zid);
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CreateUserBody {
-    first_name: String,
-    last_name: String,
-    zid: String,
-    password: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub zid: String,
+    pub password: String,
 }
 
 impl CreateUserBody {
     pub fn verify_user(&self) -> Result<(), HttpResponse> {
-        Self::verify_name(&self.first_name)?;
-        Self::verify_name(&self.last_name)?;
-        Self::verify_password(&self.password)?;
-        Self::verify_zid(&self.zid)?;
-        Ok(())
+        let errs = json!({
+            "first_name": Self::verify_name(&self.first_name),
+            "last_name": Self::verify_name(&self.last_name),
+            "password": Self::verify_password(&self.password),
+            "zid": Self::verify_zid(&self.zid),
+        });
+        match errs.as_object().unwrap().iter().all(|(_, v)| v.is_null()) {
+            true => Ok(()),
+            false => Err(HttpResponse::BadRequest().json(errs))
+        }
     }
 
-    pub fn verify_zid(zid: &str) -> Result<i32, HttpResponse> {
+    pub fn verify_zid(zid: &str) -> Result<i32, String> {
         if !zid.chars().all(|c| c.is_ascii_alphanumeric()) {
-            return Err(HttpResponse::BadRequest().body("zid must be ascii alphanumeric only"));
+            return Err("zid must be ascii alphanumeric only".to_string());
         }
         let zid = zid.as_bytes();
         let zid = match zid.get(0) {
@@ -177,46 +206,44 @@ impl CreateUserBody {
             _ => zid,
         };
         if zid.len() != 7 {
-            return Err(HttpResponse::BadRequest().body(format!(
-                "zid must be 7 chars. Got: {:?}, len = {}: {}",
-                zid,
-                zid.len(),
-                std::str::from_utf8(zid).unwrap(),
-            )));
+            return Err(format!(
+                "zid must have 7 numbers. Got zid with {} numbers",
+                zid.len()
+            ));
         }
         std::str::from_utf8(zid)
             .expect("Was ascii before")
             .parse::<u32>()
-            .map_err(|_| HttpResponse::BadRequest().body("zid wont parse to number"))
+            .map_err(|_| "zid must be z followed by numbers".to_string())
             .map(|z| z as i32)
     }
 
-    fn verify_name(name: &str) -> Result<(), HttpResponse> {
+    fn verify_name(name: &str) -> Result<(), String> {
         match name {
             n if !(3..=16).contains(&n.len()) => {
-                Err(HttpResponse::BadRequest().body("name too short"))
+                Err("name too short".to_string())
             }
-            n if !n.chars().all(|c| c.is_ascii_alphabetic() && c != ' ') => {
-                Err(HttpResponse::BadRequest().body("name must be alphanumeric or space"))
+            n if !n.chars().all(|c| c.is_ascii_alphabetic()) => {
+                Err("name must be alphanumeric or space".to_string())
             }
             _ => Ok(()),
         }
     }
 
-    fn verify_password(pass: &str) -> Result<(), HttpResponse> {
+    fn verify_password(pass: &str) -> Result<(), String> {
         match pass {
             p if !(8..=28).contains(&p.len()) => {
-                Err(HttpResponse::BadRequest().body("password must be 8 chars"))
+                Err("password must be 8 chars".to_string())
             }
-            p if !p.is_ascii() => Err(HttpResponse::BadRequest().body("password must be ascii")),
+            p if !p.is_ascii() => Err("password must be ascii".to_string()),
             p if !p.chars().any(|c| c.is_ascii_uppercase()) => {
-                Err(HttpResponse::BadRequest().body("password must have uppercase"))
+                Err("password must have uppercase".to_string())
             }
             p if !p.chars().any(|c| c.is_ascii_lowercase()) => {
-                Err(HttpResponse::BadRequest().body("password must have lowercase"))
+                Err("password must have lowercase".to_string())
             }
             p if !p.chars().any(|c| c.is_ascii_digit()) => {
-                Err(HttpResponse::BadRequest().body("password must have digit"))
+                Err("password must have digit".to_string())
             }
             _ => Ok(()),
         }

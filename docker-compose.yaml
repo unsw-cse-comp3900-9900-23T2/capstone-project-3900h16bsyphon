@@ -9,6 +9,8 @@ services:
       - '3000:3000'
     env_file:
       - ./frontend/.env
+    environment:
+      - BACKEND_HOST=backend
     volumes:
       # Bind mount volume for live frontend updates while developing
       - ./frontend/src:/client/src

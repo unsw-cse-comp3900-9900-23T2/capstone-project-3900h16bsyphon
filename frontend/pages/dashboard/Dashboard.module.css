@@ -1,0 +1,67 @@
+.courseOffering {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex: 1;
+  width: 100%;
+  gap: 64%;
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+
+.section {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex: 1;
+  width: 100%;
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Lato', sans-serif;
+  width: 90%;
+  margin: 0 auto;
+  padding-top: 30px;
+  background-color: #f2f2f2;
+  padding-bottom: 80px;
+}
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 auto;
+  height: 100%;
+  background-color: #f2f2f2;
+}
+
+.cards {
+  display: grid;
+  /* TODO: clean up styles */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.tutorSection, .studentSection {
+  width: 100%;
+  margin-top: 50px;
+}
+
+.createOfferingBtn {
+  font-family: 'Lato', sans-serif;
+  background-color: var(--colour-main-purple-200);
+  color: var(--colour-main-purple-900);
+}
+
+.createOfferingBtn:hover {
+  background-color: var(--colour-main-purple-400);
+  color: var(--colour-main-purple-900);
+}
+
+.heading {
+  margin: 0 auto;
+}

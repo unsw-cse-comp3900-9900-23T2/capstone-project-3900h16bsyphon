@@ -1,0 +1,39 @@
+.main {
+  flex: 1;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  width: 70%;
+  justify-self: center;
+}
+
+.container {
+    display: flex;
+}
+
+.title {
+  margin-top: 5vh;
+  font-size: 100px;
+  margin-bottom: 3vh;
+  font-weight: 600;
+}
+
+.error {
+  color: red;
+}
+
+.form {
+  padding-top: 5vh;
+  display: flex;
+  padding-bottom: 5vh;
+  row-gap: 2vh;
+}
+
+.accountText {
+  margin-top: 5vh;
+}
+
+.logIn {
+  color: #122c9e;
+  text-decoration-line: underline;
+}
