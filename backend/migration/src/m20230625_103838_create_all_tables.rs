@@ -207,22 +207,22 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(Logs::Table)
+                    .table(RequestStatusLog::Table)
                     .if_not_exists()
                     .col(
-                        ColumnDef::new(Logs::LogId)
+                        ColumnDef::new(RequestStatusLog::LogId)
                             .integer()
                             .not_null()
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Logs::RequestId).integer().not_null())
-                    .col(ColumnDef::new(Logs::Status).enumeration(Statuses::Table, Statuses::iter().skip(1)))
-                    .col(ColumnDef::new(Logs::EventTime).date_time().not_null())
+                    .col(ColumnDef::new(RequestStatusLog::RequestId).integer().not_null())
+                    .col(ColumnDef::new(RequestStatusLog::Status).enumeration(Statuses::Table, Statuses::iter().skip(1)))
+                    .col(ColumnDef::new(RequestStatusLog::EventTime).date_time().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .to(Requests::Table, Requests::RequestId)
-                            .from(Logs::Table, Logs::RequestId),
+                            .from(RequestStatusLog::Table, RequestStatusLog::RequestId),
                     )
                     .to_owned(),
             )
@@ -396,7 +396,7 @@ impl MigrationTrait for Migration {
             .drop_table(Table::drop().table(Clusters::Table).to_owned())
             .await?;
         manager
-            .drop_table(Table::drop().table(Logs::Table).to_owned())
+            .drop_table(Table::drop().table(RequestStatusLog::Table).to_owned())
             .await?;
         manager
             .drop_table(Table::drop().table(Requests::Table).to_owned())
@@ -492,7 +492,7 @@ enum Faqs {
 }
 
 #[derive(Iden)]
-enum Logs {
+enum RequestStatusLog {
     Table,
     LogId,
     RequestId,

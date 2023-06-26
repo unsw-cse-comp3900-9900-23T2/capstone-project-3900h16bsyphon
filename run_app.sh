@@ -24,7 +24,7 @@ docker compose up -d database
 cd backend
 
 # run pending migrations
-cargo run --manifest-path ./migration/Cargo.toml -- migrate
+cargo run --manifest-path ./migration/Cargo.toml -- up
 
 # must have cargo, and cargo-watch
 cargo watch -x run &

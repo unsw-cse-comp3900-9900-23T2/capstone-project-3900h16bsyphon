@@ -153,9 +153,9 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse  {
 pub async fn make_admin(zid: &str) {
     let zid = CreateUserBody::verify_zid(&zid).expect("Admin zid must be valid z0000000");
     log::info!("Making {} an admin", zid);
-    let db = &establish_connection();
+    let db = &db_connection().await;
 
-    let user = user_data::Entity::find_by_id(zid)
+    let user = users::Entity::find_by_id(zid)
         .one(db)
         .await
         .map_err(|e| {
@@ -164,7 +164,7 @@ pub async fn make_admin(zid: &str) {
         .unwrap()
         .unwrap();
 
-    user_data::ActiveModel {
+    users::ActiveModel {
         is_org_admin: ActiveValue::Set(true),
         ..user.into()
     }
@@ -190,7 +190,7 @@ impl CreateUserBody {
             "password": Self::verify_password(&self.password),
             "zid": Self::verify_zid(&self.zid),
         });
-        match errs.as_object().unwrap().iter().all(|(_, v)| v.is_null()) {
+        match errs.as_object().unwrap().iter().all(|(_, v)| v.is_object() && v.as_object().unwrap().contains_key("Ok")) {
             true => Ok(()),
             false => Err(HttpResponse::BadRequest().json(errs))
         }

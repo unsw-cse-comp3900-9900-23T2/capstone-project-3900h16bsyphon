@@ -3,11 +3,11 @@
 pub use super::clusters::Entity as Clusters;
 pub use super::course_offerings::Entity as CourseOfferings;
 pub use super::faqs::Entity as Faqs;
-pub use super::logs::Entity as Logs;
 pub use super::messages::Entity as Messages;
 pub use super::queue_tutors::Entity as QueueTutors;
 pub use super::queues::Entity as Queues;
 pub use super::request_images::Entity as RequestImages;
+pub use super::request_status_log::Entity as RequestStatusLog;
 pub use super::request_tags::Entity as RequestTags;
 pub use super::requests::Entity as Requests;
 pub use super::tags::Entity as Tags;

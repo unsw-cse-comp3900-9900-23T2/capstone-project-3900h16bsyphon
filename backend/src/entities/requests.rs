@@ -22,8 +22,6 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::clusters::Entity")]
     Clusters,
-    #[sea_orm(has_many = "super::logs::Entity")]
-    Logs,
     #[sea_orm(has_many = "super::messages::Entity")]
     Messages,
     #[sea_orm(
@@ -36,6 +34,8 @@ pub enum Relation {
     Queues,
     #[sea_orm(has_many = "super::request_images::Entity")]
     RequestImages,
+    #[sea_orm(has_many = "super::request_status_log::Entity")]
+    RequestStatusLog,
     #[sea_orm(
         belongs_to = "super::users::Entity",
         from = "Column::Zid",
@@ -49,12 +49,6 @@ pub enum Relation {
 impl Related<super::clusters::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Clusters.def()
-    }
-}
-
-impl Related<super::logs::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Logs.def()
     }
 }
 
@@ -73,6 +67,12 @@ impl Related<super::queues::Entity> for Entity {
 impl Related<super::request_images::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::RequestImages.def()
+    }
+}
+
+impl Related<super::request_status_log::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::RequestStatusLog.def()
     }
 }
 
