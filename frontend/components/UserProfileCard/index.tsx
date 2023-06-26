@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, TextField, CardHeader } from '@mui/material';
+import { Box, Card, CardContent, TextField, Typography } from '@mui/material';
 import UserPermissionsBox from '../UserPermissionBox';
 import styles from './UserProfileCard.module.css';
 
@@ -22,54 +22,80 @@ export default function UserProfileCard({
   return (
     <Box className={styles.cardBox}>
       <Card className={styles.cardContainer}>
-        <CardHeader className={styles.cardHeader} title="Account Information" />
-        <CardContent className={styles.cardContent}>
-          <TextField
-            id="outlined-read-only-input"
-            label="zID"
-            defaultValue={zid}
-            InputProps={{
-              readOnly: true,
-            }}
-            fullWidth
-          />
-          <TextField
-            id="outlined-read-only-input"
-            label="First Name"
-            defaultValue={firstName}
-            InputProps={{
-              readOnly: true,
-            }}
-            fullWidth
-          />
-          <TextField
-            id="outlined-read-only-input"
-            label="Last Name"
-            defaultValue={lastName}
-            InputProps={{
-              readOnly: true,
-            }}
-            fullWidth
-          />
-          <div
-            className={styles.userPermissions}
-          >
-            {tutor.map( (course, i) =>           
-            <UserPermissionsBox 
-              key={i}
-              permission='Tutor'
-              courseOffering={course}
-            />)}
+        <div className={styles.cardHeader}>
+          <Typography className={styles.text} variant="h4">
+            Account Information
+          </Typography>
+        </div>
 
-            {courseAdmin.map( (course, i) =>           
-            <UserPermissionsBox 
-              key={i}
-              permission='Course Admin'
-              courseOffering={course}
-            />)}
+        <CardContent className={styles.cardContent}>
+          <div>
+            <Typography className={styles.text} variant="subtitle1">
+              zID
+            </Typography>
+            <TextField
+              className={styles.text}
+              id="outlined-read-only-input"
+              defaultValue={zid}
+              InputProps={{
+                readOnly: true,
+              }}
+              fullWidth
+            />
           </div>
 
+          <div>
+            <Typography className={styles.text} variant="subtitle1">
+              First Name
+            </Typography>
+            <TextField
+              className={styles.text}
+              id="outlined-read-only-input"
+              defaultValue={firstName}
+              InputProps={{
+                readOnly: true,
+              }}
+              fullWidth
+            />
+          </div>
 
+          <div>
+            <Typography className={styles.text} variant="subtitle1">
+              Last Name
+            </Typography>
+            <TextField
+              className={styles.text}
+              id="outlined-read-only-input"
+              defaultValue={lastName}
+              InputProps={{
+                readOnly: true,
+              }}
+              fullWidth
+            />
+          </div>
+
+          <div className={styles.coursePermissionHeading}>
+            <Typography className={styles.text} variant="h5">
+              Course Permissions
+            </Typography>
+          </div>
+          <div className={styles.userPermissions}>
+            {tutor.map((course, i) => (
+              <UserPermissionsBox
+                key={i}
+                permission="Tutor"
+                courseOffering={course}
+              />
+            ))}
+
+            {courseAdmin.map((course, i) => (
+              <UserPermissionsBox
+                key={i}
+                permission="Course Admin"
+                courseOffering={course}
+              />
+            ))}
+          </div>
         </CardContent>
       </Card>
     </Box>

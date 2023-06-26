@@ -2,10 +2,15 @@
 
 .cardBox {
     width: 35%;
+    font-family: 'Lato';
 }
 
 .cardHeader {
     padding: 25px 0px;
+}
+
+.text {
+    font-family: 'Lato';
 }
 
 .cardContainer {
@@ -27,4 +32,9 @@
     flex-direction: column;
     gap: 10px;
     width: 100%;
+}
+
+.coursePermissionHeading {
+    padding-top: 10px;
+    padding-left: 10px;
 }

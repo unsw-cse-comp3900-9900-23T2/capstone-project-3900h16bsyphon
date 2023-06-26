@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, TextField, CardHeader } from '@mui/material';
+import { Box } from '@mui/material';
 import styles from './UserPermissionBox.module.css';
 
 interface UserPermissionsBoxProps {
