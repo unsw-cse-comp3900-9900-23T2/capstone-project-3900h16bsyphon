@@ -1,0 +1,45 @@
+.newQueueBtn {
+  font-family: 'Lato', sans-serif;
+  background-color: var(--colour-main-purple-200);
+  color: var(--colour-main-purple-900);
+}
+
+.newQueueBtn:hover {
+  background-color: var(--colour-main-purple-400);
+  color: var(--colour-main-purple-900);
+}
+
+.title {
+  font-family: 'Lato', sans-serif;
+}
+
+.container { 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.section {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex: 1;
+  width: 90%;
+  gap: 85%;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.heading {
+  margin: 0 auto;
+}
+
+.cards {
+  display: grid;
+  /* TODO: clean up styles */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: 90%;
+}

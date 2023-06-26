@@ -1,0 +1,59 @@
+.heading {
+  font-family: 'Lato', sans-serif;
+  color: black;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.card {
+  background-color: white;
+}
+
+.courseAdminChip {
+  font-family: 'Lato', sans-serif;
+  background-color: var(--colour-main-purple-200);
+  color: var(--colour-main-purple-900);
+}
+
+.locationChip {
+  font-family: 'Lato', sans-serif;
+  background-color: var(--colour-main-yellow-300);
+  color: white;
+}
+
+.chipContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 3px;
+}
+
+.unseenChip {
+  font-family: 'Lato', sans-serif;
+  background-color: var(--colour-main-red-200);
+  color: var(--colour-main-red-900);
+}
+
+.seenChip {
+  font-family: 'Lato', sans-serif;
+  background-color: var(--colour-main-green-200);
+  color: var(--colour-main-green-900);
+}
+
+.cardAction {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 52%;
+  flex: 1;
+}
+
+.editBtn {
+  font-family: 'Lato', sans-serif;
+  background-color: var(--colour-main-blue-200);
+  color: var(--colour-main-blue-900);
+  margin-left: auto;
+}
+
+.editBtn:hover {
+  background-color: var(--colour-main-blue-400);
+}
