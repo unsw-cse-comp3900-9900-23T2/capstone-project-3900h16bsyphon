@@ -16,6 +16,7 @@ async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
     startup_logger();
     std::env::var("SECRET").expect("SECRET must be set");
+    register_org_admins().await;
 
     // Auth middleware
     let amw = HttpAuthentication::bearer(validator);
