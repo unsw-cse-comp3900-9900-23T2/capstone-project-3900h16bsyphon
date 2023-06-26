@@ -83,7 +83,7 @@ const AddCoursePermissionsModal = ({
             <Select
               multiple
               displayEmpty
-              value={tutorPermissionList}
+              value={tutorPermissionList as unknown as string}
               onChange={handleChange}
               input={<OutlinedInput />}
               renderValue={(selected) => {
@@ -91,7 +91,7 @@ const AddCoursePermissionsModal = ({
                   return <em>Select courses</em>;
                 }
 
-                return selected.join(', ');
+                return (selected as unknown as string[]).join(', ');
               }}
               inputProps={{ 'aria-label': 'Without label' }}
             >
