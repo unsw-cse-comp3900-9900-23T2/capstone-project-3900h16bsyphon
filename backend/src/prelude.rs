@@ -1,10 +1,8 @@
 //! This file contains all the prelude imports for the project.
 //! Helps in keeping `main.rs` clean.
 
-use std::thread;
 
-use actix_web::{web::Json, HttpResponse};
-use futures::executor::block_on;
+use actix_web::web::Json;
 /// Secret used to hash passwords.
 /// Requires `SECRET` to be set as and environemnt variable or in
 /// a `.env` file in the root of the project, or a parent folder.
