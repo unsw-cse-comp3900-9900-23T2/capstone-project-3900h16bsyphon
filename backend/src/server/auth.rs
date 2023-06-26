@@ -107,9 +107,7 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
     }
 }
 
-pub async fn create_user(
-    body: web::Json<CreateUserBody>,
-) -> HttpResponse<actix_web::body::BoxBody> {
+pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse  {
     let user = body.into_inner();
     if let Err(e) = user.verify_user() {
         log::debug!("failed to verify user:{:?}", e);
