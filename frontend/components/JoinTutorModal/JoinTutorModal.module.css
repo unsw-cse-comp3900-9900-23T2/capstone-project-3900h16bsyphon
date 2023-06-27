@@ -6,16 +6,17 @@
   width: 25%;
   background-color: whitesmoke;
   box-shadow: 24px;
-  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 40px;
-  font-family: 'Lato', sans-serif;
+    font-family: 'Lato', sans-serif;
+, sans-serif;
 }
 
 .joinAsTutorBtn {
-  font-family: 'Lato', sans-serif;
+    font-family: 'Lato', sans-serif;
+, sans-serif;
   background-color: var(--colour-main-purple-200);
   color: var(--colour-main-purple-900);
 }
@@ -25,13 +26,14 @@
 }
 
 .joinBtn {
-  font-family: 'Lato', sans-serif;
+    font-family: 'Lato', sans-serif;
+, sans-serif;
   background-color: var(--colour-main-blue-600);
   color: white;
 }
 
 .joinBtn:hover {
-  background-color: #2748B6;
+  background-color: #2748b6;
 }
 
 .titleContainer {

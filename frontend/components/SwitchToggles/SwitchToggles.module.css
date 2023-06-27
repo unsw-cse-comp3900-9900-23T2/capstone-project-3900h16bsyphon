@@ -1,0 +1,10 @@
+.switchToggles {
+  width: 100%;
+  max-width: 1000px;
+  align-self: top;
+  align-items: baseline;
+  margin-top: 1em;
+  margin-right: 0;
+  gap: 1em;
+}
+

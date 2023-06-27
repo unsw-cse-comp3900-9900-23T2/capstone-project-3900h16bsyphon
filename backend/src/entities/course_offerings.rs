@@ -11,7 +11,9 @@ pub struct Model {
     pub course_code: String,
     pub title: String,
     pub tutor_invite_code: Option<String>,
+    pub start_date: Date,
 }
+
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
