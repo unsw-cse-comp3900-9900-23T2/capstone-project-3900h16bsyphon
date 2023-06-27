@@ -57,6 +57,7 @@ dependencies = [
  "jwt",
  "log",
  "rand",
+ "regex",
  "rust-argon2",
  "sea-orm",
  "serde",

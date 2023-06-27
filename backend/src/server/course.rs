@@ -1,7 +1,12 @@
-use actix_web::{web::{self, ReqData}, HttpResponse};
+use actix_web::{
+    web::{self, ReqData},
+    HttpResponse,
+};
 use rand::Rng;
+use regex::Regex;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 use crate::{database_utils::db_connection, entities};
 
@@ -26,6 +31,7 @@ pub async fn create_offering(
         .one(db)
         .await;
 
+    // Validate Admin Perms
     match user {
         Ok(Some(user)) => {
             if !user.is_org_admin {
@@ -34,10 +40,16 @@ pub async fn create_offering(
         }
         Ok(None) => return HttpResponse::Forbidden().body("u no exist"),
         Err(e) => {
-            log::warn!("Db broke?");
+            log::warn!("Db broke?: {:?}", e);
             return HttpResponse::InternalServerError().body("Db broke?");
         }
     };
+
+    // Validate Course Data
+    if let Err(e) = body.validate() {
+        return e;
+    }
+
     // Create Course
     let body = body.into_inner();
     let active_course = entities::course_offerings::ActiveModel {
@@ -45,7 +57,7 @@ pub async fn create_offering(
         course_code: ActiveValue::Set(body.course_code),
         title: ActiveValue::Set(body.title),
         tutor_invite_code: ActiveValue::Set(Some(gen_unique_inv_code().await)),
-        start_date: ActiveValue::Set(body.start_date.unwrap_or_else(today))
+        start_date: ActiveValue::Set(body.start_date.unwrap_or_else(today)),
     };
 
     let course = active_course.insert(db).await.expect("Db broke");
@@ -82,7 +94,37 @@ fn gen_inv_code() -> String {
         .collect()
 }
 
+impl CreateOfferingBody {
+    fn validate(&self) -> Result<(), HttpResponse> {
+        let errs = json!({
+            "course_code": Self::validate_code(&self.course_code).err(),
+            "title": Self::validate_title(&self.title).err(),
+        });
+        if errs.as_object().unwrap().values().any(|v| v.is_null()) {
+            return Err(HttpResponse::BadRequest().json(errs));
+        }
+        Ok(())
+    }
 
+    fn validate_title(title: &str) -> Result<(), String> {
+        if title.chars().any(|c| !c.is_ascii_alphanumeric() && !c.is_ascii_punctuation() && c != ' ') {
+            return Err(String::from("Only alphanumeric characters, spaces, and punctuation allowed"));
+        }
+        if !(3..=26).contains(&title.len()) {
+            return Err(String::from("Title must be between 3 and 26 characters"));
+        }
+        Ok(())
+    }
+
+    fn validate_code(code: &str) -> Result<(), String> {
+        if Regex::new("^[A-Z]{4}[0-9]{4}$").unwrap().is_match(code) {
+            return Err(String::from(
+                "Invalid Course Code. Must Match ^[A-Z]{4}[0-9]{4}$",
+            ));
+        }
+        Ok(())
+    }
+}
 
 /// Generate today's date in UTC as a NaiveDate
 pub fn today() -> NaiveDate {
