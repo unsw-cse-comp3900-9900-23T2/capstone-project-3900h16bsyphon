@@ -10,25 +10,25 @@
   flex-direction: column;
   gap: 20px;
   padding: 40px;
-  font-family: 'Lato', sans-serif;
+  font-family: Lato, sans-serif;
 }
 
 .button {
-  font-family: 'Lato', sans-serif;
+  font-family: Lato, sans-serif;
 }
 
 .title {
-  font-family: 'Lato', sans-serif;
+  font-family: Lato, sans-serif;
 }
 
 .doneBtn {
-  font-family: 'Lato', sans-serif;
+  font-family: Lato, sans-serif;
   background-color: var(--colour-main-blue-600);
   color: white;
 }
 
 .doneBtn:hover {
-  background-color: #2748B6;
+  background-color: #2748b6;
 }
 
 .titleContainer {

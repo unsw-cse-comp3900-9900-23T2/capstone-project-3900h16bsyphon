@@ -73,17 +73,16 @@
 .whatWeOfferDescription {
   color: var(--colour-main-blue-400);
   margin-bottom: 8vh;
-  font-size: 16px; 
+  font-size: 16px;
 }
 
 .featureGrid {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-flow: row wrap;
 }
 
 @media only screen and (max-width: 1500px) {
   .homeImage {
-      display: none;
+    display: none;
   }
 }

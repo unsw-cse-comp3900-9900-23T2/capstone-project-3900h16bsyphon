@@ -22,7 +22,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-family: 'Lato', sans-serif;
+  font-family: Lato, sans-serif;
   width: 90%;
   margin: 0 auto;
   padding-top: 30px;
@@ -40,13 +40,15 @@
 
 .cards {
   display: grid;
+
   /* TODO: clean up styles */
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   width: 100%;
 }
 
-.tutorSection, .studentSection {
+.tutorSection,
+.studentSection {
   width: 100%;
   margin-top: 50px;
 }

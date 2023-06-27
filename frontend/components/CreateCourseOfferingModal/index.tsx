@@ -8,6 +8,11 @@ import AddIcon from '@mui/icons-material/Add';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs, { Dayjs } from 'dayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 const data = ['Hussain', 'Peter', 'Joanna'];
 
@@ -18,6 +23,7 @@ const CreateCourseOfferingModal = () => {
   const [error, setError] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [admin, setAdmin] = useState('');
+  const [date, setDate] = useState<Dayjs | null>(dayjs(new Date()));
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -25,6 +31,7 @@ const CreateCourseOfferingModal = () => {
     setError(false);
     setErrorMsg('');
     setInputLength(0);
+    setDate(dayjs(new Date()));
     setOpen(false);
   };
 
@@ -38,22 +45,21 @@ const CreateCourseOfferingModal = () => {
   const validate = () => {
     if (inputLength >= 25) {
       setErrorMsg('Course title must be less than 25 words');
-      setError(true);
       return false;
     } else if (inputLength === 0) {
       setErrorMsg('Course title cannot be empty');
-      setError(true);
       return false;
     } else if (admin.length === 0) {
       setErrorMsg('Admin field cannot be empty');
-      setError(true);
       return false;
     }
     return true;
   };
 
   const handleSubmit = () => {
-    if (!validate()) return;
+    const validation = validate();
+    setError(!validation);
+    if (!validation) return;
     console.log(`input has gone through ${input} ${admin}`);
     handleClose();
   };
@@ -94,13 +100,18 @@ const CreateCourseOfferingModal = () => {
             <p>Word count: {inputLength}</p>
           </div>
           <TextField value={input} onChange={handleInputChange} multiline rows={4}/>
+          <p>Start date</p>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DemoContainer components={['DatePicker']}>
+              <DatePicker defaultValue={date ? date : undefined} onChange={(e) => setDate(e)} />
+            </DemoContainer>
+          </LocalizationProvider>
           <p>Admins</p>
           <Autocomplete
             multiple
             id="tags-standard"
             options={data}
             getOptionLabel={(option) => option}
-            // i hate typescript
             onChange={() => handleAdminChange(event as unknown as ChangeEvent<HTMLInputElement>)}
             renderInput={(params) => (
               <TextField
