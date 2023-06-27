@@ -189,6 +189,7 @@ impl CreateUserBody {
             "password": Self::verify_password(&self.password),
             "zid": Self::verify_zid(&self.zid),
         });
+        let errs = dbg!(errs);
         match errs
             .as_object()
             .unwrap()

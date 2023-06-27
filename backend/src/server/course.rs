@@ -1,6 +1,7 @@
-use actix_web::{web, HttpResponse};
+use actix_web::{web::{self, ReqData}, HttpResponse};
 use rand::Rng;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter};
+use serde::{Serialize, Deserialize};
 
 use crate::{database_utils::db_connection, entities};
 
@@ -8,14 +9,15 @@ use chrono::NaiveDate;
 
 use super::auth::TokenClaims;
 
-struct CreateOfferingBody {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateOfferingBody {
     course_code: String,
     title: String,
     start_date: Option<NaiveDate>,
 }
 
 pub async fn create_offering(
-    token: TokenClaims,
+    token: ReqData<TokenClaims>,
     body: web::Json<CreateOfferingBody>,
 ) -> HttpResponse {
     let creator_id = token.username;
