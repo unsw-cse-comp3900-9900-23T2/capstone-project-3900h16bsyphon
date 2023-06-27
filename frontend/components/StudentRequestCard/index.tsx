@@ -1,14 +1,10 @@
 import React, { useEffect } from 'react';
-import { 
-  Box, 
+import {  
   Card, 
   CardContent, 
   Typography, 
-  Button, 
 } from '@mui/material';
 import styles from './StudentRequestCard.module.css';
-
-import { useRouter } from 'next/router';
 import TagBox from '../TagBox';
 
 interface StudentRequestCardProps {

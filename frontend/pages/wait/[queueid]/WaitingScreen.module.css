@@ -4,6 +4,10 @@
     align-items: center;
 }
 
+.text {
+    font-family: Lato;
+}
+
 .cardBox {
     padding: 0px 50px;
     font-family: 'Lato';
@@ -13,50 +17,7 @@
     gap: 25px;
 }
 
-.zidNameContainer {
-    display: flex;
-    gap: 10px;
-}
-
-.previousRequestsContainer {
-    display: flex;
-}
-
-.cardHeader {
-    display: flex;
-    justify-content: space-between;
-}
-
 .queueTitle {
     padding: 25px 0px;
 }
 
-.text {
-    font-family: 'Lato';
-}
-
-.textHeading {
-    font-family: 'Lato';
-    font-weight: bold;
-}
-
-.cardContainer {
-    flex-direction: column;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 15px 35px;
-}
-
-.cardContent {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-    width: 100%;
-}
-
-.tagContainer {
-    display: flex;
-    gap: 5px;
-    width: 100%;
-}

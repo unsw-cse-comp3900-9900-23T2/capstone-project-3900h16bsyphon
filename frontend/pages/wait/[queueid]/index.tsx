@@ -1,15 +1,12 @@
 import React, { useEffect } from 'react';
 import { 
   Box, 
-  Card, 
-  CardContent, 
   Typography, 
   Button, 
 } from '@mui/material';
 import styles from './WaitingScreen.module.css';
 
 import { useRouter } from 'next/router';
-import TagBox from '../../../components/TagBox';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 
 const requestData = {
