@@ -1,5 +1,9 @@
 use actix_cors::Cors;
-use actix_web::{middleware, web, App, HttpServer, http};
+use actix_web::{
+    http, middleware,
+    web,
+    App, HttpServer,
+};
 use actix_web_httpauth::middleware::HttpAuthentication;
 
 pub mod database_utils;
@@ -23,15 +27,15 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         let cors = Cors::default()
-              .allowed_origin("http://localhost:3000")
-              .allowed_origin("http://127.0.0.1:3000")
-              .allowed_origin("http://frontend:3000")
-              .allowed_methods(vec!["GET", "POST"])
-              .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
-              .allowed_header(http::header::CONTENT_TYPE)
-              .expose_headers(&[actix_web::http::header::CONTENT_DISPOSITION])
-              .supports_credentials()
-              .max_age(3600);
+            .allowed_origin("http://localhost:3000")
+            .allowed_origin("http://127.0.0.1:3000")
+            .allowed_origin("http://frontend:3000")
+            .allowed_methods(vec!["GET", "POST"])
+            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+            .allowed_header(http::header::CONTENT_TYPE)
+            .expose_headers(&[actix_web::http::header::CONTENT_DISPOSITION])
+            .supports_credentials()
+            .max_age(3600);
         App::new()
             .wrap(middleware::Logger::default())
             .wrap(cors)
@@ -42,6 +46,12 @@ async fn main() -> std::io::Result<()> {
             .route(
                 "/auth/hello",
                 web::get().to(server::hello).wrap(amw.clone()),
+            )
+            .route(
+                "/course/create_offering",
+                web::post()
+                    .to(server::course::create_offering)
+                    .wrap(amw.clone()),
             )
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
