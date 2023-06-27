@@ -1,8 +1,7 @@
 .footer {
   width: 100%;
   background-color: #e7ecff;
-    font-family: 'Lato', sans-serif;
-, sans-serif;
+  font-family: 'Lato', sans-serif;
   display: flex;
   flex-direction: row;
   gap: 73%;

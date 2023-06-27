@@ -1,6 +1,5 @@
 .createOfferingBtn {
     font-family: 'Lato', sans-serif;
-, sans-serif;
   background-color: var(--colour-main-purple-200);
   color: var(--colour-main-purple-900);
 }
@@ -23,22 +22,18 @@
   gap: 20px;
   padding: 40px;
     font-family: 'Lato', sans-serif;
-, sans-serif;
 }
 
 .button {
     font-family: 'Lato', sans-serif;
-, sans-serif;
 }
 
 .title {
     font-family: 'Lato', sans-serif;
-, sans-serif;
 }
 
 .createBtn {
     font-family: 'Lato', sans-serif;
-, sans-serif;
   background-color: var(--colour-main-blue-600);
   color: white;
 }

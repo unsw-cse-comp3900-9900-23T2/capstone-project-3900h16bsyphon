@@ -15,9 +15,8 @@ const Header = () => {
         <Link href="/dashboard">Syphon</Link>
       </h1>
       <div className={styles.right}>
-        {/* TODO: replace with actual user profile route */}
         <NotificationsModal />
-        <Avatar onClick={() => router.push('/user')}>
+        <Avatar onClick={() => router.push('/user-profile')}>
           <PersonIcon />
         </Avatar>
         {/* TODO: replace with actual logout functionality */}
