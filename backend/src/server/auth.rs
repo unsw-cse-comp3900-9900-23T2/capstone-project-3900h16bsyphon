@@ -187,7 +187,7 @@ impl CreateUserBody {
             "first_name": Self::verify_name(&self.first_name).err(),
             "last_name": Self::verify_name(&self.last_name).err(),
             "password": Self::verify_password(&self.password).err(),
-            "zid": Self::verify_zid(&self.zid),
+            "zid": Self::verify_zid(&self.zid).err(),
         });
         match errs.as_object().unwrap().iter().all(|(_, v)| v.is_null()) {
             true => Ok(()),
