@@ -40,6 +40,10 @@ export default function CreateRequest() {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [titleWordCount, setTitleWordCount] = useState(0);
+
+  const [description, setDescription] = useState('');
+  const [descriptionWordCount, setDescriptionWordCount] = useState(0);
+
   const [isClusterable, setIsClusterable] = useState(false);
 
   const [tagList, setTagList] = useState<string[]>([]);
@@ -67,6 +71,14 @@ export default function CreateRequest() {
       setTitleWordCount(title.trim().split(' ').length);
     }
   }, [title]);
+
+  useEffect(() => {
+    if (description.trim() === '') {
+      setDescriptionWordCount(0);
+    } else  {
+      setDescriptionWordCount(description.trim().split(' ').length);
+    }
+  }, [description]);
 
   return (
     <div className={styles.pageContainer} >
@@ -106,13 +118,17 @@ export default function CreateRequest() {
                   Description
                 </Typography>
                 <Typography className={styles.text} variant="subtitle1">
-                  {titleWordCount} words
+                  {(MIN_DESCRIPTION - descriptionWordCount) < 0 ? 0 : MIN_DESCRIPTION - descriptionWordCount} more words required
                 </Typography>
               </div>
               <TextField
                 multiline
                 rows={4}
                 className={styles.text}
+                value={description}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  setDescription(event.target.value);
+                }}
                 placeholder='Give a detailed description of the issue. Include any error messages and what you have done so far to try and solve this.'
                 id="outlined-input"
                 fullWidth
