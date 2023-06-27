@@ -10,6 +10,7 @@ import styles from './WaitingScreen.module.css';
 
 import { useRouter } from 'next/router';
 import TagBox from '../../../components/TagBox';
+import StudentRequestCard from '../../../components/StudentRequestCard';
 
 const requestData = {
   zid: 'z5303033',
@@ -42,41 +43,15 @@ const WaitingScreen = () => {
           <div>
             <Button variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
           </div>
-          <Card className={styles.cardContainer}>
-            <CardContent className={styles.cardContent}>
-              <div className={styles.cardHeader}>
-                <div className={styles.zidNameContainer}>
-                  <div>
-                    <TagBox text={requestData.zid} backgroundColor='#D5CFFF' color='#3E368F' />
-                  </div>
-                  <div>
-                    <Typography className={styles.textHeading} variant='h6'>
-                      {requestData.firstName + ' ' + requestData.lastName}
-                    </Typography>
-                  </div>
-                </div>
-                <div className={styles.previousRequestsContainer}>
-                  <TagBox text={'PREVIOUS TOTAL REQUESTS: ' + requestData.previousRequests} backgroundColor='#D5CFFF' color='#3E368F' />
-                </div>
-              </div>
-              <div>
-                <Typography className={styles.textHeading} variant='h6'>
-                  {requestData.title}
-                </Typography>
-              </div>
-              <div className={styles.tagContainer}>
-                {requestData.tags.map((tag, i) => {
-                  return <TagBox text={tag} key={i} backgroundColor='#EDB549' color='white' />;
-                })}
-              </div>
-
-              <div>
-                <Typography className={styles.text} variant='body1'>
-                  {requestData.description}
-                </Typography>
-              </div>
-            </CardContent>
-          </Card>
+          <StudentRequestCard 
+            zid={requestData.zid}
+            firstName={requestData.firstName}
+            lastName={requestData.lastName}
+            tags={requestData.tags}
+            title={requestData.title}
+            previousRequests={requestData.previousRequests}
+            description={requestData.description}
+          />
         </Box>
       </div>
     </>

@@ -1,0 +1,43 @@
+.zidNameContainer {
+    display: flex;
+    gap: 10px;
+}
+
+.previousRequestsContainer {
+    display: flex;
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+}
+
+.text {
+    font-family: 'Lato';
+}
+
+.textHeading {
+    font-family: 'Lato';
+    font-weight: bold;
+}
+
+.cardContainer {
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 35px;
+}
+
+.cardContent {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
+}
+
+.tagContainer {
+    display: flex;
+    gap: 5px;
+    width: 100%;
+}
