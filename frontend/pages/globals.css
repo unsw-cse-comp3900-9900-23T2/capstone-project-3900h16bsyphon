@@ -18,13 +18,3 @@ a {
   --colour-main-red-200: #EDB6B6;
   --colour-main-red-900: #723A3A;
 }
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: light;
-  }
-  body {
-    color: white;
-    background: black;
-  }
-}
