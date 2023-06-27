@@ -1,49 +1,53 @@
-
 .container {
-    max-width: 800px; 
-    margin: auto;
-    background-color: #f2f2f2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    
-  }
+  flex: 1;
+  flex-direction: column;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 5%;
+}
+.cardBox {
+  width: 75%;
+  font-family: 'Lato';
+}
+.cardContainer {
+  flex-direction: column;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px 20px;
+}
   
- 
 .formGroup {
   display: flex;
-  width: 800px;
+  width: 100%;
+  max-width: 1000px;
   justify-content: baseline;
-  margin-left: 10em;
   margin-bottom: 1em;
   gap: 1em;
 }
 
 .textField {
-  display: flex;
-  flex-direction: column;
-  width: 460px;
-  justify-content: center;
-  align-items: center;
-  
+  margin: 0;
 }
-
-
 
 .button {
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: var(--colour-main-purple-900);
   color: white;
   font-size: 1.2em;
   border-radius: 5px;
   margin: 1em;
   cursor: pointer;
 }
-
-.title {
+.pageTitle {
   font-size: 1.5em;
   margin: 1em;
-
+}
+.queueTitle {
+  margin-bottom: 0.5em;
+  max-width: 1000px;
+  width: 100%;
 }

@@ -3,4 +3,11 @@
   margin: 0px;
   padding: 0px;
 }
-
+.label {
+  display: block;
+  margin-bottom: 0.5em;
+}
+.datePicker {
+  max-width: 1000px;
+  width: 100%;
+}

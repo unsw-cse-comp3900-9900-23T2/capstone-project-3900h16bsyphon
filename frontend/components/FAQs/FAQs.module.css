@@ -4,6 +4,7 @@
     grid-gap: 1em;
 }
 
-.MuiDataGrid-cell {
-    min-height: 300px;
-  }
+.pageTitle {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}

@@ -1,11 +1,10 @@
 .switchToggles {
-  display: flex;
-  align-self: baseline;
+  width: 100%;
+  max-width: 1000px;
+  align-self: top;
   align-items: baseline;
-  justify-content: baseline;
-  margin-left: 4em;
   margin-top: 1em;
-  flex-direction: column;
+  margin-right: 0;
   gap: 1em;
 }
 
