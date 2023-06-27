@@ -1,7 +1,8 @@
 .header {
   width: 100%;
   background-color: white;
-  font-family: Lato, sans-serif;
+    font-family: 'Lato', sans-serif;
+, sans-serif;
   padding-bottom: 4px;
   display: flex;
   flex-direction: row;
@@ -16,5 +17,6 @@
 }
 
 .button {
-  font-family: Lato, sans-serif;
+    font-family: 'Lato', sans-serif;
+, sans-serif;
 }

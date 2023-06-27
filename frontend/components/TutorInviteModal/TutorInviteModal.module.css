@@ -20,11 +20,13 @@
   flex-direction: column;
   gap: 10px;
   padding: 40px;
-  font-family: Lato, sans-serif;
+    font-family: 'Lato', sans-serif;
+, sans-serif;
 }
 
 .button {
-  font-family: Lato, sans-serif;
+    font-family: 'Lato', sans-serif;
+, sans-serif;
 }
 
 .invite {
@@ -35,11 +37,13 @@
 }
 
 .title {
-  font-family: Lato, sans-serif;
+    font-family: 'Lato', sans-serif;
+, sans-serif;
 }
 
 .doneBtn {
-  font-family: Lato, sans-serif;
+    font-family: 'Lato', sans-serif;
+, sans-serif;
   background-color: var(--colour-main-blue-600);
   color: white;
 }

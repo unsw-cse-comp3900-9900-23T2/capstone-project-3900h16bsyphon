@@ -22,7 +22,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-family: Lato, sans-serif;
+    font-family: 'Lato', sans-serif;
+, sans-serif;
   width: 90%;
   margin: 0 auto;
   padding-top: 30px;

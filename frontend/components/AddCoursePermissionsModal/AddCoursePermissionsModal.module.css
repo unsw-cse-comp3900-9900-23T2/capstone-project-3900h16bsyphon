@@ -1,0 +1,60 @@
+.permissionManagementButton {
+    font-family: 'lato', sans-serif;
+;
+  padding: 7px 15px;
+  background-color: #d9d9d9;
+}
+
+.text {
+    font-family: 'Lato', sans-serif;
+;
+}
+
+.container {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 25%;
+  background-color: whitesmoke;
+  box-shadow: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 40px;
+}
+
+  
+.titleContainer {
+  display: flex;
+  justify-content: space-between;
+  align-self: stretch;
+}
+
+.formContainer {
+  padding: 20px 0px;
+  width: 100%;
+  align-self: stretch;
+}
+
+.buttonContainer {
+  display: flex;
+  align-self: stretch;
+  justify-content: center;
+  gap: 25px;
+}
+
+.secondaryButton {
+  background-color: var(--colour-main-grey-400);
+    font-family: 'Lato', sans-serif;
+;
+}
+
+.userPermissions {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

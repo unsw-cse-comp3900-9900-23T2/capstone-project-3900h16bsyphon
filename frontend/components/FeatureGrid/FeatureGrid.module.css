@@ -3,7 +3,8 @@
   flex-shrink: 0;
   color: var(--colour-main-blue-900);
   font-size: 16px;
-  font-family: Lato;
+    font-family: 'Lato', sans-serif;
+;
   font-weight: 500;
   line-height: 26px;
 }
@@ -13,7 +14,8 @@
   flex-shrink: 0;
   color: var(--colour-main-grey-600);
   font-size: 14px;
-  font-family: Lato;
+    font-family: 'Lato', sans-serif;
+;
 }
 
 .container {

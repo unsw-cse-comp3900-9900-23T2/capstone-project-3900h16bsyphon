@@ -1,5 +1,6 @@
 .newQueueBtn {
-  font-family: Lato, sans-serif;
+    font-family: 'Lato', sans-serif;
+, sans-serif;
   background-color: var(--colour-main-purple-200);
   color: var(--colour-main-purple-900);
 }
@@ -10,7 +11,8 @@
 }
 
 .title {
-  font-family: Lato, sans-serif;
+    font-family: 'Lato', sans-serif;
+, sans-serif;
 }
 
 .container {

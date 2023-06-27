@@ -10,7 +10,11 @@ async fn run() -> Result<DatabaseConnection, DbErr> {
     Ok(db)
 }
 
-pub fn establish_connection() -> DatabaseConnection {
+pub async fn db_connection() -> DatabaseConnection {
+    run().await.expect("failed to connect to db")
+}
+
+pub fn db_connection_sync() -> DatabaseConnection {
     let connection = block_on(run());
     connection.unwrap()
 }

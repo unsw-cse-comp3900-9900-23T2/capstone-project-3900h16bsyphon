@@ -2,10 +2,8 @@
 
 exit_script() {
     # kill everything on 8000 and 3000
-    PORT_NUMBER=8000
-    lsof -it tcp:${PORT_NUMBER} | xargs kill
-    PORT_NUMBER=3000
-    lsof -it tcp:${PORT_NUMBER} | xargs kill
+    lsof -i tcp:8000 -Fp | sed 's/^p//' | xargs -r kill
+    lsof -i tcp:3000 -Fp | sed 's/^p//' | xargs -r kill
     trap - SIGINT SIGTERM # clear the trap
 }
 
@@ -22,6 +20,9 @@ set +a # stop exporting variables
 docker compose up -d database
 
 cd backend
+
+# run pending migrations
+cargo run --manifest-path ./migration/Cargo.toml -- up
 
 # must have cargo, and cargo-watch
 cargo watch -x run &
