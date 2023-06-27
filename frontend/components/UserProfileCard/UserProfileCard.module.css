@@ -1,7 +1,8 @@
 
 .cardBox {
     width: 35%;
-    font-family: 'Lato';
+    font-family: 'Lato', sans-serif;
+;
 }
 
 .cardHeader {
@@ -9,7 +10,8 @@
 }
 
 .text {
-    font-family: 'Lato';
+    font-family: 'Lato', sans-serif;
+;
 }
 
 .cardContainer {
@@ -47,6 +49,6 @@
 }
 
 .backButton {
-    font-family: lato;
+    font-family: 'Lato', sans-serif;
     padding: 7px 15px;
 }

@@ -3,20 +3,24 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import styles from './CourseCard.module.css';
 import React from 'react';
+import Link from 'next/link';
 
 type CourseCardProps = {
   title: string;
+  index: number;
 }
 
-const CourseCard = ({ title }: CourseCardProps) => {
+const CourseCard = ({ title, index }: CourseCardProps) => {
   return (
-    <Card className={styles.card}>
-      <CardContent>
-        <Typography className={styles.heading}>
-          {title}
-        </Typography>
-      </CardContent>
-    </Card>
+    <Link href={`/queue/${index}`}>
+      <Card className={styles.card}>
+        <CardContent>
+          <Typography className={styles.heading}>
+            {title}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Link>
   );
 };
 
