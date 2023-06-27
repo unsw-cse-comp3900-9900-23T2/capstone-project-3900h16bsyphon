@@ -1,5 +1,4 @@
 import { Typography } from '@mui/material';
-import { gridColumnLookupSelector } from '@mui/x-data-grid';
 import styles from './TagBox.module.css';
 
 interface TagBoxProps {

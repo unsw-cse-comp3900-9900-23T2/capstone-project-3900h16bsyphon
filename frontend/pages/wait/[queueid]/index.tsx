@@ -1,17 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { 
   Box, 
   Card, 
   CardContent, 
-  TextField, 
   Typography, 
   Button, 
-  Select, 
-  MenuItem, 
-  OutlinedInput, 
-  SelectChangeEvent, 
-  FormControlLabel, 
-  Checkbox
 } from '@mui/material';
 import styles from './WaitingScreen.module.css';
 
