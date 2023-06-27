@@ -1,7 +1,6 @@
 use actix_web::{web, HttpResponse};
 use rand::Rng;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter};
-use serde_json::json;
 
 use crate::{database_utils::db_connection, entities};
 
@@ -34,25 +33,6 @@ pub async fn create_offering(
             return HttpResponse::InternalServerError().body("Db broke?");
         }
     };
-
-    // FIXME: Maybe don't need to check if course exists?
-    // entities::course_offerings::Entity::find_by_id(body.course_code.clone())
-    //     .one(db)
-    //     .await
-    //     .map_or_else(
-    //         |e| {
-    //             log::warn!("Db Brokee when finding course ??:\n\t{}", e);
-    //             Some(HttpResponse::InternalServerError().body("AHHHH ME BROKEY BAD"))
-    //         },
-    //         |course| match course {
-    //             Some(c) => Some(HttpResponse::Conflict().json(json!({
-    //                 "message": "course exists",
-    //                 "course_code": c.course_code,
-    //                 "course_title": c.title,
-    //             }))),
-    //             None => None,
-    //         },
-    //     );
 
     // Create Course
     let body = body.into_inner();
