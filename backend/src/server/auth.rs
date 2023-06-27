@@ -192,7 +192,15 @@ impl CreateUserBody {
         });
         match errs.as_object().unwrap().iter().all(|(_, v)| v.is_object() && v.as_object().unwrap().contains_key("Ok")) {
             true => Ok(()),
-            false => Err(HttpResponse::BadRequest().json(errs))
+            false => Err(
+                HttpResponse::BadRequest()
+                    .json(
+                        errs.as_object().unwrap()
+                            .iter().map(
+                                |(key, value)| (key.to_owned(), value.as_object().unwrap().get("Err").unwrap_or(&json!("")).to_owned())
+                            ).collect::<serde_json::Map<String, serde_json::Value>>()
+                    )
+            )
         }
     }
 
