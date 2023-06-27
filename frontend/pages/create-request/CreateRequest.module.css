@@ -65,3 +65,9 @@
     font-family: lato;
     padding: 7px 15px;
 }
+
+
+.headingWordCount {
+    display: flex;
+    justify-content: space-between;
+}
