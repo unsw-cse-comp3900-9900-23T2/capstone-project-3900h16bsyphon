@@ -14,7 +14,9 @@ import {
   Checkbox
 } from '@mui/material';
 import styles from './WaitingScreen.module.css';
+
 import { useRouter } from 'next/router';
+import TagBox from '../../../components/TagBox';
 
 const requestData = {
   zid: 'z5303033',
@@ -23,6 +25,7 @@ const requestData = {
   lastName: 'Doe',
   title: 'Pls help me with printing this array - im so stuck!',
   tags: ['Assignment 1', 'Subset 0'],
+  previousRequests: 5,
   description:
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
 };
@@ -37,7 +40,7 @@ const WaitingScreen = () => {
   return (
     <>
       <div className={styles.pageContainer}>
-        <div className={styles.cardHeader}>
+        <div className={styles.queueTitle}>
           <Typography className={styles.text} variant='h2'>
             {requestData.queueTitle}
           </Typography>
@@ -48,30 +51,33 @@ const WaitingScreen = () => {
           </div>
           <Card className={styles.cardContainer}>
             <CardContent className={styles.cardContent}>
-              <div>
+              <div className={styles.cardHeader}>
                 {/* this is student name/zid/prev req div */}
-                <div>
+                <div className={styles.zidNameContainer}>
                   <div>
-                    {/* zid */}
+                    <TagBox text={requestData.zid} backgroundColor='#D5CFFF' color='#3E368F' />
                   </div>
                   <div>
-                    <Typography className={styles.text} variant='h6'>
+                    <Typography className={styles.textHeading} variant='h6'>
                       {requestData.firstName + ' ' + requestData.lastName}
                     </Typography>
                   </div>
                 </div>
-                <div>
+                <div className={styles.previousRequestsContainer}>
                   {/* number of previous requests component here */}
+                  <TagBox text={'PREVIOUS TOTAL REQUESTS: ' + requestData.previousRequests} backgroundColor='#D5CFFF' color='#3E368F' />
                 </div>
               </div>
               <div>
                 {/* request title div */}
-                <Typography className={styles.text} variant='h6'>
+                <Typography className={styles.textHeading} variant='h6'>
                   {requestData.title}
                 </Typography>
               </div>
-              <div>
-                {/* tags div */}
+              <div className={styles.tagContainer}>
+                {requestData.tags.map((tag, i) => {
+                  return <TagBox text={tag} key={i} backgroundColor='#EDB549' color='white' />;
+                })}
               </div>
 
               <div>

@@ -14,12 +14,31 @@
     gap: 25px;
 }
 
+.zidNameContainer {
+    display: flex;
+    gap: 10px;
+}
+
+.previousRequestsContainer {
+    display: flex;
+}
+
 .cardHeader {
+    display: flex;
+    justify-content: space-between;
+}
+
+.queueTitle {
     padding: 25px 0px;
 }
 
 .text {
     font-family: 'Lato';
+}
+
+.textHeading {
+    font-family: 'Lato';
+    font-weight: bold;
 }
 
 .cardContainer {
@@ -37,38 +56,9 @@
     width: 100%;
 }
 
-.userPermissions {
+.tagContainer {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    gap: 5px;
     width: 100%;
 }
 
-.coursePermissionHeading {
-    padding-top: 10px;
-    padding-left: 10px;
-}
-
-.buttonContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 25px;
-}
-
-.backButton {
-    font-family: lato;
-    background-color: var(--colour-main-grey-400);
-    color: black;
-    padding: 7px 15px;
-}
-
-.createButton {
-    font-family: lato;
-    padding: 7px 15px;
-}
-
-.headingWordCount {
-    display: flex;
-    justify-content: space-between;
-}
