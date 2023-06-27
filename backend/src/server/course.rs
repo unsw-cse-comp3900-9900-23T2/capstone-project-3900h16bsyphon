@@ -2,6 +2,7 @@ use actix_web::{
     web::{self, ReqData},
     HttpResponse,
 };
+use futures::executor::block_on;
 use rand::Rng;
 use regex::Regex;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter};
@@ -19,6 +20,7 @@ pub struct CreateOfferingBody {
     course_code: String,
     title: String,
     start_date: Option<NaiveDate>,
+    tutors: Option<Vec<i32>>,
 }
 
 pub async fn create_offering(
@@ -99,6 +101,7 @@ impl CreateOfferingBody {
         let errs = json!({
             "course_code": Self::validate_code(&self.course_code).err(),
             "title": Self::validate_title(&self.title).err(),
+            "tutors_dont_exist": Self::validate_tutors(&self.tutors).err(),
         });
         if errs.as_object().unwrap().values().any(|v| v.is_null()) {
             return Err(HttpResponse::BadRequest().json(errs));
@@ -106,9 +109,31 @@ impl CreateOfferingBody {
         Ok(())
     }
 
+    fn validate_tutors(tutors: &Option<Vec<i32>>) -> Result<(), Vec<i32>> {
+        let tutors = match tutors {
+            Some(tutors) => tutors,
+            None => return Ok(()),
+        };
+        let non_exist: Vec<i32> = tutors
+            .into_iter()
+            .filter(|id| !block_on(check_user_exists(**id)))
+            .map(|id| *id)
+            .collect();
+
+        match non_exist.is_empty() {
+            true => Ok(()),
+            false => Err(non_exist),
+        }
+    }
+
     fn validate_title(title: &str) -> Result<(), String> {
-        if title.chars().any(|c| !c.is_ascii_alphanumeric() && !c.is_ascii_punctuation() && c != ' ') {
-            return Err(String::from("Only alphanumeric characters, spaces, and punctuation allowed"));
+        if title
+            .chars()
+            .any(|c| !c.is_ascii_alphanumeric() && !c.is_ascii_punctuation() && c != ' ')
+        {
+            return Err(String::from(
+                "Only alphanumeric characters, spaces, and punctuation allowed",
+            ));
         }
         if !(3..=26).contains(&title.len()) {
             return Err(String::from("Title must be between 3 and 26 characters"));
@@ -129,4 +154,13 @@ impl CreateOfferingBody {
 /// Generate today's date in UTC as a NaiveDate
 pub fn today() -> NaiveDate {
     chrono::Utc::now().naive_utc().date()
+}
+
+async fn check_user_exists(user_id: i32) -> bool {
+    let db = &db_connection().await;
+    entities::users::Entity::find_by_id(user_id)
+        .one(db)
+        .await
+        .expect("db broke")
+        .is_some()
 }
