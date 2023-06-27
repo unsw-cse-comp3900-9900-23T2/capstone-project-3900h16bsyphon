@@ -47,7 +47,6 @@ async fn main() -> std::io::Result<()> {
                 "/auth/hello",
                 web::get().to(server::hello).wrap(amw.clone()),
             )
-            .service(web::scope("/course").wrap(amw.clone()))
             .route(
                 "/course/create_offering",
                 web::post()

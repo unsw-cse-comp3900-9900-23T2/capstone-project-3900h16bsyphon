@@ -122,7 +122,7 @@ impl CreateOfferingBody {
             "title": Self::validate_title(&self.title).err(),
             "tutors_dont_exist": Self::validate_tutors(&self.admins).err(),
         });
-        if errs.as_object().unwrap().values().any(|v| v.is_null()) {
+        if errs.as_object().unwrap().values().any(|v| !v.is_null()) {
             return Err(HttpResponse::BadRequest().json(errs));
         }
         Ok(())
