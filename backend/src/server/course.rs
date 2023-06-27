@@ -4,11 +4,14 @@ use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilt
 
 use crate::{database_utils::db_connection, entities};
 
+use chrono::NaiveDate;
+
 use super::auth::TokenClaims;
 
 struct CreateOfferingBody {
     course_code: String,
     title: String,
+    start_date: Option<NaiveDate>,
 }
 
 pub async fn create_offering(
@@ -33,7 +36,6 @@ pub async fn create_offering(
             return HttpResponse::InternalServerError().body("Db broke?");
         }
     };
-
     // Create Course
     let body = body.into_inner();
     let active_course = entities::course_offerings::ActiveModel {
@@ -41,6 +43,7 @@ pub async fn create_offering(
         course_code: ActiveValue::Set(body.course_code),
         title: ActiveValue::Set(body.title),
         tutor_invite_code: ActiveValue::Set(Some(gen_unique_inv_code().await)),
+        start_date: ActiveValue::Set(body.start_date.unwrap_or_else(today))
     };
 
     let course = active_course.insert(db).await.expect("Db broke");
@@ -75,4 +78,11 @@ fn gen_inv_code() -> String {
             false => rng.gen_range('0'..'9'),
         })
         .collect()
+}
+
+
+
+/// Generate today's date in UTC as a NaiveDate
+pub fn today() -> NaiveDate {
+    chrono::Utc::now().naive_utc().date()
 }
