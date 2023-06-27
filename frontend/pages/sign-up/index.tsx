@@ -76,11 +76,11 @@ const SignIn: NextPage = () => {
         <Typography variant='h1' className={styles.title}>Syphon</Typography>
         <Typography variant='h3'>Sign up to start attending help sessions</Typography>
         <FormGroup className={styles.form}>
-          <TextInput label='First Name' value={firstName} setValue={setFirstName} error={error.firstName} />
-          <TextInput label='Last Name' value={lastName} setValue={setLastName} error={error.lastName} />
-          <TextInput label='zId' value={zid} setValue={setZid} error={error.zid} />
-          <TextInput label='Password' value={password} setValue={setPassword} type='password' error={error.password} />
-          <TextInput label='Confirm Password' value={confirmPassword} setValue={setConfirmPassword} type='password' error={error.password} />
+          <TextInput className={styles.formInput} label='First Name' value={firstName} setValue={setFirstName} error={error.firstName} />
+          <TextInput className={styles.formInput} label='Last Name' value={lastName} setValue={setLastName} error={error.lastName} />
+          <TextInput className={styles.formInput} label='zId' value={zid} setValue={setZid} error={error.zid} />
+          <TextInput className={styles.formInput} label='Password' value={password} setValue={setPassword} type='password' error={error.password} />
+          <TextInput className={styles.formInput} label='Confirm Password' value={confirmPassword} setValue={setConfirmPassword} type='password' error={error.password} />
         </FormGroup>
         <Button onClick={submit} variant='contained'> Sign up </Button>
         <Typography className={styles.accountText}>Have an account? <Link className={styles.logIn} href='/log-in'>Log in</Link></Typography>
