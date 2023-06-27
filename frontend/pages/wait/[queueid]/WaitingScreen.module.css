@@ -5,7 +5,6 @@
 }
 
 .cardBox {
-    /* align-self: stretch; */
     padding: 0px 50px;
     font-family: 'Lato';
     display: flex;

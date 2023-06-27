@@ -45,7 +45,6 @@ const WaitingScreen = () => {
           <Card className={styles.cardContainer}>
             <CardContent className={styles.cardContent}>
               <div className={styles.cardHeader}>
-                {/* this is student name/zid/prev req div */}
                 <div className={styles.zidNameContainer}>
                   <div>
                     <TagBox text={requestData.zid} backgroundColor='#D5CFFF' color='#3E368F' />
@@ -57,12 +56,10 @@ const WaitingScreen = () => {
                   </div>
                 </div>
                 <div className={styles.previousRequestsContainer}>
-                  {/* number of previous requests component here */}
                   <TagBox text={'PREVIOUS TOTAL REQUESTS: ' + requestData.previousRequests} backgroundColor='#D5CFFF' color='#3E368F' />
                 </div>
               </div>
               <div>
-                {/* request title div */}
                 <Typography className={styles.textHeading} variant='h6'>
                   {requestData.title}
                 </Typography>
