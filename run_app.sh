@@ -15,12 +15,16 @@ trap exit_script SIGINT SIGTERM
 # run only DB in docker
 set -a # automatically export all variables
 DATABASE_HOST=localhost
+BACKEND_HOST=localhost
 source backend/.env
 set +a # stop exporting variables
 
 docker compose up -d database
 
 cd backend
+
+# run pending migrations
+cargo run --manifest-path ./migration/Cargo.toml -- up
 
 # must have cargo, and cargo-watch
 cargo watch -x run &

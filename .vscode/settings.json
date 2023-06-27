@@ -1,5 +1,13 @@
 {
+    "rust-analyzer.linkedProjects": [
+        "./backend/migration/Cargo.toml",
+        "./backend/Cargo.toml"
+    ],
     "eslint.workingDirectories": [
         "./frontend"
+    ],
+    "rust-analyzer.linkedProjects": [
+        "./backend/migration/Cargo.toml",
+        "./backend/Cargo.toml"
     ]
 }
