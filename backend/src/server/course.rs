@@ -15,12 +15,14 @@ use chrono::NaiveDate;
 
 use super::auth::TokenClaims;
 
+const INV_CODE_LEN: usize = 6;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateOfferingBody {
     course_code: String,
     title: String,
     start_date: Option<NaiveDate>,
-    tutors: Option<Vec<i32>>,
+    admins: Option<Vec<i32>>,
 }
 
 pub async fn create_offering(
@@ -37,13 +39,13 @@ pub async fn create_offering(
     match user {
         Ok(Some(user)) => {
             if !user.is_org_admin {
-                return HttpResponse::Forbidden().body("u no admin");
+                return HttpResponse::Forbidden().json("Not Admin");
             }
         }
-        Ok(None) => return HttpResponse::Forbidden().body("u no exist"),
+        Ok(None) => return HttpResponse::Forbidden().json("User Does Not Exist"),
         Err(e) => {
             log::warn!("Db broke?: {:?}", e);
-            return HttpResponse::InternalServerError().body("Db broke?");
+            return HttpResponse::InternalServerError().json("Db Broke");
         }
     };
 
@@ -65,7 +67,25 @@ pub async fn create_offering(
     let course = active_course.insert(db).await.expect("Db broke");
     log::info!("Created Course: {:?}", course);
 
+    // Add admins
+    body.admins.map(|tutors| async {
+        tutors.into_iter()
+            .map(|id| add_course_admin(course.course_offering_id, id))
+            .for_each(|f| block_on(f))
+    }).map(|x| block_on(x));
+
     HttpResponse::Ok().json(web::Json(course))
+}
+
+async fn add_course_admin(course_id: i32, tutor_id: i32) {
+    let db = &db_connection().await;
+    let active_tutor = entities::tutors::ActiveModel {
+        zid: ActiveValue::Set(tutor_id),
+        course_offering_id: ActiveValue::Set(course_id),
+        is_course_admin: ActiveValue::Set(true),
+    };
+    let tutor = active_tutor.insert(db).await.expect("Db broke");
+    log::info!("Added Tutor: {:?} to {:?}", tutor, course_id);
 }
 
 async fn gen_unique_inv_code() -> String {
@@ -84,7 +104,6 @@ async fn gen_unique_inv_code() -> String {
     }
 }
 
-const INV_CODE_LEN: usize = 6;
 
 fn gen_inv_code() -> String {
     let mut rng = rand::thread_rng();
@@ -101,7 +120,7 @@ impl CreateOfferingBody {
         let errs = json!({
             "course_code": Self::validate_code(&self.course_code).err(),
             "title": Self::validate_title(&self.title).err(),
-            "tutors_dont_exist": Self::validate_tutors(&self.tutors).err(),
+            "tutors_dont_exist": Self::validate_tutors(&self.admins).err(),
         });
         if errs.as_object().unwrap().values().any(|v| v.is_null()) {
             return Err(HttpResponse::BadRequest().json(errs));
