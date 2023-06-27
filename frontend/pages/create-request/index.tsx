@@ -1,12 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Card, CardContent, TextField, Typography, Button, Select, MenuItem, OutlinedInput, SelectChangeEvent } from '@mui/material';
+import { 
+  Box, 
+  Card, 
+  CardContent, 
+  TextField, 
+  Typography, 
+  Button, 
+  Select, 
+  MenuItem, 
+  OutlinedInput, 
+  SelectChangeEvent, 
+  FormControlLabel, 
+  Checkbox
+} from '@mui/material';
 import styles from './CreateRequest.module.css';
 import { useRouter } from 'next/router';
 
 const MIN_TITLE = 5;
+const MAX_TITLE = 25;
+
 const MIN_DESCRIPTION = 50;
+const MAX_DESCRIPTION = 250;
 
-
+// TODO: fetch call for tags
 const tags = [
   'Assignment 1',
   'Lab 1',
@@ -24,6 +40,7 @@ export default function CreateRequest() {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [titleWordCount, setTitleWordCount] = useState(0);
+  const [isClusterable, setIsClusterable] = useState(false);
 
   const [tagList, setTagList] = useState<string[]>([]);
 
@@ -37,8 +54,10 @@ export default function CreateRequest() {
     );
   };
 
-  const navigateToDashboard = () => {
-    router.push('/dashboard');
+  const handleSubmit = () => {
+
+    // TODO add queue 
+    router.push('/queue');
   };
 
   useEffect(() => {
@@ -107,14 +126,13 @@ export default function CreateRequest() {
               <Select
                 multiple
                 fullWidth
+                required
                 displayEmpty
                 value={tagList as unknown as string}
                 onChange={handleChange}
                 input={<OutlinedInput />}
                 renderValue={(selected) => {
-                  if (selected.length === 0) {
-                    return <em>Select tags</em>;
-                  }
+          
                   return (selected as unknown as string[]).join(', ');
                 }}
                 inputProps={{ 'aria-label': 'Without label' }}
@@ -127,15 +145,13 @@ export default function CreateRequest() {
               </Select>
             </div>
 
-            <div className={styles.coursePermissionHeading}>
-              <Typography className={styles.text} variant="h5">
-                Course Permissions
-              </Typography>
+            <div>
+              <FormControlLabel control={<Checkbox checked={isClusterable} onChange={() => setIsClusterable(!isClusterable)} />} label="Allow for clustering similar requests?" />
             </div>
 
             <div className={styles.buttonContainer}>
-              <Button onClick={navigateToDashboard} className={styles.backButton} variant='contained' size='medium'>Back to Dashboard</Button>
-              <Button onClick={navigateToDashboard} className={styles.createButton} variant='contained' size='medium'>Create Request</Button>
+              <Button onClick={() => router.push('/dashboard')} className={styles.backButton} variant='contained' size='medium'>Back to Dashboard</Button>
+              <Button onClick={handleSubmit} className={styles.createButton} variant='contained' size='medium'>Create Request</Button>
             </div>
           </CardContent>
         </Card>
