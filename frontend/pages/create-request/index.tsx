@@ -16,8 +16,6 @@ import {
 } from '@mui/material';
 import styles from './CreateRequest.module.css';
 import { useRouter } from 'next/router';
-import MetaData from '../../components/MetaData';
-import Header from '../../components/Header';
 
 const MIN_TITLE = 5;
 const MAX_TITLE = 25;

@@ -25,7 +25,7 @@ cd backend
 cargo run --manifest-path ./migration/Cargo.toml -- up
 
 # must have cargo, and cargo-watch
-cargo watch -x run &
+cargo run &
 
 cd ../frontend
 set -a # automatically export all variables
