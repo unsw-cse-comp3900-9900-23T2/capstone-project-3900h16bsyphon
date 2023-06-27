@@ -68,11 +68,11 @@ pub async fn create_offering(
     log::info!("Created Course: {:?}", course);
 
     // Add admins
-    body.admins.map(|tutors| async {
+    body.admins.map(|tutors| {
         tutors.into_iter()
             .map(|id| add_course_admin(course.course_offering_id, id))
             .for_each(|f| block_on(f))
-    }).map(|x| block_on(x));
+    });
 
     HttpResponse::Ok().json(web::Json(course))
 }
