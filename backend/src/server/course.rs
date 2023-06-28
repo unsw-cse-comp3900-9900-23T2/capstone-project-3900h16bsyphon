@@ -98,9 +98,24 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
     }
 }
 
-pub async fn add_tutor(body: web::Json<AddTutorToCourseBody>) -> HttpResponse {
-    let body = body.into_inner();
+pub async fn add_tutor(
+    token: ReqData<TokenClaims>,
+    body: web::Json<AddTutorToCourseBody>,
+) -> HttpResponse {
     let db = &db_connection().await;
+    let body = body.into_inner();
+
+    // Ensure person adding the new tutor is a course admin
+    match entities::tutors::Entity::find_by_id((token.username, body.course_id))
+        .one(db)
+        .await
+        .expect("db broke")
+    {
+        None => return HttpResponse::Forbidden().json("Not Admin"),
+        Some(t) if !t.is_course_admin => return HttpResponse::Forbidden().json("Not Admin"),
+        Some(_) => {}
+    }
+
     let db_course = entities::course_offerings::Entity::find_by_id(body.course_id)
         .one(db)
         .await
@@ -263,5 +278,10 @@ mod models {
     pub struct AddTutorToCourseBody {
         pub tutor_id: i32,
         pub course_id: i32,
+    }
+
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct JoinWithTutorLink {
+        pub tutor_link: String,
     }
 }
