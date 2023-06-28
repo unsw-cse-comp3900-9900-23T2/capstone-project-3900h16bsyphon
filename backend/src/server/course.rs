@@ -176,23 +176,18 @@ pub async fn join_with_tutor_link(
         is_course_admin: ActiveValue::Set(false),
     };
 
-    // Insert. If already tutor, do nothing -> idempotent go brr
+    // If already tutor, do nothing -> idempotent go brr
+    if entities::tutors::Entity::find_by_id((token.username, course.course_offering_id))
+        .one(db)
+        .await
+        .expect("db broke")
+        .is_some()
+    {
+        return HttpResponse::Ok().json(web::Json(course));
+    }
+
+    // Insert
     entities::tutors::Entity::insert(active_tutor)
-        .on_conflict(
-            OnConflict::column(entities::tutors::Column::Zid)
-                .do_nothing()
-                .to_owned(),
-        )
-        .on_conflict(
-            OnConflict::column(entities::tutors::Column::CourseOfferingId)
-                .do_nothing()
-                .to_owned(),
-        )
-        .on_conflict(
-            OnConflict::column(entities::tutors::Column::IsCourseAdmin)
-                .do_nothing()
-                .to_owned(),
-        )
         .exec(db)
         .await
         .expect("db broke");
@@ -249,7 +244,7 @@ impl CreateOfferingBody {
         let errs = json!({
             "course_code": Self::validate_code(&self.course_code).err(),
             "title": Self::validate_title(&self.title).err(),
-            "admins": Self::validate_tutors(&self.admins.unwrap_or_default()).err(),
+            "admins": Self::validate_tutors(self.admins.as_ref().unwrap_or(&Vec::new())).err(),
         });
         if errs.as_object().unwrap().values().any(|v| !v.is_null()) {
             return Err(HttpResponse::BadRequest().json(errs));
