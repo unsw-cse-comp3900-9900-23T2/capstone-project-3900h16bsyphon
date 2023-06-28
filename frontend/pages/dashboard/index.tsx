@@ -15,6 +15,7 @@ type CourseOffering = {
   courseCode: string;
   startDate: string;
   courseOfferingId: number;
+  tutorInviteCode: string;
 }
 
 const Dashboard: NextPage = () => {
@@ -32,12 +33,14 @@ const Dashboard: NextPage = () => {
           title: course.title,
           courseCode: course.course_code,
           startDate: course.start_date,
-          courseOfferingId: course.course_offering_id
+          courseOfferingId: course.course_offering_id,
+          tutorInviteCode: course.tutor_invite_code
         }
       )));
     };
     fetchCourseOfferings();
   }, []);
+
   return (
     <>
       <MetaData />
@@ -50,16 +53,15 @@ const Dashboard: NextPage = () => {
           </div>
           <div className={styles.cards}>
             {data.map((d, index) => (
-              <CourseOfferingCard key={index} title={`${d.courseCode} - ${d.title}`} />
+              <CourseOfferingCard key={index} title={`${d.courseCode} - ${d.title}`} inviteCode={d.tutorInviteCode}/>
             ))}
           </div>
           <div className={styles.tutorSection}>
             <h1>Courses you tutor</h1>
             <div className={styles.section}>
-              <p>You are not a tutor for any courses.</p>
+              <p>Select a course to manage queues</p>
               <JoinTutorModal />
             </div>
-            {/* TODO: change to pass in course code or sth */}
             <div className={styles.cards}>
               {data.map((d, index) => (
                 <CourseCard title={d.title} key={index} index={index}/>
@@ -70,7 +72,6 @@ const Dashboard: NextPage = () => {
             <h1>Courses you are a student</h1>
             <p>Select a course to view queues</p>
             <div className={styles.cards}>
-              {/* TODO: change to pass in course code or sth */}
               {data.map((d, index) => (
                 <CourseCard key={index} title={d.title} index={index}/>
               ))}

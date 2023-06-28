@@ -69,6 +69,7 @@ pub struct CourseOfferingReturnModel {
     course_code: String,
     title: String,
     start_date: Option<NaiveDate>,
+    tutor_invite_code: Option<String>,
 }
 
 pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
@@ -84,6 +85,7 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
         .column(entities::course_offerings::Column::CourseCode)
         .column(entities::course_offerings::Column::Title)
         .column(entities::course_offerings::Column::StartDate)
+        .column(entities::course_offerings::Column::TutorInviteCode)
         .into_model::<CourseOfferingReturnModel>()
         .all(db)
         .await;
@@ -97,6 +99,7 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
     }
 }
 
+// TODO: remove
 /// Add a tutor to the given course.
 /// ## Preconditions
 /// - The user making the request must be a course admin
