@@ -6,6 +6,8 @@ use crate::prelude::in_release_build;
 
 pub mod auth;
 pub mod queue_creation;
+pub mod user;
+pub mod course;
 
 #[post("/echo")]
 pub async fn echo(req_body: String) -> impl Responder {

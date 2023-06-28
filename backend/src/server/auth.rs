@@ -67,34 +67,33 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
     let pass = credentials.password();
     let zid = match CreateUserBody::verify_zid(credentials.user_id()) {
         Ok(zid) => zid,
-        Err(e) => return HttpResponse::BadRequest().json(json!{{"zid": e}}),
+        Err(e) => return HttpResponse::BadRequest().json(json! {{"zid": e}}),
     };
 
     let jwt_secret = Hmac::<Sha256>::new_from_slice(SECRET.as_bytes()).unwrap();
     match pass {
-        None => HttpResponse::Unauthorized().body("no password"),
+        None => HttpResponse::Unauthorized().json("no password"),
         Some(pass) => {
             // 1. check user in db
             let db = &db_connection().await;
-            let db_user = users::Entity::find_by_id(zid)
-                .one(db)
-                .await
-                .map_err(|e| {
-                    log::warn!("DB Brokee when finding user ??:\n\t{}", e);
-                    HttpResponse::InternalServerError().body("AHHHH ME BROKEY BAD")
-                });
+            let db_user = users::Entity::find_by_id(zid).one(db).await.map_err(|e| {
+                log::warn!("DB Brokee when finding user ??:\n\t{}", e);
+                HttpResponse::InternalServerError().json("AHHHH ME BROKEY BAD")
+            });
             let user: users::Model = match db_user {
                 Err(e) => return e,
-                Ok(None) => return HttpResponse::Unauthorized().json(json!{{"zid": "user not found"}}),
+                Ok(None) => {
+                    return HttpResponse::Unauthorized().json(json! {{"zid": "user not found"}})
+                }
                 Ok(Some(user)) => user,
             };
 
             // Verify Pw Validity
             if let Err(e) = CreateUserBody::verify_password(pass) {
-                return HttpResponse::BadRequest().json(json!{{"password": e}});
+                return HttpResponse::BadRequest().json(json! {{"password": e}});
             }
             if user.hashed_pw != hash_pass(pass).unwrap() {
-                return HttpResponse::BadRequest().json(json!{{"password": "incorrect password"}});
+                return HttpResponse::BadRequest().json(json! {{"password": "incorrect password"}});
             }
 
             // Create Claims Token
@@ -108,7 +107,7 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
     }
 }
 
-pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse  {
+pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse {
     let user = body.into_inner();
     if let Err(e) = user.verify_user() {
         log::debug!("failed to verify user:{:?}", e);
@@ -185,22 +184,14 @@ pub struct CreateUserBody {
 impl CreateUserBody {
     pub fn verify_user(&self) -> Result<(), HttpResponse> {
         let errs = json!({
-            "first_name": Self::verify_name(&self.first_name),
-            "last_name": Self::verify_name(&self.last_name),
-            "password": Self::verify_password(&self.password),
-            "zid": Self::verify_zid(&self.zid),
+            "first_name": Self::verify_name(&self.first_name).err(),
+            "last_name": Self::verify_name(&self.last_name).err(),
+            "password": Self::verify_password(&self.password).err(),
+            "zid": Self::verify_zid(&self.zid).err(),
         });
-        match errs.as_object().unwrap().iter().all(|(_, v)| v.is_object() && v.as_object().unwrap().contains_key("Ok")) {
+        match errs.as_object().unwrap().iter().all(|(_, v)| v.is_null()) {
             true => Ok(()),
-            false => Err(
-                HttpResponse::BadRequest()
-                    .json(
-                        errs.as_object().unwrap()
-                            .iter().map(
-                                |(key, value)| (key.to_owned(), value.as_object().unwrap().get("Err").unwrap_or(&json!("")).to_owned())
-                            ).collect::<serde_json::Map<String, serde_json::Value>>()
-                    )
-            )
+            false => Err(HttpResponse::BadRequest().json(errs)),
         }
     }
 
@@ -228,9 +219,7 @@ impl CreateUserBody {
 
     fn verify_name(name: &str) -> Result<(), String> {
         match name {
-            n if !(3..=16).contains(&n.len()) => {
-                Err("name too short".to_string())
-            }
+            n if !(3..=16).contains(&n.len()) => Err("name too short".to_string()),
             n if !n.chars().all(|c| c.is_ascii_alphabetic()) => {
                 Err("name must be alphanumeric or space".to_string())
             }
@@ -240,9 +229,7 @@ impl CreateUserBody {
 
     fn verify_password(pass: &str) -> Result<(), String> {
         match pass {
-            p if !(8..=28).contains(&p.len()) => {
-                Err("password must be 8 chars".to_string())
-            }
+            p if !(8..=28).contains(&p.len()) => Err("password must be 8 chars".to_string()),
             p if !p.is_ascii() => Err("password must be ascii".to_string()),
             p if !p.chars().any(|c| c.is_ascii_uppercase()) => {
                 Err("password must have uppercase".to_string())

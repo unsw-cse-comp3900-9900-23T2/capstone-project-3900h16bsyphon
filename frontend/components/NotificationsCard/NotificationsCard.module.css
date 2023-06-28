@@ -10,10 +10,10 @@
 
 .button {
   font-family: 'Lato', sans-serif;
-  background-color: #EDB6B6;
-  color: #723A3A;
+  background-color: #edb6b6;
+  color: #723a3a;
 }
 
 .button:hover {
-  background-color: #E7ABAB;
+  background-color: #e7abab;
 }

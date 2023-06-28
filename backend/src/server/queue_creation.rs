@@ -16,7 +16,6 @@ pub struct CreateQueueRequest{
 }
 
 pub async fn create(req_body: String) -> HttpResponse {
-
     let queue_creation_request: CreateQueueRequest = from_str(&req_body).unwrap();
     HttpResponse::Ok().body("Queue created")
 }

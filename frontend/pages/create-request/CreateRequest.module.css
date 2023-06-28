@@ -1,8 +1,15 @@
+.pageContainer {
+    flex: 1;
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 5%;
+}
 
 .cardBox {
-    width: 35%;
-    font-family: 'Lato', sans-serif;
-;
+    width: 75%;
+    font-family: 'Lato';
 }
 
 .cardHeader {
@@ -10,8 +17,7 @@
 }
 
 .text {
-    font-family: 'Lato', sans-serif;
-;
+    font-family: 'Lato';
 }
 
 .cardContainer {
@@ -49,6 +55,18 @@
 }
 
 .backButton {
-    font-family: 'Lato', sans-serif;
+    font-family: lato;
+    background-color: var(--colour-main-grey-400);
+    color: black;
     padding: 7px 15px;
+}
+
+.createButton {
+    font-family: lato;
+    padding: 7px 15px;
+}
+
+.headingWordCount {
+    display: flex;
+    justify-content: space-between;
 }

@@ -1,0 +1,67 @@
+.createOfferingBtn {
+    font-family: 'Lato', sans-serif;
+  background-color: var(--colour-main-purple-200);
+  color: var(--colour-main-purple-900);
+}
+
+.createOfferingBtn:hover {
+  background-color: var(--colour-main-purple-400);
+  color: var(--colour-main-purple-900);
+}
+
+.container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30%;
+  background-color: white;
+  box-shadow: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 40px;
+    font-family: 'Lato', sans-serif;
+}
+
+.button {
+    font-family: 'Lato', sans-serif;
+}
+
+.title {
+    font-family: 'Lato', sans-serif;
+    flex-grow: 1;
+}
+
+.createBtn {
+    font-family: 'Lato', sans-serif;
+  background-color: var(--colour-main-blue-600);
+  color: white;
+}
+
+.label {
+  flex-grow: 1;
+  margin-bottom: 10px;
+  font-family: lato, sans-serif;
+}
+
+.createBtn:hover {
+  background-color: #2748b6;
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 29%;
+}
+
+.courseTitle {
+  display: flex;
+  flex-direction: row;
+  gap: 55%;
+}
+
+.formItem {
+  flex-grow: 1;
+  align-items: flex-start;
+}

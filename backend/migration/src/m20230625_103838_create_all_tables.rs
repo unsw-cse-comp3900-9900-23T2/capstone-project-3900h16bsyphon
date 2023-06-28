@@ -65,6 +65,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(CourseOfferings::Title).string().not_null())
                     .col(ColumnDef::new(CourseOfferings::TutorInviteCode).string())
+                    .col(ColumnDef::new(CourseOfferings::StartDate).date().not_null())
                     .to_owned(),
             )
             .await?;
@@ -443,6 +444,7 @@ enum CourseOfferings {
     CourseOfferingId,
     CourseCode,
     Title,
+    StartDate,
     TutorInviteCode,
 }
 
