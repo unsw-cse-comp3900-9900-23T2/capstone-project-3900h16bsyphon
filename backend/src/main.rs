@@ -1,9 +1,5 @@
 use actix_cors::Cors;
-use actix_web::{
-    http, middleware,
-    web,
-    App, HttpServer,
-};
+use actix_web::{http, middleware, web, App, HttpServer};
 use actix_web_httpauth::middleware::HttpAuthentication;
 
 pub mod database_utils;
@@ -54,7 +50,10 @@ async fn main() -> std::io::Result<()> {
                     .wrap(amw.clone()),
             )
             .route("/course/list", web::get().to(server::course::get_offerings).wrap(amw.clone()))
-            .route("/user/list", web::get().to(server::user::get_users).wrap(amw.clone()))
+            .route(
+                "/course/add_tutor",
+                web::post().to(server::course::add_tutor).wrap(amw.clone()),
+            )
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
     })

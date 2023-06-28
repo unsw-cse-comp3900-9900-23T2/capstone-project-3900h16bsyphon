@@ -259,6 +259,7 @@ mod models {
         pub admins: Option<Vec<i32>>,
     }
 
+    #[derive(Debug, Clone, Serialize, Deserialize)]
     pub struct AddTutorToCourseBody {
         pub tutor_id: i32,
         pub course_id: i32,
