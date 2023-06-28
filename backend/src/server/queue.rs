@@ -1,6 +1,6 @@
 use actix_web::{HttpResponse};
-use chrono::{DateTime, NaiveDateTime};
-use sea_orm::{prelude::{DateTimeLocal}, DatabaseConnection, ActiveValue, ActiveModelTrait};
+use chrono::{NaiveDateTime};
+use sea_orm::{DatabaseConnection, ActiveValue, ActiveModelTrait};
 use serde::{Serialize, Deserialize};
 use serde_json::from_str;
 
@@ -41,9 +41,6 @@ pub async fn create(req_body: String) -> HttpResponse {
         announcement: ActiveValue::Set(queue_creation_request.announcement),
     };
 
-    let queue = queue.insert(db).await.expect("Db broke");
+    queue.insert(db).await.expect("Db broke");
     HttpResponse::Ok().body("Queue created")
 }
-
-
-

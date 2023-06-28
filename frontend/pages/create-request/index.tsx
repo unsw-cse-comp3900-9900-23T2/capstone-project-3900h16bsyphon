@@ -37,16 +37,12 @@ const tags = [
 
 
 export default function CreateRequest() {
-
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [titleWordCount, setTitleWordCount] = useState(0);
-
   const [description, setDescription] = useState('');
   const [descriptionWordCount, setDescriptionWordCount] = useState(0);
-
   const [isClusterable, setIsClusterable] = useState(false);
-
   const [tagList, setTagList] = useState<string[]>([]);
 
   const handleChange = (event: SelectChangeEvent<string>) => {
@@ -61,6 +57,7 @@ export default function CreateRequest() {
 
   const handleSubmit = () => {
     // TODO: handle validation
+    
 
     // TODO add queue 
     router.push('/queue');

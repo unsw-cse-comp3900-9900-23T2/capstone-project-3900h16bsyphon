@@ -45,7 +45,7 @@ async fn main() -> std::io::Result<()> {
             )
             .route(
                 "/queue-creation/create", 
-                web::post().to(server::queue_creation::create)
+                web::post().to(server::queue::create)
             )
             .route(
                 "/course/create_offering",
@@ -68,6 +68,10 @@ async fn main() -> std::io::Result<()> {
                 web::put()
                     .to(server::course::join_with_tutor_link)
                     .wrap(amw.clone()),
+            )
+            .route(
+                "/request/create",
+                web::post().to(server::request::create_request).wrap(amw.clone()),
             )
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))

@@ -6,10 +6,9 @@ use futures::executor::block_on;
 use rand::Rng;
 use regex::Regex;
 use sea_orm::{
-    sea_query, ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, FromQueryResult,
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, FromQueryResult,
     QueryFilter, QuerySelect,
 };
-use sea_query::OnConflict;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
