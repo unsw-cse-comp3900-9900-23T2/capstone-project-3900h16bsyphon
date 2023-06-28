@@ -24,7 +24,7 @@ use chrono::NaiveDate;
 
 const INV_CODE_LEN: usize = 6;
 
-use models::{AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink};
+use models::{CreateOfferingBody, JoinWithTutorLink};
 
 pub async fn create_offering(
     token: ReqData<TokenClaims>,
@@ -97,69 +97,6 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
             HttpResponse::InternalServerError().json("Db Broke")
         }
     }
-}
-
-// TODO: remove
-/// Add a tutor to the given course.
-/// ## Preconditions
-/// - The user making the request must be a course admin
-/// ## Returns
-/// - Forbidden: if the user making the request is not a course admin
-/// - 200 with empty body if successful return
-/// - 400 if the course or any of the users dont not exist
-pub async fn add_tutor(
-    token: ReqData<TokenClaims>,
-    body: web::Json<AddTutorToCourseBody>,
-) -> HttpResponse {
-    let db = &db_connection().await;
-    let body = body.into_inner();
-
-    // Ensure person adding the new tutor is a course admin
-    match entities::tutors::Entity::find_by_id((token.username, body.course_id))
-        .one(db)
-        .await
-        .expect("db broke")
-    {
-        None => return HttpResponse::Forbidden().json("Not Admin"),
-        Some(t) if !t.is_course_admin => return HttpResponse::Forbidden().json("Not Admin"),
-        Some(_) => {}
-    }
-
-    let db_course = entities::course_offerings::Entity::find_by_id(body.course_id)
-        .one(db)
-        .await
-        .expect("db broke");
-    let db_user = entities::users::Entity::find_by_id(body.tutor_id)
-        .one(db)
-        .await
-        .expect("db broke");
-
-    let (course, user) = match (db_course, db_user) {
-        (Some(c), Some(t)) => (c, t),
-        (Some(_), None) => return not_exist_error(vec!["user"]),
-        (None, Some(_)) => return not_exist_error(vec!["course"]),
-        (None, None) => return not_exist_error(vec!["course", "user"]),
-    };
-
-    let db_tutor = entities::tutors::Entity::find_by_id((user.zid, course.course_offering_id))
-        .one(db)
-        .await
-        .expect("db broke");
-
-    if let Some(_) = db_tutor {
-        return HttpResponse::Conflict().json("Already Tutor");
-    }
-
-    entities::tutors::ActiveModel {
-        zid: ActiveValue::Set(user.zid),
-        course_offering_id: ActiveValue::Set(course.course_offering_id),
-        is_course_admin: ActiveValue::Set(false),
-    }
-    .insert(db)
-    .await
-    .expect("db broke");
-
-    HttpResponse::Ok().json("ok")
 }
 
 /// Join a course using a tutor link. If already tutor, does nothing and is

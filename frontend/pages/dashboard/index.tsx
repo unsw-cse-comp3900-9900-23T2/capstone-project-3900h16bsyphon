@@ -19,7 +19,7 @@ type CourseOffering = {
 }
 
 const Dashboard: NextPage = () => {
-  const [data, setData] = useState<CourseOffering[]>([]);
+  const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
   useEffect(() => {
     const fetchCourseOfferings = async () => {
       let res = await authenticatedGetFetch('/course/list', {});
@@ -27,8 +27,8 @@ const Dashboard: NextPage = () => {
         console.error('authentication failed, or something broke, check network tab');
         return;
       }
-      let data = await res.json();
-      setData(data.map((course: any) => (
+      let courseOfferings = await res.json();
+      setCourseOfferings(courseOfferings.map((course: any) => (
         {
           title: course.title,
           courseCode: course.course_code,
@@ -52,7 +52,7 @@ const Dashboard: NextPage = () => {
             <CreateCourseOfferingModal />
           </div>
           <div className={styles.cards}>
-            {data.map((d, index) => (
+            {courseOfferings.map((d, index) => (
               <CourseOfferingCard key={index} title={`${d.courseCode} - ${d.title}`} inviteCode={d.tutorInviteCode}/>
             ))}
           </div>
@@ -63,16 +63,16 @@ const Dashboard: NextPage = () => {
               <JoinTutorModal />
             </div>
             <div className={styles.cards}>
-              {data.map((d, index) => (
+              {/* {data.map((d, index) => (
                 <CourseCard title={d.title} key={index} index={index}/>
-              ))}
+              ))} */}
             </div>
           </div>
           <div className={styles.studentSection}>
             <h1>Courses you are a student</h1>
             <p>Select a course to view queues</p>
             <div className={styles.cards}>
-              {data.map((d, index) => (
+              {courseOfferings.map((d, index) => (
                 <CourseCard key={index} title={d.title} index={index}/>
               ))}
             </div>

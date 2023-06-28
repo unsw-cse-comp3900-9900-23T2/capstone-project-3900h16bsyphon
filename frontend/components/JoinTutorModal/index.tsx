@@ -22,7 +22,7 @@ const JoinTutorModal = () => {
 
   const handleSubmit = async () => {
     let res = await authenticatedPutFetch('/course/join_with_tutor_link', {
-      tutorCode
+      tutor_link: tutorCode
     });
     if (!res.ok) {
       setError('Course does not exist with given invite code, please try again.');
