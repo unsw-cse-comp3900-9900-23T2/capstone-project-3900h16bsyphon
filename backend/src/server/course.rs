@@ -6,26 +6,25 @@ use futures::executor::block_on;
 use rand::Rng;
 use regex::Regex;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, FromQueryResult, QueryFilter,
-    QuerySelect,
+    sea_query, ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, FromQueryResult,
+    QueryFilter, QuerySelect,
 };
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, ModelTrait, QueryFilter};
+use sea_query::OnConflict;
 use serde::{Deserialize, Serialize};
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter};
 use serde_json::json;
 
-use crate::{
-    database_utils::db_connection,
-    entities,
-    server::user::{validate_admin, validate_user},
+use crate::{database_utils::db_connection, entities, server};
+
+use server::{
+    auth::TokenClaims,
+    user::{validate_admin, validate_user},
 };
 
-use super::auth::TokenClaims;
 use chrono::NaiveDate;
 
 const INV_CODE_LEN: usize = 6;
 
-use models::{AddTutorToCourseBody, CreateOfferingBody};
+use models::{AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink};
 
 pub async fn create_offering(
     token: ReqData<TokenClaims>,
@@ -151,6 +150,54 @@ pub async fn add_tutor(
     .expect("db broke");
 
     HttpResponse::Ok().json("ok")
+}
+
+pub async fn join_with_tutor_link(
+    token: ReqData<TokenClaims>,
+    body: web::Json<JoinWithTutorLink>,
+) -> HttpResponse {
+    let body = body.into_inner();
+    let db = &db_connection().await;
+    // Get course from invite code
+    let db_course = entities::course_offerings::Entity::find()
+        .filter(entities::course_offerings::Column::TutorInviteCode.eq(body.tutor_link))
+        .one(db)
+        .await
+        .expect("db broke");
+    let course = match db_course {
+        None => return not_exist_error(vec!["course"]),
+        Some(course) => course,
+    };
+
+    // Create entry in tutors table
+    let active_tutor = entities::tutors::ActiveModel {
+        zid: ActiveValue::Set(token.username),
+        course_offering_id: ActiveValue::Set(course.course_offering_id),
+        is_course_admin: ActiveValue::Set(false),
+    };
+
+    // Insert. If already tutor, do nothing -> idempotent go brr
+    entities::tutors::Entity::insert(active_tutor)
+        .on_conflict(
+            OnConflict::column(entities::tutors::Column::Zid)
+                .do_nothing()
+                .to_owned(),
+        )
+        .on_conflict(
+            OnConflict::column(entities::tutors::Column::CourseOfferingId)
+                .do_nothing()
+                .to_owned(),
+        )
+        .on_conflict(
+            OnConflict::column(entities::tutors::Column::IsCourseAdmin)
+                .do_nothing()
+                .to_owned(),
+        )
+        .exec(db)
+        .await
+        .expect("db broke");
+
+    HttpResponse::Ok().json(web::Json(course))
 }
 
 fn not_exist_error(missing: Vec<impl Into<String>>) -> HttpResponse {
