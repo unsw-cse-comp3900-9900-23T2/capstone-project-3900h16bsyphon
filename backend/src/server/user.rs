@@ -1,10 +1,12 @@
 use actix_web::{web::ReqData, HttpResponse};
 use serde::{Deserialize, Serialize};
 
-use crate::{entities, database_utils::db_connection};
+use crate::{database_utils::db_connection, entities};
 
 use super::auth::TokenClaims;
-use sea_orm::{EntityTrait, DatabaseConnection, QuerySelect, FromQueryResult, QueryFilter, ColumnTrait};
+use sea_orm::{
+    ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult, QueryFilter, QuerySelect,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
 pub struct UserReturnModel {
@@ -13,12 +15,13 @@ pub struct UserReturnModel {
     last_name: String,
 }
 
-pub async fn get_users(
-    token: ReqData<TokenClaims>
-) -> HttpResponse {
+pub async fn get_users(token: ReqData<TokenClaims>) -> HttpResponse {
     let db = &db_connection().await;
-    let error = validate_user(&token, db).await.err();
-    if error.is_some() { return error.unwrap(); }
+
+    if let Err(err) = validate_admin(&token, db).await {
+        return err;
+    }
+
     // get all users from db
     let users = entities::users::Entity::find()
         .select_only()
@@ -27,7 +30,8 @@ pub async fn get_users(
         .column(entities::users::Column::LastName)
         .filter(entities::users::Column::IsOrgAdmin.ne(true))
         .into_model::<UserReturnModel>()
-        .all(db).await;
+        .all(db)
+        .await;
 
     // return users
     match users {
@@ -39,11 +43,14 @@ pub async fn get_users(
     }
 }
 
-pub async fn validate_user(token: &ReqData<TokenClaims>, db: &DatabaseConnection) -> Result<(), HttpResponse> {
+pub async fn validate_user(
+    token: &ReqData<TokenClaims>,
+    db: &DatabaseConnection,
+) -> Result<(), HttpResponse> {
     let creator_id = token.username;
     let user = entities::users::Entity::find_by_id(creator_id)
-    .one(db)
-    .await;
+        .one(db)
+        .await;
 
     match user {
         Ok(Some(_)) => Ok(()),
@@ -55,11 +62,14 @@ pub async fn validate_user(token: &ReqData<TokenClaims>, db: &DatabaseConnection
     }
 }
 
-pub async fn validate_admin(token: &ReqData<TokenClaims>, db: &DatabaseConnection) -> Result<(), HttpResponse> {
+pub async fn validate_admin(
+    token: &ReqData<TokenClaims>,
+    db: &DatabaseConnection,
+) -> Result<(), HttpResponse> {
     let creator_id = token.username;
     let user = entities::users::Entity::find_by_id(creator_id)
-    .one(db)
-    .await;
+        .one(db)
+        .await;
 
     // Validate Admin Perms
     match user {

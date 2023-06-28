@@ -1,0 +1,23 @@
+.pageContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.text {
+    font-family: Lato;
+}
+
+.cardBox {
+    padding: 0px 50px;
+    font-family: 'Lato';
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 25px;
+}
+
+.queueTitle {
+    padding: 25px 0px;
+}
+

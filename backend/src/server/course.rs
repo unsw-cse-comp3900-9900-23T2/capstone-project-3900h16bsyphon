@@ -5,11 +5,18 @@ use actix_web::{
 use futures::executor::block_on;
 use rand::Rng;
 use regex::Regex;
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, FromQueryResult, QuerySelect};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, FromQueryResult, QueryFilter,
+    QuerySelect,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-use crate::{database_utils::db_connection, entities, server::user::{validate_admin, validate_user}};
+use crate::{
+    database_utils::db_connection,
+    entities,
+    server::user::{validate_admin, validate_user},
+};
 
 use chrono::NaiveDate;
 
@@ -30,8 +37,9 @@ pub async fn create_offering(
     body: web::Json<CreateOfferingBody>,
 ) -> HttpResponse {
     let db = &db_connection().await;
-    let error = validate_admin(&token, db).await.err();
-    if error.is_some() { return error.unwrap(); }
+    if let Err(err) = validate_admin(&token, db).await {
+        return err;
+    }
 
     // Validate Course Data
     if let Err(e) = body.validate() {
@@ -52,9 +60,10 @@ pub async fn create_offering(
     log::info!("Created Course: {:?}", course);
 
     // Add admins
-    body.admins.into_iter()
-            .map(|id| add_course_admin(course.course_offering_id, id))
-            .for_each(|f| block_on(f));
+    body.admins
+        .into_iter()
+        .map(|id| add_course_admin(course.course_offering_id, id))
+        .for_each(|f| block_on(f));
 
     HttpResponse::Ok().json(web::Json(course))
 }
@@ -70,8 +79,10 @@ pub struct CourseOfferingReturnModel {
 pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
     let db = &db_connection().await;
     let error = validate_user(&token, db).await.err();
-    if error.is_some() { return error.unwrap(); }
-    
+    if error.is_some() {
+        return error.unwrap();
+    }
+
     let course_offering_result = entities::course_offerings::Entity::find()
         .select_only()
         .column(entities::course_offerings::Column::CourseOfferingId)
@@ -79,14 +90,15 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
         .column(entities::course_offerings::Column::Title)
         .column(entities::course_offerings::Column::StartDate)
         .into_model::<CourseOfferingReturnModel>()
-        .all(db).await;
+        .all(db)
+        .await;
     // return course offering result
     match course_offering_result {
         Ok(course_offering_result) => HttpResponse::Ok().json(web::Json(course_offering_result)),
         Err(e) => {
             log::warn!("Db broke?: {:?}", e);
             HttpResponse::InternalServerError().json("Db Broke")
-        },
+        }
     }
 }
 
@@ -116,7 +128,6 @@ async fn gen_unique_inv_code() -> String {
         }
     }
 }
-
 
 fn gen_inv_code() -> String {
     let mut rng = rand::thread_rng();
