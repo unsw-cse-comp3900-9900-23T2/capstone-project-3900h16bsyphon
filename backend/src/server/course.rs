@@ -24,11 +24,7 @@ use chrono::NaiveDate;
 
 const INV_CODE_LEN: usize = 6;
 
-<<<<<<< HEAD
 use models::{CreateOfferingBody, JoinWithTutorLink};
-=======
-use models::{AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink};
->>>>>>> main
 
 pub async fn create_offering(
     token: ReqData<TokenClaims>,
