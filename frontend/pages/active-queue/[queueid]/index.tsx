@@ -1,11 +1,15 @@
 import { Box, Button, Typography } from '@mui/material';
 import styles from './ActiveQueue.module.css';
 import { useRouter } from 'next/router';
+import StudentQueueRequestCard from '../../../components/StudentQueueRequestCard';
+import MetaData from '../../../components/MetaData';
+import Header from '../../../components/Header';
 
 
 const requests = [
   {
     zid: 'z5303033',
+    requestId: 0,
     firstName: 'Jane',
     lastName: 'Doe',
     title: 'Pls help me with printing this array - im so stuck!',
@@ -17,6 +21,7 @@ const requests = [
   },
   {
     zid: 'z5303033',
+    requestId: 1,
     firstName: 'Jane',
     lastName: 'Doe',
     title: 'Pls help me with printing this array - im so stuck!',
@@ -28,9 +33,10 @@ const requests = [
   },
   {
     zid: 'z5303033',
+    requestId: 2,
     firstName: 'Jane',
     lastName: 'Doe',
-    title: 'Pls help me with printing this array - im so stuck!',
+    title: 'Pls help me with printing this array - im so stuck! This is a longer title',
     tags: ['Assignment 1', 'Subset 0'],
     previousRequests: 5,
     status: 'Claimed',
@@ -52,21 +58,31 @@ const ActiveQueue = () => {
   const router = useRouter();
   
   return <>
+    <MetaData />
+    <Header />
     <div className={styles.pageContainer}>
       <div className={styles.queueTitle}>
         <Typography className={styles.text} variant='h2'>
-          Queue Title
+          {requestData.queueTitle}
         </Typography>
       </div>
       <Box className={styles.cardBox}>
         <div>
           <Button variant='contained' onClick={() => router.push(`/queue/${requestData.courseId}`)}>Resolve</Button>
         </div>
-        <div>
+        <div className={styles.requestCardContainer}>
           {/* list of student cards here */}
-          {/* {requestData.requests.map((request, i) => {
-          })} */}
-          
+          {requestData.requests.map((request) => {
+            return <StudentQueueRequestCard 
+              key={request.requestId}  
+              zid={request.zid}
+              firstName={request.firstName}
+              lastName={request.lastName}
+              tags={request.tags}
+              title={request.title}
+              previousRequests={request.previousRequests}
+            />;
+          })}
         </div>
       </Box>
     </div>
