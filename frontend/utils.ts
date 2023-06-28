@@ -31,7 +31,7 @@ export const authenticatedPostFetch = async (route: string, body: any) => {
 };
 
 export const authenticatedGetFetch = async (route: string, queryStrings: Record<string, string>) => {
-  return fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}${route}${new URLSearchParams(queryStrings)}`, {
+  return fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}${route}?${new URLSearchParams(queryStrings)}`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${getToken()}`,
@@ -42,3 +42,24 @@ export const authenticatedGetFetch = async (route: string, queryStrings: Record<
 export const getToken = () => getCookie('token');
 
 export const setToken = (token: string) => setCookie('token', token);
+
+export function toCamelCase(obj: any) {
+  let rtn = obj;
+  if (!rtn) {
+    return rtn;
+  } else if (typeof (obj) === 'object') {
+    if (obj instanceof Array) {
+      rtn = obj.map(toCamelCase);
+    } else {
+      rtn = {};
+      for (let key in obj) {
+        // eslint-disable-next-line no-prototype-builtins
+        if (obj.hasOwnProperty(key)) {
+          const newKey = key.replace(/(_\w)/g, k => k[1].toUpperCase());
+          rtn[newKey] = toCamelCase(obj[key]);
+        }
+      }
+    }
+  }
+  return rtn;
+}

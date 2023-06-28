@@ -36,8 +36,8 @@ const QueueCreationPage = () => {
   const [timeLimit, setTimeLimit] = useState(0);
   const [course, setCourse] = useState('COMP1521');
   const [announcement, setAnnouncement] = useState<string>('hi');
+  const router = useRouter();
 
-  let router = useRouter();
   const submit = async () => {
     const body = {
       title: title,
@@ -50,7 +50,8 @@ const QueueCreationPage = () => {
       announcement: announcement,
       course_id: Number.parseInt(`${router.query.id}`),
     };
-    let res = await authenticatedPostFetch('/queue-creation/create', body);
+    let res = await authenticatedPostFetch('/queue/create', body);
+    router.push(`/queue/${router.query.id}`);
   };
   return (
     <ThemeProvider theme={theme}>

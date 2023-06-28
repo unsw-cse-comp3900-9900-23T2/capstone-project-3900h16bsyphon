@@ -44,13 +44,29 @@ async fn main() -> std::io::Result<()> {
                 web::get().to(server::hello).wrap(amw.clone()),
             )
             .route(
-                "/queue-creation/create", 
-                web::post().to(server::queue_creation::create)
+                "/user/list",
+                web::get().to(server::user::get_users).wrap(amw.clone())
+            )
+            .route(
+                "/queue/create", 
+                web::post().to(server::queue::create_queue)
+                .wrap(amw.clone())
+            )
+            .route(
+                "/queue/get_by_course", 
+                web::get().to(server::queue::get_queues_by_course)
+                .wrap(amw.clone())
             )
             .route(
                 "/course/create_offering",
                 web::post()
                     .to(server::course::create_offering)
+                    .wrap(amw.clone()),
+            )
+            .route(
+                "/course/get",
+                web::get()
+                    .to(server::course::get_offering_by_id)
                     .wrap(amw.clone()),
             )
             .route(

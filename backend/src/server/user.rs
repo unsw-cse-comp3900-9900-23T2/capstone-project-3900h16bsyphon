@@ -18,7 +18,7 @@ pub struct UserReturnModel {
 pub async fn get_users(token: ReqData<TokenClaims>) -> HttpResponse {
     let db = &db_connection().await;
 
-    if let Err(err) = validate_admin(&token, db).await {
+    if let Err(err) = validate_user(&token, db).await {
         return err;
     }
 
