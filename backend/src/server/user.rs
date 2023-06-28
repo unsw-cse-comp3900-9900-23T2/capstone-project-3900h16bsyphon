@@ -15,7 +15,43 @@ pub struct UserReturnModel {
     last_name: String,
 }
 
+pub struct UserProfileReturnModel {
+    zid: i32,
+    first_name: String,
+    last_name: String,
+    tutor: Vec<String>,
+    course_admin: Vec<String>,
+}
+
 pub async fn get_users(token: ReqData<TokenClaims>) -> HttpResponse {
+    let db = &db_connection().await;
+
+    if let Err(err) = validate_admin(&token, db).await {
+        return err;
+    }
+
+    // get all users from db
+    let users = entities::users::Entity::find()
+        .select_only()
+        .column(entities::users::Column::Zid)
+        .column(entities::users::Column::FirstName)
+        .column(entities::users::Column::LastName)
+        .filter(entities::users::Column::IsOrgAdmin.ne(true))
+        .into_model::<UserReturnModel>()
+        .all(db)
+        .await;
+
+    // return users
+    match users {
+        Ok(users) => HttpResponse::Ok().json(users),
+        Err(e) => {
+            log::warn!("Db broke?: {:?}", e);
+            HttpResponse::InternalServerError().json("Db Broke")
+        }
+    }
+}
+
+pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
     let db = &db_connection().await;
 
     if let Err(err) = validate_admin(&token, db).await {
