@@ -53,6 +53,8 @@ async fn main() -> std::io::Result<()> {
                     .to(server::course::create_offering)
                     .wrap(amw.clone()),
             )
+            .route("/course/list", web::get().to(server::course::get_offerings).wrap(amw.clone()))
+            .route("/user/list", web::get().to(server::user::get_users).wrap(amw.clone()))
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
     })

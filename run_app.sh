@@ -4,6 +4,7 @@ exit_script() {
     # kill everything on 8000 and 3000
     lsof -i tcp:8000 -Fp | sed 's/^p//' | xargs -r kill
     lsof -i tcp:3000 -Fp | sed 's/^p//' | xargs -r kill
+    killall cargo-watch
     trap - SIGINT SIGTERM # clear the trap
 }
 

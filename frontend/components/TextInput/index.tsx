@@ -9,12 +9,13 @@ type TextInputProps = {
   value: string,
   setValue: Dispatch<SetStateAction<string>>,
   type?: HTMLInputTypeAttribute,
-  error: string
+  error?: string,
+  className?: string
 };
 
-const TextInput = ({ label, value, setValue, type, error }: TextInputProps) => (
+const TextInput = ({ label, value, setValue, type, error, className }: TextInputProps) => (
   <FormControlLabel
-    className={styles.formItem} control={
+    className={[styles.formItem, className].filter((s) => !!s).join(' ')} control={
       <TextField
         fullWidth
         value={value}

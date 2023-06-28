@@ -36,3 +36,7 @@
   color: #122c9e;
   text-decoration-line: underline;
 }
+
+.formInput {
+  width: 70lvh;
+}

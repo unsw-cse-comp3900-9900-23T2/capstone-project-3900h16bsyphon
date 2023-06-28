@@ -5,11 +5,18 @@ use actix_web::{
 use futures::executor::block_on;
 use rand::Rng;
 use regex::Regex;
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, FromQueryResult, QueryFilter,
+    QuerySelect,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-use crate::{database_utils::db_connection, entities};
+use crate::{
+    database_utils::db_connection,
+    entities,
+    server::user::{validate_admin, validate_user},
+};
 
 use chrono::NaiveDate;
 
@@ -22,32 +29,17 @@ pub struct CreateOfferingBody {
     course_code: String,
     title: String,
     start_date: Option<NaiveDate>,
-    admins: Option<Vec<i32>>,
+    admins: Vec<i32>,
 }
 
 pub async fn create_offering(
     token: ReqData<TokenClaims>,
     body: web::Json<CreateOfferingBody>,
 ) -> HttpResponse {
-    let creator_id = token.username;
     let db = &db_connection().await;
-    let user = entities::users::Entity::find_by_id(creator_id)
-        .one(db)
-        .await;
-
-    // Validate Admin Perms
-    match user {
-        Ok(Some(user)) => {
-            if !user.is_org_admin {
-                return HttpResponse::Forbidden().json("Not Admin");
-            }
-        }
-        Ok(None) => return HttpResponse::Forbidden().json("User Does Not Exist"),
-        Err(e) => {
-            log::warn!("Db broke?: {:?}", e);
-            return HttpResponse::InternalServerError().json("Db Broke");
-        }
-    };
+    if let Err(err) = validate_admin(&token, db).await {
+        return err;
+    }
 
     // Validate Course Data
     if let Err(e) = body.validate() {
@@ -68,13 +60,46 @@ pub async fn create_offering(
     log::info!("Created Course: {:?}", course);
 
     // Add admins
-    body.admins.map(|tutors| {
-        tutors.into_iter()
-            .map(|id| add_course_admin(course.course_offering_id, id))
-            .for_each(|f| block_on(f))
-    });
+    body.admins
+        .into_iter()
+        .map(|id| add_course_admin(course.course_offering_id, id))
+        .for_each(|f| block_on(f));
 
     HttpResponse::Ok().json(web::Json(course))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct CourseOfferingReturnModel {
+    course_offering_id: i32,
+    course_code: String,
+    title: String,
+    start_date: Option<NaiveDate>,
+}
+
+pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
+    let db = &db_connection().await;
+    let error = validate_user(&token, db).await.err();
+    if error.is_some() {
+        return error.unwrap();
+    }
+
+    let course_offering_result = entities::course_offerings::Entity::find()
+        .select_only()
+        .column(entities::course_offerings::Column::CourseOfferingId)
+        .column(entities::course_offerings::Column::CourseCode)
+        .column(entities::course_offerings::Column::Title)
+        .column(entities::course_offerings::Column::StartDate)
+        .into_model::<CourseOfferingReturnModel>()
+        .all(db)
+        .await;
+    // return course offering result
+    match course_offering_result {
+        Ok(course_offering_result) => HttpResponse::Ok().json(web::Json(course_offering_result)),
+        Err(e) => {
+            log::warn!("Db broke?: {:?}", e);
+            HttpResponse::InternalServerError().json("Db Broke")
+        }
+    }
 }
 
 async fn add_course_admin(course_id: i32, tutor_id: i32) {
@@ -104,7 +129,6 @@ async fn gen_unique_inv_code() -> String {
     }
 }
 
-
 fn gen_inv_code() -> String {
     let mut rng = rand::thread_rng();
     (0..INV_CODE_LEN)
@@ -120,7 +144,7 @@ impl CreateOfferingBody {
         let errs = json!({
             "course_code": Self::validate_code(&self.course_code).err(),
             "title": Self::validate_title(&self.title).err(),
-            "tutors_dont_exist": Self::validate_tutors(&self.admins).err(),
+            "admins": Self::validate_tutors(&self.admins).err(),
         });
         if errs.as_object().unwrap().values().any(|v| !v.is_null()) {
             return Err(HttpResponse::BadRequest().json(errs));
@@ -128,11 +152,7 @@ impl CreateOfferingBody {
         Ok(())
     }
 
-    fn validate_tutors(tutors: &Option<Vec<i32>>) -> Result<(), Vec<i32>> {
-        let tutors = match tutors {
-            Some(tutors) => tutors,
-            None => return Ok(()),
-        };
+    fn validate_tutors(tutors: &Vec<i32>) -> Result<(), Vec<i32>> {
         let non_exist: Vec<i32> = tutors
             .into_iter()
             .filter(|id| !block_on(check_user_exists(**id)))
@@ -161,7 +181,7 @@ impl CreateOfferingBody {
     }
 
     fn validate_code(code: &str) -> Result<(), String> {
-        if Regex::new("^[A-Z]{4}[0-9]{4}$").unwrap().is_match(code) {
+        if !Regex::new("^[A-Z]{4}[0-9]{4}$").unwrap().is_match(code) {
             return Err(String::from(
                 "Invalid Course Code. Must Match ^[A-Z]{4}[0-9]{4}$",
             ));
