@@ -48,7 +48,7 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, previousRequ
 
   return <>
     <Card className={styles.card} style={{ backgroundColor }}>
-      <CardActionArea className={styles.cardContent} onClick={() => router.push('/wait/1')}>
+      <CardActionArea className={styles.cardContent} onClick={() => router.push(`/request/${requestId}`)}>
         <div className={styles.cardHeader}>
           <div className={styles.zidNameContainer}>
             <div>

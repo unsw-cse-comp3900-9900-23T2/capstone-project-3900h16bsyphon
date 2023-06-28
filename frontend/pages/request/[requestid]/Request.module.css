@@ -1,0 +1,45 @@
+.pageContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.text {
+    font-family: Lato;
+}
+
+.cardBox {
+    padding: 0px 50px;
+    font-family: 'Lato';
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 25px;
+}
+
+.queueTitle {
+    padding: 25px 0px;
+}
+
+.greenButton {
+    font-family: Lato;
+    font-weight: bold;
+    padding: 5px 25px;
+    background-color: var(--colour-main-green-400);
+    color: var(--colour-main-green-900);
+}
+
+.redButton {
+    font-family: Lato;
+    font-weight: bold;
+    padding: 5px 25px;
+    background-color: var(--colour-main-red-200);
+    color: var(--colour-main-red-900);
+}
+
+.buttonContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 25%;
+}

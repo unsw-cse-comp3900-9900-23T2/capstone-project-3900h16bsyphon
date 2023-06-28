@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {  
   Card, 
   CardContent, 
@@ -13,13 +13,32 @@ interface StudentRequestCardProps {
   lastName: string,
   title: string,
   tags: string[],
+  status: string,
   previousRequests: number,
   description: string,
 }
 
-const StudentRequestCard = ({ zid, firstName, lastName, title, description, previousRequests, tags}: StudentRequestCardProps) => {
+const StudentRequestCard = ({ zid, firstName, lastName, title, description, previousRequests, tags, status }: StudentRequestCardProps) => {
 
-  return <Card className={styles.cardContainer}>
+  const determineBackgroundColor = ( status: string ) => {
+    // TOOD: standardize these request status 
+    switch (status) {
+    case 'Resolved':
+      return '#EDFFEE';
+    case 'Unresolved':
+      return 'white';
+    case 'In Progress':
+      return '#E3F0FC';
+    case 'Not Found':
+      return '#F8E9E9';
+    default:
+      return 'white';
+    }
+  };
+
+  const [backgroundColor, setBackgroundColor] = useState(determineBackgroundColor(status));
+
+  return <Card style={{ backgroundColor }} className={styles.cardContainer}>
     <CardContent className={styles.cardContent}>
       <div className={styles.cardHeader}>
         <div className={styles.zidNameContainer}>
