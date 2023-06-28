@@ -7,20 +7,37 @@ import Header from '../../components/Header';
 import MetaData from '../../components/MetaData';
 import Footer from '../../components/Footer';
 import CreateCourseOfferingModal from '../../components/CreateCourseOfferingModal';
+import { useEffect, useState } from 'react';
+import { authenticatedGetFetch } from '../../utils';
 
-const data = [
-  {
-    title: 'COMP1531 - javascript backend course',
-  },
-  {
-    title: 'COMP3900 - project course',
-  },
-  {
-    title: 'COMP2511 - software art course',
-  }
-];
+type CourseOffering = {
+  title: string;
+  courseCode: string;
+  startDate: string;
+  courseOfferingId: number;
+}
 
 const Dashboard: NextPage = () => {
+  const [data, setData] = useState<CourseOffering[]>([]);
+  useEffect(() => {
+    const fetchCourseOfferings = async () => {
+      let res = await authenticatedGetFetch('/course/list', {});
+      if (!res.ok) {
+        console.error('authentication failed, or something broke, check network tab');
+        return;
+      }
+      let data = await res.json();
+      setData(data.map((course: any) => (
+        {
+          title: course.title,
+          courseCode: course.course_code,
+          startDate: course.start_date,
+          courseOfferingId: course.course_offering_id
+        }
+      )));
+    };
+    fetchCourseOfferings();
+  }, []);
   return (
     <>
       <MetaData />
@@ -33,7 +50,7 @@ const Dashboard: NextPage = () => {
           </div>
           <div className={styles.cards}>
             {data.map((d, index) => (
-              <CourseOfferingCard key={index} title={d.title} />
+              <CourseOfferingCard key={index} title={`${d.courseCode} - ${d.title}`} />
             ))}
           </div>
           <div className={styles.tutorSection}>

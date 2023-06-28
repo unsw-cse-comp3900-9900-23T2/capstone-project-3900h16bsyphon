@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './CreateCourseQueueModal.module.css';
 import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
@@ -6,71 +6,78 @@ import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import TextField from '@mui/material/TextField';
-import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { authenticatedGetFetch, authenticatedPostFetch } from '../../utils';
+import TextInput from '../TextInput';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Typography from '@mui/material/Typography';
 
-const data = ['Hussain', 'Peter', 'Joanna'];
+type UserData = {
+  first_name: string;
+  last_name: string;
+  zid: string;
+}
 
 const CreateCourseOfferingModal = () => {
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState('');
-  const [inputLength, setInputLength] = useState(0);
-  const [error, setError] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [admin, setAdmin] = useState('');
+  const [courseCode, setCourseCode] = useState('');
+  const [courseTitle, setCourseTitle] = useState('');
+  const [error, setError] = useState({
+    courseCode: '',
+    courseTitle: '',
+    date: '',
+    admins: '',
+  });
+  const [admins, setAdmins] = useState<string[]>([]);
   const [date, setDate] = useState<Dayjs | null>(dayjs(new Date()));
+  const [data, setData] = useState<UserData[]>([]);
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      let res = await authenticatedGetFetch('/user/list', {});
+      if (!res.ok) {
+        console.error('authentication failed, or something broke, check network tab');
+        return;
+      }
+      let data = await res.json();
+      setData(data);
+    };
+    fetchUsers();
+  }, []);
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
-    setInput('');
-    setError(false);
-    setErrorMsg('');
-    setInputLength(0);
+    setError({
+      courseCode: '',
+      courseTitle: '',
+      date: '',
+      admins: '',
+    });
     setDate(dayjs(new Date()));
     setOpen(false);
   };
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    getWordCount(event.target.value);
-    setInput(event.target.value);
-  };
-
-  const handleAdminChange = (event: ChangeEvent<HTMLInputElement>) => setAdmin(event.target.value);
-
-  const validate = () => {
-    if (inputLength >= 25) {
-      setErrorMsg('Course title must be less than 25 words');
-      return false;
-    } else if (inputLength === 0) {
-      setErrorMsg('Course title cannot be empty');
-      return false;
-    } else if (admin.length === 0) {
-      setErrorMsg('Admin field cannot be empty');
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = () => {
-    const validation = validate();
-    setError(!validation);
-    if (!validation) return;
-    console.log(`input has gone through ${input} ${admin}`);
-    handleClose();
-  };
-
-  const getWordCount = (value: string) => {
-    if (value.trim() === '') {
-      setInputLength(0);
+  const handleSubmit = async () => {
+    let res = await authenticatedPostFetch('/course/create_offering', {
+      course_code: courseCode,
+      title: courseTitle,
+      start_date: date?.add(dayjs().utcOffset(), 'minute').format('YYYY-MM-DD'),
+      admins,
+    });
+    if (res.ok) {
+      handleClose();
       return;
     }
-    const words = value.trim().split(/\s+/);
-    setInputLength(words.length);
+    let data = await res.json();
+    setError({
+      courseCode: data.course_code,
+      courseTitle: data.title,
+      date: data.start_date,
+      admins: data.admins,
+    });
   };
 
   return (
@@ -92,33 +99,47 @@ const CreateCourseOfferingModal = () => {
               <CloseIcon />
             </IconButton>
           </div>
-          {error && (
-            <Alert severity="error">{errorMsg}</Alert>
-          )}
-          <div className={styles.courseTitle}>
-            <p>Course title</p>
-            <p>Word count: {inputLength}</p>
-          </div>
-          <TextField value={input} onChange={handleInputChange} multiline rows={4}/>
-          <p>Start date</p>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DemoContainer components={['DatePicker']}>
-              <DatePicker defaultValue={date ? date : undefined} onChange={(e) => setDate(e)} />
-            </DemoContainer>
-          </LocalizationProvider>
-          <p>Admins</p>
-          <Autocomplete
-            multiple
-            id="tags-standard"
-            options={data}
-            getOptionLabel={(option) => option}
-            onChange={() => handleAdminChange(event as unknown as ChangeEvent<HTMLInputElement>)}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                onChange={handleAdminChange}
+          <TextInput label='Course Code' value={courseCode} setValue={setCourseCode} error={error.courseCode} />
+          <TextInput label='Course Title' value={courseTitle} setValue={setCourseTitle} error={error.courseTitle} />
+          <FormControlLabel
+            className={styles.formItem}
+            control={
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  slotProps={{
+                    textField: {
+                      fullWidth: true, error: !!error.date, helperText: error.date
+                    }
+                  }}
+                  defaultValue={date ? date : undefined}
+                  onChange={(e) => setDate(e)}
+                />
+              </LocalizationProvider>
+            }
+            labelPlacement='top'
+            label={<Typography className={styles.label}>Start Date</Typography>}
+          />
+          <FormControlLabel
+            className={styles.formItem}
+            control={
+              <Autocomplete
+                fullWidth
+                multiple
+                id="tags-standard"
+                options={data.map((option) => `${option.first_name} ${option.last_name} (${option.zid})`)}
+                getOptionLabel={(option) => option}
+                onChange={(_, value) => {
+                  let matches = data.filter((user) => {
+                    let dataString = `${user.first_name} ${user.last_name} (${user.zid})`;
+                    return value.includes(dataString);
+                  });
+                  setAdmins(matches.map((user) => user.zid));
+                }}
+                renderInput={(params) => (<TextField {...params} fullWidth error={!!error.admins} helperText={error.admins} />)}
               />
-            )}
+            }
+            labelPlacement='top'
+            label={<Typography className={styles.label}>Admins</Typography>}
           />
           <Button onClick={handleSubmit} className={styles.createBtn}>
 						Create course
