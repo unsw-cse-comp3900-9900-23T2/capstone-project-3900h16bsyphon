@@ -68,7 +68,7 @@ const ActiveQueue = () => {
       </div>
       <Box className={styles.cardBox}>
         <div>
-          <Button variant='contained' onClick={() => router.push(`/queue/${requestData.courseId}`)}>Resolve</Button>
+          <Button className={styles.closeQueueButton} variant='contained' onClick={() => router.push(`/queue/${requestData.courseId}`)}>Close Queue</Button>
         </div>
         <div className={styles.requestCardContainer}>
           {/* list of student cards here */}
