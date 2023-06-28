@@ -1,8 +1,7 @@
-use actix_web::{HttpResponse, web::ReqData, web};
+use actix_web::{HttpResponse};
 use sea_orm::prelude::{DateTimeLocal};
 use serde::{Serialize, Deserialize};
-
-use super::auth::TokenClaims;
+use serde_json::from_str;
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct FAQs{
@@ -14,15 +13,11 @@ pub struct FAQs{
 pub struct CreateQueueRequest{
     pub title: String,
     pub date: DateTimeLocal,
-    pub time_start: DateTimeLocal,
-    pub time_end: DateTimeLocal,
-
 }
 
-pub async fn create(
-    token: ReqData<TokenClaims>,
-    body: web::Json<CreateQueueRequest>) -> HttpResponse {
+pub async fn create(req_body: String) -> HttpResponse {
 
+    let queue_creation_request: CreateQueueRequest = from_str(&req_body).unwrap();
     HttpResponse::Ok().body("Queue created")
 }
 
