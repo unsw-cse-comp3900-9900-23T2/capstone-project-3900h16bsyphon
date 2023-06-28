@@ -21,3 +21,10 @@ on organising our Epics and assigning them to our team so that we can write user
 user stories for User History. Then, we worked on the figma -> I made frontend designs for all User
 History pages as well as the various Queue Management Screens including Student/Tutor view of the queue,
 Tutor view of student requests as well as the student waiting screen.
+
+Week 4
+This week the main goal was to get started on Demo A. I was assigned work for User Profile and Create 
+Request so I focussed on those two pages. This week - I really only had time to finish User Profile and 
+aim to finish the rest of my assigned tasks next week before the end of the first sprint. Also, a 
+primary goal of mine in this sprint is to familiarise myself with backend code so that I am able to
+easily integrate my frontend and backend components.
