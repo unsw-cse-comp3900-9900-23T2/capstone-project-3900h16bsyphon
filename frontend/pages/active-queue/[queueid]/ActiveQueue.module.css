@@ -21,3 +21,7 @@
     padding: 25px 0px;
 }
 
+.testComponent {
+    background-color: pink;
+    width: 100%;
+}

@@ -41,6 +41,8 @@ const requests = [
 
 const requestData = {
   queueTitle: 'COMP1521 Thursday Week 5 Help Session',
+  queueId: 1,
+  courseId: 1,
   requests
 };
 
@@ -58,13 +60,13 @@ const ActiveQueue = () => {
       </div>
       <Box className={styles.cardBox}>
         <div>
-          <Button variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
+          <Button variant='contained' onClick={() => router.push(`/queue/${requestData.courseId}`)}>Resolve</Button>
         </div>
         <div>
           {/* list of student cards here */}
           {/* {requestData.requests.map((request, i) => {
-
           })} */}
+          
         </div>
       </Box>
     </div>
