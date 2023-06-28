@@ -1,0 +1,10 @@
+.grid {
+    display: flex;
+    grid-template-columns: repeat(2, 1);
+    grid-gap: 1em;
+}
+
+.pageTitle {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}

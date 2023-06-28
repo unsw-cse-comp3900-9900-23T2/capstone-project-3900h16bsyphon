@@ -1,6 +1,9 @@
 //! This file contains all the prelude imports for the project.
 //! Helps in keeping `main.rs` clean.
 
+use actix_web::web::Json;
+use crate::server::auth::{create_user, CreateUserBody};
+
 /// Secret used to hash passwords.
 /// Requires `SECRET` to be set as and environemnt variable or in
 /// a `.env` file in the root of the project, or a parent folder.
@@ -19,6 +22,39 @@ pub fn host_port_from_env() -> (String, u16) {
         .unwrap_or(None)
         .unwrap_or(DEFAULT_PORT);
     (host, port)
+}
+
+pub async fn register_org_admins() {
+    let admin_pass = std::env::var("ADMIN_PASS").expect("ADMIN_PASS not set");
+    let created_res = create_user(Json(CreateUserBody {
+        first_name: "Admin".into(),
+        last_name: "Admin".into(),
+        zid: "z0000000".into(),
+        password: admin_pass,
+    }))
+    .await;
+    match created_res.status() {
+        actix_web::http::StatusCode::OK => log::info!("Created admin user"),
+        actix_web::http::StatusCode::CONFLICT => log::warn!("Admin already exists"),
+        actix_web::http::StatusCode::INTERNAL_SERVER_ERROR => {
+            return log::error!("Internal Error While Creating Admin")
+        }
+        _ => return log::error!("Error when creating admin: {:?}, {:?}", created_res, created_res.body()),
+    }
+    // Add Admin Perms
+    crate::server::auth::make_admin("z0000000").await;
+}
+
+#[cfg(debug_assertions)]
+#[inline(always)]
+pub const fn in_release_build() -> bool {
+    false
+}
+
+#[cfg(not(debug_assertions))]
+#[inline(always)]
+pub const fn in_release_build() -> bool {
+    true
 }
 
 /// Instantiates `env_logger` with the appropriate settings based on the environment.
@@ -49,16 +85,4 @@ pub fn startup_logger() {
     log::info!("Logger set up successfully!");
     log::info!("");
     log::info!("");
-}
-
-#[cfg(debug_assertions)]
-#[inline(always)]
-pub const fn in_release_build() -> bool {
-    false
-}
-
-#[cfg(not(debug_assertions))]
-#[inline(always)]
-pub const fn in_release_build() -> bool {
-    true
 }

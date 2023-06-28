@@ -26,12 +26,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "actix-cors"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b340e9cfa5b08690aae90fb61beb44e9b06f44fe3d0f93781aaa58cfba86245e"
+dependencies = [
+ "actix-utils",
+ "actix-web",
+ "derive_more",
+ "futures-util",
+ "log",
+ "once_cell",
+ "smallvec",
+]
+
+[[package]]
 name = "actix-demo"
 version = "0.1.0"
 dependencies = [
+ "actix-cors",
  "actix-web",
  "actix-web-httpauth",
  "base64 0.21.2",
+ "chrono",
  "dotenv",
  "dotenv_codegen",
  "env_logger",
@@ -40,9 +57,11 @@ dependencies = [
  "jwt",
  "log",
  "rand",
+ "regex",
  "rust-argon2",
  "sea-orm",
  "serde",
+ "serde_json",
  "sha2",
 ]
 
@@ -194,7 +213,7 @@ dependencies = [
  "serde_urlencoded",
  "smallvec",
  "socket2",
- "time",
+ "time 0.3.22",
  "url",
 ]
 
@@ -719,8 +738,11 @@ checksum = "ec837a71355b28f6556dbd569b37b3f363091c0bd4b2e735674521b4c5fd9bc5"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "time 0.1.45",
+ "wasm-bindgen",
  "winapi",
 ]
 
@@ -758,7 +780,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e859cd57d0710d9e06c381b550c06e76992472a8c6d527aecd2fc673dcc231fb"
 dependencies = [
  "percent-encoding",
- "time",
+ "time 0.3.22",
  "version_check",
 ]
 
@@ -1168,7 +1190,7 @@ checksum = "be4136b2a15dd319360be1c07d9933517ccf0be8f16bf62a3bee4f0d618df427"
 dependencies = [
  "cfg-if",
  "libc",
- "wasi",
+ "wasi 0.11.0+wasi-snapshot-preview1",
 ]
 
 [[package]]
@@ -1562,7 +1584,7 @@ checksum = "927a765cd3fc26206e66b296465fa9d3e5ab003e651c1b3c060e7956d96b19d2"
 dependencies = [
  "libc",
  "log",
- "wasi",
+ "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.48.0",
 ]
 
@@ -1837,7 +1859,7 @@ dependencies = [
  "postgres-protocol",
  "serde",
  "serde_json",
- "time",
+ "time 0.3.22",
  "uuid",
 ]
 
@@ -2144,7 +2166,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sqlx",
- "time",
+ "time 0.3.22",
  "tracing",
  "url",
  "uuid",
@@ -2175,7 +2197,7 @@ dependencies = [
  "sea-query-derive",
  "sea-query-driver",
  "serde_json",
- "time",
+ "time 0.3.22",
  "uuid",
 ]
 
@@ -2282,9 +2304,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.96"
+version = "1.0.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "057d394a50403bcac12672b2b18fb387ab6d289d957dab67dd201875391e52f1"
+checksum = "46266871c240a00b8f503b877622fe33430b3c7d963bdc0f2adc511e54a1eae3"
 dependencies = [
  "itoa",
  "ryu",
@@ -2444,7 +2466,7 @@ dependencies = [
  "sqlx-rt",
  "stringprep",
  "thiserror",
- "time",
+ "time 0.3.22",
  "url",
  "uuid",
  "whoami",
@@ -2566,6 +2588,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.18",
+]
+
+[[package]]
+name = "time"
+version = "0.1.45"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b797afad3f312d1c66a56d11d0316f916356d11bd158fbc6ca6389ff6bf805a"
+dependencies = [
+ "libc",
+ "wasi 0.10.0+wasi-snapshot-preview1",
+ "winapi",
 ]
 
 [[package]]
@@ -2766,6 +2799,12 @@ name = "waker-fn"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d5b2c62b4012a3e1eca5a7e077d13b3bf498c4073e33ccd58626607748ceeca"
+
+[[package]]
+name = "wasi"
+version = "0.10.0+wasi-snapshot-preview1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a143597ca7c7793eff794def352d41792a93c481eb1042423ff7ff72ba2c31f"
 
 [[package]]
 name = "wasi"

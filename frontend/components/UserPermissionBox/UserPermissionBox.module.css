@@ -1,0 +1,21 @@
+.cardBox {
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--stroke, #E7E7E7);
+}
+
+.courseOfferingContainer {
+    font-size: large;
+}
+
+.permissionTag {
+    background-color: #E9E6FD;
+    color: #3E368F;
+    padding: 7px;
+    font-weight: bold;
+    font-size: small;
+    border-radius: 5%;
+}

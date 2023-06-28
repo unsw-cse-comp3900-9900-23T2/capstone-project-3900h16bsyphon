@@ -10,3 +10,7 @@ Week 3
 - Set up repo to run a frontend, and a small backend with connected db, run under docker
 - described how our user stories are related to objective
 - described how some of our user stories are novel
+
+Week 4
+- wrote fe code for landing page
+- wrote migration for setting up all the database tables

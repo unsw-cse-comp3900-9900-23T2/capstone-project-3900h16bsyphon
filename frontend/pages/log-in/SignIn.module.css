@@ -1,0 +1,42 @@
+.main {
+  flex: 1;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  width: 70%;
+  justify-self: center;
+}
+
+.container {
+  display: flex;
+}
+
+.title {
+  margin-top: 15vh;
+  font-size: 100px;
+  font-weight: 600;
+}
+
+.error {
+  color: red;
+}
+
+.form {
+  padding-top: 10vh;
+  display: flex;
+  padding-bottom: 10vh;
+  row-gap: 7vh;
+}
+
+.accountText {
+  margin-top: 5vh;
+}
+
+.signUp {
+  color: #122c9e;
+  text-decoration-line: underline;
+}
+
+.formInput {
+  width: 70lvh;
+}
