@@ -96,6 +96,39 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
     }
 }
 
+#[derive(Deserialize)]
+pub struct GetOfferingByIdQuery {
+    course_id: i32
+}
+
+
+pub async fn get_offering_by_id(token: ReqData<TokenClaims>,body: web::Json<GetOfferingByIdQuery> ) -> HttpResponse {
+    let db = &db_connection().await;
+    let error = validate_user(&token, db).await.err();
+    if error.is_some() {
+        return error.unwrap();
+    }
+
+    let course_offering_result = entities::course_offerings::Entity::find_by_id(body.course_id)
+        .select_only()
+        .column(entities::course_offerings::Column::CourseOfferingId)
+        .column(entities::course_offerings::Column::CourseCode)
+        .column(entities::course_offerings::Column::Title)
+        .column(entities::course_offerings::Column::StartDate)
+        .filter(entities::tutors::Column::IsCourseAdmin.eq(true))
+        .into_model::<CourseOfferingReturnModel>()
+        .one(db)
+        .await;
+    // return course offering result
+    match course_offering_result {
+        Ok(course_offering_result) => HttpResponse::Ok().json(web::Json(course_offering_result)),
+        Err(e) => {
+            log::warn!("Db broke?: {:?}", e);
+            HttpResponse::InternalServerError().json("Db Broke")
+        }
+    }
+}
+
 /// Add a tutor to the given course.
 /// ## Preconditions
 /// - The user making the request must be a course admin

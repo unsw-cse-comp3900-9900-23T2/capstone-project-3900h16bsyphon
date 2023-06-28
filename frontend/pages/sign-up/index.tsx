@@ -47,7 +47,12 @@ const SignIn: NextPage = () => {
       });
     let response = await res.json();
     if (!res.ok) {
-      setError(response);
+      setError({
+        firstName : response.first_name,
+        lastName: response.last_name,
+        zid,
+        password
+      });
       return;
     }
     setError({
