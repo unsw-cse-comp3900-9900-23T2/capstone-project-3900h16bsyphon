@@ -6,6 +6,7 @@ import styles from './ViewQueue.module.css';
 import QueueCard from '../../../components/QueueCard';
 import Typography from '@mui/material/Typography';
 import Footer from '../../../components/Footer';
+import { useRouter } from 'next/router';
 
 const data = [
   {
@@ -35,6 +36,7 @@ const data = [
 ];
 
 const ViewQueue = () => {
+  let router = useRouter();
   return (
     <>
       <MetaData />
@@ -43,7 +45,7 @@ const ViewQueue = () => {
         <Typography variant="h3" className={styles.title}>COMP1000: 23T2</Typography>
         <div className={styles.section}>
           <h1 className={styles.heading}>Live</h1>
-          <Button startIcon={<AddIcon />} className={styles.newQueueBtn}>New Queue</Button>
+          <Button startIcon={<AddIcon />} className={styles.newQueueBtn} onClick={() => { router.push(`/queue-creation/${router.query.id}`); }}>New Queue</Button>
         </div>
         <div className={styles.cards}>
           {data.map((d, index) => (

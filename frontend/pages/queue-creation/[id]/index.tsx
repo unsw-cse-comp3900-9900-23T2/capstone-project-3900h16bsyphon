@@ -4,13 +4,14 @@ import dayjs, { Dayjs } from 'dayjs';
 import style from './queue-creation.module.css';
 import TextField from '@mui/material/TextField';
 import { FormGroup, Box, Typography, Button, Card} from '@mui/material';
-import SyphonDatePicker from '../../components/SyphonDatePicker';
-import SwitchToggles from '../../components/SwitchToggles';
-import SyphonTimePicker from '../../components/SyphonTimePicker';
-import FAQs from '../../components/FAQs';
+import SyphonDatePicker from '../../../components/SyphonDatePicker';
+import SwitchToggles from '../../../components/SwitchToggles';
+import SyphonTimePicker from '../../../components/SyphonTimePicker';
+import FAQs from '../../../components/FAQs';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Tags from '../../components/Tags';
-import { getToken } from '../../utils';
+import Tags from '../../../components/Tags';
+import { authenticatedPostFetch, getToken } from '../../../utils';
+import { useRouter } from 'next/router';
 
 const theme = createTheme({
   palette: {
@@ -32,20 +33,24 @@ const QueueCreationPage = () => {
   const [isAvailable, setIsAvailable] = useState(true);
   const [isTimeLimit, setIsTimeLimit] = useState(false);
   const [title, setTitle] = useState('');
+  const [timeLimit, setTimeLimit] = useState(0);
   const [course, setCourse] = useState('COMP1521');
+  const [announcement, setAnnouncement] = useState<string>('hi');
 
+  let router = useRouter();
   const submit = async () => {
-    const body = { date, timeStart, timeEnd, tags, isVisible, isAvailable, isTimeLimit, title, course };
-    
-    console.log('hi');
-    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}/queue-creation/create`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+    const body = {
+      title: title,
+      time_start: timeStart.format('YYYY-MM-DDTHH:mm:ss'),
+      time_end: timeEnd.format('YYYY-MM-DDTHH:mm:ss'),
+      tags: tags,
+      is_visible: isVisible,
+      is_available: isAvailable,
+      time_limit: timeLimit,
+      announcement: announcement,
+      course_id: Number.parseInt(`${router.query.id}`),
+    };
+    let res = await authenticatedPostFetch('/queue-creation/create', body);
   };
   return (
     <ThemeProvider theme={theme}>
@@ -79,6 +84,8 @@ const QueueCreationPage = () => {
               setIsVisible={setIsVisible}
               isTimeLimit={isTimeLimit}
               setIsTimeLimit={setIsTimeLimit}
+              timeLimit={timeLimit}
+              setTimeLimit={setTimeLimit}
             />
 
             <FAQs />
