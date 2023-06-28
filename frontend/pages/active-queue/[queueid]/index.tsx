@@ -39,7 +39,7 @@ const requests = [
     title: 'Pls help me with printing this array - im so stuck! This is a longer title',
     tags: ['Assignment 1', 'Subset 0'],
     previousRequests: 5,
-    status: 'Claimed',
+    status: 'In Progress',
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
   },
@@ -75,11 +75,13 @@ const ActiveQueue = () => {
           {requestData.requests.map((request) => {
             return <StudentQueueRequestCard 
               key={request.requestId}  
+              requestId={request.requestId}  
               zid={request.zid}
               firstName={request.firstName}
               lastName={request.lastName}
               tags={request.tags}
               title={request.title}
+              status={request.status}
               previousRequests={request.previousRequests}
             />;
           })}
