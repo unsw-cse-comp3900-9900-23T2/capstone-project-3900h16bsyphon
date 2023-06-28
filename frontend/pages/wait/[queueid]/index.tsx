@@ -38,8 +38,8 @@ const WaitingScreen = () => {
           </Typography>
         </div>
         <Box className={styles.cardBox}>
-          <div>
-            <Button variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
+          <div className={styles.buttonContainer}>
+            <Button className={styles.greenButton} variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
           </div>
           <StudentRequestCard 
             zid={requestData.zid}

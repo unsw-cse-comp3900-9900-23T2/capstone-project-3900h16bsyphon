@@ -21,3 +21,17 @@
     padding: 25px 0px;
 }
 
+.greenButton {
+    font-family: Lato;
+    font-weight: bold;
+    padding: 5px 25px;
+    background-color: var(--colour-main-green-400);
+    color: var(--colour-main-green-900);
+}
+
+.buttonContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 25%;
+}
