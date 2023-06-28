@@ -5,7 +5,7 @@ import { FormGroup, Typography } from '@mui/material';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import pageStyle from '../../pages/queue-creation/queue-creation.module.css';
+import pageStyle from '../../pages/queue-creation/[id]/queue-creation.module.css';
 import { Dayjs } from 'dayjs';
 import style from './SyphonTimePicker.module.css';
 

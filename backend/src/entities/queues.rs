@@ -8,11 +8,12 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub queue_id: i32,
+    pub title: String,
     pub start_time: DateTime,
     pub end_time: DateTime,
     pub is_visible: bool,
     pub is_available: bool,
-    pub time_limit: Option<Time>,
+    pub time_limit: Option<i32>,
     pub announcement: String,
     pub course_offering_id: i32,
 }

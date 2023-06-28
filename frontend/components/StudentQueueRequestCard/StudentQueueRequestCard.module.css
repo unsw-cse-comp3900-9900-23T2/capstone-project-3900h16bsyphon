@@ -1,0 +1,72 @@
+.card {
+    background-color: pink;
+    width: 100%;
+}
+
+.cardContent {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    padding: 20px;
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.zidNameContainer {
+    display: flex;
+    gap: 10px;
+}
+
+.previousRequestsContainer {
+    display: flex;
+}
+
+.text {
+    font-family: 'Lato';
+}
+
+.textHeading {
+    font-family: 'Lato';
+    font-weight: bold;
+}
+
+.cardContainer {
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 35px;
+}
+
+.titleContainer {
+    align-self: stretch;
+}
+
+.tagContainer {
+    display: flex;
+    gap: 5px;
+    width: 100%;
+}
+
+.cardActions {
+    padding: 10px 20px 20px 20px;
+}
+
+.claimButton {
+    font-family: Lato;
+    font-weight: bold;
+    background-color: var(--colour-main-green-400);
+    color: var(--colour-main-green-900);
+}
+
+.notFoundButton {
+    font-family: Lato;
+    font-weight: bold;
+    background-color: var(--colour-main-red-200);
+    color: var(--colour-main-red-900);
+}

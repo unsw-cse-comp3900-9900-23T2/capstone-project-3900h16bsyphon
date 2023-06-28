@@ -14,6 +14,7 @@ const requestData = {
   queueTitle: 'COMP1521 Thursday Week 5 Help Session',
   firstName: 'Jane',
   lastName: 'Doe',
+  status: 'Unresolved',
   title: 'Pls help me with printing this array - im so stuck!',
   tags: ['Assignment 1', 'Subset 0'],
   previousRequests: 5,
@@ -37,11 +38,12 @@ const WaitingScreen = () => {
           </Typography>
         </div>
         <Box className={styles.cardBox}>
-          <div>
-            <Button variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
+          <div className={styles.buttonContainer}>
+            <Button className={styles.greenButton} variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
           </div>
           <StudentRequestCard 
             zid={requestData.zid}
+            status={requestData.status}
             firstName={requestData.firstName}
             lastName={requestData.lastName}
             tags={requestData.tags}

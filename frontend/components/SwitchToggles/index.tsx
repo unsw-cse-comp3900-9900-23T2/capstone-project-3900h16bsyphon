@@ -10,9 +10,11 @@ type SwitchTogglesProps = {
     setIsAvailable: (isAvailable: boolean) => void,
     isTimeLimit: boolean,
     setIsTimeLimit: (isTimeLimit: boolean) => void,
+    timeLimit: number,
+    setTimeLimit: (timeLimit: number) => void,
 }
 
-const SwitchToggles = ({isVisible, setIsVisible, isAvailable, setIsAvailable, isTimeLimit, setIsTimeLimit}: SwitchTogglesProps) => {
+const SwitchToggles = ({isVisible, setIsVisible, isAvailable, setIsAvailable, isTimeLimit, setIsTimeLimit, timeLimit, setTimeLimit}: SwitchTogglesProps) => {
   return (
     <FormGroup className={style.switchToggles}>
       <FormControlLabel 
@@ -33,10 +35,11 @@ const SwitchToggles = ({isVisible, setIsVisible, isAvailable, setIsAvailable, is
         control={<div style={{gap: '10px'}}> 
           <Switch color="primary" />
           <TextField 
+            value={timeLimit}
             type="number" 
             label="Time limit (minutes)" 
             size="small"
-            defaultValue={isTimeLimit ? 15 : 0} /> 
+            onChange={(e) => setTimeLimit(parseInt(e.target.value))}/> 
         </div>}
         label={'Time limit per student?'}
         labelPlacement="start"

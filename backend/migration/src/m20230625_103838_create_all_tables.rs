@@ -111,7 +111,8 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Queues::EndTime).date_time().not_null())
                     .col(ColumnDef::new(Queues::IsVisible).boolean().not_null())
                     .col(ColumnDef::new(Queues::IsAvailable).boolean().not_null())
-                    .col(ColumnDef::new(Queues::TimeLimit).time())
+                    .col(ColumnDef::new(Queues::TimeLimit).integer())
+                    .col(ColumnDef::new(Queues::Title).string().not_null())
                     .col(ColumnDef::new(Queues::Announcement).string().not_null())
                     .col(ColumnDef::new(Queues::CourseOfferingId).integer().not_null())
                     .foreign_key(
@@ -467,6 +468,7 @@ enum Queues {
     TimeLimit,
     CourseOfferingId,
     Announcement,
+    Title,
 }
 
 #[derive(Iden)]
