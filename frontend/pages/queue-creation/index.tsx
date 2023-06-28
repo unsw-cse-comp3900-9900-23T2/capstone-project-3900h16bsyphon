@@ -10,6 +10,7 @@ import SyphonTimePicker from '../../components/SyphonTimePicker';
 import FAQs from '../../components/FAQs';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Tags from '../../components/Tags';
+import { getToken } from '../../utils';
 
 const theme = createTheme({
   palette: {
@@ -33,6 +34,19 @@ const QueueCreationPage = () => {
   const [title, setTitle] = useState('');
   const [course, setCourse] = useState('COMP1521');
 
+  const submit = async () => {
+    const body = { date, timeStart, timeEnd, tags, isVisible, isAvailable, isTimeLimit, title, course };
+    
+    console.log('hi');
+    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}/queue-creation/create`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+  };
   return (
     <ThemeProvider theme={theme}>
       <div className={style.container}> 
@@ -68,7 +82,7 @@ const QueueCreationPage = () => {
             />
 
             <FAQs />
-            <Button variant="contained" className={style.button}>Create Queue</Button>
+            <Button variant="contained" className={style.button} onClick={submit}>Create Queue</Button>
           </Card>
         </Box>
       </div>

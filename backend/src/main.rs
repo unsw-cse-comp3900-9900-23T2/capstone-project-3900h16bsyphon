@@ -43,6 +43,10 @@ async fn main() -> std::io::Result<()> {
                 "/auth/hello",
                 web::get().to(server::hello).wrap(amw.clone()),
             )
+            .route(
+                "/queue-creation/create", 
+                web::post().to(server::queue_creation::create)
+            )
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
     })

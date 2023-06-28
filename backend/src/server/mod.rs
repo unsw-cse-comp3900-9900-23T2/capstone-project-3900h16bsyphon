@@ -5,6 +5,7 @@ use actix_web::{post, HttpResponse, Responder};
 use crate::prelude::in_release_build;
 
 pub mod auth;
+pub mod queue_creation;
 
 #[post("/echo")]
 pub async fn echo(req_body: String) -> impl Responder {
