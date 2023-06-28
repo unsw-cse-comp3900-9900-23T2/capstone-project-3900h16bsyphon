@@ -56,3 +56,21 @@
 .cardActions {
     padding: 10px 20px 20px 20px;
 }
+
+.claimButton {
+    font-family: Lato;
+    font-weight: bold;
+    background-color: var(--colour-main-green-400);
+    color: var(--colour-main-green-900);
+}
+
+.notFoundButton {
+    font-family: Lato;
+    font-weight: bold;
+    background-color: var(--colour-main-red-200);
+    color: var(--colour-main-red-900);
+}
+
+.claimButton:hover {
+    
+}

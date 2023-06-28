@@ -19,12 +19,12 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, previousRequ
   const router = useRouter();
 
   const determineBackgroundColor = ( status: string ) => {
-    console.log(status);
+    // TOOD: standardize these request status 
     switch (status) {
     case 'Resolved':
       return '#EDFFEE';
     case 'Unresolved':
-      return '#E3F0FC';
+      return 'white';
     case 'In Progress':
       return '#E3F0FC';
     case 'Not Found':
@@ -39,6 +39,12 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, previousRequ
     // TODO: implement properly in the next sprint
     setBackgroundColor(determineBackgroundColor('Not Found'));
   };
+
+  const handleResolve = () => {
+    // TODO: implement properly in the next sprint
+    setBackgroundColor(determineBackgroundColor('Resolve'));
+  };
+
 
   return <>
     <Card className={styles.card} style={{ backgroundColor }}>
@@ -70,12 +76,15 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, previousRequ
         </div>
       </CardActionArea>
       <CardActions className={styles.cardActions}>
-        <Button variant='contained' onClick={() => router.push('/wait/1')}>
+        {(status === 'Unresolved') && <Button className={styles.claimButton} variant='contained' onClick={() => router.push('/wait/1')}>
           Claim
-        </Button>
-        <Button variant='contained' onClick={handleNotFound} >
+        </Button>}
+        {(status === 'In Progress') && <Button className={styles.claimButton} variant='contained' onClick={handleResolve}>
+          Resolve
+        </Button>}
+        {(status === 'Unresolved') && <Button className={styles.notFoundButton} variant='contained' onClick={handleNotFound} >
           Not Found
-        </Button>
+        </Button>}
       </CardActions>
     </Card>
   
