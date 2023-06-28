@@ -97,6 +97,13 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
     }
 }
 
+/// Add a tutor to the given course.
+/// ## Preconditions
+/// - The user making the request must be a course admin
+/// ## Returns
+/// - Forbidden: if the user making the request is not a course admin
+/// - 200 with empty body if successful return
+/// - 400 if the course or any of the users dont not exist
 pub async fn add_tutor(
     token: ReqData<TokenClaims>,
     body: web::Json<AddTutorToCourseBody>,
@@ -152,6 +159,13 @@ pub async fn add_tutor(
     HttpResponse::Ok().json("ok")
 }
 
+/// Join a course using a tutor link. If already tutor, does nothing and is
+/// still successful
+/// ## Preconditions
+/// - Tutor Link must be valid
+/// ## Returns
+/// - 200 with [`entities::course_offerings::Model`] if successful
+/// - 400 if there is no course with the given tutor link
 pub async fn join_with_tutor_link(
     token: ReqData<TokenClaims>,
     body: web::Json<JoinWithTutorLink>,
