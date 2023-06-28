@@ -62,7 +62,7 @@ const Dashboard: NextPage = () => {
             {/* TODO: change to pass in course code or sth */}
             <div className={styles.cards}>
               {data.map((d, index) => (
-                <CourseCard title={d.title} key={index} index={index}/>
+                <CourseCard title={d.title} key={index} index={d.courseOfferingId}/>
               ))}
             </div>
           </div>
