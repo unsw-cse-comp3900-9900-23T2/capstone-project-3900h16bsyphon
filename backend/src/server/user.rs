@@ -1,12 +1,12 @@
 use actix_web::{web::ReqData, HttpResponse};
 use serde::{Deserialize, Serialize};
 
-use crate::{utils::db::db_connection, entities::{self}};
-
 use crate::models::auth::TokenClaims;
+use crate::{entities, utils::db::db_connection};
 
 use sea_orm::{
-    ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult, QueryFilter, QuerySelect, JoinType, RelationTrait,
+    ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult, JoinType, QueryFilter,
+    QuerySelect, RelationTrait,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
@@ -69,17 +69,20 @@ pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
     if let Err(err) = validate_user(&token, db).await {
         return err;
     }
-    
+
     let user_id = token.username;
 
-    // get all courses user tutors 
+    // get all courses user tutors
     let tutors = entities::tutors::Entity::find()
         .select_only()
         .column(entities::course_offerings::Column::CourseCode)
         .column(entities::course_offerings::Column::CourseOfferingId)
         .column(entities::course_offerings::Column::Title)
         .filter(entities::tutors::Column::Zid.eq(user_id))
-        .join(JoinType::InnerJoin, entities::tutors::Relation::CourseOfferings.def())
+        .join(
+            JoinType::InnerJoin,
+            entities::tutors::Relation::CourseOfferings.def(),
+        )
         .into_model::<UserPermissionCourseCodeModel>()
         .all(db)
         .await
@@ -91,13 +94,20 @@ pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
         .column(entities::course_offerings::Column::CourseCode)
         .column(entities::course_offerings::Column::CourseOfferingId)
         .column(entities::course_offerings::Column::Title)
-        .filter(entities::tutors::Column::Zid.eq(user_id).and(entities::tutors::Column::IsCourseAdmin.eq(true)))
-        .join(JoinType::InnerJoin, entities::tutors::Relation::CourseOfferings.def())
+        .filter(
+            entities::tutors::Column::Zid
+                .eq(user_id)
+                .and(entities::tutors::Column::IsCourseAdmin.eq(true)),
+        )
+        .join(
+            JoinType::InnerJoin,
+            entities::tutors::Relation::CourseOfferings.def(),
+        )
         .into_model::<UserPermissionCourseCodeModel>()
         .all(db)
         .await
         .unwrap();
-    
+
     // get single user from db
     let user = entities::users::Entity::find_by_id(user_id)
         .select_only()
@@ -117,7 +127,7 @@ pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
         last_name: user.last_name.clone(),
         is_org_admin: user.is_org_admin,
         tutor: tutors,
-        course_admin: admins,  
+        course_admin: admins,
     };
 
     // return user
