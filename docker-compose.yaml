@@ -13,7 +13,7 @@ services:
       - BACKEND_HOST=backend
     volumes:
       # Bind mount volume for live frontend updates while developing
-      - ./frontend/src:/client/src
+      - ./frontend:/client
     networks:
       - net
   database:

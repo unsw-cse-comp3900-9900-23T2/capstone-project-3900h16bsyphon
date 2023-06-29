@@ -6,10 +6,9 @@ use futures::executor::block_on;
 use rand::Rng;
 use regex::Regex;
 use sea_orm::{
-    sea_query, ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, FromQueryResult,
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, FromQueryResult,
     QueryFilter, QuerySelect,
 };
-use sea_query::OnConflict;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -86,6 +85,39 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
         .column(entities::course_offerings::Column::StartDate)
         .into_model::<CourseOfferingReturnModel>()
         .all(db)
+        .await;
+    // return course offering result
+    match course_offering_result {
+        Ok(course_offering_result) => HttpResponse::Ok().json(web::Json(course_offering_result)),
+        Err(e) => {
+            log::warn!("Db broke?: {:?}", e);
+            HttpResponse::InternalServerError().json("Db Broke")
+        }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct GetOfferingByIdQuery {
+    course_id: i32
+}
+
+
+pub async fn get_offering_by_id(token: ReqData<TokenClaims>,body: web::Json<GetOfferingByIdQuery> ) -> HttpResponse {
+    let db = &db_connection().await;
+    let error = validate_user(&token, db).await.err();
+    if error.is_some() {
+        return error.unwrap();
+    }
+
+    let course_offering_result = entities::course_offerings::Entity::find_by_id(body.course_id)
+        .select_only()
+        .column(entities::course_offerings::Column::CourseOfferingId)
+        .column(entities::course_offerings::Column::CourseCode)
+        .column(entities::course_offerings::Column::Title)
+        .column(entities::course_offerings::Column::StartDate)
+        .filter(entities::tutors::Column::IsCourseAdmin.eq(true))
+        .into_model::<CourseOfferingReturnModel>()
+        .one(db)
         .await;
     // return course offering result
     match course_offering_result {

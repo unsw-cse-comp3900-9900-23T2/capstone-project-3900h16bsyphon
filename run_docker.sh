@@ -1,1 +1,1 @@
-DATABASE_HOST=database BACKEND_HOST=backend docker compose up
+DATABASE_HOST=database BACKEND_HOST=localhost docker compose up
