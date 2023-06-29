@@ -138,7 +138,7 @@ pub async fn all_requests_for_queue(
 }
 
 pub async fn request_info_not_web(
-    token: ReqData<TokenClaims>,
+    _token: ReqData<TokenClaims>,
     body: web::Query<RequestInfoBody>,
 ) -> Result<serde_json::Value, HttpResponse> {
     log::debug!("Request info: {:#?}", body);
@@ -153,9 +153,9 @@ pub async fn request_info_not_web(
         None => return Err(HttpResponse::NotFound().body("Request not found")),
         Some(req) => req,
     };
-    if request.zid != token.username {
-        return Err(HttpResponse::Forbidden().body("You are not the owner of this request"));
-    }
+    // if request.zid != token.username {
+    //     return Err(HttpResponse::Forbidden().body("You are not the owner of this request"));
+    // }
 
     // User Data
     let user = entities::users::Entity::find_by_id(request.zid)
