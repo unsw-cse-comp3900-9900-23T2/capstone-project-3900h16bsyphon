@@ -23,7 +23,7 @@ use chrono::NaiveDate;
 
 const INV_CODE_LEN: usize = 6;
 
-use models::{AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink};
+use models::{CreateOfferingBody, JoinWithTutorLink};
 
 pub async fn create_offering(
     token: ReqData<TokenClaims>,
@@ -68,6 +68,7 @@ pub struct CourseOfferingReturnModel {
     course_code: String,
     title: String,
     start_date: Option<NaiveDate>,
+    tutor_invite_code: Option<String>,
 }
 
 pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
@@ -83,6 +84,7 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
         .column(entities::course_offerings::Column::CourseCode)
         .column(entities::course_offerings::Column::Title)
         .column(entities::course_offerings::Column::StartDate)
+        .column(entities::course_offerings::Column::TutorInviteCode)
         .into_model::<CourseOfferingReturnModel>()
         .all(db)
         .await;

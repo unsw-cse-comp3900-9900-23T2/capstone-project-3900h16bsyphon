@@ -1,16 +1,36 @@
 import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
-import TextField from '@mui/material/TextField';
 import AddIcon from '@mui/icons-material/Add';
 import styles from './JoinTutorModal.module.css';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import { authenticatedPutFetch } from '../../utils';
+import TextInput from '../TextInput';
+import Alert from '@mui/material/Alert';
 
 const JoinTutorModal = () => {
   const [open, setOpen] = useState(false);
+  const [tutorCode, setTutorCode] = useState('');
+  const [error, setError] = useState('');
+
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setError('');
+  };
+
+  const handleSubmit = async () => {
+    let res = await authenticatedPutFetch('/course/join_with_tutor_link', {
+      tutor_link: tutorCode
+    });
+    if (!res.ok) {
+      setError('Course does not exist with given invite code, please try again.');
+      return;
+    }
+    handleClose();
+    return;
+  };
 
   return (
     <div>
@@ -29,8 +49,9 @@ const JoinTutorModal = () => {
               <CloseIcon />
             </IconButton>
           </div>
-          <TextField id="outlined-basic" variant="outlined" />
-          <Button onClick={handleClose} className={styles.joinBtn}>Join as tutor</Button>
+          {error && <Alert severity="error">{error}</Alert>}
+          <TextInput label=' ' value={tutorCode} setValue={setTutorCode} />
+          <Button onClick={handleSubmit} className={styles.joinBtn}>Join as tutor</Button>
         </div>
       </Modal>
     </div>
@@ -38,4 +59,3 @@ const JoinTutorModal = () => {
 };
 
 export default JoinTutorModal;
-

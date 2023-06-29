@@ -39,6 +39,17 @@ export const authenticatedGetFetch = async (route: string, queryStrings: Record<
   });
 };
 
+export const authenticatedPutFetch = async (route: string, body: any) => {
+  return fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}${route}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify(body),
+  });
+};
+
 export const getToken = () => getCookie('token');
 
 export const setToken = (token: string) => setCookie('token', token);
