@@ -35,6 +35,7 @@ const Request = ({ requestId }: RequestProps) => {
   useEffect(() => {
     // TOOD: BE GET request to populate the student request card component
     console.log('GET from Request page with requestId ' + requestId);
+    
   }, []);
 
   return <>

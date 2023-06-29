@@ -8,6 +8,7 @@ pub mod auth;
 pub mod queue;
 pub mod user;
 pub mod course;
+pub mod request;
 
 #[post("/echo")]
 pub async fn echo(req_body: String) -> impl Responder {
