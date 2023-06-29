@@ -29,7 +29,7 @@ export default function QueueCard({ title, seen, unseen, location, courseAdmins,
           <div className={styles.cardAction}>
             <div className={styles.chipContainer}>
               {seen && <Chip label={`${seen} seen`} className={styles.unseenChip} />}
-              {unseen && <Chip label={`${unseen} seen`} className={styles.seenChip} />}
+              {unseen && <Chip label={`${unseen} unseen`} className={styles.seenChip} />}
             </div>
             {isEdit && <Button className={styles.editBtn}>Edit</Button>}
           </div>

@@ -6,10 +6,16 @@ import Image from 'next/image';
 import FeatureGrid from '../components/FeatureGrid';
 import MetaData from '../components/MetaData';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { getToken } from '../utils';
 
 const Home: NextPage = () => {
   let router = useRouter();
+  useEffect(() => {
+    if (getToken().length > 0) {
+      router.push('/dashboard', undefined, { shallow: true });
+    }
+  }, [router]);
   return (
     <div>
       <MetaData />

@@ -6,10 +6,9 @@ use futures::executor::block_on;
 use rand::Rng;
 use regex::Regex;
 use sea_orm::{
-    sea_query, ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, FromQueryResult,
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, FromQueryResult,
     QueryFilter, QuerySelect,
 };
-use sea_query::OnConflict;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -97,6 +96,101 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
             HttpResponse::InternalServerError().json("Db Broke")
         }
     }
+}
+
+#[derive(Deserialize)]
+pub struct GetOfferingByIdQuery {
+    course_id: i32
+}
+
+
+pub async fn get_offering_by_id(token: ReqData<TokenClaims>,body: web::Json<GetOfferingByIdQuery> ) -> HttpResponse {
+    let db = &db_connection().await;
+    let error = validate_user(&token, db).await.err();
+    if error.is_some() {
+        return error.unwrap();
+    }
+
+    let course_offering_result = entities::course_offerings::Entity::find_by_id(body.course_id)
+        .select_only()
+        .column(entities::course_offerings::Column::CourseOfferingId)
+        .column(entities::course_offerings::Column::CourseCode)
+        .column(entities::course_offerings::Column::Title)
+        .column(entities::course_offerings::Column::StartDate)
+        .filter(entities::tutors::Column::IsCourseAdmin.eq(true))
+        .into_model::<CourseOfferingReturnModel>()
+        .one(db)
+        .await;
+    // return course offering result
+    match course_offering_result {
+        Ok(course_offering_result) => HttpResponse::Ok().json(web::Json(course_offering_result)),
+        Err(e) => {
+            log::warn!("Db broke?: {:?}", e);
+            HttpResponse::InternalServerError().json("Db Broke")
+        }
+    }
+}
+
+/// Add a tutor to the given course.
+/// ## Preconditions
+/// - The user making the request must be a course admin
+/// ## Returns
+/// - Forbidden: if the user making the request is not a course admin
+/// - 200 with empty body if successful return
+/// - 400 if the course or any of the users dont not exist
+pub async fn add_tutor(
+    token: ReqData<TokenClaims>,
+    body: web::Json<AddTutorToCourseBody>,
+) -> HttpResponse {
+    let db = &db_connection().await;
+    let body = body.into_inner();
+
+    // Ensure person adding the new tutor is a course admin
+    match entities::tutors::Entity::find_by_id((token.username, body.course_id))
+        .one(db)
+        .await
+        .expect("db broke")
+    {
+        None => return HttpResponse::Forbidden().json("Not Admin"),
+        Some(t) if !t.is_course_admin => return HttpResponse::Forbidden().json("Not Admin"),
+        Some(_) => {}
+    }
+
+    let db_course = entities::course_offerings::Entity::find_by_id(body.course_id)
+        .one(db)
+        .await
+        .expect("db broke");
+    let db_user = entities::users::Entity::find_by_id(body.tutor_id)
+        .one(db)
+        .await
+        .expect("db broke");
+
+    let (course, user) = match (db_course, db_user) {
+        (Some(c), Some(t)) => (c, t),
+        (Some(_), None) => return not_exist_error(vec!["user"]),
+        (None, Some(_)) => return not_exist_error(vec!["course"]),
+        (None, None) => return not_exist_error(vec!["course", "user"]),
+    };
+
+    let db_tutor = entities::tutors::Entity::find_by_id((user.zid, course.course_offering_id))
+        .one(db)
+        .await
+        .expect("db broke");
+
+    if let Some(_) = db_tutor {
+        return HttpResponse::Conflict().json("Already Tutor");
+    }
+
+    entities::tutors::ActiveModel {
+        zid: ActiveValue::Set(user.zid),
+        course_offering_id: ActiveValue::Set(course.course_offering_id),
+        is_course_admin: ActiveValue::Set(false),
+    }
+    .insert(db)
+    .await
+    .expect("db broke");
+
+    HttpResponse::Ok().json("ok")
 }
 
 /// Join a course using a tutor link. If already tutor, does nothing and is

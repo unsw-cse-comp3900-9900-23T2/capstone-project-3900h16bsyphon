@@ -196,7 +196,7 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse {
     match prev_user_res {
         Err(e) => return e,
         Ok(Some(prev_user)) => {
-            return HttpResponse::Conflict().body(format!("User Already Exists: {}", prev_user.zid))
+            return HttpResponse::Conflict().json(json!({"zid": format!("User Already Exists: {}", prev_user.zid)}))
         }
         Ok(_) => {}
     };
