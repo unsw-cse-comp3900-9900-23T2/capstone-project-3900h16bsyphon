@@ -7,25 +7,15 @@ use sea_orm::{
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, json};
 
-use crate::entities::sea_orm_active_enums::Statuses;
 use crate::{utils::db::db_connection, entities};
 
 use super::user::validate_admin;
-use crate::models::TokenClaims;
+use crate::models::{TokenClaims, CreateRequest};
 
 
-#[derive(Deserialize, Debug, Clone)]
-pub struct CreateRequest {
-    pub zid: i32,
-    pub queue_id: i32,
-    pub title: String,
-    pub description: String,
-    pub order: i32,
-    pub is_clusterable: bool,
-    pub status: Option<Statuses>,
-}
 
 pub async fn create_request(req_body: String) -> HttpResponse {
+    // TODO use middleware not this
     let request_creation: CreateRequest = from_str(&req_body).unwrap();
     let db: &DatabaseConnection = &db_connection().await;
     let request = entities::requests::ActiveModel {
