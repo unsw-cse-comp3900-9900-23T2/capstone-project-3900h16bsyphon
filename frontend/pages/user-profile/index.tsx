@@ -1,4 +1,3 @@
-import { ClockNumberClassKey } from '@mui/x-date-pickers';
 import { useEffect, useState } from 'react';
 import UserProfileCard from '../../components/UserProfileCard';
 import { authenticatedGetFetch, toCamelCase } from '../../utils';
@@ -13,6 +12,7 @@ interface UserProfileCardProps {
   zid: number;
   firstName: string;
   lastName: string;
+  isOrgAdmin: boolean;
   tutor: CoursePermission[];
   courseAdmin: CoursePermission[];
 }
@@ -22,6 +22,7 @@ const userInformation: UserProfileCardProps = {
   firstName: '',
   lastName: '',
   tutor: [],
+  isOrgAdmin: false,
   courseAdmin: [],
 };
 
@@ -50,6 +51,7 @@ export default function UserProfile() {
         lastName={responseData.lastName}
         tutor={responseData.tutor}
         courseAdmin={responseData.courseAdmin}
+        isOrgAdmin={responseData.isOrgAdmin}
       />
     </div>
   );

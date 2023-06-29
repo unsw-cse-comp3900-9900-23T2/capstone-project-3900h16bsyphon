@@ -15,6 +15,7 @@ interface UserProfileCardProps {
   zid: number;
   firstName: string;
   lastName: string;
+  isOrgAdmin: boolean,
   tutor: CoursePermission[];
   courseAdmin: CoursePermission[];
 }
@@ -24,6 +25,7 @@ export default function UserProfileCard({
   firstName,
   lastName,
   tutor,
+  isOrgAdmin,
   courseAdmin,
 }: UserProfileCardProps) {
 

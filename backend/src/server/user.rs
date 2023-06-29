@@ -13,6 +13,7 @@ pub struct UserReturnModel {
     zid: i32,
     first_name: String,
     last_name: String,
+    is_org_admin: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
@@ -25,6 +26,7 @@ pub struct UserPermissionCourseCodeModel {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserProfileReturnModel {
     zid: i32,
+    is_org_admin: bool,
     first_name: String,
     last_name: String,
     tutor: Vec<UserPermissionCourseCodeModel>,
@@ -44,6 +46,7 @@ pub async fn get_users(token: ReqData<TokenClaims>) -> HttpResponse {
         .column(entities::users::Column::Zid)
         .column(entities::users::Column::FirstName)
         .column(entities::users::Column::LastName)
+        .column(entities::users::Column::IsOrgAdmin)
         .filter(entities::users::Column::IsOrgAdmin.ne(true))
         .into_model::<UserReturnModel>()
         .all(db)
@@ -100,6 +103,7 @@ pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
         .column(entities::users::Column::Zid)
         .column(entities::users::Column::FirstName)
         .column(entities::users::Column::LastName)
+        .column(entities::users::Column::IsOrgAdmin)
         .into_model::<UserReturnModel>()
         .one(db)
         .await
@@ -110,6 +114,7 @@ pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
         zid: user.zid,
         first_name: user.first_name.clone(),
         last_name: user.last_name.clone(),
+        is_org_admin: user.is_org_admin,
         tutor: tutors,
         course_admin: admins,  
     };
