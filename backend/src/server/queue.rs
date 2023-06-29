@@ -7,7 +7,7 @@ use chrono::{NaiveDateTime};
 use sea_orm::entity::prelude::*;
 use crate::{database_utils::db_connection, entities, server::user::validate_user};
 
-use super::auth::TokenClaims;
+use crate::models::auth::TokenClaims;
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct FAQs{

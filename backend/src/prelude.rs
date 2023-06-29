@@ -1,8 +1,9 @@
 //! This file contains all the prelude imports for the project.
 //! Helps in keeping `main.rs` clean.
 
+use crate::models::CreateUserBody;
+use crate::server::auth::create_user;
 use actix_web::web::Json;
-use crate::server::auth::{create_user, CreateUserBody};
 
 /// Secret used to hash passwords.
 /// Requires `SECRET` to be set as and environemnt variable or in
@@ -39,7 +40,13 @@ pub async fn register_org_admins() {
         actix_web::http::StatusCode::INTERNAL_SERVER_ERROR => {
             return log::error!("Internal Error While Creating Admin")
         }
-        _ => return log::error!("Error when creating admin: {:?}, {:?}", created_res, created_res.body()),
+        _ => {
+            return log::error!(
+                "Error when creating admin: {:?}, {:?}",
+                created_res,
+                created_res.body()
+            )
+        }
     }
     // Add Admin Perms
     crate::server::auth::make_admin("z0000000").await;

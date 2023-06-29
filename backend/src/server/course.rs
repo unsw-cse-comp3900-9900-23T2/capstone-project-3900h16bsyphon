@@ -14,12 +14,10 @@ use serde_json::json;
 
 use crate::{database_utils::db_connection, entities, server};
 
+use crate::models::TokenClaims;
 use models::{AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink};
 
-use server::{
-    auth::TokenClaims,
-    user::{validate_admin, validate_user},
-};
+use server::user::{validate_admin, validate_user};
 
 use chrono::NaiveDate;
 
@@ -97,7 +95,6 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
         }
     }
 }
-
 
 pub async fn get_courses_tutored(token: ReqData<TokenClaims>) -> HttpResponse {
     let db = &db_connection().await;

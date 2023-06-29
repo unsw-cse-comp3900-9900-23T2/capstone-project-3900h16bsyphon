@@ -19,7 +19,7 @@ use sha2::Sha256;
 use crate::{
     database_utils::db_connection,
     entities,
-    SECRET,
+    SECRET, utils::auth::hash_pass,
 };
 use entities::users;
 
@@ -217,29 +217,6 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse {
     HttpResponse::Ok().json(created_user)
 }
 
-pub async fn make_admin(zid: &str) {
-    let zid = CreateUserBody::verify_zid(&zid).expect("Admin zid must be valid z0000000");
-    log::info!("Making {} an admin", zid);
-    let db = &db_connection().await;
-
-    let user = users::Entity::find_by_id(zid)
-        .one(db)
-        .await
-        .map_err(|e| {
-            log::warn!("DB Broke when finding admin ??:\n\t{}", e);
-        })
-        .unwrap()
-        .unwrap();
-
-    users::ActiveModel {
-        is_org_admin: ActiveValue::Set(true),
-        ..user.into()
-    }
-    .update(db)
-    .await
-    .expect("Db broke");
-    log::info!("Made {} an admin", zid);
-}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CreateUserBody {
@@ -285,7 +262,7 @@ impl CreateUserBody {
             .map(|z| z as i32)
     }
 
-    fn verify_name(name: &str) -> Result<(), String> {
+    pub fn verify_name(name: &str) -> Result<(), String> {
         match name {
             n if !(3..=16).contains(&n.len()) => Err("name too short".to_string()),
             n if !n.chars().all(|c| c.is_ascii_alphabetic()) => {
@@ -295,7 +272,7 @@ impl CreateUserBody {
         }
     }
 
-    fn verify_password(pass: &str) -> Result<(), String> {
+    pub fn verify_password(pass: &str) -> Result<(), String> {
         match pass {
             p if !(8..=28).contains(&p.len()) => Err("password must be 8 chars".to_string()),
             p if !p.is_ascii() => Err("password must be ascii".to_string()),
@@ -311,12 +288,4 @@ impl CreateUserBody {
             _ => Ok(()),
         }
     }
-}
-
-fn hash_pass(pass: &str) -> Result<String, argon2::Error> {
-    argon2::hash_encoded(
-        pass.as_bytes(),
-        SECRET.as_bytes(),
-        &argon2::Config::default(),
-    )
 }

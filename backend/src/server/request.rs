@@ -2,8 +2,7 @@ use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
 use futures::executor::block_on;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseConnection, EntityOrSelect, EntityTrait,
-    QueryFilter, QuerySelect,
+    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, json};
@@ -11,8 +10,8 @@ use serde_json::{from_str, json};
 use crate::entities::sea_orm_active_enums::Statuses;
 use crate::{database_utils::db_connection, entities};
 
-use super::auth::TokenClaims;
 use super::user::validate_admin;
+use crate::models::TokenClaims;
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct FAQs {
@@ -128,7 +127,9 @@ pub async fn all_requests_for_queue(
         .expect("Db broke")
         .into_iter()
         .map(|req| req.request_id)
-        .map(|request_id| request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id  })))
+        .map(|request_id| {
+            request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
+        })
         .map(|f| block_on(f))
         .map(|res| res.unwrap())
         .collect();

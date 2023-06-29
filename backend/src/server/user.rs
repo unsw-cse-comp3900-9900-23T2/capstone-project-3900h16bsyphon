@@ -3,7 +3,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{database_utils::db_connection, entities::{self}};
 
-use super::auth::TokenClaims;
+use crate::models::auth::TokenClaims;
+
 use sea_orm::{
     ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult, QueryFilter, QuerySelect, JoinType, RelationTrait,
 };
