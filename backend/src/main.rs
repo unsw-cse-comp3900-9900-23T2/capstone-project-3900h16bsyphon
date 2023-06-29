@@ -63,6 +63,10 @@ async fn main() -> std::io::Result<()> {
                     .to(server::course::create_offering)
                     .wrap(amw.clone()),
             )
+            .route("/courses/get_tutored", 
+                web::get().to(server::course::get_courses_tutored)
+                .wrap(amw.clone())
+            )
             .route(
                 "/course/get",
                 web::get()

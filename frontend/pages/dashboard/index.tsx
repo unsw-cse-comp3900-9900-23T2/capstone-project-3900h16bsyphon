@@ -8,7 +8,7 @@ import MetaData from '../../components/MetaData';
 import Footer from '../../components/Footer';
 import CreateCourseOfferingModal from '../../components/CreateCourseOfferingModal';
 import React, { useEffect, useState } from 'react';
-import { authenticatedGetFetch } from '../../utils';
+import { authenticatedGetFetch, toCamelCase } from '../../utils';
 
 type CourseOffering = {
   title: string;
@@ -20,6 +20,7 @@ type CourseOffering = {
 
 const Dashboard: NextPage = () => {
   const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
+  const [myCourses, setMyCourses] = useState<CourseOffering[]>([]);
   useEffect(() => {
     const fetchCourseOfferings = async () => {
       let res = await authenticatedGetFetch('/course/list', {});
@@ -38,6 +39,17 @@ const Dashboard: NextPage = () => {
         }
       )));
     };
+
+    const fetchCoursesTutored = async () => {
+      let res = await authenticatedGetFetch('/courses/get_tutored', {});
+      if (!res.ok) {
+        console.error('authentication failed, or something broke, check network tab');
+        return;
+      }
+      let courses = await res.json() as any;
+      setMyCourses(toCamelCase(courses));
+    };
+    fetchCoursesTutored();
     fetchCourseOfferings();
   }, []);
 
@@ -47,15 +59,18 @@ const Dashboard: NextPage = () => {
       <Header />
       <div className={styles.container}>
         <div className={styles.dashboard}>
-          <div className={styles.courseOffering}>
-            <h1 className={styles.heading}>Select course offering</h1>
-            <CreateCourseOfferingModal />
-          </div>
-          <div className={styles.cards}>
-            {courseOfferings.map((d, index) => (
-              <CourseOfferingCard key={index} title={`${d.courseCode} - ${d.title}`} inviteCode={d.tutorInviteCode}/>
-            ))}
-          </div>
+          {
+            <>
+              <div className={styles.courseOffering}>
+                <h1 className={styles.heading}>Select course offering</h1>
+                <CreateCourseOfferingModal />
+              </div><div className={styles.cards}>
+                {courseOfferings.map((d, index) => (
+                  <CourseOfferingCard key={index} title={`${d.courseCode} - ${d.title}`} inviteCode={d.tutorInviteCode} />
+                ))}
+              </div>
+            </>
+          }
           <div className={styles.tutorSection}>
             <h1>Courses you tutor</h1>
             <div className={styles.section}>
@@ -63,9 +78,9 @@ const Dashboard: NextPage = () => {
               <JoinTutorModal />
             </div>
             <div className={styles.cards}>
-              {/* {data.map((d, index) => (
-                <CourseCard title={d.title} key={index} index={index}/>
-              ))} */}
+              {myCourses.map((d, index) => (
+                <CourseCard title={d.title} key={index} index={d.courseOfferingId}/>
+              ))}
             </div>
           </div>
           <div className={styles.studentSection}>
@@ -73,7 +88,7 @@ const Dashboard: NextPage = () => {
             <p>Select a course to view queues</p>
             <div className={styles.cards}>
               {courseOfferings.map((d, index) => (
-                <CourseCard key={index} title={d.title} index={index}/>
+                <CourseCard key={index} title={d.title} index={d.courseOfferingId}/>
               ))}
             </div>
           </div>
