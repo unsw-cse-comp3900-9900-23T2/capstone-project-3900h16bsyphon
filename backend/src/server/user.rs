@@ -66,11 +66,7 @@ pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
         return err;
     }
     
-    log::info!("after validate user");
-
     let user_id = token.username;
-
-    log::info!("user zid {}", user_id);
 
     // get all courses user tutors 
     let tutors = entities::tutors::Entity::find()
@@ -85,8 +81,6 @@ pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
         .await
         .unwrap();
 
-    log::info!("after getting tutors from table");
-
     // get all courses user admins
     let admins = entities::tutors::Entity::find()
         .select_only()
@@ -100,8 +94,6 @@ pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
         .await
         .unwrap();
     
-    log::info!("after getting course admins from table");
-
     // get single user from db
     let user = entities::users::Entity::find_by_id(user_id)
         .select_only()
@@ -113,8 +105,6 @@ pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
         .await
         .unwrap()
         .unwrap();
-
-    log::info!("after getting single user from table");
 
     let user_return = UserProfileReturnModel {
         zid: user.zid,
