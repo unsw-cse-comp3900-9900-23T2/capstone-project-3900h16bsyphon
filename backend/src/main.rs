@@ -85,6 +85,10 @@ async fn main() -> std::io::Result<()> {
                     .to(server::course::join_with_tutor_link)
                     .wrap(amw.clone()),
             )
+            .route(
+                "/request/create",
+                web::post().to(server::request::create_request).wrap(amw.clone()),
+            )
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
     })

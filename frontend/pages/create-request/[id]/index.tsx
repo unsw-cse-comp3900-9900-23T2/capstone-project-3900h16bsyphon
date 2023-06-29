@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import styles from './CreateRequest.module.css';
 import { useRouter } from 'next/router';
+import { authenticatedPostFetch } from '../../../utils';
 
 const MIN_TITLE = 5;
 const MAX_TITLE = 25;
@@ -37,17 +38,14 @@ const tags = [
 
 
 export default function CreateRequest() {
-
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [titleWordCount, setTitleWordCount] = useState(0);
-
   const [description, setDescription] = useState('');
   const [descriptionWordCount, setDescriptionWordCount] = useState(0);
-
   const [isClusterable, setIsClusterable] = useState(false);
-
   const [tagList, setTagList] = useState<string[]>([]);
+  const [order, setOrder] = useState(0);
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     const {
@@ -59,11 +57,19 @@ export default function CreateRequest() {
     );
   };
 
-  const handleSubmit = () => {
-    // TODO: handle validation
-
-    // TODO add queue 
-    router.push('/queue');
+  const handleSubmit = async () => {
+    // TODO: remove hardcoded values
+    const body = {
+      title: title,
+      description: description,
+      is_clusterable: isClusterable,
+      order: 1,
+      zid: 0,
+      status: 'Unseen',
+      queue_id: Number.parseInt(`${router.query.id}`),
+    };
+    let res = await authenticatedPostFetch('/request/create', body);
+    if (res.ok) router.push('/queue');
   };
 
   useEffect(() => {
@@ -130,7 +136,7 @@ export default function CreateRequest() {
                   value={description}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                     setDescription(event.target.value);
-                  } }
+                  }}
                   placeholder='Give a detailed description of the issue. Include any error messages and what you have done so far to try and solve this.'
                   id="outlined-input"
                   fullWidth />
@@ -149,7 +155,6 @@ export default function CreateRequest() {
                   onChange={handleChange}
                   input={<OutlinedInput />}
                   renderValue={(selected) => {
-
                     return (selected as unknown as string[]).join(', ');
                   } }
                   inputProps={{ 'aria-label': 'Without label' }}
