@@ -6,13 +6,15 @@ use futures::executor::block_on;
 use rand::Rng;
 use regex::Regex;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, FromQueryResult,
-    QueryFilter, QuerySelect,
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, FromQueryResult, QueryFilter,
+    QuerySelect,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{database_utils::db_connection, entities, server};
+
+use models::{AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink};
 
 use server::{
     auth::TokenClaims,
@@ -22,10 +24,6 @@ use server::{
 use chrono::NaiveDate;
 
 const INV_CODE_LEN: usize = 6;
-
-use models::{CreateOfferingBody, JoinWithTutorLink};
-
-use self::models::AddTutorToCourseBody;
 
 pub async fn create_offering(
     token: ReqData<TokenClaims>,
@@ -132,11 +130,13 @@ pub async fn get_courses_tutored(token: ReqData<TokenClaims>) -> HttpResponse {
 
 #[derive(Deserialize)]
 pub struct GetOfferingByIdQuery {
-    course_id: i32
+    course_id: i32,
 }
 
-
-pub async fn get_offering_by_id(token: ReqData<TokenClaims>,body: web::Query<GetOfferingByIdQuery>) -> HttpResponse {
+pub async fn get_offering_by_id(
+    token: ReqData<TokenClaims>,
+    body: web::Query<GetOfferingByIdQuery>,
+) -> HttpResponse {
     let db = &db_connection().await;
     print!("validate");
     let error = validate_user(&token, db).await.err();
