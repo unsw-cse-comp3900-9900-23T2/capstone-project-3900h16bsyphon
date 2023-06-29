@@ -26,8 +26,14 @@ const courses = [
   'COMP2531',
 ];
 
+interface CoursePermission {
+  courseCode: string,
+  courseOfferingId: number,
+  title: string,
+}
+
 interface AddCoursePermissionsModalProps {
-  tutor: string[];
+  tutor: CoursePermission[];
 }
 
 const AddCoursePermissionsModal = ({
@@ -38,7 +44,7 @@ const AddCoursePermissionsModal = ({
   const handleClose = () => setOpen(false);
 
   const [tutorPermissionList, setTutorPermissionList] =
-    useState<string[]>(tutor);
+    useState<CoursePermission[]>(tutor);
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     const {

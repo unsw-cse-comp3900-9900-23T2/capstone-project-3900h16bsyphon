@@ -3,21 +3,26 @@ import UserPermissionsBox from '../UserPermissionBox';
 import styles from './UserProfileCard.module.css';
 import { useRouter } from 'next/router';
 import AddCoursePermissionsModal from '../AddCoursePermissionsModal';
+// import { useEffect, useState } from 'react';
+// import authenticatedGetFetch from '../../utils';
 
+interface CoursePermission {
+  courseCode: string,
+  courseOfferingId: number,
+  title: string,
+}
 interface UserProfileCardProps {
-  zid: string;
+  zid: number;
   firstName: string;
   lastName: string;
-  isUserAdmin: boolean;
-  tutor: string[];
-  courseAdmin: string[];
+  tutor: CoursePermission[];
+  courseAdmin: CoursePermission[];
 }
 
 export default function UserProfileCard({
   zid,
   firstName,
   lastName,
-  isUserAdmin,
   tutor,
   courseAdmin,
 }: UserProfileCardProps) {
@@ -45,7 +50,7 @@ export default function UserProfileCard({
             <TextField
               className={styles.text}
               id="outlined-read-only-input"
-              defaultValue={zid}
+              value={zid}
               InputProps={{
                 readOnly: true,
               }}
@@ -60,7 +65,7 @@ export default function UserProfileCard({
             <TextField
               className={styles.text}
               id="outlined-read-only-input"
-              defaultValue={firstName}
+              value={firstName}
               InputProps={{
                 readOnly: true,
               }}
@@ -75,7 +80,7 @@ export default function UserProfileCard({
             <TextField
               className={styles.text}
               id="outlined-read-only-input"
-              defaultValue={lastName}
+              value={lastName}
               InputProps={{
                 readOnly: true,
               }}
@@ -93,7 +98,7 @@ export default function UserProfileCard({
               <UserPermissionsBox
                 key={i}
                 permission="Tutor"
-                courseOffering={course}
+                courseOffering={course.courseCode}
               />
             ))}
 
@@ -101,7 +106,7 @@ export default function UserProfileCard({
               <UserPermissionsBox
                 key={i}
                 permission="Course Admin"
-                courseOffering={course}
+                courseOffering={course.courseCode}
               />
             ))}
           </div>
