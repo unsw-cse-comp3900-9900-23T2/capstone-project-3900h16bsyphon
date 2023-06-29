@@ -4,9 +4,11 @@ import { useRouter } from 'next/router';
 import StudentQueueRequestCard from '../../../components/StudentQueueRequestCard';
 import MetaData from '../../../components/MetaData';
 import Header from '../../../components/Header';
+import { useEffect, useState } from 'react';
+import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 
 
-const requests = [
+const dummyRequests = [
   {
     zid: 'z5303033',
     requestId: 0,
@@ -45,17 +47,27 @@ const requests = [
   },
 ];
 
-const requestData = {
-  queueTitle: 'COMP1521 Thursday Week 5 Help Session',
-  queueId: 1,
-  courseId: 1,
-  requests
-};
-
-
-
 const ActiveQueue = () => {
   const router = useRouter();
+  
+  const [requests, setRequests] = useState(dummyRequests);
+
+  const requestData = {
+    queueTitle: 'COMP1521 Thursday Week 5 Help Session',
+    queueId: 1,
+    courseId: 1,
+    requests: requests,
+  };
+
+  useEffect(() => {
+    let getRequests = async () => {
+      let res = await authenticatedGetFetch('/request/all_requests_for_queue', {queue_id: `${router.query.queueid}`});
+      // yolo assume OK
+      let d = await res.json();
+      setRequests(toCamelCase(d));
+    };
+    getRequests();
+  });
   
   return <>
     <MetaData />
