@@ -32,7 +32,7 @@ const WaitingScreen = () => {
   useEffect(() => {
     let getRequest = async () => {
       console.log('GETTING DATA');
-      let res = await authenticatedGetFetch('/queue/get_info', {request_id: `${router.query.queueid || -1}`});
+      let res = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.queueid || -1}`});
       console.log('got res');
       console.log(res);
       if (res.status === 404) {
@@ -46,6 +46,9 @@ const WaitingScreen = () => {
         setData(toCamelCase(d));
       }
     };
+    if (!router.query.queueid) {
+      return;
+    }
     getRequest();
   // TODO add dependency
   }, [router.query.queueid, router.query.id]);

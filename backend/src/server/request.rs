@@ -1,29 +1,34 @@
-use actix_web::web::{ReqData, self};
-use actix_web::{HttpResponse};
-use sea_orm::{ActiveModelTrait, DatabaseConnection, ActiveValue, EntityTrait};
-use serde::{Serialize, Deserialize};
+use actix_web::web::{self, ReqData};
+use actix_web::HttpResponse;
+use futures::executor::block_on;
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseConnection, EntityOrSelect, EntityTrait,
+    QueryFilter, QuerySelect,
+};
+use serde::{Deserialize, Serialize};
 use serde_json::{from_str, json};
 
 use crate::entities::sea_orm_active_enums::Statuses;
 use crate::{database_utils::db_connection, entities};
 
 use super::auth::TokenClaims;
+use super::user::validate_admin;
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
-pub struct FAQs{
+pub struct FAQs {
     pub question: String,
     pub answer: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct CreateRequest{
-    pub zid: i32, 
+pub struct CreateRequest {
+    pub zid: i32,
     pub queue_id: i32,
     pub title: String,
     pub description: String,
     pub order: i32,
     pub is_clusterable: bool,
-    pub status: Option<Statuses>
+    pub status: Option<Statuses>,
 }
 
 pub async fn create_request(req_body: String) -> HttpResponse {
@@ -43,7 +48,10 @@ pub async fn create_request(req_body: String) -> HttpResponse {
     HttpResponse::Ok().body("Request created")
 }
 
-pub async fn request_info(token: ReqData<TokenClaims>, body: web::Json<RequestInfoBody>) -> HttpResponse {
+pub async fn request_info(
+    token: ReqData<TokenClaims>,
+    body: web::Query<RequestInfoBody>,
+) -> HttpResponse {
     log::debug!("Request info: {:#?}", body);
     let db: &DatabaseConnection = &db_connection().await;
     let body = body.into_inner();
@@ -59,14 +67,14 @@ pub async fn request_info(token: ReqData<TokenClaims>, body: web::Json<RequestIn
     if request.zid != token.username {
         return HttpResponse::Forbidden().body("You are not the owner of this request");
     }
-    
+
     // User Data
     let user = entities::users::Entity::find_by_id(request.zid)
         .one(db)
         .await
         .expect("Db broke")
         .expect("token valid => user valid");
-    
+
     // TODO: Tags
     // TODO: previous requests
     let request_json = json!({
@@ -87,8 +95,43 @@ pub async fn request_info(token: ReqData<TokenClaims>, body: web::Json<RequestIn
     HttpResponse::Ok().json(request_json)
 }
 
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RequestInfoBody {
-    pub request_id: i32
+    pub request_id: i32,
+}
+
+// given user -> give all requests
+// given queue -> all requests
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AllRequestsForQueueBody {
+    pub queue_id: i32,
+}
+
+pub async fn all_requests_for_queue(
+    token: ReqData<TokenClaims>,
+    body: web::Query<AllRequestsForQueueBody>,
+) -> HttpResponse {
+    let db: &DatabaseConnection = &db_connection().await;
+    let body = body.into_inner();
+    if let Err(e) = validate_admin(&token, db).await {
+        log::debug!("Not Admin: {:#?}", e);
+        return e;
+    };
+    // Find all related requests
+    // TODO dont do cringe loop of all
+    let requests: Vec<_> = entities::requests::Entity::find()
+        .filter(entities::requests::Column::QueueId.eq(body.queue_id))
+        .all(db)
+        .await
+        .expect("Db broke")
+        .into_iter()
+        .map(|req| req.request_id)
+        .map(|request_id| request_info(token.clone(), web::Query(RequestInfoBody { request_id  })))
+        .map(|f| block_on(f))
+        // .map(|res| res.pp)
+        .collect();
+
+    // HttpResponse::Ok().json()
+    HttpResponse::Ok().body("todo")
 }
