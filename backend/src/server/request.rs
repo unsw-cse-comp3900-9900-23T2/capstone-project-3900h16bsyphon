@@ -118,6 +118,7 @@ pub async fn all_requests_for_queue(
         log::debug!("Not Admin: {:#?}", e);
         return e;
     };
+
     // Find all related requests
     // TODO dont do cringe loop of all
     let requests: Vec<_> = entities::requests::Entity::find()
@@ -127,11 +128,58 @@ pub async fn all_requests_for_queue(
         .expect("Db broke")
         .into_iter()
         .map(|req| req.request_id)
-        .map(|request_id| request_info(token.clone(), web::Query(RequestInfoBody { request_id  })))
+        .map(|request_id| request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id  })))
         .map(|f| block_on(f))
-        // .map(|res| res.pp)
+        .map(|res| res.unwrap())
         .collect();
 
     // HttpResponse::Ok().json()
-    HttpResponse::Ok().body("todo")
+    HttpResponse::Ok().json(requests)
+}
+
+pub async fn request_info_not_web(
+    token: ReqData<TokenClaims>,
+    body: web::Query<RequestInfoBody>,
+) -> Result<serde_json::Value, HttpResponse> {
+    log::debug!("Request info: {:#?}", body);
+    let db: &DatabaseConnection = &db_connection().await;
+    let body = body.into_inner();
+    // Get the request from the database
+    let db_request = entities::requests::Entity::find_by_id(body.request_id)
+        .one(db)
+        .await
+        .expect("Db broke");
+    let request = match db_request {
+        None => return Err(HttpResponse::NotFound().body("Request not found")),
+        Some(req) => req,
+    };
+    if request.zid != token.username {
+        return Err(HttpResponse::Forbidden().body("You are not the owner of this request"));
+    }
+
+    // User Data
+    let user = entities::users::Entity::find_by_id(request.zid)
+        .one(db)
+        .await
+        .expect("Db broke")
+        .expect("token valid => user valid");
+
+    // TODO: Tags
+    // TODO: previous requests
+    let request_json = json!({
+        "request_id": request.request_id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "zid": request.zid,
+        "queue_id": request.queue_id,
+        "title": request.title,
+        "description": request.description,
+        // "order": request.order,
+        "previous_requests": 5, // TODO
+        "is_clusterable": request.is_clusterable,
+        "status": request.status,
+        "tags": []
+    });
+
+    Ok(request_json)
 }
