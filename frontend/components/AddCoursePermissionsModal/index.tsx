@@ -56,6 +56,22 @@ const AddCoursePermissionsModal = ({
     );
   };
 
+
+
+  const [courses, setCourses] = useState<UserProfileCardProps>(userInformation);
+  
+  useEffect(() => {
+    const getData = async () => {
+      const res = await authenticatedGetFetch('/user/profile', {});
+      if (!res.ok) {
+        console.error('authentication failed, or something broke, check network tab');
+        return;
+      }
+      setResponseData(toCamelCase(await res.json()));
+    };
+    getData();
+  },[]);
+
   return (
     <div>
       <Button
