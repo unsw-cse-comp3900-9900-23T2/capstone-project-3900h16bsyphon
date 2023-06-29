@@ -39,14 +39,12 @@ const SignIn: NextPage = () => {
     });
     if (!res.ok) {
       let response = await res.json();
-      if (response.zid.includes('User Already Exists')) {
-        setError((oldState) => ({
-          ...oldState,
-          zid: 'User with this zid already exists.'
-        }));
-      }
-      setError((oldState) => ({
-        ...oldState})
+      setError(() => ({
+        firstName: response.first_name,
+        lastName: response.last_name,
+        zid: response.zid,
+        password: '',
+      })
       );
 
       return;
