@@ -18,6 +18,8 @@ pub struct UserReturnModel {
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
 pub struct UserPermissionCourseCodeModel {
     course_code: String,
+    course_offering_id: i32,
+    title: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -74,6 +76,8 @@ pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
     let tutors = entities::tutors::Entity::find()
         .select_only()
         .column(entities::course_offerings::Column::CourseCode)
+        .column(entities::course_offerings::Column::CourseOfferingId)
+        .column(entities::course_offerings::Column::Title)
         .filter(entities::tutors::Column::Zid.eq(user_id))
         .join(JoinType::InnerJoin, entities::tutors::Relation::CourseOfferings.def())
         .into_model::<UserPermissionCourseCodeModel>()
@@ -87,6 +91,8 @@ pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
     let admins = entities::tutors::Entity::find()
         .select_only()
         .column(entities::course_offerings::Column::CourseCode)
+        .column(entities::course_offerings::Column::CourseOfferingId)
+        .column(entities::course_offerings::Column::Title)
         .filter(entities::tutors::Column::Zid.eq(user_id).and(entities::tutors::Column::IsCourseAdmin.eq(true)))
         .join(JoinType::InnerJoin, entities::tutors::Relation::CourseOfferings.def())
         .into_model::<UserPermissionCourseCodeModel>()
