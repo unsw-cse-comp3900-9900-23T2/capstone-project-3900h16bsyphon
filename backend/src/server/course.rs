@@ -12,7 +12,7 @@ use sea_orm::{
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-use crate::{database_utils::db_connection, entities, server};
+use crate::{utils::db::db_connection, entities, server};
 
 use crate::models::TokenClaims;
 use models::{AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink};

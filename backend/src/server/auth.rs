@@ -9,8 +9,8 @@ use serde_json::json;
 use sha2::Sha256;
 
 use crate::{
-    database_utils::db_connection, entities, models::auth::CreateUserBody,
-    models::auth::TokenClaims, SECRET, utils::auth::hash_pass,
+    entities, models::auth::CreateUserBody, models::auth::TokenClaims, utils::auth::hash_pass,
+    utils::db::db_connection, SECRET,
 };
 use entities::users;
 

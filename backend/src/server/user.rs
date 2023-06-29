@@ -1,7 +1,7 @@
 use actix_web::{web::ReqData, HttpResponse};
 use serde::{Deserialize, Serialize};
 
-use crate::{database_utils::db_connection, entities::{self}};
+use crate::{utils::db::db_connection, entities::{self}};
 
 use crate::models::auth::TokenClaims;
 

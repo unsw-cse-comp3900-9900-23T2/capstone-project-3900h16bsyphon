@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{from_str, json};
 
 use crate::entities::sea_orm_active_enums::Statuses;
-use crate::{database_utils::db_connection, entities};
+use crate::{utils::db::db_connection, entities};
 
 use super::user::validate_admin;
 use crate::models::TokenClaims;

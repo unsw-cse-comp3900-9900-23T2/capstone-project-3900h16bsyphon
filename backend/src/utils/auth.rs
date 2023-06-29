@@ -15,9 +15,9 @@ use sea_orm::EntityTrait;
 use sha2::Sha256;
 
 use crate::{
-    database_utils::db_connection,
     entities,
     models::auth::{AuthTokenClaims, TokenClaims},
+    utils::db::db_connection,
     SECRET,
 };
 

@@ -1,22 +1,28 @@
-use actix_web::{HttpResponse, web::{Query, ReqData, self}};
+use crate::{entities, server::user::validate_user, utils::db::db_connection};
+use actix_web::{
+    web::{self, Query, ReqData},
+    HttpResponse,
+};
+use chrono::NaiveDateTime;
 use log::info;
-use sea_orm::{DatabaseConnection, ActiveValue, ActiveModelTrait, EntityTrait, QuerySelect, QueryFilter, ColumnTrait, FromQueryResult,};
-use serde::{Serialize, Deserialize};
-use serde_json::json;
-use chrono::{NaiveDateTime};
 use sea_orm::entity::prelude::*;
-use crate::{database_utils::db_connection, entities, server::user::validate_user};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult,
+    QueryFilter, QuerySelect,
+};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 use crate::models::auth::TokenClaims;
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
-pub struct FAQs{
+pub struct FAQs {
     pub question: String,
     pub answer: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct CreateQueueRequest{
+pub struct CreateQueueRequest {
     pub title: String,
     pub time_start: NaiveDateTime,
     pub time_end: NaiveDateTime,
@@ -28,7 +34,10 @@ pub struct CreateQueueRequest{
     pub course_id: i32,
 }
 
-pub async fn create_queue(token: ReqData<TokenClaims>, req_body: web::Json<CreateQueueRequest>) -> HttpResponse {
+pub async fn create_queue(
+    token: ReqData<TokenClaims>,
+    req_body: web::Json<CreateQueueRequest>,
+) -> HttpResponse {
     let db: &DatabaseConnection = &db_connection().await;
     if let Err(e) = validate_user(&token, db).await {
         log::debug!("failed to verify user:{:?}", e);
@@ -54,10 +63,13 @@ pub async fn create_queue(token: ReqData<TokenClaims>, req_body: web::Json<Creat
 
 #[derive(Deserialize)]
 pub struct GetQueuesByCourseQuery {
-    course_id: i32
+    course_id: i32,
 }
 
-pub async fn get_queues_by_course(token: ReqData<TokenClaims>, query: Query<GetQueuesByCourseQuery>) -> HttpResponse {
+pub async fn get_queues_by_course(
+    token: ReqData<TokenClaims>,
+    query: Query<GetQueuesByCourseQuery>,
+) -> HttpResponse {
     let db: &DatabaseConnection = &db_connection().await;
     if let Err(e) = validate_user(&token, db).await {
         log::debug!("failed to verify user:{:?}", e);
@@ -75,7 +87,8 @@ pub async fn get_queues_by_course(token: ReqData<TokenClaims>, query: Query<GetQ
         .column(entities::queues::Column::IsVisible)
         .into_json()
         .all(db)
-        .await.expect("db broke");
+        .await
+        .expect("db broke");
     let tutors = entities::tutors::Entity::find()
         .select_only()
         .left_join(entities::users::Entity)
@@ -83,10 +96,15 @@ pub async fn get_queues_by_course(token: ReqData<TokenClaims>, query: Query<GetQ
         .filter(entities::tutors::Column::CourseOfferingId.eq(query.course_id))
         .filter(entities::tutors::Column::IsCourseAdmin.eq(true))
         .into_json()
-        .all(db).await.expect("db broke");
+        .all(db)
+        .await
+        .expect("db broke");
     info!("{:?}", tutors);
-    the_course.iter_mut()
-        .for_each(|it| { it.as_object_mut().unwrap().insert("course_admins".to_owned(), tutors.clone().into()); });
+    the_course.iter_mut().for_each(|it| {
+        it.as_object_mut()
+            .unwrap()
+            .insert("course_admins".to_owned(), tutors.clone().into());
+    });
     HttpResponse::Ok().json(the_course)
 }
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
