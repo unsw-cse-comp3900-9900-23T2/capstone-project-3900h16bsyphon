@@ -50,13 +50,13 @@ const Dashboard: NextPage = () => {
           </div>
           <div className={styles.cards}>
             {data.map((d, index) => (
-              <CourseOfferingCard key={index} title={`${d.courseCode} - ${d.title}`} />
+              <CourseOfferingCard key={index} title={`${d.courseCode} - ${d.title}`} index={index}/>
             ))}
           </div>
           <div className={styles.tutorSection}>
             <h1>Courses you tutor</h1>
             <div className={styles.section}>
-              <p>You are not a tutor for any courses.</p>
+              <p>Select a course to manage queues</p>
               <JoinTutorModal />
             </div>
             {/* TODO: change to pass in course code or sth */}
@@ -70,7 +70,6 @@ const Dashboard: NextPage = () => {
             <h1>Courses you are a student</h1>
             <p>Select a course to view queues</p>
             <div className={styles.cards}>
-              {/* TODO: change to pass in course code or sth */}
               {data.map((d, index) => (
                 <CourseCard key={index} title={d.title} index={index}/>
               ))}

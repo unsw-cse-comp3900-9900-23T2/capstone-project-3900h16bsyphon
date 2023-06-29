@@ -5,7 +5,6 @@ import StudentQueueRequestCard from '../../../components/StudentQueueRequestCard
 import MetaData from '../../../components/MetaData';
 import Header from '../../../components/Header';
 
-
 const requests = [
   {
     zid: 'z5303033',
@@ -51,8 +50,6 @@ const requestData = {
   courseId: 1,
   requests
 };
-
-
 
 const ActiveQueue = () => {
   const router = useRouter();

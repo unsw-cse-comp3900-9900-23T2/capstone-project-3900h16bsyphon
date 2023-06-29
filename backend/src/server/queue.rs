@@ -1,10 +1,10 @@
 use actix_web::{HttpResponse, web::{Query, ReqData, self}};
-use chrono::NaiveDateTime;
 use log::info;
-use sea_orm::{DatabaseConnection, ActiveValue, ActiveModelTrait, EntityTrait, QuerySelect, QueryFilter, ColumnTrait};
+use sea_orm::{DatabaseConnection, ActiveValue, ActiveModelTrait, EntityTrait, QuerySelect, QueryFilter, ColumnTrait, FromQueryResult,};
 use serde::{Serialize, Deserialize};
 use serde_json::json;
-
+use chrono::{NaiveDateTime};
+use sea_orm::entity::prelude::*;
 use crate::{database_utils::db_connection, entities, server::user::validate_user};
 
 use super::auth::TokenClaims;
@@ -88,4 +88,46 @@ pub async fn get_queues_by_course(token: ReqData<TokenClaims>, query: Query<GetQ
     the_course.iter_mut()
         .for_each(|it| { it.as_object_mut().unwrap().insert("course_admins".to_owned(), tutors.clone().into()); });
     HttpResponse::Ok().json(the_course)
+}
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct QueueReturnModel {
+    queue_id: i32,
+    title: String,
+    course_offering_id: i32,
+    is_available: bool,
+    is_visible: bool,
+    start_time: Option<DateTime>,
+    end_time: Option<DateTime>,
+}
+
+pub async fn get_active_queues(token: ReqData<TokenClaims>) -> HttpResponse {
+    let db = &db_connection().await;
+    let error = validate_user(&token, db).await.err();
+    if error.is_some() {
+        return error.unwrap();
+    }
+
+    let queues_result = entities::queues::Entity::find()
+        .select_only()
+        .column(entities::queues::Column::QueueId)
+        .column(entities::queues::Column::Title)
+        .column(entities::queues::Column::CourseOfferingId)
+        .column(entities::queues::Column::IsAvailable)
+        .column(entities::queues::Column::IsVisible)
+        .column(entities::queues::Column::StartTime)
+        .column(entities::queues::Column::EndTime)
+        .filter(entities::queues::Column::IsVisible.eq(true))
+        .filter(entities::queues::Column::IsAvailable.eq(true))
+        .into_model::<QueueReturnModel>()
+        .all(db)
+        .await;
+
+    // return queues result result
+    match queues_result {
+        Ok(queues_result) => HttpResponse::Ok().json(web::Json(queues_result)),
+        Err(e) => {
+            log::warn!("Db broke?: {:?}", e);
+            HttpResponse::InternalServerError().json("Db Broke")
+        }
+    }
 }
