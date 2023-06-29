@@ -43,7 +43,7 @@ const SignIn: NextPage = () => {
         firstName: response.first_name,
         lastName: response.last_name,
         zid: response.zid,
-        password: '',
+        password: response.password,
       })
       );
 

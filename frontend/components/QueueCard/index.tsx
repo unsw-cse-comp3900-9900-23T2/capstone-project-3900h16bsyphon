@@ -10,7 +10,7 @@ type QueueCardProps = {
   seen?: number;
   unseen?: number;
   location: String[];
-  courseAdmins: String[];
+  courseAdmins?: String[];
   isEdit?: boolean;
 }
 
@@ -20,7 +20,7 @@ export default function QueueCard({ title, seen, unseen, location, courseAdmins,
       <Card className={styles.card}>
         <CardContent>
           <div className={styles.chipContainer}>
-            {courseAdmins.map((c, index) => <Chip key={index} label={c} className={styles.courseAdminChip} />)}
+            {courseAdmins && courseAdmins.map((c, index) => <Chip key={index} label={c} className={styles.courseAdminChip} />)}
             {location.map((l, index) => <Chip key={index} label={l} className={styles.locationChip} />)}
           </div>
           <Typography className={styles.heading}>

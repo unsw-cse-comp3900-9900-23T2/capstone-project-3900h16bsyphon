@@ -102,6 +102,8 @@ async fn main() -> std::io::Result<()> {
             .route(
                 "/request/all_requests_for_queue",
                 web::get().to(server::request::all_requests_for_queue).wrap(amw.clone()),
+                "/queues/active/list",
+                web::get().to(server::queue::get_active_queues).wrap(amw.clone()),
             )
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
