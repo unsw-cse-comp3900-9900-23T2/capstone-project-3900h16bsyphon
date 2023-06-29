@@ -5,15 +5,18 @@ import React, { useState } from 'react';
 import Modal from '@mui/material/Modal';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { nanoid } from 'nanoid';
 
-const TutorInviteModal = () => {
+type TutorInviteModalProps = {
+  inviteCode: string;
+}
+
+const TutorInviteModal = ({ inviteCode }: TutorInviteModalProps) => {
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState('');
 
-  const handleOpen = () => {
+  const handleOpen = async () => {
     setOpen(true);
-    setCode(nanoid(6));
+    setCode(inviteCode);
   };
   const handleClose = () => setOpen(false);
   const copyToClipboard = (text: string) => navigator.clipboard.writeText(text);

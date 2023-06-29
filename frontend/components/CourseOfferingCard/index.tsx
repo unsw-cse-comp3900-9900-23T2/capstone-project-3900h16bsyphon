@@ -10,9 +10,10 @@ import TutorInviteModal from '../TutorInviteModal';
 // TODO: add more props in
 type CourseOfferingCardProps = {
   title: string;
+  inviteCode: string;
 }
 
-const CourseOfferingCard = ({ title } : CourseOfferingCardProps) => {
+const CourseOfferingCard = ({ title, inviteCode } : CourseOfferingCardProps) => {
   return (
     <Card>
       <CardContent>
@@ -24,7 +25,7 @@ const CourseOfferingCard = ({ title } : CourseOfferingCardProps) => {
         <Button disableElevation className={styles.queueBtn}>QUEUES</Button>
         <Button disableElevation className={styles.analyticsBtn}>ANALYTICS</Button>
         <Button disableElevation className={styles.tutorPageBtn}>TUTOR PAGE</Button>
-        <TutorInviteModal />
+        <TutorInviteModal inviteCode={inviteCode} />
       </CardActions>
     </Card>
   );

@@ -7,7 +7,7 @@ import QueueCard from '../../../components/QueueCard';
 import Typography from '@mui/material/Typography';
 import Footer from '../../../components/Footer';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 
 
@@ -25,7 +25,7 @@ const ViewQueue = () => {
       isEdit: true,
     },
   ]);
-
+  const [courseData, setCourseData] = useState<any>({});
   useEffect(() => {
     let getQueues = async () => {
       if (!router.query.id) return;
@@ -33,14 +33,22 @@ const ViewQueue = () => {
       let d = await res.json();
       setData(toCamelCase(d));
     };
-    getQueues();
+    let getCourse = async () => {
+      let res = await authenticatedGetFetch('/course/get', {course_id: `${router.query.id}`});
+      let d = await res.json();
+      setCourseData(toCamelCase(d));
+    };
+    if (router.query.id) {
+      getCourse();
+      getQueues();
+    }
   }, [router.query.id]);
   return (
     <>
       <MetaData />
       <Header />
       <div className={styles.container}>
-        <Typography variant="h3" className={styles.title}>COMP1000: 23T2</Typography>
+        <Typography variant="h3" className={styles.title}>{courseData.title}</Typography>
         <div className={styles.section}>
           <h1 className={styles.heading}>Live</h1>
           <Button startIcon={<AddIcon />} className={styles.newQueueBtn} onClick={() => { router.push(`/queue-creation/${router.query.id}`); }}>New Queue</Button>
@@ -54,7 +62,7 @@ const ViewQueue = () => {
           <h1 className={styles.title}>Upcoming</h1>
         </div>
         <div className={styles.cards}>
-          {data.filter((d) => Date.parse(d.startTime) < Date.now()).map((d, index) => <QueueCard key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins.map((i) => i.firstName)} isEdit={d.isEdit}/>)}
+          {data.filter((d) => Date.parse(d.startTime) > Date.now()).map((d, index) => <QueueCard key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins.map((i) => i.firstName)} isEdit={d.isEdit}/>)}
         </div>
         <div className={styles.section}>
           <h1 className={styles.title}>Previous</h1>

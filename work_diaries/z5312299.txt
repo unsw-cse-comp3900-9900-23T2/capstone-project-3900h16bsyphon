@@ -16,4 +16,4 @@ Week 4:
 - Started working on creating the dashboard UI
 
 Week 5:
-- Finished dashboard UI
+- Finished dashboard and queues UI
