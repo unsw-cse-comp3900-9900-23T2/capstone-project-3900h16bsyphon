@@ -12,3 +12,7 @@ Week 3:
 - The team finalised the proposal and submitted
 - Set up dev environment
 
+Week 4:
+- Frontend for queue creation (skeleton).
+- POST request to create queue and backend for queue creation.
+- Assited request creation through pair programming. 

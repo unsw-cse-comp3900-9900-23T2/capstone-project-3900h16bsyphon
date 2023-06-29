@@ -25,6 +25,19 @@ const ViewQueue = () => {
       isEdit: true,
     },
   ]);
+  const [gg, setGG] = useState([
+    {
+      title: 'COMP1000 Week 3 Friday 16:00-18:00 Help Session',
+      seen: 5,
+      unseen: 4,
+      startTime: '2023-06-29T05:13:07',
+      endTime: '2023-06-29T07:13:07',
+      location: ['Brass Lab', 'Online'],
+      courseAdmins: [{ firstName: 'Hussain'}, {firstName: 'Peter'}],
+      isEdit: true,
+    }
+  ]);
+
   const [courseData, setCourseData] = useState<any>({});
   useEffect(() => {
     let getQueues = async () => {
@@ -33,16 +46,16 @@ const ViewQueue = () => {
       let d = await res.json();
       setData(toCamelCase(d));
     };
-    let getCourse = async () => {
-      let res = await authenticatedGetFetch('/course/get', {course_id: `${router.query.id}`});
-      let d = await res.json();
-      setCourseData(toCamelCase(d));
+    let getActiveQueues = async () => {
+      if (!router.query.id) return;
+      let res1 = await authenticatedGetFetch('/queues/active/list', {course_id: `${router.query.id}`});
+      let d1 = await res1.json();
+      setGG(toCamelCase(d1));
     };
-    if (router.query.id) {
-      getCourse();
-      getQueues();
-    }
+    getQueues();
+    getActiveQueues();
   }, [router.query.id]);
+
   return (
     <>
       <MetaData />
@@ -52,6 +65,11 @@ const ViewQueue = () => {
         <div className={styles.section}>
           <h1 className={styles.heading}>Live</h1>
           <Button startIcon={<AddIcon />} className={styles.newQueueBtn} onClick={() => { router.push(`/queue-creation/${router.query.id}`); }}>New Queue</Button>
+          {
+            gg.map((d, index) => (
+              <QueueCard key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins.map((i) => i.firstName)} isEdit={d.isEdit} seen={d.seen} unseen={d.unseen}/>
+            ))
+          } 
         </div>
         <div className={styles.cards}>
           {data.filter((d) => Date.parse(d.startTime) > Date.now() && Date.parse(d.endTime) < Date.now()).map((d, index) => (
