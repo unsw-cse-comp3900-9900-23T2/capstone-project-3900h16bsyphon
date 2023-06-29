@@ -6,7 +6,7 @@ import TextInput from '../../components/TextInput';
 import { useState } from 'react';
 import Button from '../../components/Button';
 import { useRouter } from 'next/router';
-import { setToken } from '../../utils';
+import { authenticatedGetFetch, authenticatedPostFetch, setToken } from '../../utils';
 
 const SignIn: NextPage = () => {
   let [zid, setZid] = useState('');
@@ -31,37 +31,26 @@ const SignIn: NextPage = () => {
       return;
     }
 
-    let res = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}/auth/signup`, {
-        method: 'POST',
-        headers: {
-          'content-Type': 'application/json',
-
-        },
-        body: JSON.stringify({
-          first_name : firstName,
-          last_name: lastName,
-          zid,
-          password
-        })
-      });
-    let response = await res.json();
+    let res = await authenticatedPostFetch('/auth/signup', {
+      first_name : firstName,
+      last_name: lastName,
+      zid,
+      password
+    });
     if (!res.ok) {
-      setError({
-        firstName : response.first_name,
-        lastName: response.last_name,
-        zid,
-        password
-      });
+      let response = await res.json();
+      if (response.zid.includes('User Already Exists')) {
+        setError((oldState) => ({
+          ...oldState,
+          zid: 'User with this zid already exists.'
+        }));
+      }
+      setError((oldState) => ({
+        ...oldState})
+      );
+
       return;
     }
-    setError({
-      zid: '',
-      password: '',
-      firstName: '',
-      lastName: ''
-    });
-
     // sign in directly
     let loginRes = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}/auth/login`, {
