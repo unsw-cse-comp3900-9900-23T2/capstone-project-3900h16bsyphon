@@ -13,11 +13,6 @@ use crate::{utils::db::db_connection, entities};
 use super::user::validate_admin;
 use crate::models::TokenClaims;
 
-#[derive(Deserialize, Debug, Clone, Serialize)]
-pub struct FAQs {
-    pub question: String,
-    pub answer: String,
-}
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct CreateRequest {
