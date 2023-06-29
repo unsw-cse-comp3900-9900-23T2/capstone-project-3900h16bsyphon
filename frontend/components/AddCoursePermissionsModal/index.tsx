@@ -44,7 +44,7 @@ const AddCoursePermissionsModal = ({
   const handleClose = () => setOpen(false);
 
   const [tutorPermissionList, setTutorPermissionList] =
-    useState<CoursePermission[]>(tutor);
+    useState<string[]>(tutor.map((x) => x.courseCode));
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     const {
