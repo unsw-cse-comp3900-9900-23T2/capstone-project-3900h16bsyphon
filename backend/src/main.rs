@@ -48,6 +48,12 @@ async fn main() -> std::io::Result<()> {
                 web::get().to(server::user::get_users).wrap(amw.clone())
             )
             .route(
+                "/user/profile",
+                web::get()
+                    .to(server::user::get_user)
+                    .wrap(amw.clone()),
+            )
+            .route(
                 "/queue/create", 
                 web::post().to(server::queue::create_queue)
                 .wrap(amw.clone())
@@ -63,6 +69,10 @@ async fn main() -> std::io::Result<()> {
                     .to(server::course::create_offering)
                     .wrap(amw.clone()),
             )
+            .route("/courses/get_tutored", 
+                web::get().to(server::course::get_courses_tutored)
+                .wrap(amw.clone())
+            )
             .route(
                 "/course/get",
                 web::get()
@@ -74,10 +84,6 @@ async fn main() -> std::io::Result<()> {
                 web::get()
                     .to(server::course::get_offerings)
                     .wrap(amw.clone()),
-            )
-            .route(
-                "/course/add_tutor",
-                web::post().to(server::course::add_tutor).wrap(amw.clone()),
             )
             .route(
                 "/course/join_with_tutor_link",

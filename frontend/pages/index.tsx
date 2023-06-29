@@ -6,7 +6,7 @@ import Image from 'next/image';
 import FeatureGrid from '../components/FeatureGrid';
 import MetaData from '../components/MetaData';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { getToken } from '../utils';
 
 const Home: NextPage = () => {
