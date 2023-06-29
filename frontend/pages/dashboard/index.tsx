@@ -21,6 +21,7 @@ type CourseOffering = {
 const Dashboard: NextPage = () => {
   const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
   const [myCourses, setMyCourses] = useState<CourseOffering[]>([]);
+  const [myProfile, setMyProfile ] = useState<any>({});
   useEffect(() => {
     const fetchCourseOfferings = async () => {
       let res = await authenticatedGetFetch('/course/list', {});
@@ -49,8 +50,17 @@ const Dashboard: NextPage = () => {
       let courses = await res.json() as any;
       setMyCourses(toCamelCase(courses));
     };
+    const fetchUserProfile = async () => {
+      const res = await authenticatedGetFetch('/user/profile', {});
+      if (!res.ok) {
+        console.error('authentication failed, or something broke, check network tab');
+        return;
+      }
+      setMyProfile(toCamelCase(await res.json()));
+    };
     fetchCoursesTutored();
     fetchCourseOfferings();
+    fetchUserProfile();
   }, []);
 
   return (
@@ -59,7 +69,7 @@ const Dashboard: NextPage = () => {
       <Header />
       <div className={styles.container}>
         <div className={styles.dashboard}>
-          {
+          { myProfile.isOrgAdmin &&
             <>
               <div className={styles.courseOffering}>
                 <h1 className={styles.heading}>Select course offering</h1>
