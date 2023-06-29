@@ -6,10 +6,12 @@ pub mod database_utils;
 pub mod entities;
 pub mod prelude;
 pub mod server;
+pub mod models;
+pub mod utils;
 
 use crate::prelude::*;
 
-use server::auth::validator;
+use utils::auth::validator;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
