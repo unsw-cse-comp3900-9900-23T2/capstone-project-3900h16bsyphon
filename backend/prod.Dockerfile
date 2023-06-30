@@ -23,7 +23,6 @@ RUN cargo build --target x86_64-unknown-linux-musl --release
 COPY ./Cargo.lock ./
 COPY ./migration/Cargo.lock ./migration
 COPY ./migration/src ./migration/src
-RUN ls -a -l ./migration && exit 1
 RUN cargo build --manifest-path ./migration/Cargo.toml --target x86_64-unknown-linux-musl --release
 
 # copy backend src and build it
