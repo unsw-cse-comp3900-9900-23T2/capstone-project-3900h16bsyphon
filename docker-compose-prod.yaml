@@ -30,7 +30,7 @@ services:
     build:
       context: backend
       dockerfile: ./prod.Dockerfile
-    entrypoint: ./run_prod.sh
+    entrypoint: /run_prod.sh
     env_file:
       - backend/.env
     environment:
@@ -39,6 +39,9 @@ services:
       - 8000:8000
     networks:
       - net
+    volumes:
+      - ./backend/run_prod.sh:/run_prod.sh
+      - ./backend/.env.sh:/.env
     depends_on:
       - database
 

@@ -30,5 +30,6 @@ RUN apk --no-cache add ca-certificates
 COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/actix-demo .
 COPY --from=builder /app/migration/target/x86_64-unknown-linux-musl/release/migration .
 COPY --from=builder /app/run_prod.sh .
+COPY --from=builder /app/.env .
 
-ENTRYPOINT run_prod.sh
+ENTRYPOINT /run_prod.sh

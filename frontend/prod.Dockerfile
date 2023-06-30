@@ -9,6 +9,9 @@ RUN npm run build
 
 FROM node:lts-alpine
 COPY --from=builder /app/.next /.next
+COPY --from=builder /app/public /public
+# we seem to need this but only for css?
+COPY --from=builder /app/src /src
 COPY package.json package-lock.json ./
 RUN npm ci
 CMD npm start
