@@ -30,7 +30,7 @@ services:
     build:
       context: backend
       dockerfile: ./prod.Dockerfile
-    entrypoint: backend/run_prod.sh
+    entrypoint: ./run_prod.sh
     env_file:
       - backend/.env
     environment:
