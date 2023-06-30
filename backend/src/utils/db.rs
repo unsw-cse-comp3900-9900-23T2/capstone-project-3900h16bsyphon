@@ -1,5 +1,6 @@
 use std::env;
 
+use futures::executor::block_on;
 use sea_orm::{Database, DatabaseConnection, ConnectOptions};
 
 lazy_static! {
@@ -7,7 +8,7 @@ lazy_static! {
         let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
         let mut opt = ConnectOptions::new(database_url);
         opt.max_connections(100).min_connections(5);
-        async_std::task::block_on(async {
+        block_on(async {
             Database::connect(opt).await.unwrap()
         })
     };

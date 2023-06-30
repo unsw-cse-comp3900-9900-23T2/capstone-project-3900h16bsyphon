@@ -2,35 +2,21 @@ use actix_web::web::{ReqData, self};
 use actix_web::{HttpResponse};
 use futures::executor::block_on;
 use lazy_static::__Deref;
-use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait, ColumnTrait, QueryFilter};
-use serde::{Serialize, Deserialize};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter,
+};
+use serde::{Deserialize, Serialize};
 use serde_json::{from_str, json};
 
-use crate::database_utils::DB;
-use crate::entities::sea_orm_active_enums::Statuses;
-use crate::entities;
+use crate::{utils::db::DB, entities};
 
-use super::auth::TokenClaims;
 use super::user::validate_admin;
+use crate::models::{TokenClaims, CreateRequest};
 
-#[derive(Deserialize, Debug, Clone, Serialize)]
-pub struct FAQs {
-    pub question: String,
-    pub answer: String,
-}
 
-#[derive(Deserialize, Debug, Clone)]
-pub struct CreateRequest {
-    pub zid: i32,
-    pub queue_id: i32,
-    pub title: String,
-    pub description: String,
-    pub order: i32,
-    pub is_clusterable: bool,
-    pub status: Option<Statuses>,
-}
 
 pub async fn create_request(req_body: String) -> HttpResponse {
+    // TODO use middleware not this
     let request_creation: CreateRequest = from_str(&req_body).unwrap();
     let db = DB.deref();
     let request = entities::requests::ActiveModel {
@@ -127,7 +113,9 @@ pub async fn all_requests_for_queue(
         .expect("Db broke")
         .into_iter()
         .map(|req| req.request_id)
-        .map(|request_id| request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id  })))
+        .map(|request_id| {
+            request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
+        })
         .map(|f| block_on(f))
         .map(|res| res.unwrap())
         .collect();

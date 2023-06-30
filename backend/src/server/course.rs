@@ -2,29 +2,24 @@ use actix_web::{
     web::{self, ReqData},
     HttpResponse,
 };
+use chrono::NaiveDate;
 use futures::executor::block_on;
 use lazy_static::__Deref;
 use rand::Rng;
-use regex::Regex;
-use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, FromQueryResult, QueryFilter,
-    QuerySelect,
-};
-use serde::{Deserialize, Serialize};
+use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
 
-use crate::{database_utils::DB, entities, server};
-
-use models::{AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink};
-
-use server::{
-    auth::TokenClaims,
-    user::{validate_admin, validate_user},
+use crate::{
+    entities,
+    models::{CourseOfferingReturnModel, GetOfferingByIdQuery},
+    server,
+    utils::db::DB,
+};
+use crate::models::{
+    AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink, TokenClaims, INV_CODE_LEN,
 };
 
-use chrono::NaiveDate;
-
-const INV_CODE_LEN: usize = 6;
+use server::user::{validate_admin, validate_user};
 
 pub async fn create_offering(
     token: ReqData<TokenClaims>,
@@ -63,15 +58,6 @@ pub async fn create_offering(
     HttpResponse::Ok().json(web::Json(course))
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
-pub struct CourseOfferingReturnModel {
-    course_offering_id: i32,
-    course_code: String,
-    title: String,
-    start_date: Option<NaiveDate>,
-    tutor_invite_code: Option<String>,
-}
-
 pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
     let db = DB.deref();
     let error = validate_user(&token, db).await.err();
@@ -98,7 +84,6 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
         }
     }
 }
-
 
 pub async fn get_courses_tutored(token: ReqData<TokenClaims>) -> HttpResponse {
     let db = DB.deref();
@@ -127,11 +112,6 @@ pub async fn get_courses_tutored(token: ReqData<TokenClaims>) -> HttpResponse {
             HttpResponse::InternalServerError().json("Db Broke")
         }
     }
-}
-
-#[derive(Deserialize)]
-pub struct GetOfferingByIdQuery {
-    course_id: i32,
 }
 
 pub async fn get_offering_by_id(
@@ -280,6 +260,7 @@ pub async fn join_with_tutor_link(
     HttpResponse::Ok().json(web::Json(course))
 }
 
+// TODO: THIS SHOULD BE A REAL TYPE
 fn not_exist_error(missing: Vec<impl Into<String>>) -> HttpResponse {
     HttpResponse::BadRequest().json(json!({
         "err_type": "not_exist",
@@ -324,91 +305,16 @@ fn gen_inv_code() -> String {
         .collect()
 }
 
-impl CreateOfferingBody {
-    fn validate(&self) -> Result<(), HttpResponse> {
-        let errs = json!({
-            "course_code": Self::validate_code(&self.course_code).err(),
-            "title": Self::validate_title(&self.title).err(),
-            "admins": Self::validate_tutors(self.admins.as_ref().unwrap_or(&Vec::new())).err(),
-        });
-        if errs.as_object().unwrap().values().any(|v| !v.is_null()) {
-            return Err(HttpResponse::BadRequest().json(errs));
-        }
-        Ok(())
-    }
-
-    fn validate_tutors(tutors: &Vec<i32>) -> Result<(), Vec<i32>> {
-        let non_exist: Vec<i32> = tutors
-            .into_iter()
-            .filter(|id| !block_on(check_user_exists(**id)))
-            .map(|id| *id)
-            .collect();
-
-        match non_exist.is_empty() {
-            true => Ok(()),
-            false => Err(non_exist),
-        }
-    }
-
-    fn validate_title(title: &str) -> Result<(), String> {
-        if title
-            .chars()
-            .any(|c| !c.is_ascii_alphanumeric() && !c.is_ascii_punctuation() && c != ' ')
-        {
-            return Err(String::from(
-                "Only alphanumeric characters, spaces, and punctuation allowed",
-            ));
-        }
-        if !(3..=26).contains(&title.len()) {
-            return Err(String::from("Title must be between 3 and 26 characters"));
-        }
-        Ok(())
-    }
-
-    fn validate_code(code: &str) -> Result<(), String> {
-        if !Regex::new("^[A-Z]{4}[0-9]{4}$").unwrap().is_match(code) {
-            return Err(String::from(
-                "Invalid Course Code. Must Match ^[A-Z]{4}[0-9]{4}$",
-            ));
-        }
-        Ok(())
-    }
-}
-
 /// Generate today's date in UTC as a NaiveDate
 pub fn today() -> NaiveDate {
     chrono::Utc::now().naive_utc().date()
 }
 
-async fn check_user_exists(user_id: i32) -> bool {
+pub async fn check_user_exists(user_id: i32) -> bool {
     let db = DB.deref();
     entities::users::Entity::find_by_id(user_id)
         .one(db)
         .await
         .expect("db broke")
         .is_some()
-}
-
-mod models {
-    use chrono::NaiveDate;
-    use serde::{Deserialize, Serialize};
-
-    #[derive(Debug, Clone, Serialize, Deserialize)]
-    pub struct CreateOfferingBody {
-        pub course_code: String,
-        pub title: String,
-        pub start_date: Option<NaiveDate>,
-        pub admins: Option<Vec<i32>>,
-    }
-
-    #[derive(Debug, Clone, Serialize, Deserialize)]
-    pub struct AddTutorToCourseBody {
-        pub tutor_id: i32,
-        pub course_id: i32,
-    }
-
-    #[derive(Debug, Clone, Serialize, Deserialize)]
-    pub struct JoinWithTutorLink {
-        pub tutor_link: String,
-    }
 }

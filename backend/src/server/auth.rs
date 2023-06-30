@@ -1,13 +1,6 @@
-use actix_web::{dev::ServiceRequest, web, HttpMessage, HttpResponse, Responder};
+use actix_web::{web, HttpResponse, Responder, dev::ServiceRequest, HttpMessage};
 
-use actix_web_httpauth::{
-    extractors::{
-        basic::BasicAuth,
-        bearer::{self, BearerAuth},
-        AuthenticationError,
-    },
-    headers::www_authenticate::bearer::Bearer,
-};
+use actix_web_httpauth::{extractors::{basic::BasicAuth, bearer::{BearerAuth, self}, AuthenticationError}, headers::www_authenticate::bearer::Bearer};
 
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
@@ -16,23 +9,11 @@ use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::Sha256;
-
-use crate::{database_utils::DB, entities, SECRET};
+use crate::{
+    entities, models::auth::CreateUserBody, models::auth::TokenClaims, utils::auth::hash_pass,
+    utils::db::DB, SECRET,
+};
 use entities::users;
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct TokenClaims {
-    pub username: i32,
-    pub password: String,
-}
-impl TokenClaims {
-    fn new(username: i32, password: impl Into<String>) -> Self {
-        Self {
-            username,
-            password: password.into(),
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AuthTokenClaims {
@@ -196,7 +177,9 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse {
     match prev_user_res {
         Err(e) => return e,
         Ok(Some(prev_user)) => {
-            return HttpResponse::Conflict().json(json!({"zid": format!("User Already Exists: {}", prev_user.zid)}))
+            return HttpResponse::Conflict().json(json!({
+                "zid": format!("User Already Exists: {}", prev_user.zid)
+            }))
         }
         Ok(_) => {}
     };
@@ -237,84 +220,4 @@ pub async fn make_admin(zid: &str) {
     .await
     .expect("Db broke");
     log::info!("Made {} an admin", zid);
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CreateUserBody {
-    pub first_name: String,
-    pub last_name: String,
-    pub zid: String,
-    pub password: String,
-}
-
-impl CreateUserBody {
-    pub fn verify_user(&self) -> Result<(), HttpResponse> {
-        let errs = json!({
-            "first_name": Self::verify_name(&self.first_name).err(),
-            "last_name": Self::verify_name(&self.last_name).err(),
-            "password": Self::verify_password(&self.password).err(),
-            "zid": Self::verify_zid(&self.zid).err(),
-        });
-        match errs.as_object().unwrap().iter().all(|(_, v)| v.is_null()) {
-            true => Ok(()),
-            false => Err(HttpResponse::BadRequest().json(errs)),
-        }
-    }
-
-    pub fn verify_zid(zid: &str) -> Result<i32, String> {
-        if !zid.chars().all(|c| c.is_ascii_alphanumeric()) {
-            return Err("zid must be ascii alphanumeric only".to_string());
-        }
-        let zid = zid.as_bytes();
-        let zid = match zid.get(0) {
-            Some(z) if *z == 'z' as u8 => &zid[1..],
-            _ => zid,
-        };
-        if zid.len() != 7 {
-            return Err(format!(
-                "zid must have 7 numbers. Got zid with {} numbers",
-                zid.len()
-            ));
-        }
-        std::str::from_utf8(zid)
-            .expect("Was ascii before")
-            .parse::<u32>()
-            .map_err(|_| "zid must be z followed by numbers".to_string())
-            .map(|z| z as i32)
-    }
-
-    fn verify_name(name: &str) -> Result<(), String> {
-        match name {
-            n if !(3..=16).contains(&n.len()) => Err("name too short".to_string()),
-            n if !n.chars().all(|c| c.is_ascii_alphabetic()) => {
-                Err("name must be alphanumeric or space".to_string())
-            }
-            _ => Ok(()),
-        }
-    }
-
-    fn verify_password(pass: &str) -> Result<(), String> {
-        match pass {
-            p if !(8..=28).contains(&p.len()) => Err("password must be 8 chars".to_string()),
-            p if !p.is_ascii() => Err("password must be ascii".to_string()),
-            p if !p.chars().any(|c| c.is_ascii_uppercase()) => {
-                Err("password must have uppercase".to_string())
-            }
-            p if !p.chars().any(|c| c.is_ascii_lowercase()) => {
-                Err("password must have lowercase".to_string())
-            }
-            p if !p.chars().any(|c| c.is_ascii_digit()) => {
-                Err("password must have digit".to_string())
-            }
-            _ => Ok(()),
-        }
-    }
-}
-
-fn hash_pass(pass: &str) -> Result<String, argon2::Error> {
-    argon2::hash_encoded(
-        pass.as_bytes(),
-        SECRET.as_bytes(),
-        &argon2::Config::default(),
-    )
 }
