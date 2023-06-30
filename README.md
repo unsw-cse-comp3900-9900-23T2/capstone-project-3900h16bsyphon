@@ -3,6 +3,8 @@
 ## how to run
 ### Docker
 you have the option of using docker to run the project. This is recommended. 
+run `docker compose up` for a dev environment,
+or `docker compose -f docker-compose-prod.yaml up` for a prod environment
 
 Caveats:
 
