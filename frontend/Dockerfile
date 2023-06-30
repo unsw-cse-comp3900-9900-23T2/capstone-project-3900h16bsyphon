@@ -1,4 +1,4 @@
-FROM node:lts
+FROM node:lts-alpine
 
 # Set the current working directory inside the container
 WORKDIR /client

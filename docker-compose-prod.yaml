@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ./prod.Dockerfile
+    container_name: frontend_prod
+    ports:
+      - '3000:3000'
+    env_file:
+      - ./frontend/.env
+    environment:
+      - BACKEND_HOST=backend_prod
+    networks:
+      - net
+  database:
+    container_name: database_prod
+    image: 'postgres:latest'
+    ports:
+      - 5432:5432
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_HOST=database
+    networks:
+      - net
+  backend:
+    container_name: backend_prod
+    build:
+      context: backend
+      dockerfile: ./prod.Dockerfile
+    env_file:
+      - backend/.env
+    environment:
+      - DATABASE_HOST=database
+    ports:
+      - 8000:8000
+    networks:
+      - net
+
+networks:
+  net:

@@ -1,5 +1,5 @@
 # TODO: make a prod version
-FROM rust:buster
+FROM rust:alpine
 
 RUN cargo install cargo-watch
 
