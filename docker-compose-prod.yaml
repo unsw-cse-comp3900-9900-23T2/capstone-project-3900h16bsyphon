@@ -39,9 +39,6 @@ services:
       - 8000:8000
     networks:
       - net
-    volumes:
-      - ./backend/run_prod.sh:/run_prod.sh
-      - ./backend/.env.sh:/.env
     depends_on:
       - database
 
