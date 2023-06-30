@@ -69,6 +69,7 @@ export default function CreateRequest() {
       queue_id: Number.parseInt(`${router.query.id}`),
     };
     let res = await authenticatedPostFetch('/request/create', body);
+    // TODO PUSH TO WAIT
     if (res.ok) router.push('/queue');
   };
 

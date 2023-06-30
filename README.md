@@ -24,3 +24,7 @@ this will likely lead to cors errors.
 the database you connect to will NOT have syphon data in it, and instead be the one connected on that port. 
 it may say something like "cannot find database 'syphon'" or "user 'syphon' does not exist"
 Requests to the database will not cause logging to your docker container.
+
+## local
+in one terminal, run "cd backend; bash run_backend.sh"
+in another, run "cd frontend; npm install; npm run dev"

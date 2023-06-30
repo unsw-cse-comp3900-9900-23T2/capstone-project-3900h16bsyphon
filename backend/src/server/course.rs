@@ -153,8 +153,8 @@ pub async fn get_offering_by_id(
         .column(entities::course_offerings::Column::Title)
         .column(entities::course_offerings::Column::StartDate)
         .column(entities::course_offerings::Column::TutorInviteCode)
-        .left_join(entities::users::Entity)
-        .filter(entities::tutors::Column::IsCourseAdmin.eq(true))
+        // .left_join(entities::users::Entity)
+        // .filter(entities::tutors::Column::IsCourseAdmin.eq(true))
         .into_model::<CourseOfferingReturnModel>()
         .one(db)
         .await;

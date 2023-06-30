@@ -6,14 +6,16 @@ import Typography from '@mui/material/Typography';
 import styles from './CourseOfferingCard.module.css';
 import React from 'react';
 import TutorInviteModal from '../TutorInviteModal';
+import Link from 'next/link';
 
 // TODO: add more props in
 type CourseOfferingCardProps = {
   title: string;
-  inviteCode: string;
+  index: number;
+  inviteCode: string;  
 }
 
-const CourseOfferingCard = ({ title, inviteCode } : CourseOfferingCardProps) => {
+const CourseOfferingCard = ({ title, inviteCode, index } : CourseOfferingCardProps) => {
   return (
     <Card>
       <CardContent>
@@ -22,10 +24,10 @@ const CourseOfferingCard = ({ title, inviteCode } : CourseOfferingCardProps) => 
         </Typography>
       </CardContent>
       <CardActions>
-        <Button disableElevation className={styles.queueBtn}>QUEUES</Button>
+        <Link href={`/queue/${index}`}><Button disableElevation className={styles.queueBtn}>QUEUES</Button></Link>
         <Button disableElevation className={styles.analyticsBtn}>ANALYTICS</Button>
-        <Button disableElevation className={styles.tutorPageBtn}>TUTOR PAGE</Button>
-        <TutorInviteModal inviteCode={inviteCode} />
+        <Link href={`/queue/${index}`}><Button disableElevation className={styles.tutorPageBtn}>TUTOR PAGE</Button></Link>
+        <TutorInviteModal inviteCode={inviteCode}/>
       </CardActions>
     </Card>
   );
