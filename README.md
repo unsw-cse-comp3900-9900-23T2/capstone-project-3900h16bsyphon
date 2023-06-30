@@ -2,9 +2,11 @@
 
 ## how to run
 ### Docker
-you have the option of using docker to run the project. This is reccomended. 
+you have the option of using docker to run the project. This is recommended. 
+
 Caveats:
-make sure the ports of 8000, 5432, and 3000 are currently unused on your computer. These are exposed to allow
+
+Make sure the ports of 8000, 5432, and 3000 are currently unused on your computer. These are exposed to allow
 for the project to be exposed. If they are in use, one of a few things are going to happen:
 8000 is used:
 backend will say something like
