@@ -10,6 +10,8 @@ pub mod server;
 use crate::prelude::*;
 
 use server::auth::validator;
+#[macro_use]
+extern crate lazy_static;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

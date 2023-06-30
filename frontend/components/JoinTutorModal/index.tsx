@@ -8,16 +8,19 @@ import CloseIcon from '@mui/icons-material/Close';
 import { authenticatedPutFetch } from '../../utils';
 import TextInput from '../TextInput';
 import Alert from '@mui/material/Alert';
+import { useRouter } from 'next/router';
 
 const JoinTutorModal = () => {
   const [open, setOpen] = useState(false);
   const [tutorCode, setTutorCode] = useState('');
   const [error, setError] = useState('');
+  const router = useRouter();
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
     setError('');
+    router.reload();
   };
 
   const handleSubmit = async () => {

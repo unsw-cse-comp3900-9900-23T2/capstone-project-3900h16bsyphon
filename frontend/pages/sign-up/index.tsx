@@ -6,7 +6,7 @@ import TextInput from '../../components/TextInput';
 import { useState } from 'react';
 import Button from '../../components/Button';
 import { useRouter } from 'next/router';
-import { authenticatedGetFetch, authenticatedPostFetch, setToken } from '../../utils';
+import { authenticatedPostFetch, setToken } from '../../utils';
 
 const SignIn: NextPage = () => {
   let [zid, setZid] = useState('');
@@ -29,6 +29,11 @@ const SignIn: NextPage = () => {
         password: 'Passwords do not match'
       }));
       return;
+    } else {
+      setError((oldState) => ({
+        ...oldState,
+        password: ''
+      }));
     }
 
     let res = await authenticatedPostFetch('/auth/signup', {
@@ -43,7 +48,7 @@ const SignIn: NextPage = () => {
         firstName: response.first_name,
         lastName: response.last_name,
         zid: response.zid,
-        password: '',
+        password: response.password,
       })
       );
 

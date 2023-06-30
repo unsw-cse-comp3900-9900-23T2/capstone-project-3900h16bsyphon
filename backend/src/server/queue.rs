@@ -1,11 +1,12 @@
 use actix_web::{HttpResponse, web::{Query, ReqData, self}};
 use chrono::NaiveDateTime;
+use lazy_static::__Deref;
 use log::info;
-use sea_orm::{DatabaseConnection, ActiveValue, ActiveModelTrait, EntityTrait, QuerySelect, QueryFilter, ColumnTrait};
+use sea_orm::{ActiveValue, ActiveModelTrait, EntityTrait, QuerySelect, QueryFilter, ColumnTrait};
 use serde::{Serialize, Deserialize};
 use serde_json::json;
 
-use crate::{database_utils::db_connection, entities, server::user::validate_user};
+use crate::{entities, server::user::validate_user, database_utils::DB};
 
 use super::auth::TokenClaims;
 
@@ -29,7 +30,7 @@ pub struct CreateQueueRequest{
 }
 
 pub async fn create_queue(token: ReqData<TokenClaims>, req_body: web::Json<CreateQueueRequest>) -> HttpResponse {
-    let db: &DatabaseConnection = &db_connection().await;
+    let db = DB.deref();
     if let Err(e) = validate_user(&token, db).await {
         log::debug!("failed to verify user:{:?}", e);
         return e;
@@ -58,7 +59,7 @@ pub struct GetQueuesByCourseQuery {
 }
 
 pub async fn get_queues_by_course(token: ReqData<TokenClaims>, query: Query<GetQueuesByCourseQuery>) -> HttpResponse {
-    let db: &DatabaseConnection = &db_connection().await;
+    let db = DB.deref();
     if let Err(e) = validate_user(&token, db).await {
         log::debug!("failed to verify user:{:?}", e);
         return e;
@@ -83,7 +84,9 @@ pub async fn get_queues_by_course(token: ReqData<TokenClaims>, query: Query<GetQ
         .filter(entities::tutors::Column::CourseOfferingId.eq(query.course_id))
         .filter(entities::tutors::Column::IsCourseAdmin.eq(true))
         .into_json()
-        .all(db).await.expect("db broke");
+        .all(db).await.expect("db broke")
+        .iter()
+        .map(|json| json.as_object().unwrap().get("first_name").unwrap().as_str().unwrap().to_string()).collect::<Vec<_>>();
     info!("{:?}", tutors);
     the_course.iter_mut()
         .for_each(|it| { it.as_object_mut().unwrap().insert("course_admins".to_owned(), tutors.clone().into()); });

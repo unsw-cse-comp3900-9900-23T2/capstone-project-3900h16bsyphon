@@ -1,11 +1,12 @@
 use actix_web::{web::ReqData, HttpResponse};
+use lazy_static::__Deref;
 use serde::{Deserialize, Serialize};
 
-use crate::{database_utils::db_connection, entities::{self}};
+use crate::{entities, database_utils::DB};
 
 use super::auth::TokenClaims;
 use sea_orm::{
-    ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult, QueryFilter, QuerySelect, JoinType, RelationTrait,
+    ColumnTrait, EntityTrait, FromQueryResult, QueryFilter, QuerySelect, JoinType, RelationTrait, DatabaseConnection,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
@@ -34,7 +35,7 @@ pub struct UserProfileReturnModel {
 }
 
 pub async fn get_users(token: ReqData<TokenClaims>) -> HttpResponse {
-    let db = &db_connection().await;
+    let db = DB.deref();
 
     if let Err(err) = validate_user(&token, db).await {
         return err;
@@ -63,7 +64,7 @@ pub async fn get_users(token: ReqData<TokenClaims>) -> HttpResponse {
 }
 
 pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
-    let db = &db_connection().await;
+    let db = DB.deref();
 
     if let Err(err) = validate_user(&token, db).await {
         return err;

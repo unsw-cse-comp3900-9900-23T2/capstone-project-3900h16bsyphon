@@ -1,10 +1,12 @@
 use actix_web::{HttpResponse};
-use sea_orm::{ActiveModelTrait, DatabaseConnection, ActiveValue};
+use lazy_static::__Deref;
+use sea_orm::{ActiveModelTrait, ActiveValue};
 use serde::{Serialize, Deserialize};
 use serde_json::from_str;
 
+use crate::database_utils::DB;
 use crate::entities::sea_orm_active_enums::Statuses;
-use crate::{database_utils::db_connection, entities};
+use crate::entities;
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct FAQs{
@@ -25,7 +27,7 @@ pub struct CreateRequest{
 
 pub async fn create_request(req_body: String) -> HttpResponse {
     let request_creation: CreateRequest = from_str(&req_body).unwrap();
-    let db: &DatabaseConnection = &db_connection().await;
+    let db = DB.deref();
     let request = entities::requests::ActiveModel {
         request_id: ActiveValue::NotSet,
         zid: ActiveValue::Set(request_creation.zid),

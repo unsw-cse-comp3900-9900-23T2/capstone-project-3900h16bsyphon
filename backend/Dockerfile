@@ -13,4 +13,4 @@ RUN cargo build --manifest-path ./migration/Cargo.toml
 EXPOSE 8000
 # TODO: dump rust tooling in prod version
 # Run the dev server
-ENTRYPOINT cargo run --manifest-path ./migration/Cargo.toml -- up && cargo watch -x run
+ENTRYPOINT src/entrypoint.sh

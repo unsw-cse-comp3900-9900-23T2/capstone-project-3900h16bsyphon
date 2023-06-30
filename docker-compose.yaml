@@ -40,6 +40,7 @@ services:
     volumes:
       # Bind mount volume for live backend updates while developing
       - ./backend/src:/app/src
+      - ./backend/migration:/app/migration
 
 networks:
   net:
