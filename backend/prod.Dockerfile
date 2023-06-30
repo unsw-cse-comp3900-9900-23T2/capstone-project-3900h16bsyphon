@@ -6,32 +6,21 @@ RUN rustup target add x86_64-unknown-linux-musl
 
 WORKDIR /app
 
-# install deps for migration
 RUN mkdir migration
 COPY ./migration/Cargo.toml ./migration/Cargo.toml
-RUN mkdir migration/src
-RUN echo "// dummy file" > migration/src/lib.rs
-RUN cargo build --target x86_64-unknown-linux-musl --release --manifest-path ./migration/Cargo.toml
-
-# install deps for backend
-COPY ./Cargo.toml ./Cargo.toml
-RUN mkdir src
-RUN echo "// dummy file" > src/lib.rs
-RUN cargo build --target x86_64-unknown-linux-musl --release
-
-# copy migration src and build it
 COPY ./migration/Cargo.lock ./migration/Cargo.lock
 COPY ./migration/src ./migration/src
 RUN cargo build --manifest-path ./migration/Cargo.toml --target x86_64-unknown-linux-musl --release
 
-# copy backend src and build it
+
+COPY ./Cargo.toml ./Cargo.toml
 COPY ./Cargo.lock ./Cargo.lock
-COPY ./src ./src
 COPY ./.env ./.env
+COPY ./run_prod.sh ./run_prod.sh
+COPY ./src ./src
 RUN cargo build --target x86_64-unknown-linux-musl --release
 
-
-FROM alpine:3.8
+FROM alpine:latest
 
 # certs required
 RUN apk add pkgconfig openssl-dev
@@ -40,5 +29,6 @@ RUN apk --no-cache add ca-certificates
 # copy useful binaries
 COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/actix-demo .
 COPY --from=builder /app/migration/target/x86_64-unknown-linux-musl/release/migration .
+COPY --from=builder /app/run_prod.sh .
 
-CMD ./migration up && ./actix-demo
+ENTRYPOINT src/run_prod.sh

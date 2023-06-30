@@ -27,10 +27,10 @@ services:
       - net
   backend:
     container_name: backend_prod
-    command: ./migration up && ./actix-demo
     build:
       context: backend
       dockerfile: ./prod.Dockerfile
+    entrypoint: backend/run_prod.sh
     env_file:
       - backend/.env
     environment:
