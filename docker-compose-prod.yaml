@@ -27,6 +27,7 @@ services:
       - net
   backend:
     container_name: backend_prod
+    command: ./migration up && ./actix-demo
     build:
       context: backend
       dockerfile: ./prod.Dockerfile
@@ -38,6 +39,8 @@ services:
       - 8000:8000
     networks:
       - net
+    depends_on:
+      - database
 
 networks:
   net:

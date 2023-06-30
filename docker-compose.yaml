@@ -41,6 +41,8 @@ services:
       # Bind mount volume for live backend updates while developing
       - ./backend/src:/app/src
       - ./backend/migration:/app/migration
+    depends_on:
+      - database
 
 networks:
   net:

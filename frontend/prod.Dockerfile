@@ -11,4 +11,4 @@ FROM node:lts-alpine
 COPY --from=builder /app/.next /.next
 COPY package.json package-lock.json ./
 RUN npm ci
-RUN npm start
+CMD npm start
