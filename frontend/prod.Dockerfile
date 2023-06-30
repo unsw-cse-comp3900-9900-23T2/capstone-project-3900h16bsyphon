@@ -7,7 +7,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM caddy:2.6.2-alpine
+FROM node:lts-alpine
 COPY --from=builder /app/.next /.next
 COPY package.json package-lock.json ./
 
