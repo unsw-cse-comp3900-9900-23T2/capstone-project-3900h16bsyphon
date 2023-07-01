@@ -9,9 +9,9 @@ import SwitchToggles from '../../../components/SwitchToggles';
 import SyphonTimePicker from '../../../components/SyphonTimePicker';
 import FAQs from '../../../components/FAQs';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Tags from '../../../components/TagsSelection';
 import { authenticatedPostFetch, getToken } from '../../../utils';
 import { useRouter } from 'next/router';
+import TagsSelection from '../../../components/TagsSelection';
 
 const theme = createTheme({
   palette: {
@@ -28,7 +28,7 @@ const QueueCreationPage = () => {
   const [date, setDate] = useState<Dayjs>(dayjs(new Date()));
   const [timeStart, setTimeStart] = useState<Dayjs>(dayjs(new Date()));
   const [timeEnd, setTimeEnd] = useState<Dayjs>(dayjs(new Date()).add(2, 'hour'));
-  const [tags, setTags] = useState<string[]>(['Assignment', 'Lab']);
+  const [tags, setTags] = useState<string[]>(['Assignment', 'Lab', 'General']);
   const [isVisible, setIsVisible] = useState(true);
   const [isAvailable, setIsAvailable] = useState(true);
   const [isTimeLimit, setIsTimeLimit] = useState(false);
@@ -78,7 +78,7 @@ const QueueCreationPage = () => {
               timeEnd={timeEnd} 
               setTimeEnd={setTimeEnd} 
             />
-            <Tags />
+            <TagsSelection tags={tags} setTags={setTags} />
             <SwitchToggles 
               isAvailable={isAvailable} 
               setIsAvailable={setIsAvailable}

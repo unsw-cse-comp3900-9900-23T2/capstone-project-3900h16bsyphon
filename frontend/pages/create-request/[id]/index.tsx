@@ -17,6 +17,7 @@ import {
 import styles from './CreateRequest.module.css';
 import { useRouter } from 'next/router';
 import { authenticatedPostFetch } from '../../../utils';
+import TagsSelection from '../../../components/TagsSelection';
 
 const MIN_TITLE = 5;
 const MAX_TITLE = 25;
@@ -147,25 +148,7 @@ export default function CreateRequest() {
                 <Typography className={styles.text} variant="subtitle1">
                   Tags (you must choose at least one)
                 </Typography>
-                <Select
-                  multiple
-                  fullWidth
-                  required
-                  displayEmpty
-                  value={tagList as unknown as string}
-                  onChange={handleChange}
-                  input={<OutlinedInput />}
-                  renderValue={(selected) => {
-                    return (selected as unknown as string[]).join(', ');
-                  } }
-                  inputProps={{ 'aria-label': 'Without label' }}
-                >
-                  {tags?.map((tag) => (
-                    <MenuItem key={tag} value={tag}>
-                      {tag}
-                    </MenuItem>
-                  ))}
-                </Select>
+                <TagsSelection tags={tags} color='black' backgroundColor='#e3e3e3'/>
               </div>
 
               <div>

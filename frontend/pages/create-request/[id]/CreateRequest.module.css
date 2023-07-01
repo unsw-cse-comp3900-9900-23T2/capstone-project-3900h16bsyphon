@@ -54,9 +54,17 @@
     color: black;
     padding: 7px 15px;
 }
+.backButton:hover {
+    background-color: white;
+    color: black;
+}
 
 .createButton {
     padding: 7px 15px;
+}
+.createButton:hover {
+    background-color: var(--colour-main-grep-600);
+    color: black;
 }
 
 .headingWordCount {

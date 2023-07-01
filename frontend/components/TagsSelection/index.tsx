@@ -4,8 +4,14 @@ import style from './TagsSelection.module.css';
 import { Autocomplete, TextField, Typography } from '@mui/material';
 import TagBox from '../TagBox';
 
-const Tags = () => {
-  const [tags, setTags] = useState<string[]>(['Assignment', 'Lab', 'General']);
+type TagsProps = {
+  tags: string[],
+  setTags?: (tags: string[]) => void,
+  backgroundColor?: string,
+  color?: string,
+}
+
+const TagsSelection = ({tags, setTags, color='var(--colour-main-purple-900)', backgroundColor='var(--colour-main-purple-200)'}: TagsProps) => {
   return (
     <div className={style.tags}>
       <Typography variant='body1' className={style.tagLabel}>Tags</Typography>
@@ -18,11 +24,11 @@ const Tags = () => {
           <TextField {...params} />
         )}
         renderTags={(value) =>
-          value.map((content, index) => (<TagBox key={index} text={content} color='#3E368F' backgroundColor='#E9E6FD' bold={false}/>))
+          value.map((content, index) => (<TagBox key={index} text={content} color={color} backgroundColor={backgroundColor} bold={false}/>))
         }
       />
     </div>
   );
 };
 
-export default Tags;
+export default TagsSelection;
