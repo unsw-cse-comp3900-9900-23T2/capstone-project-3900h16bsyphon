@@ -3,7 +3,7 @@ import styles from './SignIn.module.css';
 import { FormGroup, Link, Typography } from '@mui/material';
 import TextInput from '../../components/TextInput';
 import { useState } from 'react';
-import Button from '../../components/Button';
+import Button from '@mui/material/Button';
 import { useRouter } from 'next/router';
 import { setToken } from '../../utils';
 
@@ -47,7 +47,7 @@ const SignIn: NextPage = () => {
           <TextInput className={styles.formInput} label='zId' value={zid} setValue={setZid} error={error.zid} />
           <TextInput className={styles.formInput} label='Password' value={password} setValue={setPassword} type='password' error={error.password} />
         </FormGroup>
-        <Button onClick={submit} variant='contained'> Log in </Button>
+        <Button onClick={submit} variant='contained' className={styles.button}> Log in </Button>
         <Typography className={styles.accountText}>Don’t have an account? <Link className={styles.signUp} href='/sign-up'>Sign up</Link></Typography>
       </main>
     </div>

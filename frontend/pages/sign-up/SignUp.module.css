@@ -30,7 +30,9 @@
 }
 
 .accountText {
-  margin-top: 5vh;
+  margin-top: 3vh;
+  margin-bottom: 3vh;
+  font-size: large;
 }
 
 .logIn {
@@ -40,4 +42,10 @@
 
 .formInput {
   width: 70lvh;
+}
+
+.button {
+  font-size: x-large;
+  font-weight: 700;
+  text-transform: none;
 }

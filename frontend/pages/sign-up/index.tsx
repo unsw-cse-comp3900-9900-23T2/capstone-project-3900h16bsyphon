@@ -1,11 +1,11 @@
 import type { NextPage } from 'next';
 import Link from 'next/link';
-import styles from './SignIn.module.css';
+import styles from './SignUp.module.css';
 import { FormGroup, Typography } from '@mui/material';
 import TextInput from '../../components/TextInput';
 import { useState } from 'react';
-import Button from '../../components/Button';
 import { useRouter } from 'next/router';
+import Button from '@mui/material/Button';
 import { authenticatedGetFetch, authenticatedPostFetch, setToken } from '../../utils';
 
 const SignIn: NextPage = () => {
@@ -74,7 +74,7 @@ const SignIn: NextPage = () => {
           <TextInput className={styles.formInput} label='Password' value={password} setValue={setPassword} type='password' error={error.password} />
           <TextInput className={styles.formInput} label='Confirm Password' value={confirmPassword} setValue={setConfirmPassword} type='password' error={error.password} />
         </FormGroup>
-        <Button onClick={submit} variant='contained'> Sign up </Button>
+        <Button onClick={submit} variant='contained' className={styles.button}> Sign up </Button>
         <Typography className={styles.accountText}>Have an account? <Link className={styles.logIn} href='/log-in'>Log in</Link></Typography>
       </main>
     </div>
