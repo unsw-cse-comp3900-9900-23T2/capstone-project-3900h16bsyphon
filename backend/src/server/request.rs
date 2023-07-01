@@ -2,8 +2,8 @@ use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
 use futures::executor::block_on;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseConnection, EntityOrSelect, EntityTrait,
-    QueryFilter, QuerySelect,
+    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseConnection, EntityTrait,
+    QueryFilter,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, json};

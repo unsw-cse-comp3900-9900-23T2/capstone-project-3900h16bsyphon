@@ -10,13 +10,11 @@
 }
 
 .courseAdminChip {
-  
   background-color: var(--colour-main-purple-200);
   color: var(--colour-main-purple-900);
 }
 
 .locationChip {
-  
   background-color: var(--colour-main-yellow-300);
   color: white;
 }

@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import style from './Tags.module.css';
-import { Autocomplete, Chip, MenuItem, OutlinedInput, Select, TextField, Typography } from '@mui/material';
+import { Autocomplete, TextField, Typography } from '@mui/material';
+import TagBox from '../TagBox';
 
 const Tags = () => {
   const [tags, setTags] = useState<string[]>(['Assignment', 'Lab', 'General']);
@@ -16,6 +17,9 @@ const Tags = () => {
         renderInput={(params) => (
           <TextField {...params} />
         )}
+        renderTags={(value) =>
+          value.map((content, index) => (<TagBox key={index} text={content} color='#3E368F' backgroundColor='#E9E6FD' bold={false}/>))
+        }
       />
     </div>
   );

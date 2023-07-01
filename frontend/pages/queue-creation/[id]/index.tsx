@@ -9,7 +9,7 @@ import SwitchToggles from '../../../components/SwitchToggles';
 import SyphonTimePicker from '../../../components/SyphonTimePicker';
 import FAQs from '../../../components/FAQs';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Tags from '../../../components/Tags';
+import Tags from '../../../components/TagsSelection';
 import { authenticatedPostFetch, getToken } from '../../../utils';
 import { useRouter } from 'next/router';
 
