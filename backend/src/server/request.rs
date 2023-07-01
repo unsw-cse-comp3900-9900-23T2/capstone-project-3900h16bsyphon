@@ -1,14 +1,13 @@
 use actix_web::web::{ReqData, self};
 use actix_web::{HttpResponse};
 use futures::executor::block_on;
-use lazy_static::__Deref;
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, json};
 
-use crate::{utils::db::DB, entities};
+use crate::{utils::db::db, entities};
 
 use super::user::validate_admin;
 use crate::models::{TokenClaims, CreateRequest};
@@ -18,7 +17,7 @@ use crate::models::{TokenClaims, CreateRequest};
 pub async fn create_request(req_body: String) -> HttpResponse {
     // TODO use middleware not this
     let request_creation: CreateRequest = from_str(&req_body).unwrap();
-    let db = DB.deref();
+    let db = db();
     let request = entities::requests::ActiveModel {
         request_id: ActiveValue::NotSet,
         zid: ActiveValue::Set(request_creation.zid),
@@ -38,7 +37,7 @@ pub async fn request_info(
     body: web::Query<RequestInfoBody>,
 ) -> HttpResponse {
     log::debug!("Request info: {:#?}", body);
-    let db = DB.deref();
+    let db = db();
     let body = body.into_inner();
     // Get the request from the database
     let db_request = entities::requests::Entity::find_by_id(body.request_id)
@@ -97,7 +96,7 @@ pub async fn all_requests_for_queue(
     token: ReqData<TokenClaims>,
     body: web::Query<AllRequestsForQueueBody>,
 ) -> HttpResponse {
-    let db = DB.deref();
+    let db = db();
     let body = body.into_inner();
     if let Err(e) = validate_admin(&token, db).await {
         log::debug!("Not Admin: {:#?}", e);
@@ -129,7 +128,7 @@ pub async fn request_info_not_web(
     body: web::Query<RequestInfoBody>,
 ) -> Result<serde_json::Value, HttpResponse> {
     log::debug!("Request info: {:#?}", body);
-    let db = DB.deref();
+    let db = db();
     let body = body.into_inner();
     // Get the request from the database
     let db_request = entities::requests::Entity::find_by_id(body.request_id)

@@ -4,6 +4,7 @@
 use crate::models::CreateUserBody;
 use crate::server::auth::create_user;
 use actix_web::web::Json;
+pub use crate::utils::db::initialise_db;
 
 /// Secret used to hash passwords.
 /// Requires `SECRET` to be set as and environemnt variable or in

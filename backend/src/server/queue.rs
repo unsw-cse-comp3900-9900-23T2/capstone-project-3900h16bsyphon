@@ -2,7 +2,7 @@ use crate::{
     entities,
     models::{CreateQueueRequest, GetQueuesByCourseQuery, QueueReturnModel},
     server::user::validate_user,
-    utils::db::DB,
+    utils::db::db,
 };
 use actix_web::{
     web::{self, Query, ReqData},
@@ -19,7 +19,7 @@ pub async fn create_queue(
     token: ReqData<TokenClaims>,
     req_body: web::Json<CreateQueueRequest>,
 ) -> HttpResponse {
-    let db = DB.deref();
+    let db = db();
     if let Err(e) = validate_user(&token, db).await {
         log::debug!("failed to verify user:{:?}", e);
         return e;
@@ -37,7 +37,7 @@ pub async fn get_queues_by_course(
     token: ReqData<TokenClaims>,
     query: Query<GetQueuesByCourseQuery>,
 ) -> HttpResponse {
-    let db = DB.deref();
+    let db = db();
     if let Err(e) = validate_user(&token, db).await {
         log::debug!("failed to verify user:{:?}", e);
         return e;
@@ -79,7 +79,7 @@ pub async fn get_queues_by_course(
 }
 
 pub async fn get_active_queues(token: ReqData<TokenClaims>) -> HttpResponse {
-    let db = DB.deref();
+    let db = db();
     let error = validate_user(&token, db).await.err();
     if error.is_some() {
         return error.unwrap();

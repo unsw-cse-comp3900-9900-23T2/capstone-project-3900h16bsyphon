@@ -10,7 +10,6 @@ use actix_web_httpauth::{
 
 use hmac::{Hmac, Mac};
 use jwt::VerifyWithKey;
-use lazy_static::__Deref;
 use sea_orm::EntityTrait;
 
 use sha2::Sha256;
@@ -18,7 +17,7 @@ use sha2::Sha256;
 use crate::{
     entities,
     models::auth::{AuthTokenClaims, TokenClaims},
-    utils::db::DB,
+    utils::db::db,
     SECRET,
 };
 
@@ -68,7 +67,7 @@ pub async fn validator_admin(
 
     match claims {
         Ok(value) => {
-            let db = DB.deref();
+            let db = db();
             match entities::users::Entity::find_by_id(value.username)
                 .one(db)
                 .await

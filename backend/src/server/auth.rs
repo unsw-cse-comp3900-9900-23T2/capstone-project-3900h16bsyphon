@@ -4,14 +4,13 @@ use actix_web_httpauth::{extractors::{basic::BasicAuth, bearer::{BearerAuth, sel
 
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
-use lazy_static::__Deref;
 use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::Sha256;
 use crate::{
     entities, models::auth::CreateUserBody, models::auth::TokenClaims, utils::auth::hash_pass,
-    utils::db::DB, SECRET,
+    utils::db::db, SECRET,
 };
 use entities::users;
 
@@ -69,7 +68,7 @@ pub async fn validator_admin(
 ) -> Result<ServiceRequest, (actix_web::Error, ServiceRequest)> {
     let key: hmac::Hmac<Sha256> = Hmac::new_from_slice(SECRET.as_bytes()).unwrap();
     let token_string = credentials.token();
-    let db = DB.deref();
+    let db = db();
     // Validate token
     let claims: Result<TokenClaims, &str> = token_string
         .verify_with_key(&key)
@@ -122,7 +121,7 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
         None => HttpResponse::Unauthorized().json("no password"),
         Some(pass) => {
             // 1. check user in db
-            let db = DB.deref();
+            let db = db();
             let db_user = users::Entity::find_by_id(zid).one(db).await.map_err(|e| {
                 log::warn!("DB Brokee when finding user ??:\n\t{}", e);
                 HttpResponse::InternalServerError().json("AHHHH ME BROKEY BAD")
@@ -164,7 +163,7 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse {
     let hash = hash_pass(&user.password).expect("validates hashability");
 
     let actual_zid = CreateUserBody::verify_zid(&user.zid).expect("already verified");
-    let db = DB.deref();
+    let db = db();
 
     // Check if user already exists
     let prev_user_res = users::Entity::find_by_id(actual_zid)
@@ -201,7 +200,7 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse {
 pub async fn make_admin(zid: &str) {
     let zid = CreateUserBody::verify_zid(&zid).expect("Admin zid must be valid z0000000");
     log::info!("Making {} an admin", zid);
-    let db = DB.deref();
+    let db = db();
 
     let user = users::Entity::find_by_id(zid)
         .one(db)

@@ -18,7 +18,9 @@ extern crate lazy_static;
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
     startup_logger();
+    initialise_db();
     std::env::var("SECRET").expect("SECRET must be set");
+
     register_org_admins().await;
 
     // Auth middleware

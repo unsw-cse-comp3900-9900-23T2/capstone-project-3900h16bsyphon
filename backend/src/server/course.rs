@@ -4,7 +4,6 @@ use actix_web::{
 };
 use chrono::NaiveDate;
 use futures::executor::block_on;
-use lazy_static::__Deref;
 use rand::Rng;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
@@ -13,7 +12,7 @@ use crate::{
     entities,
     models::{CourseOfferingReturnModel, GetOfferingByIdQuery},
     server,
-    utils::db::DB,
+    utils::db::db,
 };
 use crate::models::{
     AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink, TokenClaims, INV_CODE_LEN,
@@ -25,7 +24,7 @@ pub async fn create_offering(
     token: ReqData<TokenClaims>,
     body: web::Json<CreateOfferingBody>,
 ) -> HttpResponse {
-    let db = DB.deref();
+    let db = db();
     if let Err(err) = validate_admin(&token, db).await {
         return err;
     }
@@ -59,7 +58,7 @@ pub async fn create_offering(
 }
 
 pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
-    let db = DB.deref();
+    let db = db();
     let error = validate_user(&token, db).await.err();
     if error.is_some() {
         return error.unwrap();
@@ -86,7 +85,7 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
 }
 
 pub async fn get_courses_tutored(token: ReqData<TokenClaims>) -> HttpResponse {
-    let db = DB.deref();
+    let db = db();
     let error = validate_user(&token, db).await.err();
     if error.is_some() {
         return error.unwrap();
@@ -118,7 +117,7 @@ pub async fn get_offering_by_id(
     token: ReqData<TokenClaims>,
     body: web::Query<GetOfferingByIdQuery>,
 ) -> HttpResponse {
-    let db = DB.deref();
+    let db = db();
     print!("validate");
     let error = validate_user(&token, db).await.err();
     if error.is_some() {
@@ -159,7 +158,7 @@ pub async fn add_tutor(
     token: ReqData<TokenClaims>,
     body: web::Json<AddTutorToCourseBody>,
 ) -> HttpResponse {
-    let db = DB.deref();
+    let db = db();
     let body = body.into_inner();
 
     // Ensure person adding the new tutor is a course admin
@@ -222,7 +221,7 @@ pub async fn join_with_tutor_link(
     body: web::Json<JoinWithTutorLink>,
 ) -> HttpResponse {
     let body = body.into_inner();
-    let db = DB.deref();
+    let db = db();
     // Get course from invite code
     let db_course = entities::course_offerings::Entity::find()
         .filter(entities::course_offerings::Column::TutorInviteCode.eq(body.tutor_link))
@@ -269,7 +268,7 @@ fn not_exist_error(missing: Vec<impl Into<String>>) -> HttpResponse {
 }
 
 async fn add_course_admin(course_id: i32, tutor_id: i32) {
-    let db = DB.deref();
+    let db = db();
     let active_tutor = entities::tutors::ActiveModel {
         zid: ActiveValue::Set(tutor_id),
         course_offering_id: ActiveValue::Set(course_id),
@@ -280,7 +279,7 @@ async fn add_course_admin(course_id: i32, tutor_id: i32) {
 }
 
 async fn gen_unique_inv_code() -> String {
-    let db = DB.deref();
+    let db = db();
     loop {
         let code = gen_inv_code();
         let is_unique = entities::course_offerings::Entity::find()
@@ -311,7 +310,7 @@ pub fn today() -> NaiveDate {
 }
 
 pub async fn check_user_exists(user_id: i32) -> bool {
-    let db = DB.deref();
+    let db = db();
     entities::users::Entity::find_by_id(user_id)
         .one(db)
         .await
