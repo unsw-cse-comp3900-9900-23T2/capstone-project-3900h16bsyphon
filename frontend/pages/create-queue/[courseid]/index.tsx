@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, {useState} from 'react';
 import dayjs, { Dayjs } from 'dayjs';
-import style from './queue-creation.module.css';
+import style from './create-queue.module.css';
 import TextField from '@mui/material/TextField';
 import { FormGroup, Box, Typography, Button, Card} from '@mui/material';
 import SyphonDatePicker from '../../../components/SyphonDatePicker';
@@ -48,10 +48,11 @@ const QueueCreationPage = () => {
       is_available: isAvailable,
       time_limit: timeLimit,
       announcement: announcement,
-      course_id: Number.parseInt(`${router.query.id}`),
+      course_id: Number.parseInt(`${router.query.courseid}`),
     };
     let res = await authenticatedPostFetch('/queue/create', body);
-    router.push(`/queue/${router.query.id}`);
+    let data = await res.json();
+    router.push(`/queue/${data.queue_id}`);
   };
   return (
     <ThemeProvider theme={theme}>

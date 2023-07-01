@@ -67,7 +67,7 @@ const ViewQueue = () => {
         <Typography variant="h3" className={styles.title}>{courseData.title}</Typography>
         <div className={styles.section}>
           <h1 className={styles.heading}>Live</h1>
-          <Button startIcon={<AddIcon />} className={styles.newQueueBtn} onClick={() => { router.push(`/queue-creation/${router.query.id}`); }}>New Queue</Button>
+          <Button startIcon={<AddIcon />} className={styles.newQueueBtn} onClick={() => { router.push(`/create-queue/${router.query.id}`); }}>New Queue</Button>
           {gg?.map((d, index) => (
             <QueueCard key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins?.map((i) => i.firstName)} isEdit={d.isEdit} seen={d.seen} unseen={d.unseen}/>
           ))} 
