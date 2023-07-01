@@ -4,13 +4,8 @@
     align-items: center;
 }
 
-.text {
-    font-family: Lato;
-}
-
 .cardBox {
     padding: 0px 50px;
-    font-family: 'Lato';
     display: flex;
     flex-direction: row;
     justify-content: space-around;
@@ -28,7 +23,6 @@
 }
 
 .closeQueueButton {
-    font-family: Lato;
     font-weight: bold;
     background-color: var(--colour-main-grey-200);
     color: black;

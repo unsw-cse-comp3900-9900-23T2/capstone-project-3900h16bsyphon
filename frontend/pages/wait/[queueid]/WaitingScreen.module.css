@@ -4,13 +4,8 @@
     align-items: center;
 }
 
-.text {
-    font-family: Lato;
-}
-
 .cardBox {
     padding: 0px 50px;
-    font-family: 'Lato';
     display: flex;
     flex-direction: row;
     justify-content: space-around;
@@ -22,7 +17,6 @@
 }
 
 .greenButton {
-    font-family: Lato;
     font-weight: bold;
     padding: 5px 25px;
     background-color: var(--colour-main-green-400);

@@ -9,15 +9,10 @@
 
 .cardBox {
     width: 75%;
-    font-family: 'Lato';
 }
 
 .cardHeader {
     padding: 25px 0px;
-}
-
-.text {
-    font-family: 'Lato';
 }
 
 .cardContainer {
@@ -55,14 +50,12 @@
 }
 
 .backButton {
-    font-family: lato;
     background-color: var(--colour-main-grey-400);
     color: black;
     padding: 7px 15px;
 }
 
 .createButton {
-    font-family: lato;
     padding: 7px 15px;
 }
 
