@@ -14,3 +14,9 @@ Week 3
 Week 4
 - wrote fe code for landing page
 - wrote migration for setting up all the database tables
+
+week 5
+- fixed bug in be where it was making too many connections
+- added a way to see new queues being generated
+- frontend for course offering creation
+- created login-logout fe and integration

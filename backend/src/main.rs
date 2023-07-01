@@ -2,20 +2,25 @@ use actix_cors::Cors;
 use actix_web::{http, middleware, web, App, HttpServer};
 use actix_web_httpauth::middleware::HttpAuthentication;
 
-pub mod database_utils;
 pub mod entities;
 pub mod prelude;
 pub mod server;
+pub mod models;
+pub mod utils;
 
 use crate::prelude::*;
 
-use server::auth::validator;
+use utils::auth::validator;
+#[macro_use]
+extern crate lazy_static;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
     startup_logger();
+    initialise_db();
     std::env::var("SECRET").expect("SECRET must be set");
+
     register_org_admins().await;
 
     // Auth middleware

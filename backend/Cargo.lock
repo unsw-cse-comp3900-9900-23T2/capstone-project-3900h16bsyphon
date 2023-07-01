@@ -55,6 +55,7 @@ dependencies = [
  "futures",
  "hmac",
  "jwt",
+ "lazy_static",
  "log",
  "rand",
  "regex",

@@ -15,6 +15,7 @@ import { authenticatedGetFetch, authenticatedPostFetch } from '../../utils';
 import TextInput from '../TextInput';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
+import { Router, useRouter } from 'next/router';
 
 type UserData = {
   first_name: string;
@@ -35,7 +36,7 @@ const CreateCourseOfferingModal = () => {
   const [admins, setAdmins] = useState<string[]>([]);
   const [date, setDate] = useState<Dayjs | null>(dayjs(new Date()));
   const [data, setData] = useState<UserData[]>([]);
-
+  const router = useRouter();
   useEffect(() => {
     const fetchUsers = async () => {
       let res = await authenticatedGetFetch('/user/list', {});
@@ -58,6 +59,7 @@ const CreateCourseOfferingModal = () => {
     });
     setDate(dayjs(new Date()));
     setOpen(false);
+    router.reload();
   };
 
   const handleSubmit = async () => {
