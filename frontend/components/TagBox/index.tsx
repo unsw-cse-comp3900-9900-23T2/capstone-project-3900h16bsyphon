@@ -1,7 +1,7 @@
 import { Typography } from '@mui/material';
 import styles from './TagBox.module.css';
 
-interface TagBoxProps {
+type TagBoxProps = {
     text: string,
     backgroundColor: string,
     color: string,

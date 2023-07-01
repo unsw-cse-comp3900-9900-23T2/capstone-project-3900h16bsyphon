@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import TagBox from '../TagBox';
 import { useState } from 'react';
 
-interface StudentQueueRequestCardProps {
+type StudentQueueRequestCardProps = {
   zid: string,
   firstName: string,
   lastName: string,

@@ -3,12 +3,12 @@ import UserProfileCard from '../../components/UserProfileCard';
 import { authenticatedGetFetch, toCamelCase } from '../../utils';
 import styles from './UserProfilePage.module.css';
 
-interface CoursePermission {
+type CoursePermission = {
   courseCode: string,
   courseOfferingId: number,
   title: string,
 }
-interface UserProfileCardProps {
+type UserProfileCardProps = {
   zid: number;
   firstName: string;
   lastName: string;

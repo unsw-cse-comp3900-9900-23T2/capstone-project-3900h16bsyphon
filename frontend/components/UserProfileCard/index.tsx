@@ -6,12 +6,12 @@ import AddCoursePermissionsModal from '../AddCoursePermissionsModal';
 // import { useEffect, useState } from 'react';
 // import authenticatedGetFetch from '../../utils';
 
-interface CoursePermission {
+type CoursePermission = {
   courseCode: string,
   courseOfferingId: number,
   title: string,
 }
-interface UserProfileCardProps {
+type UserProfileCardProps = {
   zid: number;
   firstName: string;
   lastName: string;

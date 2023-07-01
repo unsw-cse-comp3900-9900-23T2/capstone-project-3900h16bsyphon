@@ -11,7 +11,7 @@ import StudentRequestCard from '../../../components/StudentRequestCard';
 import Header from '../../../components/Header';
 import MetaData from '../../../components/MetaData';
 
-interface RequestProps {
+type RequestProps = {
   requestId: number,
 }
 

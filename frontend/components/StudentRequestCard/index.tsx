@@ -7,7 +7,7 @@ import {
 import styles from './StudentRequestCard.module.css';
 import TagBox from '../TagBox';
 
-interface StudentRequestCardProps {
+type StudentRequestCardProps = {
   zid: string,
   firstName: string,
   lastName: string,

@@ -26,13 +26,13 @@ const courses = [
   'COMP2531',
 ];
 
-interface CoursePermission {
+type CoursePermission = {
   courseCode: string,
   courseOfferingId: number,
   title: string,
 }
 
-interface AddCoursePermissionsModalProps {
+type AddCoursePermissionsModalProps = {
   tutor: CoursePermission[];
 }
 
