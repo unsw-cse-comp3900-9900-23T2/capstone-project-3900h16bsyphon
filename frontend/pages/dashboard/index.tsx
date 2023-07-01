@@ -103,8 +103,8 @@ const Dashboard: NextPage = () => {
             </div>
           </div>
         </div>
-        <Footer />
       </div>
+      <Footer />
     </>
   );
 };
