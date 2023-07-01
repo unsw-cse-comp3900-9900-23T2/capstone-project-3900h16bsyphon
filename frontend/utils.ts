@@ -60,7 +60,7 @@ export function toCamelCase(obj: any) {
     return rtn;
   } else if (typeof (obj) === 'object') {
     if (obj instanceof Array) {
-      rtn = obj.map(toCamelCase);
+      rtn = obj?.map(toCamelCase);
     } else {
       rtn = {};
       for (let key in obj) {

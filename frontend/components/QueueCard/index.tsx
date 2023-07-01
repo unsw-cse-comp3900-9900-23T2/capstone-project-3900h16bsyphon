@@ -20,8 +20,8 @@ export default function QueueCard({ title, seen, unseen, location, courseAdmins,
       <Card className={styles.card}>
         <CardContent>
           <div className={styles.chipContainer}>
-            {courseAdmins && courseAdmins.map((c, index) => <Chip key={index} label={c} className={styles.courseAdminChip} />)}
-            {location.map((l, index) => <Chip key={index} label={l} className={styles.locationChip} />)}
+            {courseAdmins && courseAdmins?.map((c, index) => <Chip key={index} label={c} className={styles.courseAdminChip} />)}
+            {location?.map((l, index) => <Chip key={index} label={l} className={styles.locationChip} />)}
           </div>
           <Typography className={styles.heading}>
             {title}

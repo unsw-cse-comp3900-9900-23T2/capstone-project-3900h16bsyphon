@@ -30,7 +30,7 @@ const Dashboard: NextPage = () => {
         return;
       }
       let courseOfferings = await res.json();
-      setCourseOfferings(courseOfferings.map((course: any) => (
+      setCourseOfferings(courseOfferings?.map((course: any) => (
         {
           title: course.title,
           courseCode: course.course_code,
@@ -75,7 +75,7 @@ const Dashboard: NextPage = () => {
                 <h1 className={styles.heading}>Select course offering</h1>
                 <CreateCourseOfferingModal />
               </div><div className={styles.cards}>
-                {courseOfferings.map((d, index) => (
+                {courseOfferings?.map((d, index) => (
                   <CourseOfferingCard key={index} title={`${d.courseCode} - ${d.title}`} inviteCode={d.tutorInviteCode} index={index}/>
                 ))}
               </div>
@@ -88,7 +88,7 @@ const Dashboard: NextPage = () => {
               <JoinTutorModal />
             </div>
             <div className={styles.cards}>
-              {myCourses.map((d, index) => (
+              {myCourses?.map((d, index) => (
                 <CourseCard title={d.title} key={index} index={d.courseOfferingId}/>
               ))}
             </div>
@@ -97,7 +97,7 @@ const Dashboard: NextPage = () => {
             <h1>Courses you are a student</h1>
             <p>Select a course to view queues</p>
             <div className={styles.cards}>
-              {courseOfferings.map((d, index) => (
+              {courseOfferings?.map((d, index) => (
                 <CourseCard key={index} title={d.title} index={d.courseOfferingId}/>
               ))}
             </div>

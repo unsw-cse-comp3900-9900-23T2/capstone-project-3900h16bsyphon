@@ -126,14 +126,14 @@ const CreateCourseOfferingModal = () => {
                 fullWidth
                 multiple
                 id="tags-standard"
-                options={data.map((option) => `${option.first_name} ${option.last_name} (${option.zid})`)}
+                options={data?.map((option) => `${option.first_name} ${option.last_name} (${option.zid})`)}
                 getOptionLabel={(option) => option}
                 onChange={(_, value) => {
-                  let matches = data.filter((user) => {
+                  let matches = data?.filter((user) => {
                     let dataString = `${user.first_name} ${user.last_name} (${user.zid})`;
                     return value.includes(dataString);
                   });
-                  setAdmins(matches.map((user) => user.zid));
+                  setAdmins(matches?.map((user) => user.zid));
                 }}
                 renderInput={(params) => (<TextField {...params} fullWidth error={!!error.admins} helperText={error.admins} />)}
               />

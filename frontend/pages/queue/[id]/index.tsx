@@ -73,7 +73,7 @@ const ViewQueue = () => {
           ))} 
         </div>
         <div className={styles.cards}>
-          {data.filter((d) => Date.parse(d.startTime) < Date.now() && Date.parse(d.endTime) > Date.now()).map((d, index) => (
+          {data?.filter((d) => Date.parse(d.startTime) < Date.now() && Date.parse(d.endTime) > Date.now())?.map((d, index) => (
             <QueueCard key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins?.map((i) => i.firstName)} isEdit={d.isEdit} seen={d.seen} unseen={d.unseen}/>
           ))}
         </div>
@@ -81,13 +81,13 @@ const ViewQueue = () => {
           <h1 className={styles.title}>Upcoming</h1>
         </div>
         <div className={styles.cards}>
-          {data.filter((d) => Date.parse(d.startTime) > Date.now()).map((d, index) => <QueueCard key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins.map((i) => i.firstName)} isEdit={d.isEdit}/>)}
+          {data?.filter((d) => Date.parse(d.startTime) > Date.now())?.map((d, index) => <QueueCard key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins?.map((i) => i.firstName)} isEdit={d.isEdit}/>)}
         </div>
         <div className={styles.section}>
           <h1 className={styles.title}>Previous</h1>
         </div>
         <div className={styles.cards}>
-          {data.filter((d) => Date.parse(d.endTime) < Date.now()).map((d, index) => <QueueCard key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins.map((i) => i.firstName)} seen={d.seen} unseen={d.unseen}/> )}
+          {data?.filter((d) => Date.parse(d.endTime) < Date.now())?.map((d, index) => <QueueCard key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins?.map((i) => i.firstName)} seen={d.seen} unseen={d.unseen}/> )}
         </div>
       </div>
       <Footer />

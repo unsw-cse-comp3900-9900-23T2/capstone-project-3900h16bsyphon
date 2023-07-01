@@ -44,7 +44,7 @@ const AddCoursePermissionsModal = ({
   const handleClose = () => setOpen(false);
 
   const [tutorPermissionList, setTutorPermissionList] =
-    useState<string[]>(tutor.map((x) => x.courseCode));
+    useState<string[]>(tutor?.map((x) => x.courseCode));
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     const {
@@ -101,7 +101,7 @@ const AddCoursePermissionsModal = ({
               }}
               inputProps={{ 'aria-label': 'Without label' }}
             >
-              {courses.map((course) => (
+              {courses?.map((course) => (
                 <MenuItem key={course} value={course}>
                   {course}
                 </MenuItem>
@@ -110,7 +110,7 @@ const AddCoursePermissionsModal = ({
           </FormControl>
 
           <div className={styles.userPermissions}>
-            {tutorPermissionList.map((course, i) => (
+            {tutorPermissionList?.map((course, i) => (
               <UserPermissionsBox
                 key={i}
                 permission="Tutor"

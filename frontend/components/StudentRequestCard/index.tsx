@@ -61,7 +61,7 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, prev
         </Typography>
       </div>
       <div className={styles.tagContainer}>
-        {tags.map((tag, i) => {
+        {tags?.map((tag, i) => {
           return <TagBox text={tag} key={i} backgroundColor='#EDB549' color='white' />;
         })}
       </div>

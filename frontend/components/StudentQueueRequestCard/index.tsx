@@ -70,7 +70,7 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, previousRequ
           </Typography>
         </div>
         <div className={styles.tagContainer}>
-          {tags.map((tag, i) => {
+          {tags?.map((tag, i) => {
             return <TagBox text={tag} key={i} backgroundColor='#EDB549' color='white' />;
           })}
         </div>

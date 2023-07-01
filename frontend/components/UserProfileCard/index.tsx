@@ -96,7 +96,7 @@ export default function UserProfileCard({
             </Typography>
           </div>
           <div className={styles.userPermissions}>
-            {tutor.map((course, i) => (
+            {tutor?.map((course, i) => (
               <UserPermissionsBox
                 key={i}
                 permission="Tutor"
@@ -104,7 +104,7 @@ export default function UserProfileCard({
               />
             ))}
 
-            {courseAdmin.map((course, i) => (
+            {courseAdmin?.map((course, i) => (
               <UserPermissionsBox
                 key={i}
                 permission="Course Admin"

@@ -15,7 +15,7 @@ type TextInputProps = {
 
 const TextInput = ({ label, value, setValue, type, error, className }: TextInputProps) => (
   <FormControlLabel
-    className={[styles.formItem, className].filter((s) => !!s).join(' ')} control={
+    className={[styles.formItem, className]?.filter((s) => !!s).join(' ')} control={
       <TextField
         fullWidth
         value={value}

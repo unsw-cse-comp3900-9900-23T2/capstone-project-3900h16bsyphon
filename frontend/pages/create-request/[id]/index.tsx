@@ -160,7 +160,7 @@ export default function CreateRequest() {
                   } }
                   inputProps={{ 'aria-label': 'Without label' }}
                 >
-                  {tags.map((tag) => (
+                  {tags?.map((tag) => (
                     <MenuItem key={tag} value={tag}>
                       {tag}
                     </MenuItem>

@@ -84,7 +84,7 @@ const ActiveQueue = () => {
         </div>
         <div className={styles.requestCardContainer}>
           {/* list of student cards here */}
-          {requestData.requests.map((request) => {
+          {requestData.requests?.map((request) => {
             return <StudentQueueRequestCard 
               key={request.requestId}  
               requestId={request.requestId}  
