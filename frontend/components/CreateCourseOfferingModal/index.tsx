@@ -15,7 +15,7 @@ import { authenticatedGetFetch, authenticatedPostFetch } from '../../utils';
 import TextInput from '../TextInput';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
-import { Router, useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 
 type UserData = {
   first_name: string;
