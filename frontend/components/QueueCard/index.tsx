@@ -21,8 +21,8 @@ export default function QueueCard({ title, seen, unseen, location, courseAdmins,
       <Card className={styles.card}>
         <CardContent>
           <div className={styles.chipContainer}>
-            {courseAdmins && courseAdmins?.map((c, index) => <TagBox key={index} text={c.toString()} backgroundColor='var(--colour-main-purple-200)' color='var(--colour-main-purple-900)' bold={false} />)}
-            {location?.map((l, index) => <Chip key={index} label={l} className={styles.locationChip} />)}
+            {courseAdmins?.map((c, index) => <TagBox key={index} text={c.toString()} backgroundColor='var(--colour-main-purple-200)' color='var(--colour-main-purple-900)' bold={false} />)}
+            {location?.map((l, index) => <TagBox key={index} text={l.toString()} backgroundColor='var(--colour-main-yellow-300)' color='white'/>)}
           </div>
           <Typography className={styles.heading}>
             {title}

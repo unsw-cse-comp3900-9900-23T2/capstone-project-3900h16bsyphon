@@ -106,6 +106,7 @@ const AddCoursePermissionsModal = ({
                   {course}
                 </MenuItem>
               ))}
+              {!courses && <MenuItem disabled>No courses</MenuItem>}
             </Select>
           </FormControl>
 
@@ -117,6 +118,7 @@ const AddCoursePermissionsModal = ({
                 courseOffering={course}
               />
             ))}
+            {}
           </div>
         
           <div className={styles.buttonContainer} >

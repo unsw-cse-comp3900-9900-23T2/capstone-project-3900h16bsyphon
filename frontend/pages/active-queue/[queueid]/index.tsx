@@ -95,8 +95,8 @@ const ActiveQueue = () => {
               title={request.title}
               status={request.status}
               previousRequests={request.previousRequests}
-            />;
-          })}
+            />;})}
+          {!requestData && <Typography className={styles.text} variant='h5'>No requests in queue</Typography>}
         </div>
       </Box>
     </div>

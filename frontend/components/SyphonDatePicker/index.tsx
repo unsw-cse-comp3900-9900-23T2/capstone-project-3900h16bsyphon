@@ -10,7 +10,7 @@ import { FormGroup, Typography } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
 
 import style from './SyphonDatePicker.module.css';
-import pageStyle from '../../pages/create-queue/[courseid]/create-queue.module.css';
+import pageStyle from '../../pages/create-queue/[courseid]/CreateQueue.module.css';
 
 type DatePickerProps = {
     date: Dayjs,

@@ -1,5 +1,4 @@
 .createOfferingBtn {
-    
   background-color: var(--colour-main-purple-200);
   color: var(--colour-main-purple-900);
 }
@@ -24,17 +23,11 @@
     
 }
 
-.button {
-    
-}
-
 .title {
-    
     flex-grow: 1;
 }
 
 .createBtn {
-    
   background-color: var(--colour-main-blue-600);
   color: white;
 }

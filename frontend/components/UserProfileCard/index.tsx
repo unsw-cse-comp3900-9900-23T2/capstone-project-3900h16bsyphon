@@ -3,8 +3,6 @@ import UserPermissionsBox from '../UserPermissionBox';
 import styles from './UserProfileCard.module.css';
 import { useRouter } from 'next/router';
 import AddCoursePermissionsModal from '../AddCoursePermissionsModal';
-// import { useEffect, useState } from 'react';
-// import authenticatedGetFetch from '../../utils';
 
 type CoursePermission = {
   courseCode: string,

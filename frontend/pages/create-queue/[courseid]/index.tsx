@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, {useState} from 'react';
 import dayjs, { Dayjs } from 'dayjs';
-import style from './create-queue.module.css';
+import style from './CreateQueue.module.css';
 import TextField from '@mui/material/TextField';
 import { FormGroup, Box, Typography, Button, Card} from '@mui/material';
 import SyphonDatePicker from '../../../components/SyphonDatePicker';
@@ -52,7 +52,7 @@ const QueueCreationPage = () => {
     };
     let res = await authenticatedPostFetch('/queue/create', body);
     let data = await res.json();
-    router.push(`/queue/${data.queue_id}`);
+    router.push(`/active-queue/${data.queue_id}`);
   };
   return (
     <ThemeProvider theme={theme}>
