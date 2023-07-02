@@ -44,7 +44,7 @@ const SignIn: NextPage = () => {
       <main className={styles.main}>
         <Typography variant='h1' className={styles.title}>Log in to Syphon</Typography>
         <FormGroup className={styles.form}>
-          <TextInput className={styles.formInput} label='zId' value={zid} setValue={setZid} error={error.zid} />
+          <TextInput className={styles.formInput} label='zID' value={zid} setValue={setZid} error={error.zid} />
           <TextInput className={styles.formInput} label='Password' value={password} setValue={setPassword} type='password' error={error.password} />
         </FormGroup>
         <Button onClick={submit} variant='contained' className={styles.button}> Log in </Button>

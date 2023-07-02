@@ -5,7 +5,6 @@ import CourseOfferingCard from '../../components/CourseOfferingCard';
 import CourseCard from '../../components/CourseCard';
 import Header from '../../components/Header';
 import MetaData from '../../components/MetaData';
-import Footer from '../../components/Footer';
 import CreateCourseOfferingModal from '../../components/CreateCourseOfferingModal';
 import React, { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../utils';
@@ -105,7 +104,6 @@ const Dashboard: NextPage = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </>
   );
 };

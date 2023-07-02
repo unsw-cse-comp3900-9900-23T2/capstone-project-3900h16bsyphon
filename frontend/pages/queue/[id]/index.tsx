@@ -5,7 +5,6 @@ import AddIcon from '@mui/icons-material/Add';
 import styles from './ViewQueue.module.css';
 import QueueCard from '../../../components/QueueCard';
 import Typography from '@mui/material/Typography';
-import Footer from '../../../components/Footer';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../../utils';
@@ -88,7 +87,6 @@ const ViewQueue = () => {
           {data?.filter((d) => Date.parse(d.endTime) < Date.now())?.map((d, index) => <QueueCard key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins?.map((i) => i.firstName)} seen={d.seen} unseen={d.unseen}/> )}
         </div>
       </div>
-      <Footer />
     </>
   );
 };

@@ -44,7 +44,7 @@
 .titleContainer {
   display: flex;
   flex-direction: row;
-  gap: 29%;
+  justify-content: space-between;
 }
 
 .courseTitle {

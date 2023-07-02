@@ -48,7 +48,7 @@ const NotificationsModal = () => {
             <NotificationsCard key={index} title={d.title} description={d.description} />
           )}
           <Button onClick={handleClose} className={styles.doneBtn}>
-						Close modal
+						Close 
           </Button>
         </div>
       </Modal>
