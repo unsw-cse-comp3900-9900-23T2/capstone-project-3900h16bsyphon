@@ -18,6 +18,7 @@ import styles from './CreateRequest.module.css';
 import { useRouter } from 'next/router';
 import { authenticatedPostFetch } from '../../../utils';
 import TagsSelection from '../../../components/TagsSelection';
+import Header from '../../../components/Header';
 
 const MIN_TITLE = 5;
 const MAX_TITLE = 25;
@@ -92,6 +93,7 @@ export default function CreateRequest() {
 
   return (
     <>
+      <Header/>
       <div className={styles.pageContainer}>
         <Box className={styles.cardBox}>
           <Card className={styles.cardContainer}>

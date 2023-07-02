@@ -15,6 +15,7 @@
   flex-direction: row;
 }
 
-.button {
-  
+.profile:hover {
+  background-color: var(--colour-main-grey-200);
+  cursor: pointer;
 }

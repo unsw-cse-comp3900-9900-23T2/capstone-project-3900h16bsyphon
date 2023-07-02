@@ -12,6 +12,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { authenticatedPostFetch, getToken } from '../../../utils';
 import { useRouter } from 'next/router';
 import TagsSelection from '../../../components/TagsSelection';
+import Header from '../../../components/Header';
 
 const theme = createTheme({
   palette: {
@@ -56,6 +57,7 @@ const QueueCreationPage = () => {
   };
   return (
     <ThemeProvider theme={theme}>
+      <Header/>
       <div className={style.container}> 
         <Box className={style.cardBox}>
           <Card className={style.cardContainer}>

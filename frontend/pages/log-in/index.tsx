@@ -1,5 +1,5 @@
 import type { NextPage } from 'next';
-import styles from './SignIn.module.css';
+import styles from './LogIn.module.css';
 import { FormGroup, Link, Typography } from '@mui/material';
 import TextInput from '../../components/TextInput';
 import { useState } from 'react';

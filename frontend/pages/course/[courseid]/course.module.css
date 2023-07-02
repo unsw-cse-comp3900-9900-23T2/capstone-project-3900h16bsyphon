@@ -9,10 +9,6 @@
   color: var(--colour-main-purple-900);
 }
 
-.title {
-  
-}
-
 .container {
   display: flex;
   flex-direction: column;

@@ -59,7 +59,6 @@ const ActiveQueue = () => {
     requests: requests,
   };
 
-  // TODO: make this either poll or use sockets
   useEffect(() => {
     let getRequests = async () => {
       let res = await authenticatedGetFetch('/request/all_requests_for_queue', {queue_id: `${router.query.queueid}`});
@@ -69,7 +68,7 @@ const ActiveQueue = () => {
     };
     getRequests();
   }, [router.query.queueid]);
-
+  
   return <>
     <MetaData />
     <Header />
@@ -81,7 +80,7 @@ const ActiveQueue = () => {
       </div>
       <Box className={styles.cardBox}>
         <div className={styles.buttonContainer}>
-          <Button className={styles.closeQueueButton} variant='contained' onClick={() => router.push(`/queue/${requestData.courseId}`)}>Close Queue</Button>
+          <Button className={styles.closeQueueButton} variant='contained' onClick={() => router.push(`/course/${requestData.courseId}`)}>Close Queue</Button>
         </div>
         <div className={styles.requestCardContainer}>
           {/* list of student cards here */}
@@ -96,8 +95,8 @@ const ActiveQueue = () => {
               title={request.title}
               status={request.status}
               previousRequests={request.previousRequests}
-            />;})}
-          {!requestData && <Typography className={styles.text} variant='h5'>No requests in queue</Typography>}
+            />;
+          })}
         </div>
       </Box>
     </div>

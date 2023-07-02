@@ -17,6 +17,7 @@
   width: 100%;
 }
 
+
 .dashboard {
   display: flex;
   flex-direction: column;
@@ -53,5 +54,5 @@
 }
 
 .heading {
-  margin: 0 auto;
+  margin: 0;
 }

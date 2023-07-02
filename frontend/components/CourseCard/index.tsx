@@ -12,7 +12,7 @@ type CourseCardProps = {
 
 const CourseCard = ({ title, index }: CourseCardProps) => {
   return (
-    <Link href={`/queue/${index}`}>
+    <Link href={`/course/${index}`}>
       <Card className={styles.card}>
         <CardContent>
           <Typography className={styles.heading}>

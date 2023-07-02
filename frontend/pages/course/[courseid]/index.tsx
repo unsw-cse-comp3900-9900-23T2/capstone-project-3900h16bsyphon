@@ -2,7 +2,7 @@ import MetaData from '../../../components/MetaData';
 import Header from '../../../components/Header';
 import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
-import styles from './ViewQueue.module.css';
+import styles from './course.module.css';
 import QueueCard from '../../../components/QueueCard';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/router';
@@ -42,21 +42,21 @@ const ViewQueue = () => {
 
   useEffect(() => {
     let getQueues = async () => {
-      if (!router.query.id) return;
-      let res = await authenticatedGetFetch('/queue/get_by_course', {course_id: `${router.query.id}`});
+      if (!router.query.courseid) return;
+      let res = await authenticatedGetFetch('/queue/get_by_course', {course_id: `${router.query.courseid}`});
       let d = await res.json();
       setData(toCamelCase(d));
     };
     let getActiveQueues = async () => {
-      if (!router.query.id) return;
-      let res1 = await authenticatedGetFetch('/queues/active/list', {course_id: `${router.query.id}`});
+      if (!router.query.courseid) return;
+      let res1 = await authenticatedGetFetch('/queues/active/list', {course_id: `${router.query.courseid}`});
       let d1 = await res1.json();
       console.log('d1', d1);
       setQueueList(toCamelCase(d1));
     };
     getQueues();
     getActiveQueues();
-  }, [router.query.id]);
+  }, [router.query.courseid]);
 
   return (
     <>
@@ -66,7 +66,7 @@ const ViewQueue = () => {
         <Typography variant="h3" className={styles.title}>{courseData.title}</Typography>
         <div className={styles.section}>
           <h1 className={styles.heading}>Live</h1>
-          <Button startIcon={<AddIcon />} className={styles.newQueueBtn} onClick={() => { router.push(`/queue-creation/${router.query.id}`); }}>New Queue</Button>
+          <Button startIcon={<AddIcon />} className={styles.newQueueBtn} onClick={() => { router.push(`/create-queue/${router.query.courseid}`); }}>New Queue</Button>
           {queueList?.map((d, index) => (
             <QueueCard queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit} seen={d.seen} unseen={d.unseen}/>
           ))} 
