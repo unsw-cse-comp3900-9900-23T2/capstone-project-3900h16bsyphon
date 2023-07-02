@@ -62,11 +62,13 @@ const ViewQueue = () => {
     <>
       <MetaData />
       <Header />
+      <Typography variant="h3" className={styles.title}>{courseData.title}</Typography>
       <div className={styles.container}>
-        <Typography variant="h3" className={styles.title}>{courseData.title}</Typography>
         <div className={styles.section}>
           <h1 className={styles.heading}>Live</h1>
           <Button startIcon={<AddIcon />} className={styles.newQueueBtn} onClick={() => { router.push(`/create-queue/${router.query.courseid}`); }}>New Queue</Button>
+        </div>
+        <div className={styles.cards}>
           {queueList?.map((d, index) => (
             <QueueCard queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit} seen={d.seen} unseen={d.unseen}/>
           ))} 
@@ -76,15 +78,12 @@ const ViewQueue = () => {
             <QueueCard queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit} seen={d.seen} unseen={d.unseen}/>
           ))}
         </div>
-        <div className={styles.section}>
-          <h1 className={styles.title}>Upcoming</h1>
-        </div>
+        <h1 className={styles.heading}>Upcoming</h1>
         <div className={styles.cards}>
           {data?.filter((d) => Date.parse(d.startTime) > Date.now()).map((d, index) => <QueueCard queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit}/>)}
+          {data?.filter((d) => Date.parse(d.startTime) > Date.now()).length === 0 && <p>No upcoming queues</p>}
         </div>
-        <div className={styles.section}>
-          <h1 className={styles.title}>Previous</h1>
-        </div>
+        <h1 className={styles.heading}>Previous</h1>
         <div className={styles.cards}>
           {data?.filter((d) => Date.parse(d.endTime) < Date.now()).map((d, index) => <QueueCard queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} seen={d.seen} unseen={d.unseen}/> )}
         </div>
