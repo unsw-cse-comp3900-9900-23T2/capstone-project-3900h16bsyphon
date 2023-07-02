@@ -1,22 +1,18 @@
-use actix_web::web::{ReqData, self};
-use actix_web::{HttpResponse};
+use actix_web::web::{self, ReqData};
+use actix_web::HttpResponse;
 use futures::executor::block_on;
-use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter,
-};
+use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
-use serde_json::{from_str, json};
+use serde_json::json;
 
-use crate::{utils::db::db, entities};
+use crate::{entities, utils::db::db};
 
 use super::user::validate_admin;
-use crate::models::{TokenClaims, CreateRequest};
+use crate::models::{CreateRequest, TokenClaims};
 
-
-
-pub async fn create_request(req_body: String) -> HttpResponse {
-    // TODO use middleware not this
-    let request_creation: CreateRequest = from_str(&req_body).unwrap();
+/// TODO: Add authentication here
+pub async fn create_request(body: web::Json<CreateRequest>) -> HttpResponse {
+    let request_creation = body.into_inner();
     let db = db();
     let request = entities::requests::ActiveModel {
         request_id: ActiveValue::NotSet,
@@ -115,14 +111,16 @@ pub async fn all_requests_for_queue(
         .map(|request_id| {
             request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
         })
-        .map(|f| block_on(f))
-        .map(|res| res.unwrap())
+        .map(block_on)
+        .map(Result::unwrap)
         .collect();
 
     // HttpResponse::Ok().json()
     HttpResponse::Ok().json(requests)
 }
 
+/// TODO: This is really cringe, don't do whatever this is
+/// There should be a way to move this into the models
 pub async fn request_info_not_web(
     _token: ReqData<TokenClaims>,
     body: web::Query<RequestInfoBody>,
