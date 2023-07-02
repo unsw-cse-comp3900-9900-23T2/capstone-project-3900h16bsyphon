@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import UserProfileCard from '../../components/UserProfileCard';
 import { authenticatedGetFetch, toCamelCase } from '../../utils';
 import styles from './UserProfilePage.module.css';
+import Header from '../../components/Header';
 
 type CoursePermission = {
   courseCode: string,
@@ -45,6 +46,7 @@ export default function UserProfile() {
   
   return (
     <div className={styles.pageContainer}>
+      <Header/>
       <UserProfileCard
         zid={responseData.zid}
         firstName={responseData.firstName}
