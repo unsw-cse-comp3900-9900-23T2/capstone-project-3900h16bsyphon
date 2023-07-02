@@ -1,5 +1,4 @@
 .newQueueBtn {
-  
   background-color: var(--colour-main-purple-200);
   color: var(--colour-main-purple-900);
 }
@@ -15,6 +14,7 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 40px;
+  min-height: 80vh;
 }
 
 .section {

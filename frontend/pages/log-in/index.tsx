@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import { useRouter } from 'next/router';
 import { setToken } from '../../utils';
 
-const SignIn: NextPage = () => {
+const LogIn: NextPage = () => {
   let [zid, setZid] = useState('');
   let [password, setPassword] = useState('');
   let [error, setError] = useState({
@@ -54,4 +54,4 @@ const SignIn: NextPage = () => {
   );
 };
 
-export default SignIn;
+export default LogIn;

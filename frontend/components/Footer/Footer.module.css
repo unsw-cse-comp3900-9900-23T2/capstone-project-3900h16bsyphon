@@ -8,4 +8,5 @@
   justify-content: center;
   min-height: 10vh;
   flex: 1;
+  align-self: flex-end;
 }

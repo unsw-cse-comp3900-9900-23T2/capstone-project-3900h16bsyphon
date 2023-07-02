@@ -9,6 +9,7 @@ import styles from './WaitingScreen.module.css';
 import { useRouter } from 'next/router';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { authenticatedGetFetch, toCamelCase } from '../../../utils';
+import Footer from '../../../components/Footer';
 
 const defaultData = {
   zid: 'z5303033',
@@ -64,30 +65,28 @@ const WaitingScreen = () => {
   }
 
   return (
-    <>
-      <div className={styles.pageContainer}>
-        <div className={styles.queueTitle}>
-          <Typography className={styles.text} variant='h2'>
-            {requestData.queueTitle}
-          </Typography>
-        </div>
-        <Box className={styles.cardBox}>
-          <div className={styles.buttonContainer}>
-            <Button className={styles.greenButton} variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
-          </div>
-          <StudentRequestCard 
-            zid={requestData.zid}
-            status={requestData.status}
-            firstName={requestData.firstName}
-            lastName={requestData.lastName}
-            tags={requestData.tags}
-            title={requestData.title}
-            previousRequests={requestData.previousRequests}
-            description={requestData.description}
-          />
-        </Box>
+    <div className={styles.pageContainer}>
+      <div className={styles.queueTitle}>
+        <Typography className={styles.text} variant='h2'>
+          {requestData.queueTitle}
+        </Typography>
       </div>
-    </>
+      <Box className={styles.cardBox}>
+        <div className={styles.buttonContainer}>
+          <Button className={styles.greenButton} variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
+        </div>
+        <StudentRequestCard 
+          zid={requestData.zid}
+          status={requestData.status}
+          firstName={requestData.firstName}
+          lastName={requestData.lastName}
+          tags={requestData.tags}
+          title={requestData.title}
+          previousRequests={requestData.previousRequests}
+          description={requestData.description}
+        />
+      </Box>
+    </div>
   );
 };
 

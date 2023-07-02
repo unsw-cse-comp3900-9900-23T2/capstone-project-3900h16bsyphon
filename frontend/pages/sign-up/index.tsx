@@ -6,9 +6,9 @@ import TextInput from '../../components/TextInput';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Button from '@mui/material/Button';
-import { authenticatedPostFetch, setToken } from '../../utils';
+import { setToken } from '../../utils';
 
-const SignIn: NextPage = () => {
+const LogIn: NextPage = () => {
   let [zid, setZid] = useState('');
   let [password, setPassword] = useState('');
   let [confirmPassword, setConfirmPassword] = useState('');
@@ -94,4 +94,4 @@ const SignIn: NextPage = () => {
   );
 };
 
-export default SignIn;
+export default LogIn;
