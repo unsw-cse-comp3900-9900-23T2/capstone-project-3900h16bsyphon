@@ -1,4 +1,4 @@
-import { ThemeProvider, createTheme } from '@mui/material';
+import { ThemeProvider, Typography, createTheme } from '@mui/material';
 import './globals.css';
 import type { AppProps } from 'next/app';
 
@@ -9,8 +9,11 @@ const theme = createTheme({
     },
     secondary: {
       main: '#fff'
-    }
-  }
+    },
+  },
+  typography: {
+    fontFamily: 'Lato',
+  },
 });
 
 const MyApp = ({ Component, pageProps }: AppProps) => {

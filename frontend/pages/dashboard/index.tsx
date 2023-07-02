@@ -9,6 +9,7 @@ import Footer from '../../components/Footer';
 import CreateCourseOfferingModal from '../../components/CreateCourseOfferingModal';
 import React, { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../utils';
+import { CourseOfferingData } from '../../types/courses';
 
 type CourseOffering = {
   title: string;
@@ -30,7 +31,7 @@ const Dashboard: NextPage = () => {
         return;
       }
       let courseOfferings = await res.json();
-      setCourseOfferings(courseOfferings?.map((course: any) => (
+      setCourseOfferings(courseOfferings?.map((course: CourseOfferingData) => (
         {
           title: course.title,
           courseCode: course.course_code,

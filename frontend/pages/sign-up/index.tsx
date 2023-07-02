@@ -6,7 +6,7 @@ import TextInput from '../../components/TextInput';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Button from '@mui/material/Button';
-import { authenticatedGetFetch, authenticatedPostFetch, setToken } from '../../utils';
+import { authenticatedPostFetch, setToken } from '../../utils';
 
 const SignIn: NextPage = () => {
   let [zid, setZid] = useState('');
@@ -70,7 +70,7 @@ const SignIn: NextPage = () => {
         <FormGroup className={styles.form}>
           <TextInput className={styles.formInput} label='First Name' value={firstName} setValue={setFirstName} error={error.firstName} />
           <TextInput className={styles.formInput} label='Last Name' value={lastName} setValue={setLastName} error={error.lastName} />
-          <TextInput className={styles.formInput} label='zId' value={zid} setValue={setZid} error={error.zid} />
+          <TextInput className={styles.formInput} label='zID' value={zid} setValue={setZid} error={error.zid} />
           <TextInput className={styles.formInput} label='Password' value={password} setValue={setPassword} type='password' error={error.password} />
           <TextInput className={styles.formInput} label='Confirm Password' value={confirmPassword} setValue={setConfirmPassword} type='password' error={error.password} />
         </FormGroup>

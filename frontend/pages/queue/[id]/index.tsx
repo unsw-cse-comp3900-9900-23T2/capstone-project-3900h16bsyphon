@@ -26,7 +26,7 @@ const ViewQueue = () => {
     },
   ]);
   const [courseData, setCourseData] = useState<any>({title: 'COMP1000'});
-  const [gg, setGG] = useState([
+  const [queueList, setQueueList] = useState([
     {
       title: 'COMP1000 Week 3 Friday 16:00-18:00 Help Session',
       seen: 5,
@@ -39,7 +39,6 @@ const ViewQueue = () => {
     }
   ]);
 
-  console.log(gg);
   useEffect(() => {
     let getQueues = async () => {
       if (!router.query.id) return;
@@ -52,12 +51,11 @@ const ViewQueue = () => {
       let res1 = await authenticatedGetFetch('/queues/active/list', {course_id: `${router.query.id}`});
       let d1 = await res1.json();
       console.log('d1', d1);
-      setGG(toCamelCase(d1));
+      setQueueList(toCamelCase(d1));
     };
     getQueues();
     getActiveQueues();
   }, [router.query.id]);
-  console.log(gg);
 
   return (
     <>
@@ -68,7 +66,7 @@ const ViewQueue = () => {
         <div className={styles.section}>
           <h1 className={styles.heading}>Live</h1>
           <Button startIcon={<AddIcon />} className={styles.newQueueBtn} onClick={() => { router.push(`/create-queue/${router.query.id}`); }}>New Queue</Button>
-          {gg?.map((d, index) => (
+          {queueList?.map((d, index) => (
             <QueueCard key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins?.map((i) => i.firstName)} isEdit={d.isEdit} seen={d.seen} unseen={d.unseen}/>
           ))} 
         </div>
