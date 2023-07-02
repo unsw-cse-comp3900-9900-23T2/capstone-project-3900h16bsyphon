@@ -8,22 +8,10 @@ import SyphonDatePicker from '../../../components/SyphonDatePicker';
 import SwitchToggles from '../../../components/SwitchToggles';
 import SyphonTimePicker from '../../../components/SyphonTimePicker';
 import FAQs from '../../../components/FAQs';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { authenticatedPostFetch, getToken } from '../../../utils';
 import { useRouter } from 'next/router';
 import TagsSelection from '../../../components/TagsSelection';
 import Header from '../../../components/Header';
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#3E368F',
-    },
-    secondary: {
-      main: '#091133'
-    }
-  }
-});
 
 const QueueCreationPage = () => {
   const [date, setDate] = useState<Dayjs>(dayjs(new Date()));
@@ -56,7 +44,7 @@ const QueueCreationPage = () => {
     router.push(`/active-queue/${data.queue_id}`);
   };
   return (
-    <ThemeProvider theme={theme}>
+    <>
       <Header/>
       <div className={style.container}> 
         <Box className={style.cardBox}>
@@ -97,7 +85,7 @@ const QueueCreationPage = () => {
           </Card>
         </Box>
       </div>
-    </ThemeProvider>
+    </>
   );
 };
 export default QueueCreationPage;

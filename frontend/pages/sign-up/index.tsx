@@ -36,12 +36,20 @@ const SignIn: NextPage = () => {
       }));
     }
 
-    let res = await authenticatedPostFetch('/auth/signup', {
-      first_name : firstName,
-      last_name: lastName,
-      zid,
-      password
-    });
+    let res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'content-Type': 'application/json',
+
+        },
+        body: JSON.stringify({
+          first_name : firstName,
+          last_name: lastName,
+          zid,
+          password
+        })
+      });
     if (!res.ok) {
       let response = await res.json();
       setError(() => ({

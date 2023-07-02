@@ -9,4 +9,7 @@
   min-height: 10vh;
   margin-bottom: 0;
   justify-items: last baseline;
+  align-self: flex-end;
+  position: fixed;
+  margin-bottom: 0;
 }

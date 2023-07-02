@@ -7,9 +7,6 @@ import {
   TextField, 
   Typography, 
   Button, 
-  Select, 
-  MenuItem, 
-  OutlinedInput, 
   SelectChangeEvent, 
   FormControlLabel, 
   Checkbox
@@ -68,7 +65,7 @@ export default function CreateRequest() {
       order: 1,
       zid: 0,
       status: 'Unseen',
-      queue_id: Number.parseInt(`${router.query.id}`),
+      queue_id: Number.parseInt(`${router.query.queueid}`),
     };
     let res = await authenticatedPostFetch('/request/create', body);
     // TODO PUSH TO WAIT
