@@ -2,12 +2,13 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import styles from './QueueCard.module.css';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import TagBox from '../TagBox';
+import Link from 'next/link';
 
 type QueueCardProps = {
   title: string;
+  queueId: number;
   seen?: number;
   unseen?: number;
   location: String[];
@@ -15,9 +16,9 @@ type QueueCardProps = {
   isEdit?: boolean;
 }
 
-export default function QueueCard({ title, seen, unseen, location, courseAdmins, isEdit }: QueueCardProps) {
+export default function QueueCard({ title, seen, unseen, location, courseAdmins, isEdit, queueId }: QueueCardProps) {
   return (
-    <div>
+    <Link href={`/active-queue/${queueId}`}>
       <Card className={styles.card}>
         <CardContent>
           <div className={styles.chipContainer}>
@@ -36,6 +37,6 @@ export default function QueueCard({ title, seen, unseen, location, courseAdmins,
           </div>
         </CardContent>
       </Card>
-    </div>
+    </Link>
   );
 }

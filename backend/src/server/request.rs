@@ -1,39 +1,23 @@
-use actix_web::web::{self, ReqData};
-use actix_web::HttpResponse;
+use actix_web::web::{ReqData, self};
+use actix_web::{HttpResponse};
 use futures::executor::block_on;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseConnection, EntityTrait,
-    QueryFilter,
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, json};
 
-use crate::entities::sea_orm_active_enums::Statuses;
-use crate::{database_utils::db_connection, entities};
+use crate::{utils::db::db, entities};
 
-use super::auth::TokenClaims;
 use super::user::validate_admin;
+use crate::models::{TokenClaims, CreateRequest};
 
-#[derive(Deserialize, Debug, Clone, Serialize)]
-pub struct FAQs {
-    pub question: String,
-    pub answer: String,
-}
 
-#[derive(Deserialize, Debug, Clone)]
-pub struct CreateRequest {
-    pub zid: i32,
-    pub queue_id: i32,
-    pub title: String,
-    pub description: String,
-    pub order: i32,
-    pub is_clusterable: bool,
-    pub status: Option<Statuses>,
-}
 
 pub async fn create_request(req_body: String) -> HttpResponse {
+    // TODO use middleware not this
     let request_creation: CreateRequest = from_str(&req_body).unwrap();
-    let db: &DatabaseConnection = &db_connection().await;
+    let db = db();
     let request = entities::requests::ActiveModel {
         request_id: ActiveValue::NotSet,
         zid: ActiveValue::Set(request_creation.zid),
@@ -53,7 +37,7 @@ pub async fn request_info(
     body: web::Query<RequestInfoBody>,
 ) -> HttpResponse {
     log::debug!("Request info: {:#?}", body);
-    let db: &DatabaseConnection = &db_connection().await;
+    let db = db();
     let body = body.into_inner();
     // Get the request from the database
     let db_request = entities::requests::Entity::find_by_id(body.request_id)
@@ -112,7 +96,7 @@ pub async fn all_requests_for_queue(
     token: ReqData<TokenClaims>,
     body: web::Query<AllRequestsForQueueBody>,
 ) -> HttpResponse {
-    let db: &DatabaseConnection = &db_connection().await;
+    let db = db();
     let body = body.into_inner();
     if let Err(e) = validate_admin(&token, db).await {
         log::debug!("Not Admin: {:#?}", e);
@@ -128,7 +112,9 @@ pub async fn all_requests_for_queue(
         .expect("Db broke")
         .into_iter()
         .map(|req| req.request_id)
-        .map(|request_id| request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id  })))
+        .map(|request_id| {
+            request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
+        })
         .map(|f| block_on(f))
         .map(|res| res.unwrap())
         .collect();
@@ -142,7 +128,7 @@ pub async fn request_info_not_web(
     body: web::Query<RequestInfoBody>,
 ) -> Result<serde_json::Value, HttpResponse> {
     log::debug!("Request info: {:#?}", body);
-    let db: &DatabaseConnection = &db_connection().await;
+    let db = db();
     let body = body.into_inner();
     // Get the request from the database
     let db_request = entities::requests::Entity::find_by_id(body.request_id)

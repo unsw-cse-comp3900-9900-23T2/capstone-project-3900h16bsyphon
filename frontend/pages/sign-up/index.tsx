@@ -29,6 +29,11 @@ const SignIn: NextPage = () => {
         password: 'Passwords do not match'
       }));
       return;
+    } else {
+      setError((oldState) => ({
+        ...oldState,
+        password: ''
+      }));
     }
 
     let res = await authenticatedPostFetch('/auth/signup', {

@@ -4,19 +4,18 @@ services:
   frontend:
     build:
       context: ./frontend
-    container_name: frontend
+      dockerfile: ./prod.Dockerfile
+    container_name: frontend_prod
     ports:
       - '3000:3000'
     env_file:
       - ./frontend/.env
     environment:
-      - BACKEND_HOST=backend
-    volumes:
-      # Bind mount volume for live frontend updates while developing
-      - ./frontend:/client
+      - BACKEND_HOST=backend_prod
     networks:
       - net
   database:
+    container_name: database_prod
     image: 'postgres:latest'
     ports:
       - 5432:5432
@@ -27,8 +26,11 @@ services:
     networks:
       - net
   backend:
+    container_name: backend_prod
     build:
       context: backend
+      dockerfile: ./prod.Dockerfile
+    entrypoint: /run_prod.sh
     env_file:
       - backend/.env
     environment:
@@ -37,10 +39,6 @@ services:
       - 8000:8000
     networks:
       - net
-    volumes:
-      # Bind mount volume for live backend updates while developing
-      - ./backend/src:/app/src
-      - ./backend/migration:/app/migration
     depends_on:
       - database
 

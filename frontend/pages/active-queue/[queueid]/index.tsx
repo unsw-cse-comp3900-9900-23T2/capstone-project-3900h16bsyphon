@@ -59,6 +59,7 @@ const ActiveQueue = () => {
     requests: requests,
   };
 
+  // TODO: make this either poll or use sockets
   useEffect(() => {
     let getRequests = async () => {
       let res = await authenticatedGetFetch('/request/all_requests_for_queue', {queue_id: `${router.query.queueid}`});
@@ -67,8 +68,8 @@ const ActiveQueue = () => {
       setRequests(toCamelCase(d));
     };
     getRequests();
-  });
-  
+  }, [router.query.queueid]);
+
   return <>
     <MetaData />
     <Header />

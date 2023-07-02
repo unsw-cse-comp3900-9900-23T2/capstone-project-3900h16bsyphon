@@ -6,6 +6,7 @@ import Button from '@mui/material/Button';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import NotificationsModal from '../NotificationsModal';
+import { setToken } from '../../utils';
 
 const Header = () => {
   let router = useRouter();
@@ -20,7 +21,7 @@ const Header = () => {
           <PersonIcon />
         </Avatar>
         {/* TODO: replace with actual logout functionality */}
-        <Button className={styles.button} onClick={() => router.push('/')}>Log out</Button>
+        <Button className={styles.button} onClick={() => {router.push('/'); setToken(''); }}>Log out</Button>
       </div>
     </div>
   );
