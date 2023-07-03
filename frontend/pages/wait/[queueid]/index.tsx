@@ -82,7 +82,7 @@ const WaitingScreen = () => {
             lastName={requestData.lastName}
             tags={requestData.tags}
             title={requestData.title}
-            previousRequests={requestData.previousRequests}
+            queueId={router.query.queueid as string | undefined}
             description={requestData.description}
           />
         </Box>
