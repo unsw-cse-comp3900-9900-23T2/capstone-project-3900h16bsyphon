@@ -60,7 +60,7 @@ const ViewQueue = () => {
       <div className={styles.container}>
         <div className={styles.section}>
           <h1 className={styles.heading}>Live</h1>
-          <Button startIcon={<AddIcon />} className={styles.newQueueBtn} onClick={() => { router.push(`/create-queue/${router.query.courseid}`); }}>New Queue</Button>
+          { isTutor && <Button startIcon={<AddIcon />} className={styles.newQueueBtn} onClick={() => { router.push(`/create-queue/${router.query.courseid}`); }}>New Queue</Button>}
         </div>
         <div className={styles.cards}>
           {data
