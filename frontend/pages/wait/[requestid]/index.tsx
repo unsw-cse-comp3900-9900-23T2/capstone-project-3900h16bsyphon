@@ -8,11 +8,11 @@ import styles from './WaitingScreen.module.css';
 
 import { useRouter } from 'next/router';
 import StudentRequestCard from '../../../components/StudentRequestCard';
-import { authenticatedGetFetch, toCamelCase } from '../../../utils';
+import { authenticatedGetFetch, formatZid, toCamelCase } from '../../../utils';
 import Header from '../../../components/Header';
 
 const defaultData  = {
-  zid: 'z5303033',
+  zid: 5303033,
   queueTitle: 'COMP1521 Thursday Week 5 Help Session',
   firstName: 'Jane',
   lastName: 'Doe',
@@ -32,7 +32,6 @@ const WaitingScreen = () => {
   console.log(router.query.requestid);
   useEffect(() => {
     let getRequest = async () => {
-      console.log('GETTING DATA');
       let res = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.requestid || -1}`});
       console.log('got res');
       console.log(res);
@@ -45,7 +44,6 @@ const WaitingScreen = () => {
         let d = await res.json();
         console.log(d);
         setData(toCamelCase(d));
-        console.log(requestData);
       }
     };
     if (!router.query.requestid) {
@@ -74,7 +72,7 @@ const WaitingScreen = () => {
             <Button className={styles.greenButton} variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
           </div>
           <StudentRequestCard 
-            zid={`z${requestData.zid}`.padEnd(8, '0')}
+            zid={formatZid(requestData.zid)}
             status={requestData.status}
             firstName={requestData.firstName}
             lastName={requestData.lastName}

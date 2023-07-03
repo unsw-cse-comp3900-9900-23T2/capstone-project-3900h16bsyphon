@@ -3,6 +3,7 @@ import UserPermissionsBox from '../UserPermissionBox';
 import styles from './UserProfileCard.module.css';
 import { useRouter } from 'next/router';
 import AddCoursePermissionsModal from '../AddCoursePermissionsModal';
+import { formatZid } from '../../utils';
 
 type CoursePermission = {
   courseCode: string,
@@ -50,7 +51,7 @@ export default function UserProfileCard({
             <TextField
               className={styles.text}
               id="outlined-read-only-input"
-              value={zid}
+              value={formatZid(zid)}
               InputProps={{
                 readOnly: true,
               }}

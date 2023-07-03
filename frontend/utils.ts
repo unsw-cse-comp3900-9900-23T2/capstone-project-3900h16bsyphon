@@ -74,3 +74,7 @@ export function toCamelCase(obj: any) {
   }
   return rtn;
 }
+
+export function formatZid(id: number): string {
+  return `z${id}`.padEnd(8, '0');
+}
