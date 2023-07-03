@@ -14,15 +14,15 @@ type CourseCardProps = {
 const CourseCard = ({ title, index }: CourseCardProps) => {
   const router = useRouter();
   return (
-    <Card className={styles.card}>
-      <CardActionArea onClick={() => router.push(`/course/${index}`) }>
+    <CardActionArea onClick={() => router.push(`/course/${index}`) }>
+      <Card className={styles.card}>
         <CardContent>
           <Typography className={styles.heading}>
             {title}
           </Typography>
         </CardContent>
-      </CardActionArea>
-    </Card>
+      </Card>
+    </CardActionArea>
   );
 };
 

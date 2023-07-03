@@ -23,8 +23,8 @@ export default function QueueCard({ title, seen, unseen, location, courseAdmins,
 
   return (
     <Card className={styles.card}>
-      <CardContent>
-        <CardActionArea onClick={() => router.push(isTutor ? `/active-queue/${queueId}` : `/create-request/${queueId}`)}>
+      <CardActionArea onClick={() => router.push(isTutor ? `/active-queue/${queueId}` : `/create-request/${queueId}`)}>
+        <CardContent>
           <div className={styles.chipContainer}>
             {courseAdmins?.map((c, index) => <TagBox key={index} text={c.toString()} backgroundColor='var(--colour-main-purple-200)' color='var(--colour-main-purple-900)' bold={false} />)}
             {location?.map((l, index) => <TagBox key={index} text={l.toString()} backgroundColor='var(--colour-main-yellow-300)' color='white'/>)}
@@ -32,15 +32,16 @@ export default function QueueCard({ title, seen, unseen, location, courseAdmins,
           <Typography className={styles.heading}>
             {title}
           </Typography>
-        </CardActionArea>
-        <div className={styles.cardAction}>
-          <div className={styles.chipContainer}>
-            {seen && <TagBox text={`${seen} seen`} backgroundColor='var(--colour-main-green-200)' color='var(--colour-main-green-900)' bold={false} />}
-            {unseen && <TagBox text={`${unseen} unseen`} backgroundColor='var(--colour-main-red-200)' color='var(--colour-main-red-900)' bold={false} />}
+          <div className={styles.cardAction}>
+            <div className={styles.chipContainer}>
+              {seen && <TagBox text={`${seen} seen`} backgroundColor='var(--colour-main-green-200)' color='var(--colour-main-green-900)' bold={false} />}
+              {unseen && <TagBox text={`${unseen} unseen`} backgroundColor='var(--colour-main-red-200)' color='var(--colour-main-red-900)' bold={false} />}
+            </div>
+            {isEdit && <Button className={styles.editBtn}>Edit</Button>}
           </div>
-          {isEdit && <Button className={styles.editBtn}>Edit</Button>}
-        </div>
-      </CardContent>
+        </CardContent>
+      </CardActionArea>
+
     </Card>
   );
 }

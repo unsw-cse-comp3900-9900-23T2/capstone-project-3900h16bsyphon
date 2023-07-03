@@ -51,7 +51,6 @@ const ActiveQueue = () => {
   const router = useRouter();
   
   const [requests, setRequests] = useState(dummyRequests);
-
   const [requestData, setRequestData] = useState({
     queueTitle: 'COMP1521 Thursday Week 5 Help Session',
     queueId: 1,
@@ -90,19 +89,23 @@ const ActiveQueue = () => {
           <Button className={styles.closeQueueButton} variant='contained' onClick={() => router.push(`/course/${requestData.courseOfferingId}`)}>Close Queue</Button>
         </div>
         <div className={styles.requestCardContainer}>
-          {requests?.map((request) => {
-            return <StudentQueueRequestCard 
-              key={request.requestId}  
-              requestId={request.requestId}  
-              zid={request.zid}
-              firstName={request.firstName}
-              lastName={request.lastName}
-              tags={request.tags}
-              title={request.title}
-              status={request.status}
-              previousRequests={request.previousRequests}
-            />;
-          })}
+          {requests !== null && requests.length !== 0 ? (
+            requests.map((request) => (
+              <StudentQueueRequestCard
+                key={request.requestId}
+                requestId={request.requestId}
+                zid={request.zid}
+                firstName={request.firstName}
+                lastName={request.lastName}
+                tags={request.tags}
+                title={request.title}
+                status={request.status}
+                previousRequests={request.previousRequests}
+              />
+            ))
+          ) : (
+            <p>There are no requests</p>
+          )}
         </div>
       </Box>
     </div>

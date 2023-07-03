@@ -8,13 +8,13 @@ import { useRouter } from 'next/router';
 import { setToken } from '../../utils';
 
 const LogIn: NextPage = () => {
-  let [zid, setZid] = useState('');
-  let [password, setPassword] = useState('');
-  let [error, setError] = useState({
+  const [zid, setZid] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState({
     zid: '',
     password: '',
   });
-  let router = useRouter();
+  const router = useRouter();
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,7 +49,7 @@ const LogIn: NextPage = () => {
           <TextInput className={styles.formInput} label='Password' value={password} setValue={setPassword} type='password' error={error.password} />
           <Button type='submit' variant='contained' className={styles.button}> Log in </Button>
         </Box>
-        <Typography className={styles.accountText}>Don’t have an account? <Link className={styles.signUp} href='/sign-up'></Link></Typography>
+        <Typography className={styles.accountText}>Don’t have an account? <Link className={styles.signUp} href='/sign-up'>Sign up</Link></Typography>
       </main>
     </div>
   );

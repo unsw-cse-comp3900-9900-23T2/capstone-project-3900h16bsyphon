@@ -9,7 +9,11 @@ import NotificationsModal from '../NotificationsModal';
 import { setToken } from '../../utils';
 
 const Header = () => {
-  let router = useRouter();
+  const router = useRouter();
+  const logout = () => {
+    router.push('/'); 
+    setToken('');
+  };
   return (
     <div className={styles.header}>
       <h1 className={styles.heading}>
@@ -20,8 +24,7 @@ const Header = () => {
         <Avatar onClick={() => router.push('/user-profile')} className={styles.profile}>
           <PersonIcon />
         </Avatar>
-        {/* TODO: replace with actual logout functionality */}
-        <Button className={styles.button} onClick={() => {router.push('/'); setToken(''); }}>Log out</Button>
+        <Button className={styles.button} onClick={() => logout()}>Log out</Button>
       </div>
     </div>
   );

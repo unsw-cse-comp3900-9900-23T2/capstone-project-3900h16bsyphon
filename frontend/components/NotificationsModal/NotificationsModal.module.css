@@ -10,16 +10,16 @@
   flex-direction: column;
   gap: 20px;
   padding: 45px;
-  
 }
 
 .doneBtn {
-  background-color: var(--colour-main-blue-400);
-  color: white;
+  background-color: var(--colour-main-blue-200);
+  color: black;
 }
 
 .doneBtn:hover {
-  background-color: var(--colour-main-blue-600);
+  background-color: var(--colour-main-blue-400);
+  color: white;
 }
 
 .titleContainer {

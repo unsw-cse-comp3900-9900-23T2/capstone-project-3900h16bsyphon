@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {  
   Card, 
   CardContent, 
@@ -20,7 +20,7 @@ type StudentRequestCardProps = {
 
 const StudentRequestCard = ({ zid, firstName, lastName, title, description, previousRequests, tags, status }: StudentRequestCardProps) => {
 
-  const determineBackgroundColor = ( status: string ) => {
+  const determineBackgroundColour = (status: string) => {
     // TOOD: standardize these request status 
     switch (status) {
     case 'Resolved':
@@ -36,7 +36,8 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, prev
     }
   };
 
-  const [backgroundColor, setBackgroundColor] = useState(determineBackgroundColor(status));
+  const backgroundColor = determineBackgroundColour(status);
+
 
   return <Card style={{ backgroundColor }} className={styles.cardContainer}>
     <CardContent className={styles.cardContent}>
@@ -65,7 +66,6 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, prev
           return <TagBox text={tag} key={i} backgroundColor='#EDB549' color='white' />;
         })}
       </div>
-
       <div>
         <Typography className={styles.text} variant='body1'>
           {description}

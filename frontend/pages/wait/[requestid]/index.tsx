@@ -5,7 +5,6 @@ import {
   Button, 
 } from '@mui/material';
 import styles from './WaitingScreen.module.css';
-
 import { useRouter } from 'next/router';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { authenticatedGetFetch, formatZid, toCamelCase } from '../../../utils';
