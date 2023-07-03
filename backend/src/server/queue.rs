@@ -8,7 +8,7 @@ use actix_web::{
     web::{self, Query, ReqData},
     HttpResponse,
 };
-use lazy_static::__Deref;
+
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QuerySelect,
 };
