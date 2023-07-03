@@ -95,7 +95,7 @@ const Dashboard: NextPage = () => {
             </div>
           </div>
           <div className={styles.studentSection}>
-            <h1>Courses you are a student</h1>
+            <h1>Courses you are a student of</h1>
             <p>Select a course to view queues</p>
             <div className={styles.cards}>
               {courseOfferings?.map((d, index) => (

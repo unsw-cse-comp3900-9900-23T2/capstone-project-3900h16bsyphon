@@ -59,7 +59,6 @@ const CreateCourseOfferingModal = () => {
     });
     setDate(dayjs(new Date()));
     setOpen(false);
-    router.reload();
   };
 
   const handleSubmit = async () => {
@@ -71,6 +70,7 @@ const CreateCourseOfferingModal = () => {
     });
     if (res.ok) {
       handleClose();
+      router.reload();
       return;
     }
     let data = await res.json();

@@ -5,7 +5,7 @@ use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter,
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{from_str, json};
+use serde_json::json;
 
 use crate::{utils::db::db, entities};
 
@@ -14,10 +14,10 @@ use crate::models::{TokenClaims, CreateRequest};
 
 
 
-pub async fn create_request(req_body: String) -> HttpResponse {
+pub async fn create_request(request_creation: web::Json<CreateRequest>) -> HttpResponse {
     // TODO use middleware not this
-    let request_creation: CreateRequest = from_str(&req_body).unwrap();
     let db = db();
+    let request_creation = request_creation.into_inner();
     let request = entities::requests::ActiveModel {
         request_id: ActiveValue::NotSet,
         zid: ActiveValue::Set(request_creation.zid),
@@ -28,8 +28,9 @@ pub async fn create_request(req_body: String) -> HttpResponse {
         is_clusterable: ActiveValue::Set(request_creation.is_clusterable),
         status: ActiveValue::Set(request_creation.status),
     };
-    request.insert(db).await.expect("Db broke");
-    HttpResponse::Ok().body("Request created")
+    let insertion = request.insert(db).await.expect("Db broke");
+
+    HttpResponse::Ok().json(json!({"request_id": insertion.request_id}))
 }
 
 pub async fn request_info(

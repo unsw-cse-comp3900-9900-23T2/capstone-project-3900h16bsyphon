@@ -54,27 +54,25 @@ export const getToken = () => getCookie('token');
 
 export const setToken = (token: string) => setCookie('token', token);
 
-export function toCamelCase(obj: any) {
+export const toCamelCase = (obj: any) : any => {
   let rtn = obj;
-  if (!rtn) {
+  if (!rtn || typeof (obj) !== 'object') {
     return rtn;
-  } else if (typeof (obj) === 'object') {
-    if (obj instanceof Array) {
-      rtn = obj?.map(toCamelCase);
-    } else {
-      rtn = {};
-      for (let key in obj) {
-        // eslint-disable-next-line no-prototype-builtins
-        if (obj.hasOwnProperty(key)) {
-          const newKey = key.replace(/(_\w)/g, k => k[1].toUpperCase());
-          rtn[newKey] = toCamelCase(obj[key]);
-        }
-      }
+  }
+
+  if (obj instanceof Array) {
+    return obj?.map(toCamelCase);
+  }
+  // is an object
+  rtn = {};
+  for (let key in obj) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (obj.hasOwnProperty(key)) {
+      const newKey = key.replace(/(_\w)/g, k => k[1].toUpperCase());
+      rtn[newKey] = toCamelCase(obj[key]);
     }
   }
   return rtn;
-}
+};
 
-export function formatZid(id: number): string {
-  return `z${id}`.padEnd(8, '0');
-}
+export const formatZid = (id: number) =>`z${id}`.padEnd(8, '0');

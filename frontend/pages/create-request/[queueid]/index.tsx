@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import styles from './CreateRequest.module.css';
 import { useRouter } from 'next/router';
-import { authenticatedPostFetch } from '../../../utils';
+import { authenticatedPostFetch, toCamelCase } from '../../../utils';
 import TagsSelection from '../../../components/TagsSelection';
 import Header from '../../../components/Header';
 
@@ -68,8 +68,8 @@ export default function CreateRequest() {
       queue_id: Number.parseInt(`${router.query.queueid}`),
     };
     let res = await authenticatedPostFetch('/request/create', body);
-    // TODO PUSH TO WAIT
-    if (res.ok) router.push('/queue');
+    let value = toCamelCase(await res.json());
+    if (res.ok) router.push(`/wait/${value.requestId}`);
   };
 
   useEffect(() => {
