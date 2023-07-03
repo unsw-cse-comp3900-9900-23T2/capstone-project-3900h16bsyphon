@@ -3,9 +3,9 @@ use actix_web::{http, middleware, web, App, HttpServer};
 use actix_web_httpauth::middleware::HttpAuthentication;
 
 pub mod entities;
+pub mod models;
 pub mod prelude;
 pub mod server;
-pub mod models;
 pub mod utils;
 
 use crate::prelude::*;
@@ -50,23 +50,23 @@ async fn main() -> std::io::Result<()> {
             )
             .route(
                 "/user/list",
-                web::get().to(server::user::get_users).wrap(amw.clone())
+                web::get().to(server::user::get_users).wrap(amw.clone()),
             )
             .route(
                 "/user/profile",
-                web::get()
-                    .to(server::user::get_user)
+                web::get().to(server::user::get_user).wrap(amw.clone()),
+            )
+            .route(
+                "/queue/create",
+                web::post()
+                    .to(server::queue::create_queue)
                     .wrap(amw.clone()),
             )
             .route(
-                "/queue/create", 
-                web::post().to(server::queue::create_queue)
-                .wrap(amw.clone())
-            )
-            .route(
-                "/queue/get_by_course", 
-                web::get().to(server::queue::get_queues_by_course)
-                .wrap(amw.clone())
+                "/queue/get_by_course",
+                web::get()
+                    .to(server::queue::get_queues_by_course)
+                    .wrap(amw.clone()),
             )
             .route(
                 "/course/create_offering",
@@ -74,9 +74,11 @@ async fn main() -> std::io::Result<()> {
                     .to(server::course::create_offering)
                     .wrap(amw.clone()),
             )
-            .route("/courses/get_tutored", 
-                web::get().to(server::course::get_courses_tutored)
-                .wrap(amw.clone())
+            .route(
+                "/courses/get_tutored",
+                web::get()
+                    .to(server::course::get_courses_tutored)
+                    .wrap(amw.clone()),
             )
             .route(
                 "/course/get",
@@ -98,19 +100,33 @@ async fn main() -> std::io::Result<()> {
             )
             .route(
                 "/request/create",
-                web::post().to(server::request::create_request).wrap(amw.clone()),
+                web::post()
+                    .to(server::request::create_request)
+                    .wrap(amw.clone()),
             )
             .route(
                 "/request/get_info",
-                web::get().to(server::request::request_info).wrap(amw.clone()),
+                web::get()
+                    .to(server::request::request_info)
+                    .wrap(amw.clone()),
             )
             .route(
                 "/request/all_requests_for_queue",
-                web::get().to(server::request::all_requests_for_queue).wrap(amw.clone()),
+                web::get()
+                    .to(server::request::all_requests_for_queue)
+                    .wrap(amw.clone()),
             )
             .route(
                 "/queues/active/list",
-                web::get().to(server::queue::get_active_queues).wrap(amw.clone()),
+                web::get()
+                    .to(server::queue::get_active_queues)
+                    .wrap(amw.clone()),
+            )
+            .route(
+                "history/request_count",
+                web::get()
+                    .to(server::history::get_request_count)
+                    .wrap(amw.clone()),
             )
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))

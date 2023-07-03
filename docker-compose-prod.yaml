@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  frontend:
+  frontend_prod:
     build:
       context: ./frontend
       dockerfile: ./prod.Dockerfile
@@ -14,7 +14,7 @@ services:
       - BACKEND_HOST=backend_prod
     networks:
       - net
-  database:
+  database_prod:
     container_name: database_prod
     image: 'postgres:latest'
     ports:
@@ -25,7 +25,7 @@ services:
       - DATABASE_HOST=database
     networks:
       - net
-  backend:
+  backend_prod:
     container_name: backend_prod
     build:
       context: backend

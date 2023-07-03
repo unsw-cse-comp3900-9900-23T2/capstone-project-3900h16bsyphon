@@ -3,15 +3,15 @@
 
 use crate::models::CreateUserBody;
 use crate::server::auth::create_user;
-use actix_web::web::Json;
 pub use crate::utils::db::initialise_db;
+use actix_web::web::Json;
 
 /// Secret used to hash passwords.
 /// Requires `SECRET` to be set as and environemnt variable or in
 /// a `.env` file in the root of the project, or a parent folder.
-pub const SECRET: &'static str = dotenv_codegen::dotenv!("SECRET");
+pub const SECRET: &str = dotenv_codegen::dotenv!("SECRET");
 const DEFAULT_PORT: u16 = 8000;
-const DEFAULT_HOST: &'static str = "0.0.0.0";
+const DEFAULT_HOST: &str = "0.0.0.0";
 
 pub fn host_port_from_env() -> (String, u16) {
     let host = std::env::var("HOST_URL").unwrap_or(DEFAULT_HOST.into());

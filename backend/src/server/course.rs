@@ -8,14 +8,14 @@ use rand::Rng;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
 
+use crate::models::{
+    AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink, TokenClaims, INV_CODE_LEN,
+};
 use crate::{
     entities,
     models::{CourseOfferingReturnModel, GetOfferingByIdQuery},
     server,
     utils::db::db,
-};
-use crate::models::{
-    AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink, TokenClaims, INV_CODE_LEN,
 };
 
 use server::user::{validate_admin, validate_user};
@@ -52,7 +52,7 @@ pub async fn create_offering(
         .unwrap_or_default()
         .into_iter()
         .map(|id| add_course_admin(course.course_offering_id, id))
-        .for_each(|f| block_on(f));
+        .for_each(block_on);
 
     HttpResponse::Ok().json(web::Json(course))
 }
@@ -193,7 +193,7 @@ pub async fn add_tutor(
         .await
         .expect("db broke");
 
-    if let Some(_) = db_tutor {
+    if db_tutor.is_some() {
         return HttpResponse::Conflict().json("Already Tutor");
     }
 
@@ -298,8 +298,8 @@ fn gen_inv_code() -> String {
     let mut rng = rand::thread_rng();
     (0..INV_CODE_LEN)
         .map(|_| match rng.gen() {
-            true => rng.gen_range('a'..'z'),
-            false => rng.gen_range('0'..'9'),
+            true => rng.gen_range('a'..='z'),
+            false => rng.gen_range('0'..='9'),
         })
         .collect()
 }

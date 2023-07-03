@@ -20,7 +20,7 @@ interface StudentRequestCardProps {
 
 const StudentRequestCard = ({ zid, firstName, lastName, title, description, previousRequests, tags, status }: StudentRequestCardProps) => {
 
-  const determineBackgroundColor = ( status: string ) => {
+  const determineBackgroundColor = (status: string) => {
     // TOOD: standardize these request status 
     switch (status) {
     case 'Resolved':

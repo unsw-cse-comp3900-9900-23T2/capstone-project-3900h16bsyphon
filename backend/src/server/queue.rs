@@ -2,16 +2,15 @@ use crate::{
     entities,
     models::{CreateQueueRequest, GetQueuesByCourseQuery, QueueReturnModel},
     server::user::validate_user,
+    test_is_user,
     utils::db::db,
 };
 use actix_web::{
     web::{self, Query, ReqData},
     HttpResponse,
 };
-use lazy_static::__Deref;
-use sea_orm::{
-    ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QuerySelect,
-};
+
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 
 use crate::models::auth::TokenClaims;
 
@@ -20,10 +19,7 @@ pub async fn create_queue(
     req_body: web::Json<CreateQueueRequest>,
 ) -> HttpResponse {
     let db = db();
-    if let Err(e) = validate_user(&token, db).await {
-        log::debug!("failed to verify user:{:?}", e);
-        return e;
-    }
+    test_is_user!(token, db);
     let req_body = req_body.into_inner();
     log::info!("Queue creation request: {:?}", req_body);
     let queue = entities::queues::ActiveModel::from(req_body)
@@ -67,7 +63,16 @@ pub async fn get_queues_by_course(
         .await
         .expect("db broke")
         .iter()
-        .map(|json| json.as_object().unwrap().get("first_name").unwrap().as_str().unwrap().to_string()).collect::<Vec<_>>();
+        .map(|json| {
+            json.as_object()
+                .unwrap()
+                .get("first_name")
+                .unwrap()
+                .as_str()
+                .unwrap()
+                .to_string()
+        })
+        .collect::<Vec<_>>();
 
     log::info!("{:?}", tutors);
     the_course.iter_mut().for_each(|it| {

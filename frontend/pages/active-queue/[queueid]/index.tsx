@@ -10,7 +10,7 @@ import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 
 const dummyRequests = [
   {
-    zid: 'z5303033',
+    zid: 5303033,
     requestId: 0,
     firstName: 'Jane',
     lastName: 'Doe',
@@ -22,7 +22,7 @@ const dummyRequests = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
   },
   {
-    zid: 'z5303033',
+    zid: 5303033,
     requestId: 1,
     firstName: 'Jane',
     lastName: 'Doe',
@@ -34,7 +34,7 @@ const dummyRequests = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
   },
   {
-    zid: 'z5303033',
+    zid: 5303033,
     requestId: 2,
     firstName: 'Jane',
     lastName: 'Doe',
@@ -67,6 +67,7 @@ const ActiveQueue = () => {
       let d = await res.json();
       setRequests(toCamelCase(d));
     };
+    if (!router.query.queueid) return;
     getRequests();
   }, [router.query.queueid]);
 
@@ -94,8 +95,8 @@ const ActiveQueue = () => {
               lastName={request.lastName}
               tags={request.tags}
               title={request.title}
+              queueId={router.query.queueid as string | undefined}
               status={request.status}
-              previousRequests={request.previousRequests}
             />;
           })}
         </div>
