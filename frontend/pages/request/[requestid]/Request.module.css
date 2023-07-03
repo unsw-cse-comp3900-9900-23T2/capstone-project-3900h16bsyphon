@@ -6,11 +6,10 @@
 }
 
 .cardBox {
-    padding: 0px 50px;
+    padding: 0px 100px;
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    gap: 25px;
 }
 
 .queueTitle {
@@ -36,4 +35,8 @@
     flex-direction: column;
     gap: 10px;
     width: 25%;
+}
+
+.cardContainer {
+    width: 60%;
 }
