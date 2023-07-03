@@ -32,7 +32,7 @@ const WaitingScreen = () => {
   console.log(router.query.requestid);
   useEffect(() => {
     let getRequest = async () => {
-      let res = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.requestid || -1}`});
+      let res = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.requestid}`});
       console.log('got res');
       console.log(res);
       if (res.status === 404) {
@@ -42,7 +42,6 @@ const WaitingScreen = () => {
       } else if (res.status === 200) {
         setReqState('Success');
         let d = await res.json();
-        console.log(d);
         setData(toCamelCase(d));
       }
     };

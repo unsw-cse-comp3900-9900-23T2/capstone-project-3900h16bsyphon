@@ -14,17 +14,17 @@ use crate::models::{TokenClaims, CreateRequest};
 
 
 
-pub async fn create_request(request_creation: web::Json<CreateRequest>) -> HttpResponse {
+pub async fn create_request(token: ReqData<TokenClaims>, request_creation: web::Json<CreateRequest>) -> HttpResponse {
     // TODO use middleware not this
     let db = db();
     let request_creation = request_creation.into_inner();
     let request = entities::requests::ActiveModel {
         request_id: ActiveValue::NotSet,
-        zid: ActiveValue::Set(request_creation.zid),
+        zid: ActiveValue::Set(token.username),
         queue_id: ActiveValue::Set(request_creation.queue_id),
         title: ActiveValue::Set(request_creation.title),
         description: ActiveValue::Set(request_creation.description),
-        order: ActiveValue::Set(request_creation.order),
+        order: ActiveValue::Set(1), // TODO: unhardcode
         is_clusterable: ActiveValue::Set(request_creation.is_clusterable),
         status: ActiveValue::Set(request_creation.status),
     };

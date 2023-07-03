@@ -57,13 +57,10 @@ export default function CreateRequest() {
   };
 
   const handleSubmit = async () => {
-    // TODO: remove hardcoded values
     const body = {
       title: title,
       description: description,
       is_clusterable: isClusterable,
-      order: 1,
-      zid: 0,
       status: 'Unseen',
       queue_id: Number.parseInt(`${router.query.queueid}`),
     };

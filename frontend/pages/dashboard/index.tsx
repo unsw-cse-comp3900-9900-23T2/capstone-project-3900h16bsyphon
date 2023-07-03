@@ -98,9 +98,14 @@ const Dashboard: NextPage = () => {
             <h1>Courses you are a student of</h1>
             <p>Select a course to view queues</p>
             <div className={styles.cards}>
-              {courseOfferings?.map((d, index) => (
-                <CourseCard key={index} title={d.title} index={d.courseOfferingId}/>
-              ))}
+              {courseOfferings
+                ?.filter(
+                  (course) => myCourses.every((item) => item.courseOfferingId !== course.courseOfferingId)
+                )
+                .map((d, index) => (
+                  <CourseCard key={index} title={d.title} index={d.courseOfferingId}/>
+                ))
+              }
             </div>
           </div>
         </div>
