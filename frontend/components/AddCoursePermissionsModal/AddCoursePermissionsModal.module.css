@@ -1,13 +1,6 @@
 .permissionManagementButton {
-    font-family: 'lato', sans-serif;
-;
   padding: 7px 15px;
   background-color: #d9d9d9;
-}
-
-.text {
-    font-family: 'Lato', sans-serif;
-;
 }
 
 .container {
@@ -25,7 +18,6 @@
   gap: 20px;
   padding: 40px;
 }
-
   
 .titleContainer {
   display: flex;
@@ -48,8 +40,6 @@
 
 .secondaryButton {
   background-color: var(--colour-main-grey-400);
-    font-family: 'Lato', sans-serif;
-;
 }
 
 .userPermissions {

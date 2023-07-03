@@ -3,15 +3,14 @@ import UserPermissionsBox from '../UserPermissionBox';
 import styles from './UserProfileCard.module.css';
 import { useRouter } from 'next/router';
 import AddCoursePermissionsModal from '../AddCoursePermissionsModal';
-// import { useEffect, useState } from 'react';
-// import authenticatedGetFetch from '../../utils';
+import { formatZid } from '../../utils';
 
-interface CoursePermission {
+type CoursePermission = {
   courseCode: string,
   courseOfferingId: number,
   title: string,
 }
-interface UserProfileCardProps {
+type UserProfileCardProps = {
   zid: number;
   firstName: string;
   lastName: string;
@@ -52,7 +51,7 @@ export default function UserProfileCard({
             <TextField
               className={styles.text}
               id="outlined-read-only-input"
-              value={zid}
+              value={formatZid(zid)}
               InputProps={{
                 readOnly: true,
               }}
@@ -96,7 +95,7 @@ export default function UserProfileCard({
             </Typography>
           </div>
           <div className={styles.userPermissions}>
-            {tutor.map((course, i) => (
+            {tutor?.map((course, i) => (
               <UserPermissionsBox
                 key={i}
                 permission="Tutor"
@@ -104,7 +103,7 @@ export default function UserProfileCard({
               />
             ))}
 
-            {courseAdmin.map((course, i) => (
+            {courseAdmin?.map((course, i) => (
               <UserPermissionsBox
                 key={i}
                 permission="Course Admin"

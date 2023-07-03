@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 import styles from './UserPermissionBox.module.css';
 
-interface UserPermissionsBoxProps {
+type UserPermissionsBoxProps = {
   courseOffering: string;
   permission: string;
 }

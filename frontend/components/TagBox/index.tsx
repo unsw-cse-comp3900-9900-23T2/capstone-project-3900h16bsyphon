@@ -1,15 +1,16 @@
 import { Typography } from '@mui/material';
 import styles from './TagBox.module.css';
 
-interface TagBoxProps {
+type TagBoxProps = {
     text: string,
     backgroundColor: string,
     color: string,
+    bold?: boolean,
 }
 
-const TagBox = ({ text, backgroundColor, color }: TagBoxProps) => {
+const TagBox = ({ text, backgroundColor, color, bold=true }: TagBoxProps) => {
   return <div className={styles.tagContainer} style={{ backgroundColor }} >
-    <Typography className={styles.tagText} style={{ color }} variant='body1'>{text}</Typography>
+    <Typography style={{ color, fontWeight: bold ? 'bold' : 'normal' }} variant='body1'>{text}</Typography>
   </div>;
 };
 

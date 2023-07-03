@@ -1,7 +1,7 @@
 import type { NextPage } from 'next';
 import styles from './Home.module.css';
 import Logo from '../components/Logo';
-import Button from '../components/Button';
+import Button from '@mui/material/Button';
 import Image from 'next/image';
 import FeatureGrid from '../components/FeatureGrid';
 import MetaData from '../components/MetaData';
@@ -23,8 +23,8 @@ const Home: NextPage = () => {
         <div className={styles.header}>
           <Logo />
           <div className={styles.side}>
-            <Button onClick={() => router.push('/sign-up')}> Sign up </Button>
-            <Button onClick={() => router.push('/log-in')} variant='contained'> Log in </Button>
+            <Button onClick={() => router.push('/sign-up')} className={styles.button}> Sign up </Button>
+            <Button onClick={() => router.push('/log-in')} variant='contained' className={styles.button}> Log in </Button>
           </div>
         </div>
         <h1 className={styles.title}>Syphon</h1>

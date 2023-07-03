@@ -11,7 +11,7 @@ import StudentRequestCard from '../../../components/StudentRequestCard';
 import Header from '../../../components/Header';
 import MetaData from '../../../components/MetaData';
 
-interface RequestProps {
+type RequestProps = {
   requestId: number,
 }
 
@@ -35,7 +35,7 @@ const Request = ({ requestId }: RequestProps) => {
     // TOOD: BE GET request to populate the student request card component
     console.log('GET from Request page with requestId ' + requestId);
     
-  }, []);
+  }, [requestId]);
 
   return <>
     <MetaData />

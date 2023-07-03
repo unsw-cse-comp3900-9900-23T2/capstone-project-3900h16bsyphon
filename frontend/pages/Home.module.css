@@ -23,7 +23,7 @@
   text-align: center;
   color: #000;
   font-size: 100px;
-  font-family: 'Lato', sans-serif;
+  
   font-weight: 700;
 }
 
@@ -33,7 +33,7 @@
   align-self: center;
   color: #000;
   font-size: 24px;
-  font-family: 'Lato', sans-serif;
+  
   font-weight: 500;
 }
 
@@ -46,7 +46,7 @@
 .whatWeOffer {
   color: var(--colour-main-navy-900);
   font-size: 36px;
-  font-family: 'Lato', sans-serif;
+  
   font-weight: 500;
   line-height: 48px;
 }
@@ -54,7 +54,7 @@
 .whatWeOfferBody {
   display: flex;
   flex-grow: 1;
-    font-family: 'Lato', sans-serif;
+    
 ;
   line-height: 26px;
 }
@@ -86,4 +86,10 @@
   .homeImage {
     display: none;
   }
+}
+
+.button {
+  font-size: 30px;
+  font-weight: 700;
+  text-transform: none;
 }

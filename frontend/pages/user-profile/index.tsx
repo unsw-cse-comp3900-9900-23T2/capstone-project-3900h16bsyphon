@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import UserProfileCard from '../../components/UserProfileCard';
 import { authenticatedGetFetch, toCamelCase } from '../../utils';
 import styles from './UserProfilePage.module.css';
+import Header from '../../components/Header';
 
-interface CoursePermission {
+type CoursePermission = {
   courseCode: string,
   courseOfferingId: number,
   title: string,
 }
-interface UserProfileCardProps {
+type UserProfileCardProps = {
   zid: number;
   firstName: string;
   lastName: string;
@@ -44,16 +45,19 @@ export default function UserProfile() {
 
   
   return (
-    <div className={styles.pageContainer}>
-      <UserProfileCard
-        zid={responseData.zid}
-        firstName={responseData.firstName}
-        lastName={responseData.lastName}
-        tutor={responseData.tutor}
-        courseAdmin={responseData.courseAdmin}
-        isOrgAdmin={responseData.isOrgAdmin}
-      />
-    </div>
+    <>
+      <Header/>
+      <div className={styles.pageContainer}>
+        <UserProfileCard
+          zid={responseData.zid}
+          firstName={responseData.firstName}
+          lastName={responseData.lastName}
+          tutor={responseData.tutor}
+          courseAdmin={responseData.courseAdmin}
+          isOrgAdmin={responseData.isOrgAdmin}
+        />
+      </div>
+    </>
   );
 }
 

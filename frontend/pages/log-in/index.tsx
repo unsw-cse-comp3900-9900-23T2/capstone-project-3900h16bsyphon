@@ -1,13 +1,13 @@
 import type { NextPage } from 'next';
-import styles from './SignIn.module.css';
-import { FormGroup, Link, Typography } from '@mui/material';
+import styles from './LogIn.module.css';
+import { Box, Link, Typography } from '@mui/material';
 import TextInput from '../../components/TextInput';
-import { useState } from 'react';
-import Button from '../../components/Button';
+import { FormEvent, useState } from 'react';
+import Button from '@mui/material/Button';
 import { useRouter } from 'next/router';
 import { setToken } from '../../utils';
 
-const SignIn: NextPage = () => {
+const LogIn: NextPage = () => {
   let [zid, setZid] = useState('');
   let [password, setPassword] = useState('');
   let [error, setError] = useState({
@@ -16,7 +16,8 @@ const SignIn: NextPage = () => {
   });
   let router = useRouter();
 
-  const submit = async () => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     const basicAuth = Buffer.from(`${zid}:${password}`).toString('base64');
     let res = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}/auth/login`, {
@@ -43,15 +44,15 @@ const SignIn: NextPage = () => {
     <div className={styles.container}>
       <main className={styles.main}>
         <Typography variant='h1' className={styles.title}>Log in to Syphon</Typography>
-        <FormGroup className={styles.form}>
-          <TextInput className={styles.formInput} label='zId' value={zid} setValue={setZid} error={error.zid} />
+        <Box component='form' className={styles.form} onSubmit={submit}>
+          <TextInput className={styles.formInput} label='zID' value={zid} setValue={setZid} error={error.zid} />
           <TextInput className={styles.formInput} label='Password' value={password} setValue={setPassword} type='password' error={error.password} />
-        </FormGroup>
-        <Button onClick={submit} variant='contained'> Log in </Button>
-        <Typography className={styles.accountText}>Don’t have an account? <Link className={styles.signUp} href='/sign-up'>Sign up</Link></Typography>
+          <Button type='submit' variant='contained' className={styles.button}> Log in </Button>
+        </Box>
+        <Typography className={styles.accountText}>Don’t have an account? <Link className={styles.signUp} href='/sign-up'></Link></Typography>
       </main>
     </div>
   );
 };
 
-export default SignIn;
+export default LogIn;

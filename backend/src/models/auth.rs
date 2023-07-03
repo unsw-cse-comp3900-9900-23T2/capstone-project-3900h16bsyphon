@@ -64,7 +64,7 @@ impl CreateUserBody {
         match name {
             n if !(3..=16).contains(&n.len()) => Err("name too short".to_string()),
             n if !n.chars().all(|c| c.is_ascii_alphabetic()) => {
-                Err("name must be alphanumeric or space".to_string())
+                Err("name must be alphabetic or space".to_string())
             }
             _ => Ok(()),
         }

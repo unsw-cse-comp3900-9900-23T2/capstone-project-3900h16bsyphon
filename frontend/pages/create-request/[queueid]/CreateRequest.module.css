@@ -5,19 +5,16 @@
     justify-content: center;
     align-items: center;
     padding-top: 5%;
+    padding-bottom: 5%;
+    min-height: 80vh;
 }
 
 .cardBox {
     width: 75%;
-    font-family: 'Lato';
 }
 
 .cardHeader {
     padding: 25px 0px;
-}
-
-.text {
-    font-family: 'Lato';
 }
 
 .cardContainer {
@@ -55,15 +52,21 @@
 }
 
 .backButton {
-    font-family: lato;
     background-color: var(--colour-main-grey-400);
     color: black;
     padding: 7px 15px;
 }
+.backButton:hover {
+    background-color: white;
+    color: black;
+}
 
 .createButton {
-    font-family: lato;
     padding: 7px 15px;
+}
+.createButton:hover {
+    background-color: var(--colour-main-grep-600);
+    color: black;
 }
 
 .headingWordCount {

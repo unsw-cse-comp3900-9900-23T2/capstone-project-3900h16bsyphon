@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {  
   Card, 
   CardContent, 
@@ -75,7 +75,7 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags
         </Typography>
       </div>
       <div className={styles.tagContainer}>
-        {tags.map((tag, i) => {
+        {tags?.map((tag, i) => {
           return <TagBox text={tag} key={i} backgroundColor='#EDB549' color='white' />;
         })}
       </div>

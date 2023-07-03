@@ -1,11 +1,14 @@
 .footer {
   width: 100%;
-  background-color: #e7ecff;
-  font-family: 'Lato', sans-serif;
   display: flex;
   flex-direction: row;
   gap: 73%;
   align-items: center;
   justify-content: center;
   min-height: 10vh;
+  flex: 1;
+  align-self: flex-end;
+  background-color: var(--colour-main-purple-200);
 }
+
+/*background-color: #e7ecff;*/

@@ -2,9 +2,7 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  flex: 1;
   width: 100%;
-  gap: 65%;
   margin-top: 20px;
   margin-bottom: 40px;
 }
@@ -22,11 +20,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-family: 'Lato', sans-serif;
+  
   width: 90%;
   margin: 0 auto;
   padding-top: 30px;
-  background-color: #f2f2f2;
+  background-color: white;
   padding-bottom: 80px;
 }
 
@@ -35,7 +33,8 @@
   margin: 0 auto;
   padding: 0 auto;
   height: 100%;
-  background-color: #f2f2f2;
+  background-color: white;
+  min-height: 80vh;
 }
 
 .cards {
@@ -53,5 +52,5 @@
 }
 
 .heading {
-  margin: 0 auto;
+  margin: 0;
 }

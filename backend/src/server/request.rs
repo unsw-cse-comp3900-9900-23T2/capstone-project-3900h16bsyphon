@@ -3,29 +3,30 @@ use actix_web::HttpResponse;
 use futures::executor::block_on;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
-use serde_json::{from_str, json};
+use serde_json::json;
 
 use crate::{entities, utils::db::db};
 
 use super::user::validate_admin;
 use crate::models::{CreateRequest, TokenClaims};
 
-pub async fn create_request(req_body: String) -> HttpResponse {
+pub async fn create_request(token: ReqData<TokenClaims>, request_creation: web::Json<CreateRequest>) -> HttpResponse {
     // TODO use middleware not this
-    let request_creation: CreateRequest = from_str(&req_body).unwrap();
     let db = db();
+    let request_creation = request_creation.into_inner();
     let request = entities::requests::ActiveModel {
         request_id: ActiveValue::NotSet,
-        zid: ActiveValue::Set(request_creation.zid),
+        zid: ActiveValue::Set(token.username),
         queue_id: ActiveValue::Set(request_creation.queue_id),
         title: ActiveValue::Set(request_creation.title),
         description: ActiveValue::Set(request_creation.description),
-        order: ActiveValue::Set(request_creation.order),
+        order: ActiveValue::Set(1), // TODO: unhardcode
         is_clusterable: ActiveValue::Set(request_creation.is_clusterable),
         status: ActiveValue::Set(request_creation.status),
     };
-    request.insert(db).await.expect("Db broke");
-    HttpResponse::Ok().body("Request created")
+    let insertion = request.insert(db).await.expect("Db broke");
+
+    HttpResponse::Ok().json(json!({"request_id": insertion.request_id}))
 }
 
 pub async fn request_info(

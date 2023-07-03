@@ -44,11 +44,11 @@ const NotificationsModal = () => {
               <CloseIcon />
             </IconButton>
           </div>
-          {data.map((d, index) => 
+          {data?.map((d, index) => 
             <NotificationsCard key={index} title={d.title} description={d.description} />
           )}
           <Button onClick={handleClose} className={styles.doneBtn}>
-						Close modal
+						Close 
           </Button>
         </div>
       </Modal>

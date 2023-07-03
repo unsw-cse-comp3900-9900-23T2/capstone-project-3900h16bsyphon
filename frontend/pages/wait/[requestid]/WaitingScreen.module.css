@@ -2,27 +2,24 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-.text {
-    font-family: Lato;
+    min-height: 90vh;
+    padding-top: 1%;
 }
 
 .cardBox {
     padding: 0px 50px;
-    font-family: 'Lato';
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    gap: 25px;
+    gap: 1.5em;
 }
 
 .queueTitle {
-    padding: 25px 0px;
+    padding-top: 2%;
+    padding-bottom: 3%;
 }
 
 .greenButton {
-    font-family: Lato;
     font-weight: bold;
     padding: 5px 25px;
     background-color: var(--colour-main-green-400);
