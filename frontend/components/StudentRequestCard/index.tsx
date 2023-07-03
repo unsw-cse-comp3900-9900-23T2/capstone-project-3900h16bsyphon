@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {  
   Card, 
   CardContent, 
@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import styles from './StudentRequestCard.module.css';
 import TagBox from '../TagBox';
-import { authenticatedGetFetch } from '../../utils';
+import { authenticatedGetFetch, formatZid } from '../../utils';
 
 interface StudentRequestCardProps {
   zid: number,
@@ -57,7 +57,7 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags
       <div className={styles.cardHeader}>
         <div className={styles.zidNameContainer}>
           <div>
-            <TagBox text={zid} backgroundColor='#D5CFFF' color='#3E368F' />
+            <TagBox text={formatZid(zid)} backgroundColor='#D5CFFF' color='#3E368F' />
           </div>
           <div>
             <Typography className={styles.textHeading} variant='h6'>

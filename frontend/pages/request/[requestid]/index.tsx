@@ -19,7 +19,7 @@ const Request = ({ requestId }: RequestProps) => {
   const router = useRouter();
 
   const requestData = {
-    zid: 'z5303033',
+    zid: 5303033,
     queueId: 1,
     queueTitle: 'COMP1521 Thursday Week 5 Help Session',
     firstName: 'Jane',
