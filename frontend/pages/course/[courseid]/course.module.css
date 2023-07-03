@@ -2,7 +2,7 @@
   background-color: var(--colour-main-purple-200);
   color: var(--colour-main-purple-900);
   flex-wrap: wrap-reverse;
-  margin-right: 8%;
+  margin-right: 10%;
   width: fit-content;
   height: max-content;
 }
@@ -19,7 +19,7 @@
   margin-bottom: 5%;
   margin-top: 5%;
   min-height: 80vh;
-  margin-left: 8%;
+  margin-left: 10%;
 }
 
 .section {
@@ -36,9 +36,10 @@
 
 .cards {
   display: grid;
-  width: 100%;
+  width: 90%;
   /* TODO: clean up styles */
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5%;
 }
 
 .title {

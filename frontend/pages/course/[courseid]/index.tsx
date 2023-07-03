@@ -73,11 +73,6 @@ const ViewQueue = () => {
             <QueueCard queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit} seen={d.seen} unseen={d.unseen}/>
           ))} 
         </div>
-        <div className={styles.cards}>
-          {data?.filter((d) => Date.parse(d.startTime) < Date.now() && Date.parse(d.endTime) > Date.now()).map((d, index) => (
-            <QueueCard queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit} seen={d.seen} unseen={d.unseen}/>
-          ))}
-        </div>
         <h1 className={styles.heading}>Upcoming</h1>
         <div className={styles.cards}>
           {data?.filter((d) => Date.parse(d.startTime) > Date.now()).map((d, index) => <QueueCard queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit}/>)}
