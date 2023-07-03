@@ -27,6 +27,7 @@
   display: flex;
   padding-bottom: 10vh;
   row-gap: 7vh;
+  flex-direction: column;
 }
 
 .accountText {

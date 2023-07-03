@@ -26,6 +26,7 @@
 .form {
   padding-top: 5vh;
   display: flex;
+  flex-direction: column;
   padding-bottom: 5vh;
   row-gap: 2vh;
 }

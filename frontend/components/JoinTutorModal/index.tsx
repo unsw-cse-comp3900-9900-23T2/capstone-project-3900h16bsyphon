@@ -20,7 +20,6 @@ const JoinTutorModal = () => {
   const handleClose = () => {
     setOpen(false);
     setError('');
-    router.reload();
   };
 
   const handleSubmit = async () => {
@@ -32,6 +31,7 @@ const JoinTutorModal = () => {
       return;
     }
     handleClose();
+    router.reload();
     return;
   };
 

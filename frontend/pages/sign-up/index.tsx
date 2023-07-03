@@ -1,12 +1,12 @@
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import styles from './SignUp.module.css';
-import { FormGroup, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import TextInput from '../../components/TextInput';
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/router';
 import Button from '@mui/material/Button';
-import { setToken } from '../../utils';
+import { setToken, toCamelCase } from '../../utils';
 
 const LogIn: NextPage = () => {
   let [zid, setZid] = useState('');
@@ -22,7 +22,8 @@ const LogIn: NextPage = () => {
   });
   let router = useRouter();
 
-  const submit = async () => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     if (password !== confirmPassword) {
       setError((oldState) => ({
         ...oldState,
@@ -50,17 +51,17 @@ const LogIn: NextPage = () => {
           password
         })
       });
+    let response = await res.json();
     if (!res.ok) {
-      let response = await res.json();
-      setError(() => ({
-        firstName: response.first_name,
-        lastName: response.last_name,
-        zid: response.zid,
-        password: response.password,
-      })
-      );
-
+      setError(toCamelCase(response));
       return;
+    } else {
+      setError({
+        zid: '',
+        password: '',
+        firstName: '',
+        lastName: ''
+      });
     }
     // sign in directly
     let loginRes = await fetch(
@@ -80,14 +81,14 @@ const LogIn: NextPage = () => {
       <main className={styles.main}>
         <Typography variant='h1' className={styles.title}>Syphon</Typography>
         <Typography variant='h3'>Sign up to start attending help sessions</Typography>
-        <FormGroup className={styles.form}>
+        <Box component='form' className={styles.form} onSubmit={submit}>
           <TextInput className={styles.formInput} label='First Name' value={firstName} setValue={setFirstName} error={error.firstName} />
           <TextInput className={styles.formInput} label='Last Name' value={lastName} setValue={setLastName} error={error.lastName} />
           <TextInput className={styles.formInput} label='zID' value={zid} setValue={setZid} error={error.zid} />
           <TextInput className={styles.formInput} label='Password' value={password} setValue={setPassword} type='password' error={error.password} />
           <TextInput className={styles.formInput} label='Confirm Password' value={confirmPassword} setValue={setConfirmPassword} type='password' error={error.password} />
-        </FormGroup>
-        <Button onClick={submit} variant='contained' className={styles.button}> Sign up </Button>
+          <Button  type='submit' variant='contained' className={styles.button}> Sign up </Button>
+        </Box>
         <Typography className={styles.accountText}>Have an account? <Link className={styles.logIn} href='/log-in'>Log in</Link></Typography>
       </main>
     </div>
