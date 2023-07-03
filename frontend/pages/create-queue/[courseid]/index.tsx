@@ -1,34 +1,23 @@
 /* eslint-disable no-unused-vars */
 import React, {useState} from 'react';
 import dayjs, { Dayjs } from 'dayjs';
-import style from './queue-creation.module.css';
+import style from './CreateQueue.module.css';
 import TextField from '@mui/material/TextField';
 import { FormGroup, Box, Typography, Button, Card} from '@mui/material';
 import SyphonDatePicker from '../../../components/SyphonDatePicker';
 import SwitchToggles from '../../../components/SwitchToggles';
 import SyphonTimePicker from '../../../components/SyphonTimePicker';
 import FAQs from '../../../components/FAQs';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Tags from '../../../components/Tags';
 import { authenticatedPostFetch, getToken } from '../../../utils';
 import { useRouter } from 'next/router';
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#3E368F',
-    },
-    secondary: {
-      main: '#091133'
-    }
-  }
-});
+import TagsSelection from '../../../components/TagsSelection';
+import Header from '../../../components/Header';
 
 const QueueCreationPage = () => {
   const [date, setDate] = useState<Dayjs>(dayjs(new Date()));
   const [timeStart, setTimeStart] = useState<Dayjs>(dayjs(new Date()));
   const [timeEnd, setTimeEnd] = useState<Dayjs>(dayjs(new Date()).add(2, 'hour'));
-  const [tags, setTags] = useState<string[]>(['Assignment', 'Lab']);
+  const [tags, setTags] = useState<string[]>(['Assignment', 'Lab', 'General']);
   const [isVisible, setIsVisible] = useState(true);
   const [isAvailable, setIsAvailable] = useState(true);
   const [isTimeLimit, setIsTimeLimit] = useState(false);
@@ -48,13 +37,15 @@ const QueueCreationPage = () => {
       is_available: isAvailable,
       time_limit: timeLimit,
       announcement: announcement,
-      course_id: Number.parseInt(`${router.query.id}`),
+      course_id: Number.parseInt(`${router.query.courseid}`),
     };
     let res = await authenticatedPostFetch('/queue/create', body);
-    router.push(`/queue/${router.query.id}`);
+    let data = await res.json();
+    router.push(`/active-queue/${data.queue_id}`);
   };
   return (
-    <ThemeProvider theme={theme}>
+    <>
+      <Header/>
       <div className={style.container}> 
         <Box className={style.cardBox}>
           <Card className={style.cardContainer}>
@@ -77,7 +68,7 @@ const QueueCreationPage = () => {
               timeEnd={timeEnd} 
               setTimeEnd={setTimeEnd} 
             />
-            <Tags />
+            <TagsSelection tags={tags} setTags={setTags} />
             <SwitchToggles 
               isAvailable={isAvailable} 
               setIsAvailable={setIsAvailable}
@@ -94,7 +85,7 @@ const QueueCreationPage = () => {
           </Card>
         </Box>
       </div>
-    </ThemeProvider>
+    </>
   );
 };
 export default QueueCreationPage;

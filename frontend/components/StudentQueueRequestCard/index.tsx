@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import TagBox from '../TagBox';
 import { useState } from 'react';
 
-interface StudentQueueRequestCardProps {
+type StudentQueueRequestCardProps = {
   zid: string,
   firstName: string,
   lastName: string,
@@ -51,14 +51,10 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, previousRequ
       <CardActionArea className={styles.cardContent} onClick={() => router.push(`/request/${requestId}`)}>
         <div className={styles.cardHeader}>
           <div className={styles.zidNameContainer}>
-            <div>
-              <TagBox text={zid} backgroundColor='#D5CFFF' color='#3E368F' />
-            </div>
-            <div>
-              <Typography className={styles.textHeading} variant='h6'>
-                {firstName + ' ' + lastName}
-              </Typography>
-            </div>
+            <TagBox text={zid} backgroundColor='#D5CFFF' color='#3E368F' />
+            <Typography className={styles.textHeading} variant='h6'>
+              {firstName + ' ' + lastName}
+            </Typography>
           </div>
           <div className={styles.previousRequestsContainer}>
             <TagBox text={'PREVIOUS TOTAL REQUESTS: ' + previousRequests} backgroundColor='#D5CFFF' color='#3E368F' />
@@ -70,22 +66,22 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, previousRequ
           </Typography>
         </div>
         <div className={styles.tagContainer}>
-          {tags.map((tag, i) => {
+          {tags?.map((tag, i) => {
             return <TagBox text={tag} key={i} backgroundColor='#EDB549' color='white' />;
           })}
         </div>
-      </CardActionArea>
-      <CardActions className={styles.cardActions}>
-        {(status === 'Unresolved') && <Button className={styles.claimButton} variant='contained' onClick={() => router.push('/wait/1')}>
+        <CardActions className={styles.cardActions}>
+          {(status === 'Unresolved') && <Button className={styles.claimButton} variant='contained' onClick={() => router.push('/wait/1')}>
           Claim
-        </Button>}
-        {(status === 'In Progress') && <Button className={styles.claimButton} variant='contained' onClick={handleResolve}>
+          </Button>}
+          {(status === 'In Progress') && <Button className={styles.claimButton} variant='contained' onClick={handleResolve}>
           Resolve
-        </Button>}
-        {(status === 'Unresolved') && <Button className={styles.notFoundButton} variant='contained' onClick={handleNotFound} >
+          </Button>}
+          {(status === 'Unresolved') && <Button className={styles.notFoundButton} variant='contained' onClick={handleNotFound} >
           Not Found
-        </Button>}
-      </CardActions>
+          </Button>}
+        </CardActions>
+      </CardActionArea>
     </Card>
   
   </>;

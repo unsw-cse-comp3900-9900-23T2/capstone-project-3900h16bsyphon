@@ -48,3 +48,8 @@ pub struct QueueReturnModel {
     pub start_time: Option<NaiveDateTime>,
     pub end_time: Option<NaiveDateTime>,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetQueueByIdQuery {
+    pub queue_id: i32
+}

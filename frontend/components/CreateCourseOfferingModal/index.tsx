@@ -15,7 +15,7 @@ import { authenticatedGetFetch, authenticatedPostFetch } from '../../utils';
 import TextInput from '../TextInput';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
-import { Router, useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 
 type UserData = {
   first_name: string;
@@ -59,7 +59,6 @@ const CreateCourseOfferingModal = () => {
     });
     setDate(dayjs(new Date()));
     setOpen(false);
-    router.reload();
   };
 
   const handleSubmit = async () => {
@@ -71,6 +70,7 @@ const CreateCourseOfferingModal = () => {
     });
     if (res.ok) {
       handleClose();
+      router.reload();
       return;
     }
     let data = await res.json();
@@ -128,14 +128,14 @@ const CreateCourseOfferingModal = () => {
                 fullWidth
                 multiple
                 id="tags-standard"
-                options={data.map((option) => `${option.first_name} ${option.last_name} (${option.zid})`)}
+                options={data?.map((option) => `${option.first_name} ${option.last_name} (${option.zid})`)}
                 getOptionLabel={(option) => option}
                 onChange={(_, value) => {
-                  let matches = data.filter((user) => {
+                  let matches = data?.filter((user) => {
                     let dataString = `${user.first_name} ${user.last_name} (${user.zid})`;
                     return value.includes(dataString);
                   });
-                  setAdmins(matches.map((user) => user.zid));
+                  setAdmins(matches?.map((user) => user.zid));
                 }}
                 renderInput={(params) => (<TextField {...params} fullWidth error={!!error.admins} helperText={error.admins} />)}
               />

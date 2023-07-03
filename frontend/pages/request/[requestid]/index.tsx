@@ -11,7 +11,7 @@ import StudentRequestCard from '../../../components/StudentRequestCard';
 import Header from '../../../components/Header';
 import MetaData from '../../../components/MetaData';
 
-interface RequestProps {
+type RequestProps = {
   requestId: number,
 }
 
@@ -36,7 +36,7 @@ const Request = ({ requestId }: RequestProps) => {
     // TOOD: BE GET request to populate the student request card component
     console.log('GET from Request page with requestId ' + requestId);
     
-  }, []);
+  }, [requestId]);
 
   return <>
     <MetaData />
@@ -52,16 +52,18 @@ const Request = ({ requestId }: RequestProps) => {
           <Button className={styles.greenButton} variant='contained' onClick={() => router.push(`/active-queue/${requestData.queueId}`)}>Resolve</Button>
           <Button className={styles.redButton} variant='contained' onClick={() => router.push(`/active-queue/${requestData.queueId}`)}>Not Found</Button>
         </div>
-        <StudentRequestCard 
-          zid={requestData.zid}
-          status={requestData.status}
-          firstName={requestData.firstName}
-          lastName={requestData.lastName}
-          tags={requestData.tags}
-          title={requestData.title}
-          previousRequests={requestData.previousRequests}
-          description={requestData.description}
-        />
+        <div className={styles.cardContainer}>
+          <StudentRequestCard 
+            zid={requestData.zid}
+            status={requestData.status}
+            firstName={requestData.firstName}
+            lastName={requestData.lastName}
+            tags={requestData.tags}
+            title={requestData.title}
+            previousRequests={requestData.previousRequests}
+            description={requestData.description}
+          />
+        </div>
       </Box>
     </div>
   </>;

@@ -9,6 +9,7 @@
 
 .container {
   display: flex;
+  min-height: 80vh;
 }
 
 .title {
@@ -25,12 +26,15 @@
 .form {
   padding-top: 5vh;
   display: flex;
+  flex-direction: column;
   padding-bottom: 5vh;
   row-gap: 2vh;
 }
 
 .accountText {
-  margin-top: 5vh;
+  margin-top: 3vh;
+  margin-bottom: 3vh;
+  font-size: large;
 }
 
 .logIn {
@@ -40,4 +44,10 @@
 
 .formInput {
   width: 70lvh;
+}
+
+.button {
+  font-size: x-large;
+  font-weight: 700;
+  text-transform: none;
 }

@@ -5,13 +5,13 @@ import {
   Button, 
 } from '@mui/material';
 import styles from './WaitingScreen.module.css';
-
 import { useRouter } from 'next/router';
 import StudentRequestCard from '../../../components/StudentRequestCard';
-import { authenticatedGetFetch, toCamelCase } from '../../../utils';
+import { authenticatedGetFetch, formatZid, toCamelCase } from '../../../utils';
+import Header from '../../../components/Header';
 
-const defaultData = {
-  zid: 'z5303033',
+const defaultData  = {
+  zid: 5303033,
   queueTitle: 'COMP1521 Thursday Week 5 Help Session',
   firstName: 'Jane',
   lastName: 'Doe',
@@ -28,11 +28,10 @@ const WaitingScreen = () => {
   const router = useRouter();
   const [requestData, setData] = useState(defaultData);
   const  [reqState, setReqState] = useState('Unresolved');
-  console.log(router.query.queueid);
+  console.log(router.query.requestid);
   useEffect(() => {
     let getRequest = async () => {
-      console.log('GETTING DATA');
-      let res = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.queueid || -1}`});
+      let res = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.requestid}`});
       console.log('got res');
       console.log(res);
       if (res.status === 404) {
@@ -42,20 +41,14 @@ const WaitingScreen = () => {
       } else if (res.status === 200) {
         setReqState('Success');
         let d = await res.json();
-        console.log(d);
         setData(toCamelCase(d));
       }
     };
-    if (!router.query.queueid) {
+    if (!router.query.requestid) {
       return;
     }
     getRequest();
-  // TODO add dependency
-  }, [router.query.queueid, router.query.id]);
-
-  useEffect(() => {
-    console.log('GET request data here');
-  }, []);
+  }, [router.query.requestid]);
 
   if (reqState === 'Not Found') {
     router.push('/404');
@@ -64,10 +57,11 @@ const WaitingScreen = () => {
   }
 
   return (
-    <>
+    <> 
+      <Header />
       <div className={styles.pageContainer}>
         <div className={styles.queueTitle}>
-          <Typography className={styles.text} variant='h2'>
+          <Typography className={styles.text} variant='h3'>
             {requestData.queueTitle}
           </Typography>
         </div>
@@ -76,7 +70,7 @@ const WaitingScreen = () => {
             <Button className={styles.greenButton} variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
           </div>
           <StudentRequestCard 
-            zid={requestData.zid}
+            zid={formatZid(requestData.zid)}
             status={requestData.status}
             firstName={requestData.firstName}
             lastName={requestData.lastName}
