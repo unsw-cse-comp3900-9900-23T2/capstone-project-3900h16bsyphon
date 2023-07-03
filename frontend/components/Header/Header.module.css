@@ -1,21 +1,19 @@
 .header {
-  width: 100%;
-  background-color: white;
-  
-  padding-bottom: 4px;
+  background-color: var(--colour-main-purple-200);
+  padding: 0px 25px 4px;
   display: flex;
-  flex-direction: row;
-  gap: 73%;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--colour-main-grey-200);
 }
 
 .right {
   display: flex;
-  flex-direction: row;
+  gap: 10px;
 }
 
 .profile:hover {
   background-color: var(--colour-main-grey-200);
   cursor: pointer;
 }
+

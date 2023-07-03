@@ -5,6 +5,8 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import TagBox from '../TagBox';
 import Link from 'next/link';
+import { CardActionArea } from '@mui/material';
+import { useRouter } from 'next/router';
 
 type QueueCardProps = {
   title: string;
@@ -17,10 +19,12 @@ type QueueCardProps = {
 }
 
 export default function QueueCard({ title, seen, unseen, location, courseAdmins, isEdit, queueId }: QueueCardProps) {
+  const router = useRouter();
+
   return (
-    <Link href={`/active-queue/${queueId}`}>
-      <Card className={styles.card}>
-        <CardContent>
+    <Card className={styles.card}>
+      <CardContent>
+        <CardActionArea onClick={() => router.push(`/active-queue/${queueId}`)}>
           <div className={styles.chipContainer}>
             {courseAdmins?.map((c, index) => <TagBox key={index} text={c.toString()} backgroundColor='var(--colour-main-purple-200)' color='var(--colour-main-purple-900)' bold={false} />)}
             {location?.map((l, index) => <TagBox key={index} text={l.toString()} backgroundColor='var(--colour-main-yellow-300)' color='white'/>)}
@@ -28,15 +32,15 @@ export default function QueueCard({ title, seen, unseen, location, courseAdmins,
           <Typography className={styles.heading}>
             {title}
           </Typography>
-          <div className={styles.cardAction}>
-            <div className={styles.chipContainer}>
-              {seen && <TagBox text={`${seen} seen`} backgroundColor='var(--colour-main-green-200)' color='var(--colour-main-green-900)' bold={false} />}
-              {unseen && <TagBox text={`${unseen} unseen`} backgroundColor='var(--colour-main-red-200)' color='var(--colour-main-red-900)' bold={false} />}
-            </div>
-            {isEdit && <Button className={styles.editBtn}>Edit</Button>}
+        </CardActionArea>
+        <div className={styles.cardAction}>
+          <div className={styles.chipContainer}>
+            {seen && <TagBox text={`${seen} seen`} backgroundColor='var(--colour-main-green-200)' color='var(--colour-main-green-900)' bold={false} />}
+            {unseen && <TagBox text={`${unseen} unseen`} backgroundColor='var(--colour-main-red-200)' color='var(--colour-main-red-900)' bold={false} />}
           </div>
-        </CardContent>
-      </Card>
-    </Link>
+          {isEdit && <Button className={styles.editBtn}>Edit</Button>}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

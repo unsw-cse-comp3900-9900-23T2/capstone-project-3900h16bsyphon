@@ -45,17 +45,19 @@ export default function UserProfile() {
 
   
   return (
-    <div className={styles.pageContainer}>
+    <>
       <Header/>
-      <UserProfileCard
-        zid={responseData.zid}
-        firstName={responseData.firstName}
-        lastName={responseData.lastName}
-        tutor={responseData.tutor}
-        courseAdmin={responseData.courseAdmin}
-        isOrgAdmin={responseData.isOrgAdmin}
-      />
-    </div>
+      <div className={styles.pageContainer}>
+        <UserProfileCard
+          zid={responseData.zid}
+          firstName={responseData.firstName}
+          lastName={responseData.lastName}
+          tutor={responseData.tutor}
+          courseAdmin={responseData.courseAdmin}
+          isOrgAdmin={responseData.isOrgAdmin}
+        />
+      </div>
+    </>
   );
 }
 

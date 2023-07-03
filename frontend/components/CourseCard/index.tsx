@@ -1,9 +1,10 @@
 import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import styles from './CourseCard.module.css';
 import React from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 type CourseCardProps = {
   title: string;
@@ -11,16 +12,17 @@ type CourseCardProps = {
 }
 
 const CourseCard = ({ title, index }: CourseCardProps) => {
+  const router = useRouter();
   return (
-    <Link href={`/course/${index}`}>
-      <Card className={styles.card}>
+    <Card className={styles.card}>
+      <CardActionArea onClick={() => router.push(`/course/${index}`) }>
         <CardContent>
           <Typography className={styles.heading}>
             {title}
           </Typography>
         </CardContent>
-      </Card>
-    </Link>
+      </CardActionArea>
+    </Card>
   );
 };
 
