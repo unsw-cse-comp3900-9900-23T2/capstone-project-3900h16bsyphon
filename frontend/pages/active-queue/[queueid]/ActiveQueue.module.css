@@ -2,17 +2,19 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-height: 100vh;
 }
 
 .cardBox {
     padding: 0px 50px;
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: space-between;
     gap: 25px;
 }
 
 .queueTitle {
+    padding-top: 10px;
     padding-bottom: 50px;
 }
 
@@ -33,5 +35,5 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 25%;
+    min-width: 25%;
 }
