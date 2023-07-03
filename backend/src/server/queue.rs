@@ -1,6 +1,6 @@
 use crate::{
     entities,
-    models::{CreateQueueRequest, GetQueuesByCourseQuery, QueueReturnModel},
+    models::{CreateQueueRequest, GetQueuesByCourseQuery, QueueReturnModel, GetQueueByIdQuery},
     server::user::validate_user,
     utils::db::db,
 };
@@ -31,6 +31,24 @@ pub async fn create_queue(
         .await
         .expect("Db broke");
     HttpResponse::Ok().json(queue)
+}
+
+pub async fn get_queue_by_id(token: ReqData<TokenClaims>, query: Query<GetQueueByIdQuery>) -> HttpResponse {
+    let db = db();
+    if let Err(e) = validate_user(&token, db).await {
+        log::debug!("failed to verify user:{:?}", e);
+        return e;
+    }
+    let queue = entities::queues::Entity::find_by_id(query.queue_id)
+        .one(db)
+        .await
+        .expect("Db broke");
+    match queue {
+        Some(q) => HttpResponse::Ok().json(web::Json(q)),
+        None => {
+            HttpResponse::NotFound().json("No queue of that id!")
+        }
+    }
 }
 
 pub async fn get_queues_by_course(

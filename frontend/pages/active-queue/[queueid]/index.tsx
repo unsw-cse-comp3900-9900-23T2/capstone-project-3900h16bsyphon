@@ -52,12 +52,12 @@ const ActiveQueue = () => {
   
   const [requests, setRequests] = useState(dummyRequests);
 
-  const requestData = {
+  const [requestData, setRequestData] = useState({
     queueTitle: 'COMP1521 Thursday Week 5 Help Session',
     queueId: 1,
-    courseId: 1,
+    courseOfferingId: 1,
     requests: requests,
-  };
+  });
 
   useEffect(() => {
     let getRequests = async () => {
@@ -66,7 +66,14 @@ const ActiveQueue = () => {
       let d = await res.json();
       setRequests(toCamelCase(d));
     };
+    let getQueueData = async () => {
+      let res = await authenticatedGetFetch('/queue/get', {queue_id: `${router.query.queueid}`});
+      let d = await res.json();
+      setRequestData(toCamelCase(d));
+    };
+    if (!router.query.queueid) return;
     getRequests();
+    getQueueData();
   }, [router.query.queueid]);
   
   return <>
@@ -80,11 +87,10 @@ const ActiveQueue = () => {
       </div>
       <Box className={styles.cardBox}>
         <div className={styles.buttonContainer}>
-          <Button className={styles.closeQueueButton} variant='contained' onClick={() => router.push(`/course/${requestData.courseId}`)}>Close Queue</Button>
+          <Button className={styles.closeQueueButton} variant='contained' onClick={() => router.push(`/course/${requestData.courseOfferingId}`)}>Close Queue</Button>
         </div>
         <div className={styles.requestCardContainer}>
-          {/* list of student cards here */}
-          {requestData.requests?.map((request) => {
+          {requests?.map((request) => {
             return <StudentQueueRequestCard 
               key={request.requestId}  
               requestId={request.requestId}  
