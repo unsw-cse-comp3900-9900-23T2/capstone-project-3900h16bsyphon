@@ -28,7 +28,6 @@ const userInformation: UserProfileCardProps = {
 };
 
 export default function UserProfile() {
-
   const [responseData, setResponseData] = useState<UserProfileCardProps>(userInformation);
   
   useEffect(() => {
@@ -54,7 +53,6 @@ export default function UserProfile() {
           lastName={responseData.lastName}
           tutor={responseData.tutor}
           courseAdmin={responseData.courseAdmin}
-          isOrgAdmin={responseData.isOrgAdmin}
         />
       </div>
     </>

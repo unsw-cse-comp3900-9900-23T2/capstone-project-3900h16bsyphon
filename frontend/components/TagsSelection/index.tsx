@@ -14,7 +14,7 @@ type TagsProps = {
 const TagsSelection = ({tags, setTags, color='var(--colour-main-purple-900)', backgroundColor='var(--colour-main-purple-200)'}: TagsProps) => {
   return (
     <div className={style.tags}>
-      <Typography variant='body1' className={style.tagLabel}>Tags</Typography>
+      <Typography variant='body1' className={style.tagLabel}>Tags (you must choose at least one)</Typography>
       <Autocomplete
         id="size-small-outlined"
         size="medium"

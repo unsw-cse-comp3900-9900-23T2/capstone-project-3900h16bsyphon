@@ -10,7 +10,7 @@ import React, { useEffect } from 'react';
 import { getToken } from '../utils';
 
 const Home: NextPage = () => {
-  let router = useRouter();
+  const router = useRouter();
   useEffect(() => {
     if (getToken().length > 0) {
       router.push('/dashboard', undefined, { shallow: true });

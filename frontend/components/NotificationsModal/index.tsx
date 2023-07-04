@@ -36,19 +36,28 @@ const NotificationsModal = () => {
       >
         <div className={styles.container}>
           <div className={styles.titleContainer}>
-            <h2 className={styles.title}>
-              Notifications
-            </h2>
-            <IconButton onClick={handleClose} size="small"
-              aria-label="close modal button">
+            <h2 className={styles.title}>Notifications</h2>
+            <IconButton
+              onClick={handleClose}
+              size="small"
+              aria-label="close modal button"
+            >
               <CloseIcon />
             </IconButton>
           </div>
-          {data?.map((d, index) => 
-            <NotificationsCard key={index} title={d.title} description={d.description} />
+          {data !== null && data.length !== 0 ? (
+            data.map((d, index) => (
+              <NotificationsCard
+                key={index}
+                title={d.title}
+                description={d.description}
+              />
+            ))
+          ) : (
+            <p>There are no new notifications</p>
           )}
           <Button onClick={handleClose} className={styles.doneBtn}>
-						Close 
+            Close
           </Button>
         </div>
       </Modal>

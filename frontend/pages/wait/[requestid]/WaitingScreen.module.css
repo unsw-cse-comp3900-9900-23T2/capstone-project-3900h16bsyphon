@@ -22,8 +22,12 @@
 .greenButton {
     font-weight: bold;
     padding: 5px 25px;
-    background-color: var(--colour-main-green-400);
+    background-color: var(--colour-main-green-200);
     color: var(--colour-main-green-900);
+}
+
+.greenButton:hover {
+    background-color:var(--colour-main-green-400);
 }
 
 .buttonContainer {

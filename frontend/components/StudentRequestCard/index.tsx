@@ -8,7 +8,7 @@ import styles from './StudentRequestCard.module.css';
 import TagBox from '../TagBox';
 import { authenticatedGetFetch, formatZid } from '../../utils';
 
-interface StudentRequestCardProps {
+type StudentRequestCardProps = {
   zid: number,
   firstName: string,
   lastName: string,
@@ -34,7 +34,7 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags
     findRequests();
   }, [queueId, zid]);
 
-  const determineBackgroundColor = (status: string) => {
+  const determineBackgroundColour = (status: string) => {
     // TOOD: standardize these request status 
     switch (status) {
     case 'Resolved':
@@ -50,7 +50,8 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags
     }
   };
 
-  const [backgroundColor, setBackgroundColor] = useState(determineBackgroundColor(status));
+  const backgroundColor = determineBackgroundColour(status);
+
 
   return <Card style={{ backgroundColor }} className={styles.cardContainer}>
     <CardContent className={styles.cardContent}>
@@ -79,7 +80,6 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags
           return <TagBox text={tag} key={i} backgroundColor='#EDB549' color='white' />;
         })}
       </div>
-
       <div>
         <Typography className={styles.text} variant='body1'>
           {description}

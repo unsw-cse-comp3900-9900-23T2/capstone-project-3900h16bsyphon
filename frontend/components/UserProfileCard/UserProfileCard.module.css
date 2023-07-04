@@ -1,17 +1,9 @@
-
 .cardBox {
     width: 35%;
-    
-;
 }
 
 .cardHeader {
     padding: 25px 0px;
-}
-
-.text {
-    
-;
 }
 
 .cardContainer {
@@ -49,6 +41,5 @@
 }
 
 .backButton {
-    
     padding: 7px 15px;
 }

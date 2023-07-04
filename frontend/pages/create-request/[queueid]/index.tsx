@@ -44,7 +44,6 @@ export default function CreateRequest() {
   const [descriptionWordCount, setDescriptionWordCount] = useState(0);
   const [isClusterable, setIsClusterable] = useState(false);
   const [tagList, setTagList] = useState<string[]>([]);
-  const [order, setOrder] = useState(0);
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     const {
@@ -117,7 +116,6 @@ export default function CreateRequest() {
                   placeholder='Give a descriptive overview of the issue'
                   fullWidth />
               </div>
-
               <div>
                 <div className={styles.headingWordCount}>
                   <Typography className={styles.text} variant="subtitle1">
@@ -139,18 +137,8 @@ export default function CreateRequest() {
                   id="outlined-input"
                   fullWidth />
               </div>
-
-              <div>
-                <Typography className={styles.text} variant="subtitle1">
-                  Tags (you must choose at least one)
-                </Typography>
-                <TagsSelection tags={tags} color='black' backgroundColor='#e3e3e3'/>
-              </div>
-
-              <div>
-                <FormControlLabel control={<Checkbox checked={isClusterable} onChange={() => setIsClusterable(!isClusterable)} />} label="Allow for clustering similar requests?" />
-              </div>
-
+              <TagsSelection tags={tags} color='black' backgroundColor='#e3e3e3'/>
+              <FormControlLabel control={<Checkbox checked={isClusterable} onChange={() => setIsClusterable(!isClusterable)} />} label="Allow for clustering similar requests?" />
               <div className={styles.buttonContainer}>
                 <Button onClick={() => router.push('/dashboard')} className={styles.backButton} variant='contained' size='medium'>Back to Dashboard</Button>
                 <Button onClick={handleSubmit} className={styles.createButton} variant='contained' size='medium'>Create Request</Button>

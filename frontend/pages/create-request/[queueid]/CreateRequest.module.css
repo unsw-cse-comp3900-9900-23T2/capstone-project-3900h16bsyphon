@@ -69,6 +69,11 @@
     color: black;
 }
 
+.createButton:hover {
+    background-color: var(--colour-main-grep-600);
+    color: black;
+}
+
 .headingWordCount {
     display: flex;
     justify-content: space-between;

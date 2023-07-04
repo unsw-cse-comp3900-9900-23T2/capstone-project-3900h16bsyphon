@@ -9,18 +9,18 @@ import Button from '@mui/material/Button';
 import { setToken, toCamelCase } from '../../utils';
 
 const LogIn: NextPage = () => {
-  let [zid, setZid] = useState('');
-  let [password, setPassword] = useState('');
-  let [confirmPassword, setConfirmPassword] = useState('');
-  let [firstName, setFirstName] = useState('');
-  let [lastName, setLastName] = useState('');
-  let [error, setError] = useState({
+  const [zid, setZid] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [error, setError] = useState({
     zid: '',
     password: '',
     firstName: '',
     lastName: ''
   });
-  let router = useRouter();
+  const router = useRouter();
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
