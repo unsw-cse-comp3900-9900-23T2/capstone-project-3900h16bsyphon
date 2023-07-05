@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useEffect, useState } from 'react';
 import { 
   Box, 
@@ -6,14 +5,13 @@ import {
   CardContent, 
   TextField, 
   Typography, 
-  Button, 
-  SelectChangeEvent, 
-  FormControlLabel, 
+  Button,
+  FormControlLabel,
   Checkbox
 } from '@mui/material';
 import styles from './CreateRequest.module.css';
 import { useRouter } from 'next/router';
-import { authenticatedPostFetch, toCamelCase } from '../../../utils';
+import { authenticatedPostFetch, authenticatedGetFetch, toCamelCase } from '../../../utils';
 import TagsSelection from '../../../components/TagsSelection';
 import Header from '../../../components/Header';
 
@@ -21,18 +19,11 @@ const MIN_TITLE = 5;
 
 const MIN_DESCRIPTION = 50;
 
-// TODO: fetch call for tags
-const tags = [
-  'Assignment 1',
-  'Lab 1',
-  'Lab 2',
-  'Lab 3',
-  'Lab 4',
-  'Subset 0',
-  'Subset 1',
-  'Subset 2',
-];
-
+type Tag = {
+  tagId: number,
+  name: string,
+  isPriority: boolean
+};
 
 export default function CreateRequest() {
   const router = useRouter();
@@ -41,17 +32,8 @@ export default function CreateRequest() {
   const [description, setDescription] = useState('');
   const [descriptionWordCount, setDescriptionWordCount] = useState(0);
   const [isClusterable, setIsClusterable] = useState(false);
-  const [tagList, setTagList] = useState<string[]>([]);
-
-  const handleChange = (event: SelectChangeEvent<string>) => {
-    const {
-      target: { value },
-    } = event;
-    setTagList(
-      // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value
-    );
-  };
+  const [tagSelection, setTagSelection] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const handleSubmit = async () => {
     const body = {
@@ -59,12 +41,23 @@ export default function CreateRequest() {
       description: description,
       is_clusterable: isClusterable,
       status: 'Unseen',
+      tags: tagSelection.map((tag) => tag.tagId),
       queue_id: Number.parseInt(`${router.query.queueid}`),
     };
     let res = await authenticatedPostFetch('/request/create', body);
     let value = toCamelCase(await res.json());
     if (res.ok) router.push(`/wait/${value.requestId}`);
   };
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      const res = await authenticatedGetFetch('/queue/tags', {queue_id: `${router.query.queueid}`});
+      const data = await res.json();
+      setTags(toCamelCase(data));
+    };
+    if (!router.query.queueid) return;
+    fetchTags();
+  }, [router.query.queueid]);
 
   useEffect(() => {
     if (title.trim() === '') {
@@ -135,8 +128,11 @@ export default function CreateRequest() {
                   id="outlined-input"
                   fullWidth />
               </div>
-              <TagsSelection tags={tags} color='black' backgroundColor='#e3e3e3'/>
-              <FormControlLabel control={<Checkbox checked={isClusterable} onChange={() => setIsClusterable(!isClusterable)} />} label="Allow for clustering similar requests?" />
+              <TagsSelection tags={tags} setTagSelection={setTagSelection} color='black' backgroundColor='#e3e3e3' />
+              <FormControlLabel
+                control={<Checkbox checked={isClusterable} onChange={() => setIsClusterable(!isClusterable)} />}
+                label="Allow for clustering similar requests?"
+              />
               <div className={styles.buttonContainer}>
                 <Button onClick={() => router.push('/dashboard')} className={styles.backButton} variant='contained' size='medium'>Back to Dashboard</Button>
                 <Button onClick={handleSubmit} className={styles.createButton} variant='contained' size='medium'>Create Request</Button>

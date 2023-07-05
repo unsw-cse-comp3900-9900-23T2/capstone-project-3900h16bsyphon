@@ -8,9 +8,9 @@ use rand::Rng;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
 
-use crate::models::{
-    AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink, TokenClaims, INV_CODE_LEN,
-};
+use crate::{models::{
+    AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink, TokenClaims, INV_CODE_LEN, GetCourseTagsQuery, FetchCourseTagsReturnModel,
+}, test_is_user};
 use crate::{
     entities,
     models::{CourseOfferingReturnModel, GetOfferingByIdQuery},
@@ -83,6 +83,24 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
         }
     }
 }
+
+
+pub async fn fetch_course_tags(token: ReqData<TokenClaims>, query: web::Query<GetCourseTagsQuery>) -> HttpResponse {
+    let db = db();
+    test_is_user!(token, db);
+    let tags = entities::tags::Entity::find()
+        .left_join(entities::queues::Entity)
+        .filter(entities::queues::Column::CourseOfferingId.eq(query.course_id))
+        .column(entities::tags::Column::TagId)
+        .column(entities::tags::Column::Name)
+        .column(entities::queue_tags::Column::IsPriority)
+        .into_model::<FetchCourseTagsReturnModel>()
+        .all(db)
+        .await
+        .expect("Db broke");
+    HttpResponse::Ok().json(web::Json(tags))
+}
+
 
 pub async fn get_courses_tutored(token: ReqData<TokenClaims>) -> HttpResponse {
     let db = db();

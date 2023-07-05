@@ -8,28 +8,11 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub tag_id: i32,
-    pub queue_id: i32,
     pub name: String,
-    pub is_priority: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {
-    #[sea_orm(
-        belongs_to = "super::queues::Entity",
-        from = "Column::QueueId",
-        to = "super::queues::Column::QueueId",
-        on_update = "NoAction",
-        on_delete = "NoAction"
-    )]
-    Queues,
-}
-
-impl Related<super::queues::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Queues.def()
-    }
-}
+pub enum Relation {}
 
 impl Related<super::requests::Entity> for Entity {
     fn to() -> RelationDef {
@@ -37,6 +20,15 @@ impl Related<super::requests::Entity> for Entity {
     }
     fn via() -> Option<RelationDef> {
         Some(super::request_tags::Relation::Tags.def().rev())
+    }
+}
+
+impl Related<super::queues::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::queue_tags::Relation::Queues.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::queue_tags::Relation::Tags.def().rev())
     }
 }
 

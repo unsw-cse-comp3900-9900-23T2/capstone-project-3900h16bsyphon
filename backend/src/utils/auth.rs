@@ -109,11 +109,11 @@ pub fn hash_pass(pass: &str) -> Result<String, argon2::Error> {
 
 #[macro_export]
 macro_rules! test_is_user {
-    ($token: expr, $db: expr) => {{
+    ($token: expr, $db: expr) => {
         use super::user::validate_user;
         if let Err(e) = validate_user(&$token, $db).await {
             log::debug!("failed to verify user:{:?}", e);
             return e;
         }
-    }};
+    };
 }

@@ -8,12 +8,12 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub queue_id: i32,
-    pub title: String,
     pub start_time: DateTime,
     pub end_time: DateTime,
     pub is_visible: bool,
     pub is_available: bool,
     pub time_limit: Option<i32>,
+    pub title: String,
     pub announcement: String,
     pub course_offering_id: i32,
 }
@@ -30,8 +30,6 @@ pub enum Relation {
     CourseOfferings,
     #[sea_orm(has_many = "super::requests::Entity")]
     Requests,
-    #[sea_orm(has_many = "super::tags::Entity")]
-    Tags,
 }
 
 impl Related<super::course_offerings::Entity> for Entity {
@@ -46,18 +44,21 @@ impl Related<super::requests::Entity> for Entity {
     }
 }
 
-impl Related<super::tags::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Tags.def()
-    }
-}
-
 impl Related<super::users::Entity> for Entity {
     fn to() -> RelationDef {
         super::queue_tutors::Relation::Users.def()
     }
     fn via() -> Option<RelationDef> {
         Some(super::queue_tutors::Relation::Queues.def().rev())
+    }
+}
+
+impl Related<super::tags::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::queue_tags::Relation::Tags.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::queue_tags::Relation::Queues.def().rev())
     }
 }
 
