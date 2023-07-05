@@ -1,14 +1,17 @@
+use std::slice::Iter;
+
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
-use futures::executor::block_on;
+use futures::FutureExt;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
+use crate::utils::AsyncCollect;
 use crate::{entities, utils::db::db};
 
 use super::user::validate_admin;
-use crate::models::{CreateRequest, TokenClaims};
+use crate::models::{request, CreateRequest, TokenClaims};
 
 /// TODO: Add authentication here
 pub async fn create_request(body: web::Json<CreateRequest>) -> HttpResponse {
@@ -101,7 +104,7 @@ pub async fn all_requests_for_queue(
 
     // Find all related requests
     // TODO dont do cringe loop of all
-    let requests: Vec<_> = entities::requests::Entity::find()
+    let req_futures = entities::requests::Entity::find()
         .filter(entities::requests::Column::QueueId.eq(body.queue_id))
         .all(db)
         .await
@@ -110,12 +113,9 @@ pub async fn all_requests_for_queue(
         .map(|req| req.request_id)
         .map(|request_id| {
             request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
-        })
-        .map(block_on)
-        .map(Result::unwrap)
-        .collect();
+        });
+    let requests: Vec<_> = await_iter(req_futures).await.map(Result::unwrap).collect();
 
-    // HttpResponse::Ok().json()
     HttpResponse::Ok().json(requests)
 }
 
@@ -166,4 +166,18 @@ pub async fn request_info_not_web(
     });
 
     Ok(request_json)
+}
+
+async fn await_iter<It, F, T>(it: It) -> std::vec::IntoIter<T>
+where
+    It: Iterator<Item = F>,
+    F: std::future::Future<Output = T>,
+    T: Sized,
+{
+    let mut v = Vec::with_capacity(it.size_hint().0);
+    for f in it {
+        let res = f.await;
+        v.push(res);
+    }
+    v.into_iter()
 }

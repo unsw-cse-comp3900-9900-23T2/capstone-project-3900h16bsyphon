@@ -47,6 +47,7 @@ dependencies = [
  "actix-cors",
  "actix-web",
  "actix-web-httpauth",
+ "async-trait",
  "base64 0.21.2",
  "chrono",
  "dotenv",
