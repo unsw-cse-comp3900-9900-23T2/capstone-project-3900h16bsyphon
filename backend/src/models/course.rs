@@ -6,7 +6,7 @@ use sea_orm::FromQueryResult;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-use crate::server::course::check_user_exists;
+use crate::{server::course::check_user_exists, entities};
 
 pub const INV_CODE_LEN: usize = 6;
 

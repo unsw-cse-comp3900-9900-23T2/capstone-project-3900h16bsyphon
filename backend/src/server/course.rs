@@ -5,17 +5,17 @@ use actix_web::{
 use chrono::NaiveDate;
 use futures::executor::block_on;
 use rand::Rng;
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
+use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect, RelationTrait};
 use serde_json::json;
 
+use crate::models::{
+    AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink, TokenClaims, INV_CODE_LEN,
+};
 use crate::{
     entities,
     models::{CourseOfferingReturnModel, GetOfferingByIdQuery},
     server,
     utils::db::db,
-};
-use crate::models::{
-    AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink, TokenClaims, INV_CODE_LEN,
 };
 
 use server::user::{validate_admin, validate_user};
@@ -36,15 +36,16 @@ pub async fn create_offering(
 
     // Create Course
     let body = body.into_inner();
-    let active_course = entities::course_offerings::ActiveModel {
+    let course = (entities::course_offerings::ActiveModel {
         course_offering_id: ActiveValue::NotSet,
         course_code: ActiveValue::Set(body.course_code),
         title: ActiveValue::Set(body.title),
         tutor_invite_code: ActiveValue::Set(Some(gen_unique_inv_code().await)),
         start_date: ActiveValue::Set(body.start_date.unwrap_or_else(today)),
-    };
-
-    let course = active_course.insert(db).await.expect("Db broke");
+    })
+    .insert(db)
+    .await
+    .expect("Db broke");
     log::info!("Created Course: {:?}", course);
 
     // Add admins
