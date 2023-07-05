@@ -1,6 +1,6 @@
 use crate::{
     entities,
-    models::{CreateQueueRequest, GetQueuesByCourseQuery, QueueReturnModel, GetQueueByIdQuery},
+    models::{CreateQueueRequest, GetQueuesByCourseQuery, QueueReturnModel, GetQueueByIdQuery, GetActiveQueuesQuery},
     server::user::validate_user,
     test_is_user,
     utils::db::db,
@@ -11,8 +11,9 @@ use actix_web::{
 };
 
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QuerySelect,
+    ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QuerySelect, EntityOrSelect,
 };
+use serde_json::json;
 
 use crate::models::auth::TokenClaims;
 
@@ -67,6 +68,7 @@ pub async fn get_queues_by_course(
         .column(entities::queues::Column::StartTime)
         .column(entities::queues::Column::EndTime)
         .column(entities::queues::Column::Title)
+        .column(entities::queues::Column::IsAvailable)
         .column(entities::queues::Column::IsVisible)
         .into_json()
         .all(db)
@@ -94,7 +96,6 @@ pub async fn get_queues_by_course(
         })
         .collect::<Vec<_>>();
 
-    log::info!("{:?}", tutors);
     the_course.iter_mut().for_each(|it| {
         it.as_object_mut()
             .unwrap()
@@ -103,34 +104,26 @@ pub async fn get_queues_by_course(
     HttpResponse::Ok().json(the_course)
 }
 
-pub async fn get_active_queues(token: ReqData<TokenClaims>) -> HttpResponse {
+pub async fn get_is_open(token: ReqData<TokenClaims>, query: Query<GetActiveQueuesQuery>) -> HttpResponse {
     let db = db();
     let error = validate_user(&token, db).await.err();
     if error.is_some() {
         return error.unwrap();
     }
-
     let queues_result = entities::queues::Entity::find()
-        .select_only()
-        .column(entities::queues::Column::QueueId)
-        .column(entities::queues::Column::Title)
-        .column(entities::queues::Column::CourseOfferingId)
-        .column(entities::queues::Column::IsAvailable)
-        .column(entities::queues::Column::IsVisible)
-        .column(entities::queues::Column::StartTime)
-        .column(entities::queues::Column::EndTime)
-        .filter(entities::queues::Column::IsVisible.eq(true))
-        .filter(entities::queues::Column::IsAvailable.eq(true))
+        .select()
+        .filter(entities::queues::Column::QueueId.eq(query.queue_id))
         .into_model::<QueueReturnModel>()
-        .all(db)
-        .await;
+        .one(db)
+        .await.expect("db broke");
 
     // return queues result result
     match queues_result {
-        Ok(queues_result) => HttpResponse::Ok().json(web::Json(queues_result)),
-        Err(e) => {
-            log::warn!("Db broke?: {:?}", e);
-            HttpResponse::InternalServerError().json("Db Broke")
-        }
+        Some(queues_result) => HttpResponse::Ok().json(
+            json!({
+                "is_open" : web::Json(queues_result.is_available)
+            })
+        ),
+        None => HttpResponse::BadRequest().json("no queue found")
     }
 }

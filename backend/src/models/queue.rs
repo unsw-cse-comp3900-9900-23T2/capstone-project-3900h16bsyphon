@@ -38,6 +38,11 @@ pub struct GetQueuesByCourseQuery {
     pub course_id: i32,
 }
 
+#[derive(Deserialize)]
+pub struct GetActiveQueuesQuery {
+    pub queue_id: i32,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
 pub struct QueueReturnModel {
     pub queue_id: i32,

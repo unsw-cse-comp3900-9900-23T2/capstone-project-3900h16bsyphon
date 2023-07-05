@@ -11,7 +11,6 @@ use super::user::validate_admin;
 use crate::models::{CreateRequest, TokenClaims};
 
 pub async fn create_request(token: ReqData<TokenClaims>, request_creation: web::Json<CreateRequest>) -> HttpResponse {
-    // TODO use middleware not this
     let db = db();
     let request_creation = request_creation.into_inner();
     let request = entities::requests::ActiveModel {
