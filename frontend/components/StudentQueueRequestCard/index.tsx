@@ -2,20 +2,21 @@ import { Button, Card, CardActionArea, CardActions, Typography } from '@mui/mate
 import styles from './StudentQueueRequestCard.module.css';
 import { useRouter } from 'next/router';
 import TagBox from '../TagBox';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { authenticatedGetFetch, formatZid } from '../../utils';
 
 type StudentQueueRequestCardProps = {
-  zid: string,
+  zid: number,
   firstName: string,
   lastName: string,
   title: string,
   tags: string[],
-  previousRequests: number,
   requestId: number,
   status: string,
+  queueId?: string
 }
 
-const StudentQueueRequestCard = ({ zid, firstName, lastName, title, previousRequests, tags, requestId, status }: StudentQueueRequestCardProps) => {
+const StudentQueueRequestCard = ({ zid, firstName, lastName, title, tags, requestId, status, queueId }: StudentQueueRequestCardProps) => {
   const router = useRouter();
 
   const determineBackgroundColor = ( status: string ) => {
@@ -35,6 +36,7 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, previousRequ
   };
 
   const [backgroundColor, setBackgroundColor] = useState(determineBackgroundColor(status));
+  const [previousRequests, setPreviousRequests] = useState(0);
   const handleNotFound = () => {
     // TODO: implement properly in the next sprint
     setBackgroundColor(determineBackgroundColor('Not Found'));
@@ -45,19 +47,31 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, previousRequ
     setBackgroundColor(determineBackgroundColor('Resolve'));
   };
 
+  useEffect(() => {
+    const findRequests = async () => {
+      const res = await authenticatedGetFetch('/history/request_count', {
+        zid: zid.toString(),
+        queue_id: queueId as string
+      });
+      const value = await res.json();
+      setPreviousRequests(value.count);
+    };
+    if (!queueId) return;
+    findRequests();
+  }, [queueId, zid]);
 
   return <>
     <Card className={styles.card} style={{ backgroundColor }}>
       <CardActionArea className={styles.cardContent} onClick={() => router.push(`/request/${requestId}`)}>
         <div className={styles.cardHeader}>
           <div className={styles.zidNameContainer}>
-            <TagBox text={zid} backgroundColor='#D5CFFF' color='#3E368F' />
+            <TagBox text={formatZid(zid)} backgroundColor='#D5CFFF' color='#3E368F' />
             <Typography className={styles.textHeading} variant='h6'>
               {firstName + ' ' + lastName}
             </Typography>
           </div>
           <div className={styles.previousRequestsContainer}>
-            <TagBox text={'PREVIOUS TOTAL REQUESTS: ' + previousRequests} backgroundColor='#D5CFFF' color='#3E368F' />
+            <TagBox text={`PREVIOUS TOTAL REQUESTS: ${previousRequests - 1}`} backgroundColor='#D5CFFF' color='#3E368F' />
           </div>
         </div>
         <div className={styles.titleContainer}>

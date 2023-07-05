@@ -64,6 +64,10 @@
 .createButton {
     padding: 7px 15px;
 }
+.createButton:hover {
+    background-color: var(--colour-main-grep-600);
+    color: black;
+}
 
 .createButton:hover {
     background-color: var(--colour-main-grep-600);

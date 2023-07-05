@@ -56,12 +56,12 @@ impl CreateOfferingBody {
         Ok(())
     }
 
-    pub fn validate_tutors(tutors: &Vec<i32>) -> Result<(), Vec<i32>> {
+    pub fn validate_tutors(tutors: &[i32]) -> Result<(), Vec<i32>> {
         let non_exist: Vec<i32> = tutors
-            .into_iter()
+            .iter()
             // TODO: check_user_exists should be in user
             .filter(|id| !block_on(check_user_exists(**id)))
-            .map(|id| *id)
+            .copied()
             .collect();
 
         match non_exist.is_empty() {

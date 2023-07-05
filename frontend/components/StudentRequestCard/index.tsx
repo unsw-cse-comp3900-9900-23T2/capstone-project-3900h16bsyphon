@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {  
   Card, 
   CardContent, 
@@ -6,19 +6,33 @@ import {
 } from '@mui/material';
 import styles from './StudentRequestCard.module.css';
 import TagBox from '../TagBox';
+import { authenticatedGetFetch, formatZid } from '../../utils';
 
 type StudentRequestCardProps = {
-  zid: string,
+  zid: number,
   firstName: string,
   lastName: string,
   title: string,
   tags: string[],
   status: string,
-  previousRequests: number,
   description: string,
+  queueId?: string,
 }
 
-const StudentRequestCard = ({ zid, firstName, lastName, title, description, previousRequests, tags, status }: StudentRequestCardProps) => {
+const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags, status, queueId }: StudentRequestCardProps) => {
+  const [previousRequests, setPreviousRequests] = useState(0);
+  useEffect(() => {
+    const findRequests = async () => {
+      const res = await authenticatedGetFetch('/history/request_count', {
+        zid: zid.toString(),
+        queue_id: queueId as string
+      });
+      const value = await res.json();
+      setPreviousRequests(value.count);
+    };
+    if (!queueId) return;
+    findRequests();
+  }, [queueId, zid]);
 
   const determineBackgroundColour = (status: string) => {
     // TOOD: standardize these request status 
@@ -44,7 +58,7 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, prev
       <div className={styles.cardHeader}>
         <div className={styles.zidNameContainer}>
           <div>
-            <TagBox text={zid} backgroundColor='#D5CFFF' color='#3E368F' />
+            <TagBox text={formatZid(zid)} backgroundColor='#D5CFFF' color='#3E368F' />
           </div>
           <div>
             <Typography className={styles.textHeading} variant='h6'>
@@ -53,7 +67,7 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, prev
           </div>
         </div>
         <div className={styles.previousRequestsContainer}>
-          <TagBox text={'PREVIOUS TOTAL REQUESTS: ' + previousRequests} backgroundColor='#D5CFFF' color='#3E368F' />
+          <TagBox text={`PREVIOUS TOTAL REQUESTS: ${previousRequests - 1}`} backgroundColor='#D5CFFF' color='#3E368F' />
         </div>
       </div>
       <div>

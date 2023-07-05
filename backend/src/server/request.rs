@@ -1,18 +1,14 @@
-use actix_web::web::{ReqData, self};
-use actix_web::{HttpResponse};
+use actix_web::web::{self, ReqData};
+use actix_web::HttpResponse;
 use futures::executor::block_on;
-use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter,
-};
+use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-use crate::{utils::db::db, entities};
+use crate::{entities, utils::db::db};
 
 use super::user::validate_admin;
-use crate::models::{TokenClaims, CreateRequest};
-
-
+use crate::models::{CreateRequest, TokenClaims};
 
 pub async fn create_request(token: ReqData<TokenClaims>, request_creation: web::Json<CreateRequest>) -> HttpResponse {
     // TODO use middleware not this
@@ -116,7 +112,7 @@ pub async fn all_requests_for_queue(
         .map(|request_id| {
             request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
         })
-        .map(|f| block_on(f))
+        .map(block_on)
         .map(|res| res.unwrap())
         .collect();
 

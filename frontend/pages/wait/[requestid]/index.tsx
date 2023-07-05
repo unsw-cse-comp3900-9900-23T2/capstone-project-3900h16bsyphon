@@ -7,7 +7,7 @@ import {
 import styles from './WaitingScreen.module.css';
 import { useRouter } from 'next/router';
 import StudentRequestCard from '../../../components/StudentRequestCard';
-import { authenticatedGetFetch, formatZid, toCamelCase } from '../../../utils';
+import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 import Header from '../../../components/Header';
 
 const defaultData  = {
@@ -70,13 +70,13 @@ const WaitingScreen = () => {
             <Button className={styles.greenButton} variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
           </div>
           <StudentRequestCard 
-            zid={formatZid(requestData.zid)}
+            zid={requestData.zid}
             status={requestData.status}
             firstName={requestData.firstName}
             lastName={requestData.lastName}
             tags={requestData.tags}
             title={requestData.title}
-            previousRequests={requestData.previousRequests}
+            queueId={router.query.queueid as string | undefined}
             description={requestData.description}
           />
         </Box>

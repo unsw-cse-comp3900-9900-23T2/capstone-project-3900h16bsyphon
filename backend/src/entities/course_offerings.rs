@@ -14,7 +14,6 @@ pub struct Model {
     pub start_date: Date,
 }
 
-
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(has_many = "super::faqs::Entity")]
