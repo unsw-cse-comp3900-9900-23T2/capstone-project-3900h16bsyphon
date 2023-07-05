@@ -20,3 +20,8 @@ week 5
 - added a way to see new queues being generated
 - frontend for course offering creation
 - created login-logout fe and integration
+
+week 6
+- fixed bugs in how to find the total number of requests someone made
+- fixed bug in how tags are handled by the backend
+- fixed bug in request creation

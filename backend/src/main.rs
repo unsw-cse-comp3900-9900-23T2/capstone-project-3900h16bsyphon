@@ -117,9 +117,9 @@ async fn main() -> std::io::Result<()> {
                     .wrap(amw.clone()),
             )
             .route(
-                "/queues/active/list",
+                "/queue/is_open",
                 web::get()
-                    .to(server::queue::get_active_queues)
+                    .to(server::queue::get_is_open)
                     .wrap(amw.clone()),
             )
             .route(

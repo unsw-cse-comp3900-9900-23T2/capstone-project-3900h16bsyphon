@@ -6,6 +6,7 @@ import Button from '@mui/material/Button';
 import TagBox from '../TagBox';
 import { CardActionArea } from '@mui/material';
 import { useRouter } from 'next/router';
+import { authenticatedGetFetch } from '../../utils';
 
 type QueueCardProps = {
   title: string;
@@ -20,10 +21,21 @@ type QueueCardProps = {
 
 export default function QueueCard({ title, seen, unseen, location, courseAdmins, isEdit, queueId, isTutor }: QueueCardProps) {
   const router = useRouter();
-
+  const findWhereToGo = async () => {
+    if (isTutor) {
+      return `/active-queue/${queueId}`;
+    }
+    // if student, we need to find if the queue is open or not
+    let res = await authenticatedGetFetch('/queue/is_open', { queue_id: queueId.toString() });
+    let value = await res.json();
+    if (value.is_open) {
+      return `/create-request/${queueId}`;
+    }
+    return'/403';
+  };
   return (
     <Card className={styles.card}>
-      <CardActionArea onClick={() => router.push(isTutor ? `/active-queue/${queueId}` : `/create-request/${queueId}`)}>
+      <CardActionArea onClick={async () => router.push(await findWhereToGo())}>
         <CardContent>
           <div className={styles.chipContainer}>
             {courseAdmins?.map((c, index) => <TagBox key={index} text={c.toString()} backgroundColor='var(--colour-main-purple-200)' color='var(--colour-main-purple-900)' bold={false} />)}

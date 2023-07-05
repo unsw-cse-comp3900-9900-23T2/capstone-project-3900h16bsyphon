@@ -18,6 +18,7 @@ const ViewQueue = () => {
       title: 'COMP1000 Week 3 Friday 16:00-18:00 Help Session',
       seen: 5,
       unseen: 4,
+      isVisible: true,
       startTime: '2023-06-29T05:13:07',
       endTime: '2023-06-29T07:13:07',
       location: ['Brass Lab', 'Online'],
@@ -65,19 +66,35 @@ const ViewQueue = () => {
         <div className={styles.cards}>
           {data
             .filter((d) => Date.parse(d.startTime) < Date.now() && Date.parse(d.endTime) > Date.now())
+            .filter((d) => isTutor || d.isVisible)
             .map((d, index) => <QueueCard isTutor={isTutor} queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit}/>)
           }
-          {data?.filter((d) => Date.parse(d.startTime) < Date.now() && Date.parse(d.endTime) > Date.now()).length === 0 && <p>No live queues</p>}
+          {data
+            .filter((d) => Date.parse(d.startTime) < Date.now() && Date.parse(d.endTime) > Date.now())
+            .filter((d) => isTutor || d.isVisible)
+            .length === 0 && <p>No live queues</p>}
         </div>
         <h1 className={styles.heading}>Upcoming</h1>
         <div className={styles.cards}>
-          {data?.filter((d) => Date.parse(d.startTime) > Date.now()).map((d, index) => <QueueCard isTutor={isTutor} queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit}/>)}
-          {data?.filter((d) => Date.parse(d.startTime) > Date.now()).length === 0 && <p>No upcoming queues</p>}
+          {data
+            .filter((d) => Date.parse(d.startTime) > Date.now())
+            .filter((d) => isTutor || d.isVisible)
+            .map((d, index) => <QueueCard isTutor={isTutor} queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit}/>)}
+          {data
+            .filter((d) => Date.parse(d.startTime) > Date.now())
+            .filter((d) => isTutor || d.isVisible)
+            .length === 0 && <p>No upcoming queues</p>}
         </div>
         <h1 className={styles.heading}>Previous</h1>
         <div className={styles.cards}>
-          {data?.filter((d) => Date.parse(d.endTime) < Date.now()).map((d, index) => <QueueCard isTutor={isTutor} queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} seen={d.seen} unseen={d.unseen}/> )}
-          {data?.filter((d) => Date.parse(d.endTime) < Date.now()).length === 0 && <p>No previous queues</p>}
+          {data
+            .filter((d) => Date.parse(d.endTime) < Date.now())
+            .filter((d) => isTutor || d.isVisible)
+            .map((d, index) => <QueueCard isTutor={isTutor} queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} seen={d.seen} unseen={d.unseen}/> )}
+          {data
+            .filter((d) => Date.parse(d.endTime) < Date.now())
+            .filter((d) => isTutor || d.isVisible)
+            .length === 0 && <p>No previous queues</p>}
         </div>
       </div>
     </>

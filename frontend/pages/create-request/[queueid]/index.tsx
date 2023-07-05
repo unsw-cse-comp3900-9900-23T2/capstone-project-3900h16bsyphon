@@ -18,10 +18,8 @@ import TagsSelection from '../../../components/TagsSelection';
 import Header from '../../../components/Header';
 
 const MIN_TITLE = 5;
-const MAX_TITLE = 25;
 
 const MIN_DESCRIPTION = 50;
-const MAX_DESCRIPTION = 250;
 
 // TODO: fetch call for tags
 const tags = [
