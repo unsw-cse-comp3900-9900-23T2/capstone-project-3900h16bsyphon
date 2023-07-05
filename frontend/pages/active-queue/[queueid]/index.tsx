@@ -13,7 +13,11 @@ type Request = {
   firstName: string,
   lastName: string,
   title: string,
-  tags: string[],
+  tags: {
+    name: string,
+    tagId: number,
+    isPriority: boolean,
+  }[],
   status: string,
   description: string,
 }
@@ -64,7 +68,7 @@ const ActiveQueue = () => {
                 zid={request.zid}
                 firstName={request.firstName}
                 lastName={request.lastName}
-                tags={request.tags}
+                tags={request.tags.map((tag) => tag.name)}
                 title={request.title}
                 status={request.status}
                 queueId={router.query.queueid as string | undefined}

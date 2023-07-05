@@ -113,7 +113,7 @@ async fn main() -> std::io::Result<()> {
             .route(
                 "/request/get_info",
                 web::get()
-                    .to(server::request::request_info)
+                    .to(server::request::request_info_wrapper)
                     .wrap(amw.clone()),
             )
             .route(
