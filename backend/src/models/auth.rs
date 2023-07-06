@@ -1,10 +1,9 @@
-use actix_web::{HttpResponse, http::StatusCode};
+use actix_web::http::StatusCode;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
+use crate::models::{SyphonError, SyphonResult};
 use crate::server::auth::parse_zid;
-
-use super::{SyphonResult, SyphonError};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TokenClaims {
