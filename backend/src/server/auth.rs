@@ -5,7 +5,6 @@ use actix_web_httpauth::{extractors::{basic::BasicAuth, bearer::{BearerAuth, sel
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait};
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::Sha256;
 use crate::{
@@ -13,22 +12,6 @@ use crate::{
     utils::db::db, SECRET,
 };
 use entities::users;
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct AuthTokenClaims {
-    pub username: i32,
-    pub password: String,
-}
-impl From<TokenClaims> for AuthTokenClaims {
-    fn from(value: TokenClaims) -> Self {
-        Self {
-            username: value.username,
-            password: value.password,
-        }
-    }
-}
-
-
 
 /// Handler that validates a bearer token. This is used as the source
 /// for our `HttpAuthentication` middleware.
