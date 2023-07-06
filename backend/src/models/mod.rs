@@ -1,12 +1,14 @@
-pub mod user;
 pub mod auth;
 pub mod course;
-pub mod request;
+pub mod history;
 pub mod queue;
+pub mod request;
+pub mod user;
 
-pub use user::*;
 pub use auth::*;
 pub use course::*;
-pub use request::*;
+pub use history::*;
 pub use queue::*;
-
+pub use queue::*;
+pub use request::*;
+pub use user::*;

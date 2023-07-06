@@ -1,78 +1,55 @@
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter};
+
+use crate::{entities, models, utils::db::db};
+use models::request::{AllRequestsForQueueBody, RequestInfoBody};
+
+use futures::executor::block_on;
+use futures::future::join_all;
+use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
 
-use crate::{entities, models, utils, utils::db::db};
-use models::{
-    auth::TokenClaims,
-    request::{AllRequestsForQueueBody, CreateRequest, RequestInfoBody},
-};
-use utils::user::validate_admin;
+use crate::test_is_user;
 
-/// TODO: Add authentication here
-pub async fn create_request(body: web::Json<CreateRequest>) -> HttpResponse {
-    let request_creation = body.into_inner();
+use crate::models::{CreateRequest, FetchCourseTagsReturnModel, TokenClaims};
+
+pub async fn create_request(
+    token: ReqData<TokenClaims>,
+    request_creation: web::Json<CreateRequest>,
+) -> HttpResponse {
     let db = db();
+    let request_creation = request_creation.into_inner();
     let request = entities::requests::ActiveModel {
         request_id: ActiveValue::NotSet,
-        zid: ActiveValue::Set(request_creation.zid),
+        zid: ActiveValue::Set(token.username),
         queue_id: ActiveValue::Set(request_creation.queue_id),
         title: ActiveValue::Set(request_creation.title),
         description: ActiveValue::Set(request_creation.description),
-        order: ActiveValue::Set(request_creation.order),
+        order: ActiveValue::Set(1), // TODO: unhardcode
         is_clusterable: ActiveValue::Set(request_creation.is_clusterable),
         status: ActiveValue::Set(request_creation.status),
     };
-    request.insert(db).await.expect("Db broke");
-    HttpResponse::Ok().body("Request created")
+    let insertion = request.insert(db).await.expect("Db broke");
+    let tag_insertion = request_creation.tags.into_iter().map(|tag| {
+        entities::request_tags::ActiveModel {
+            request_id: ActiveValue::Set(insertion.request_id),
+            tag_id: ActiveValue::Set(tag),
+        }
+        .insert(db)
+    });
+    join_all(tag_insertion).await;
+    HttpResponse::Ok().json(json!({"request_id": insertion.request_id}))
 }
 
-pub async fn request_info(
+pub async fn request_info_wrapper(
     token: ReqData<TokenClaims>,
     body: web::Query<RequestInfoBody>,
 ) -> HttpResponse {
-    log::debug!("Request info: {:#?}", body);
-    let db = db();
-    let body = body.into_inner();
-    // Get the request from the database
-    let db_request = entities::requests::Entity::find_by_id(body.request_id)
-        .one(db)
-        .await
-        .expect("Db broke");
-    let request = match db_request {
-        None => return HttpResponse::NotFound().body("Request not found"),
-        Some(req) => req,
-    };
-    if request.zid != token.username {
-        return HttpResponse::Forbidden().body("You are not the owner of this request");
+    let res = request_info_not_web(token, body).await;
+    match res {
+        Ok(res) => HttpResponse::Ok().json(res),
+        Err(e) => e,
     }
-
-    // User Data
-    let user = entities::users::Entity::find_by_id(request.zid)
-        .one(db)
-        .await
-        .expect("Db broke")
-        .expect("token valid => user valid");
-
-    // TODO: Tags
-    // TODO: previous requests
-    let request_json = json!({
-        "request_id": request.request_id,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "zid": request.zid,
-        "queue_id": request.queue_id,
-        "title": request.title,
-        "description": request.description,
-        // "order": request.order,
-        "previous_requests": 5, // TODO
-        "is_clusterable": request.is_clusterable,
-        "status": request.status,
-        "tags": []
-    });
-
-    HttpResponse::Ok().json(request_json)
 }
 
 // given user -> give all requests
@@ -84,14 +61,10 @@ pub async fn all_requests_for_queue(
 ) -> HttpResponse {
     let db = db();
     let body = body.into_inner();
-    if let Err(e) = validate_admin(&token, db).await {
-        log::debug!("Not Admin: {:#?}", e);
-        return e;
-    };
-
+    test_is_user!(token, db);
     // Find all related requests
-    // TODO dont do cringe loop of all
-    let req_futures = entities::requests::Entity::find()
+    // TODO: dont do cringe loop of all
+    let requests: Vec<_> = entities::requests::Entity::find()
         .filter(entities::requests::Column::QueueId.eq(body.queue_id))
         .all(db)
         .await
@@ -100,8 +73,10 @@ pub async fn all_requests_for_queue(
         .map(|req| req.request_id)
         .map(|request_id| {
             request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
-        });
-    let requests: Vec<_> = await_iter(req_futures).await.map(Result::unwrap).collect();
+        })
+        .map(block_on)
+        .map(|res| res.unwrap())
+        .collect();
 
     HttpResponse::Ok().json(requests)
 }
@@ -112,7 +87,6 @@ pub async fn request_info_not_web(
     _token: ReqData<TokenClaims>,
     body: web::Query<RequestInfoBody>,
 ) -> Result<serde_json::Value, HttpResponse> {
-    log::debug!("Request info: {:#?}", body);
     let db = db();
     let body = body.into_inner();
     // Get the request from the database
@@ -124,9 +98,6 @@ pub async fn request_info_not_web(
         None => return Err(HttpResponse::NotFound().body("Request not found")),
         Some(req) => req,
     };
-    // if request.zid != token.username {
-    //     return Err(HttpResponse::Forbidden().body("You are not the owner of this request"));
-    // }
 
     // User Data
     let user = entities::users::Entity::find_by_id(request.zid)
@@ -135,8 +106,18 @@ pub async fn request_info_not_web(
         .expect("Db broke")
         .expect("token valid => user valid");
 
-    // TODO: Tags
-    // TODO: previous requests
+    let tags = entities::tags::Entity::find()
+        .left_join(entities::requests::Entity)
+        .left_join(entities::queues::Entity)
+        .column(entities::tags::Column::TagId)
+        .distinct()
+        .column(entities::tags::Column::Name)
+        .column(entities::queue_tags::Column::IsPriority)
+        .filter(entities::request_tags::Column::RequestId.eq(request.request_id))
+        .into_model::<FetchCourseTagsReturnModel>()
+        .all(db)
+        .await
+        .expect("Db broke");
     let request_json = json!({
         "request_id": request.request_id,
         "first_name": user.first_name,
@@ -145,26 +126,10 @@ pub async fn request_info_not_web(
         "queue_id": request.queue_id,
         "title": request.title,
         "description": request.description,
-        // "order": request.order,
-        "previous_requests": 5, // TODO
         "is_clusterable": request.is_clusterable,
         "status": request.status,
-        "tags": []
+        "tags": tags
     });
 
     Ok(request_json)
-}
-
-async fn await_iter<It, F, T>(it: It) -> std::vec::IntoIter<T>
-where
-    It: Iterator<Item = F>,
-    F: std::future::Future<Output = T>,
-    T: Sized,
-{
-    let mut v = Vec::with_capacity(it.size_hint().0);
-    for f in it {
-        let res = f.await;
-        v.push(res);
-    }
-    v.into_iter()
 }

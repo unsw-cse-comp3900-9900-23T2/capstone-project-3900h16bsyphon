@@ -19,6 +19,18 @@ pub struct CourseOfferingReturnModel {
     pub tutor_invite_code: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct FetchCourseTagsReturnModel {
+    pub tag_id: i32,
+    pub name: String,
+    pub is_priority: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetCourseTagsQuery {
+    pub course_id: i32,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateOfferingBody {
     pub course_code: String,
@@ -56,12 +68,12 @@ impl CreateOfferingBody {
         }
     }
 
-    pub fn validate_tutors(tutors: &Vec<i32>) -> Result<(), Vec<i32>> {
+    pub fn validate_tutors(tutors: &[i32]) -> Result<(), Vec<i32>> {
         let non_exist: Vec<i32> = tutors
-            .into_iter()
+            .iter()
             // TODO: check_user_exists should be in user
             .filter(|id| !block_on(check_user_exists(**id)))
-            .map(|id| *id)
+            .copied()
             .collect();
 
         match non_exist.is_empty() {

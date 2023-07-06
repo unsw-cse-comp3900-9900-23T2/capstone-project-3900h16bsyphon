@@ -8,12 +8,14 @@ use rand::Rng;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
 
-use crate::models::{
-    AddTutorToCourseBody, CourseOfferingReturnModel, CreateOfferingBody, GetOfferingByIdQuery,
-    JoinWithTutorLink, TokenClaims, INV_CODE_LEN,
-};
 use crate::{
     entities,
+    models::{
+        AddTutorToCourseBody, CourseOfferingReturnModel, CreateOfferingBody,
+        FetchCourseTagsReturnModel, GetCourseTagsQuery, JoinWithTutorLink, TokenClaims,
+        INV_CODE_LEN, GetOfferingByIdQuery,
+    },
+    test_is_user,
     utils::{
         db::db,
         user::{validate_admin, validate_user},
@@ -53,7 +55,7 @@ pub async fn create_offering(
         .unwrap_or_default()
         .into_iter()
         .map(|id| add_course_admin(course.course_offering_id, id))
-        .for_each(|f| block_on(f));
+        .for_each(block_on);
 
     HttpResponse::Ok().json(web::Json(course))
 }
@@ -83,6 +85,26 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
             HttpResponse::InternalServerError().json("Db Broke")
         }
     }
+}
+
+pub async fn fetch_course_tags(
+    token: ReqData<TokenClaims>,
+    query: web::Query<GetCourseTagsQuery>,
+) -> HttpResponse {
+    let db = db();
+    test_is_user!(token, db);
+    let tags = entities::tags::Entity::find()
+        .inner_join(entities::queues::Entity)
+        .filter(entities::queues::Column::CourseOfferingId.eq(query.course_id))
+        .column(entities::tags::Column::TagId)
+        .distinct()
+        .column(entities::tags::Column::Name)
+        .column(entities::queue_tags::Column::IsPriority)
+        .into_model::<FetchCourseTagsReturnModel>()
+        .all(db)
+        .await
+        .expect("Db broke");
+    HttpResponse::Ok().json(web::Json(tags))
 }
 
 pub async fn get_courses_tutored(token: ReqData<TokenClaims>) -> HttpResponse {
@@ -194,7 +216,7 @@ pub async fn add_tutor(
         .await
         .expect("db broke");
 
-    if let Some(_) = db_tutor {
+    if db_tutor.is_some() {
         return HttpResponse::Conflict().json("Already Tutor");
     }
 
@@ -299,8 +321,8 @@ fn gen_inv_code() -> String {
     let mut rng = rand::thread_rng();
     (0..INV_CODE_LEN)
         .map(|_| match rng.gen() {
-            true => rng.gen_range('a'..'z'),
-            false => rng.gen_range('0'..'9'),
+            true => rng.gen_range('a'..='z'),
+            false => rng.gen_range('0'..='9'),
         })
         .collect()
 }

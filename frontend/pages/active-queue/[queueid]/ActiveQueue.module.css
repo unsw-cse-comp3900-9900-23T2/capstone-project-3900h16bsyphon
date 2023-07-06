@@ -2,22 +2,19 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-.text {
-    font-family: Lato;
+    min-height: 100vh;
 }
 
 .cardBox {
     padding: 0px 50px;
-    font-family: 'Lato';
     display: flex;
-    flex-direction: row;
-    justify-content: space-around;
+    flex-direction: column;
+    justify-content: space-between;
     gap: 25px;
 }
 
 .queueTitle {
+    padding-top: 10px;
     padding-bottom: 50px;
 }
 
@@ -28,16 +25,19 @@
 }
 
 .closeQueueButton {
-    font-family: Lato;
     font-weight: bold;
     background-color: var(--colour-main-grey-200);
     color: black;
     padding: 5px 25px;
 }
 
+.closeQueueButton:hover {
+    background-color: var(--colour-main-grey-400);
+}
+
 .buttonContainer {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 25%;
+    min-width: 25%;
 }

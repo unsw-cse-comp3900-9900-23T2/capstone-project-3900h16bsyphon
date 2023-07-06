@@ -458,7 +458,7 @@ enum Tutors {
 }
 
 #[derive(Iden)]
-enum Queues {
+pub enum Queues {
     Table,
     QueueId,
     StartTime,
@@ -549,7 +549,7 @@ enum Messages {
 }
 
 #[derive(Iden)]
-enum Tags {
+pub enum Tags {
     Table,
     TagId,
     QueueId,

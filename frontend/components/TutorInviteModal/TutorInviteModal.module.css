@@ -20,11 +20,6 @@
   flex-direction: column;
   gap: 10px;
   padding: 40px;
-  font-family: 'Lato', sans-serif;
-}
-
-.button {
-  font-family: 'Lato', sans-serif;
 }
 
 .invite {
@@ -34,12 +29,7 @@
   font-size: 1.5rem;
 }
 
-.title {
-  font-family: 'Lato', sans-serif;
-}
-
 .doneBtn {
-  font-family: 'Lato', sans-serif;
   background-color: var(--colour-main-blue-600);
   color: white;
 }
@@ -51,5 +41,5 @@
 .titleContainer {
   display: flex;
   flex-direction: row;
-  gap: 20%;
+  justify-content: space-between;
 }

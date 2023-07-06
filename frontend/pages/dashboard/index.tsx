@@ -5,10 +5,10 @@ import CourseOfferingCard from '../../components/CourseOfferingCard';
 import CourseCard from '../../components/CourseCard';
 import Header from '../../components/Header';
 import MetaData from '../../components/MetaData';
-import Footer from '../../components/Footer';
 import CreateCourseOfferingModal from '../../components/CreateCourseOfferingModal';
 import React, { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../utils';
+import { CourseOfferingData } from '../../types/courses';
 
 type CourseOffering = {
   title: string;
@@ -30,7 +30,7 @@ const Dashboard: NextPage = () => {
         return;
       }
       let courseOfferings = await res.json();
-      setCourseOfferings(courseOfferings.map((course: any) => (
+      setCourseOfferings(courseOfferings?.map((course: CourseOfferingData) => (
         {
           title: course.title,
           courseCode: course.course_code,
@@ -74,8 +74,9 @@ const Dashboard: NextPage = () => {
               <div className={styles.courseOffering}>
                 <h1 className={styles.heading}>Select course offering</h1>
                 <CreateCourseOfferingModal />
-              </div><div className={styles.cards}>
-                {courseOfferings.map((d, index) => (
+              </div>
+              <div className={styles.cards}>
+                {courseOfferings?.map((d, index) => (
                   <CourseOfferingCard key={index} title={`${d.courseCode} - ${d.title}`} inviteCode={d.tutorInviteCode} index={index}/>
                 ))}
               </div>
@@ -88,22 +89,26 @@ const Dashboard: NextPage = () => {
               <JoinTutorModal />
             </div>
             <div className={styles.cards}>
-              {myCourses.map((d, index) => (
+              {myCourses?.map((d, index) => (
                 <CourseCard title={d.title} key={index} index={d.courseOfferingId}/>
               ))}
             </div>
           </div>
           <div className={styles.studentSection}>
-            <h1>Courses you are a student</h1>
+            <h1>Courses you are a student of</h1>
             <p>Select a course to view queues</p>
             <div className={styles.cards}>
-              {courseOfferings.map((d, index) => (
-                <CourseCard key={index} title={d.title} index={d.courseOfferingId}/>
-              ))}
+              {courseOfferings
+                ?.filter(
+                  (course) => myCourses.every((item) => item.courseOfferingId !== course.courseOfferingId)
+                )
+                .map((d, index) => (
+                  <CourseCard key={index} title={d.title} index={d.courseOfferingId}/>
+                ))
+              }
             </div>
           </div>
         </div>
-        <Footer />
       </div>
     </>
   );

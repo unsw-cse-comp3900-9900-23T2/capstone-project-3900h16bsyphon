@@ -5,11 +5,23 @@ use serde::{Deserialize, Serialize};
 use crate::entities;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Tag {
+    pub tag_id: i32,
+    pub name: String,
+    pub is_priority: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetQueueTagsQuery {
+    pub queue_id: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CreateQueueRequest {
     pub title: String,
     pub time_start: NaiveDateTime,
     pub time_end: NaiveDateTime,
-    pub tags: Vec<String>,
+    pub tags: Vec<Tag>,
     pub is_visible: bool,
     pub is_available: bool,
     pub time_limit: Option<i32>,
@@ -38,6 +50,11 @@ pub struct GetQueuesByCourseQuery {
     pub course_id: i32,
 }
 
+#[derive(Deserialize)]
+pub struct GetActiveQueuesQuery {
+    pub queue_id: i32,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
 pub struct QueueReturnModel {
     pub queue_id: i32,
@@ -47,4 +64,9 @@ pub struct QueueReturnModel {
     pub is_visible: bool,
     pub start_time: Option<NaiveDateTime>,
     pub end_time: Option<NaiveDateTime>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetQueueByIdQuery {
+    pub queue_id: i32
 }

@@ -1,4 +1,5 @@
 use actix_web::{dev::ServiceRequest, web, HttpMessage, HttpResponse, Responder};
+
 use actix_web_httpauth::{
     extractors::{
         basic::BasicAuth,
@@ -141,7 +142,7 @@ pub async fn auth(credentials: BasicAuth) -> impl Responder {
                 .sign_with_key(&jwt_secret)
                 .expect("Sign is valid");
 
-            return HttpResponse::Ok().json(signed_token);
+            HttpResponse::Ok().json(signed_token)
         }
     }
 }
@@ -191,7 +192,7 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse {
 }
 
 pub async fn make_admin(zid: &str) {
-    let zid = CreateUserBody::verify_zid(&zid).expect("Admin zid must be valid z0000000");
+    let zid = CreateUserBody::verify_zid(zid).expect("Admin zid must be valid z0000000");
     log::info!("Making {} an admin", zid);
     let db = db();
 
@@ -212,4 +213,26 @@ pub async fn make_admin(zid: &str) {
     .await
     .expect("Db broke");
     log::info!("Made {} an admin", zid);
+}
+
+pub fn parse_zid(zid: &str) -> Result<i32, String> {
+    if !zid.chars().all(|c| c.is_ascii_alphanumeric()) {
+        return Err("zid must be ascii alphanumeric only".to_string());
+    }
+    let zid = zid.as_bytes();
+    let zid = match zid.first() {
+        Some(z) if *z == b'z' => &zid[1..],
+        _ => zid,
+    };
+    if zid.len() != 7 {
+        return Err(format!(
+            "zid must have 7 numbers. Got zid with {} numbers",
+            zid.len()
+        ));
+    }
+    std::str::from_utf8(zid)
+        .expect("Was ascii before")
+        .parse::<u32>()
+        .map_err(|_| "zid must be z followed by numbers".to_string())
+        .map(|z| z as i32)
 }

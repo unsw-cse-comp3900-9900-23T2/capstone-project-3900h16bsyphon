@@ -30,5 +30,10 @@ it may say something like "cannot find database 'syphon'" or "user 'syphon' does
 Requests to the database will not cause logging to your docker container.
 
 ## local
+first, ensure that systemfd and cargo-watch are installed:
+```
+cargo install systemfd
+cargo install cargo-watch
+```
 in one terminal, run "cd backend; bash run_backend.sh"
 in another, run "cd frontend; npm install; npm run dev"

@@ -2,6 +2,8 @@ use actix_web::HttpResponse;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
+use crate::server::auth::parse_zid;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TokenClaims {
     pub username: i32,
@@ -55,32 +57,14 @@ impl CreateUserBody {
     }
 
     pub fn verify_zid(zid: &str) -> Result<i32, String> {
-        if !zid.chars().all(|c| c.is_ascii_alphanumeric()) {
-            return Err("zid must be ascii alphanumeric only".to_string());
-        }
-        let zid = zid.as_bytes();
-        let zid = match zid.get(0) {
-            Some(z) if *z == 'z' as u8 => &zid[1..],
-            _ => zid,
-        };
-        if zid.len() != 7 {
-            return Err(format!(
-                "zid must have 7 numbers. Got zid with {} numbers",
-                zid.len()
-            ));
-        }
-        std::str::from_utf8(zid)
-            .expect("Was ascii before")
-            .parse::<u32>()
-            .map_err(|_| "zid must be z followed by numbers".to_string())
-            .map(|z| z as i32)
+        parse_zid(zid)
     }
 
     pub fn verify_name(name: &str) -> Result<(), String> {
         match name {
             n if !(3..=16).contains(&n.len()) => Err("name too short".to_string()),
             n if !n.chars().all(|c| c.is_ascii_alphabetic()) => {
-                Err("name must be alphanumeric or space".to_string())
+                Err("name must be alphabetic or space".to_string())
             }
             _ => Ok(()),
         }

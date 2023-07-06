@@ -1,60 +1,77 @@
-/* eslint-disable no-unused-vars */
-import React, {useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
-import style from './queue-creation.module.css';
+import style from './CreateQueue.module.css';
 import TextField from '@mui/material/TextField';
 import { FormGroup, Box, Typography, Button, Card} from '@mui/material';
 import SyphonDatePicker from '../../../components/SyphonDatePicker';
 import SwitchToggles from '../../../components/SwitchToggles';
 import SyphonTimePicker from '../../../components/SyphonTimePicker';
 import FAQs from '../../../components/FAQs';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Tags from '../../../components/Tags';
-import { authenticatedPostFetch, getToken } from '../../../utils';
+import { authenticatedGetFetch, authenticatedPostFetch, toCamelCase } from '../../../utils';
 import { useRouter } from 'next/router';
+import TagsSelection from '../../../components/TagsSelection';
+import Header from '../../../components/Header';
+import { Tag } from '../../../types/requests';
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#3E368F',
-    },
-    secondary: {
-      main: '#091133'
-    }
-  }
-});
 
 const QueueCreationPage = () => {
   const [date, setDate] = useState<Dayjs>(dayjs(new Date()));
   const [timeStart, setTimeStart] = useState<Dayjs>(dayjs(new Date()));
   const [timeEnd, setTimeEnd] = useState<Dayjs>(dayjs(new Date()).add(2, 'hour'));
-  const [tags, setTags] = useState<string[]>(['Assignment', 'Lab']);
+  const [tags, setTags] = useState<Tag[]>([{tagId: 1, name: 'A tag', isPriority: false}]);
+  const [tagSelection, setTagSelection] = useState<Tag[]>([]);
   const [isVisible, setIsVisible] = useState(true);
   const [isAvailable, setIsAvailable] = useState(true);
   const [isTimeLimit, setIsTimeLimit] = useState(false);
   const [title, setTitle] = useState('');
   const [timeLimit, setTimeLimit] = useState(0);
-  const [course, setCourse] = useState('COMP1521');
-  const [announcement, setAnnouncement] = useState<string>('hi');
+  const [course, setCourse] = useState('');
+  // complaining about not using announcement, will do later.
+  // eslint-disable-next-line
+  const [announcement, _setAnnouncement] = useState<string>('hi');
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchCourse = async () => {
+      const res = await authenticatedGetFetch('/course/get', {course_id: `${router.query.courseid}`});
+      // TODO: this type is incorrect
+      const data: {course_code: string} = await res.json();
+      setCourse(data.course_code);
+    };
+
+    const fetchTags = async () => {
+      const res = await authenticatedGetFetch('/course/tags', {course_id: `${router.query.courseid}`});
+      const data = await res.json();
+      setTags(toCamelCase(data));
+    };
+    if (!router.query.courseid) return;
+    fetchCourse();
+    fetchTags();
+  }, [router.query.courseid]);
 
   const submit = async () => {
     const body = {
-      title: title,
+      title,
       time_start: timeStart.format('YYYY-MM-DDTHH:mm:ss'),
       time_end: timeEnd.format('YYYY-MM-DDTHH:mm:ss'),
-      tags: tags,
+      tags: tagSelection.map((tag) => ({
+        tag_id: tag.tagId,
+        is_priority: !!tag.isPriority,
+        name: tag.name,
+      })),
       is_visible: isVisible,
       is_available: isAvailable,
       time_limit: timeLimit,
-      announcement: announcement,
-      course_id: Number.parseInt(`${router.query.id}`),
+      announcement,
+      course_id: Number.parseInt(`${router.query.courseid}`),
     };
     let res = await authenticatedPostFetch('/queue/create', body);
-    router.push(`/queue/${router.query.id}`);
+    let data = await res.json();
+    router.push(`/active-queue/${data.queue_id}`);
   };
   return (
-    <ThemeProvider theme={theme}>
+    <>
+      <Header/>
       <div className={style.container}> 
         <Box className={style.cardBox}>
           <Card className={style.cardContainer}>
@@ -77,7 +94,7 @@ const QueueCreationPage = () => {
               timeEnd={timeEnd} 
               setTimeEnd={setTimeEnd} 
             />
-            <Tags />
+            <TagsSelection tags={tags} setTagSelection={setTagSelection} isCreator />
             <SwitchToggles 
               isAvailable={isAvailable} 
               setIsAvailable={setIsAvailable}
@@ -94,7 +111,7 @@ const QueueCreationPage = () => {
           </Card>
         </Box>
       </div>
-    </ThemeProvider>
+    </>
   );
 };
 export default QueueCreationPage;

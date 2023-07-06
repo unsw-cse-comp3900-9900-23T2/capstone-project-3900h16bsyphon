@@ -1,5 +1,4 @@
 .createOfferingBtn {
-    font-family: 'Lato', sans-serif;
   background-color: var(--colour-main-purple-200);
   color: var(--colour-main-purple-900);
 }
@@ -21,20 +20,14 @@
   flex-direction: column;
   gap: 20px;
   padding: 40px;
-    font-family: 'Lato', sans-serif;
-}
-
-.button {
-    font-family: 'Lato', sans-serif;
+    
 }
 
 .title {
-    font-family: 'Lato', sans-serif;
     flex-grow: 1;
 }
 
 .createBtn {
-    font-family: 'Lato', sans-serif;
   background-color: var(--colour-main-blue-600);
   color: white;
 }
@@ -42,7 +35,6 @@
 .label {
   flex-grow: 1;
   margin-bottom: 10px;
-  font-family: lato, sans-serif;
 }
 
 .createBtn:hover {
@@ -52,7 +44,7 @@
 .titleContainer {
   display: flex;
   flex-direction: row;
-  gap: 29%;
+  justify-content: space-between;
 }
 
 .courseTitle {

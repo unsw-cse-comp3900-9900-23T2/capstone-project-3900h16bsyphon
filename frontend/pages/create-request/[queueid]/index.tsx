@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useEffect, useState } from 'react';
 import { 
   Box, 
@@ -6,36 +5,20 @@ import {
   CardContent, 
   TextField, 
   Typography, 
-  Button, 
-  Select, 
-  MenuItem, 
-  OutlinedInput, 
-  SelectChangeEvent, 
-  FormControlLabel, 
+  Button,
+  FormControlLabel,
   Checkbox
 } from '@mui/material';
 import styles from './CreateRequest.module.css';
 import { useRouter } from 'next/router';
-import { authenticatedPostFetch } from '../../../utils';
+import { authenticatedPostFetch, authenticatedGetFetch, toCamelCase } from '../../../utils';
+import TagsSelection from '../../../components/TagsSelection';
+import Header from '../../../components/Header';
+import { Tag } from '../../../types/requests';
 
 const MIN_TITLE = 5;
-const MAX_TITLE = 25;
 
 const MIN_DESCRIPTION = 50;
-const MAX_DESCRIPTION = 250;
-
-// TODO: fetch call for tags
-const tags = [
-  'Assignment 1',
-  'Lab 1',
-  'Lab 2',
-  'Lab 3',
-  'Lab 4',
-  'Subset 0',
-  'Subset 1',
-  'Subset 2',
-];
-
 
 export default function CreateRequest() {
   const router = useRouter();
@@ -44,34 +27,32 @@ export default function CreateRequest() {
   const [description, setDescription] = useState('');
   const [descriptionWordCount, setDescriptionWordCount] = useState(0);
   const [isClusterable, setIsClusterable] = useState(false);
-  const [tagList, setTagList] = useState<string[]>([]);
-  const [order, setOrder] = useState(0);
-
-  const handleChange = (event: SelectChangeEvent<string>) => {
-    const {
-      target: { value },
-    } = event;
-    setTagList(
-      // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value
-    );
-  };
+  const [tagSelection, setTagSelection] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const handleSubmit = async () => {
-    // TODO: remove hardcoded values
     const body = {
       title: title,
       description: description,
       is_clusterable: isClusterable,
-      order: 1,
-      zid: 0,
       status: 'Unseen',
-      queue_id: Number.parseInt(`${router.query.id}`),
+      tags: tagSelection.map((tag) => tag.tagId),
+      queue_id: Number.parseInt(`${router.query.queueid}`),
     };
     let res = await authenticatedPostFetch('/request/create', body);
-    // TODO PUSH TO WAIT
-    if (res.ok) router.push('/queue');
+    let value = toCamelCase(await res.json());
+    if (res.ok) router.push(`/wait/${value.requestId}`);
   };
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      const res = await authenticatedGetFetch('/queue/tags', {queue_id: `${router.query.queueid}`});
+      const data = await res.json();
+      setTags(toCamelCase(data));
+    };
+    if (!router.query.queueid) return;
+    fetchTags();
+  }, [router.query.queueid]);
 
   useEffect(() => {
     if (title.trim() === '') {
@@ -91,6 +72,7 @@ export default function CreateRequest() {
 
   return (
     <>
+      <Header/>
       <div className={styles.pageContainer}>
         <Box className={styles.cardBox}>
           <Card className={styles.cardContainer}>
@@ -120,7 +102,6 @@ export default function CreateRequest() {
                   placeholder='Give a descriptive overview of the issue'
                   fullWidth />
               </div>
-
               <div>
                 <div className={styles.headingWordCount}>
                   <Typography className={styles.text} variant="subtitle1">
@@ -142,36 +123,11 @@ export default function CreateRequest() {
                   id="outlined-input"
                   fullWidth />
               </div>
-
-              <div>
-                <Typography className={styles.text} variant="subtitle1">
-                  Tags (you must choose at least one)
-                </Typography>
-                <Select
-                  multiple
-                  fullWidth
-                  required
-                  displayEmpty
-                  value={tagList as unknown as string}
-                  onChange={handleChange}
-                  input={<OutlinedInput />}
-                  renderValue={(selected) => {
-                    return (selected as unknown as string[]).join(', ');
-                  } }
-                  inputProps={{ 'aria-label': 'Without label' }}
-                >
-                  {tags.map((tag) => (
-                    <MenuItem key={tag} value={tag}>
-                      {tag}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </div>
-
-              <div>
-                <FormControlLabel control={<Checkbox checked={isClusterable} onChange={() => setIsClusterable(!isClusterable)} />} label="Allow for clustering similar requests?" />
-              </div>
-
+              <TagsSelection tags={tags} setTagSelection={setTagSelection} color='black' backgroundColor='#e3e3e3' />
+              <FormControlLabel
+                control={<Checkbox checked={isClusterable} onChange={() => setIsClusterable(!isClusterable)} />}
+                label="Allow for clustering similar requests?"
+              />
               <div className={styles.buttonContainer}>
                 <Button onClick={() => router.push('/dashboard')} className={styles.backButton} variant='contained' size='medium'>Back to Dashboard</Button>
                 <Button onClick={handleSubmit} className={styles.createButton} variant='contained' size='medium'>Create Request</Button>

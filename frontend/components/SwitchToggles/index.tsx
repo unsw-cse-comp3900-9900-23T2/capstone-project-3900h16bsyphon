@@ -1,17 +1,16 @@
-/* eslint-disable no-unused-vars */
 import React from 'react';
 import { FormGroup, FormControlLabel, Switch, TextField } from '@mui/material';
 import style from './SwitchToggles.module.css';
 
 type SwitchTogglesProps = {
     isVisible: boolean,
-    setIsVisible: (isVisible: boolean) => void,
+    setIsVisible: React.Dispatch<React.SetStateAction<boolean>>,
     isAvailable: boolean,
-    setIsAvailable: (isAvailable: boolean) => void,
+    setIsAvailable: React.Dispatch<React.SetStateAction<boolean>>,
     isTimeLimit: boolean,
-    setIsTimeLimit: (isTimeLimit: boolean) => void,
+    setIsTimeLimit: React.Dispatch<React.SetStateAction<boolean>>,
     timeLimit: number,
-    setTimeLimit: (timeLimit: number) => void,
+    setTimeLimit: React.Dispatch<React.SetStateAction<number>>,
 }
 
 const SwitchToggles = ({isVisible, setIsVisible, isAvailable, setIsAvailable, isTimeLimit, setIsTimeLimit, timeLimit, setTimeLimit}: SwitchTogglesProps) => {

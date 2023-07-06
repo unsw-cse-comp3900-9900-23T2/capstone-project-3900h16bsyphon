@@ -1,9 +1,5 @@
 .tagContainer {
     padding: 2px 10px;
+    margin-right: 5px;
     border-radius: 5px;
-}
-
-.tagText {
-    font-family: Lato;
-    font-weight: bold;
 }

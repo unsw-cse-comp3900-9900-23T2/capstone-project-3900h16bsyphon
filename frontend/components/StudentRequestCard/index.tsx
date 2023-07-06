@@ -6,21 +6,34 @@ import {
 } from '@mui/material';
 import styles from './StudentRequestCard.module.css';
 import TagBox from '../TagBox';
+import { authenticatedGetFetch, formatZid } from '../../utils';
 
-interface StudentRequestCardProps {
-  zid: string,
+type StudentRequestCardProps = {
+  zid: number,
   firstName: string,
   lastName: string,
   title: string,
   tags: string[],
   status: string,
-  previousRequests: number,
   description: string,
+  queueId: number,
 }
 
-const StudentRequestCard = ({ zid, firstName, lastName, title, description, previousRequests, tags, status }: StudentRequestCardProps) => {
+const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags, status, queueId }: StudentRequestCardProps) => {
+  const [previousRequests, setPreviousRequests] = useState(0);
+  useEffect(() => {
+    const findRequests = async () => {
+      const res = await authenticatedGetFetch('/history/request_count', {
+        zid: zid.toString(),
+        queue_id: queueId.toString()
+      });
+      const value = await res.json();
+      setPreviousRequests(value.count);
+    };
+    findRequests();
+  }, [queueId, zid]);
 
-  const determineBackgroundColor = ( status: string ) => {
+  const determineBackgroundColour = (status: string) => {
     // TOOD: standardize these request status 
     switch (status) {
     case 'Resolved':
@@ -36,14 +49,15 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, prev
     }
   };
 
-  const [backgroundColor, setBackgroundColor] = useState(determineBackgroundColor(status));
+  const backgroundColor = determineBackgroundColour(status);
+
 
   return <Card style={{ backgroundColor }} className={styles.cardContainer}>
     <CardContent className={styles.cardContent}>
       <div className={styles.cardHeader}>
         <div className={styles.zidNameContainer}>
           <div>
-            <TagBox text={zid} backgroundColor='#D5CFFF' color='#3E368F' />
+            <TagBox text={formatZid(zid)} backgroundColor='#D5CFFF' color='#3E368F' />
           </div>
           <div>
             <Typography className={styles.textHeading} variant='h6'>
@@ -52,7 +66,7 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, prev
           </div>
         </div>
         <div className={styles.previousRequestsContainer}>
-          <TagBox text={'PREVIOUS TOTAL REQUESTS: ' + previousRequests} backgroundColor='#D5CFFF' color='#3E368F' />
+          <TagBox text={`PREVIOUS TOTAL REQUESTS: ${previousRequests - 1}`} backgroundColor='#D5CFFF' color='#3E368F' />
         </div>
       </div>
       <div>
@@ -61,11 +75,10 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, prev
         </Typography>
       </div>
       <div className={styles.tagContainer}>
-        {tags.map((tag, i) => {
+        {tags?.map((tag, i) => {
           return <TagBox text={tag} key={i} backgroundColor='#EDB549' color='white' />;
         })}
       </div>
-
       <div>
         <Typography className={styles.text} variant='body1'>
           {description}

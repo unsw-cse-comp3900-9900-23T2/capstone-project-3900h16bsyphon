@@ -10,11 +10,11 @@
   flex-direction: column;
   gap: 10px;
   padding: 40px;
-    font-family: 'Lato', sans-serif;
+    
 }
 
 .joinAsTutorBtn {
-    font-family: 'Lato', sans-serif;
+    
   background-color: var(--colour-main-purple-200);
   color: var(--colour-main-purple-900);
 }
@@ -24,13 +24,13 @@
 }
 
 .joinBtn {
-    font-family: 'Lato', sans-serif;
-  background-color: var(--colour-main-blue-600);
-  color: white;
+  background-color: var(--colour-main-blue-200);
+  color: black;
 }
 
 .joinBtn:hover {
-  background-color: #2748b6;
+  background-color: var(--colour-main-blue-400);
+  color: white;
 }
 
 .titleContainer {
