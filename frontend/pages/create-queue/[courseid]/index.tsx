@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars */
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import style from './CreateQueue.module.css';
 import TextField from '@mui/material/TextField';
@@ -27,7 +26,9 @@ const QueueCreationPage = () => {
   const [title, setTitle] = useState('');
   const [timeLimit, setTimeLimit] = useState(0);
   const [course, setCourse] = useState('');
-  const [announcement, setAnnouncement] = useState<string>('hi');
+  // complaining about not using announcement, will do later.
+  // eslint-disable-next-line
+  const [announcement, _setAnnouncement] = useState<string>('hi');
   const router = useRouter();
 
   useEffect(() => {

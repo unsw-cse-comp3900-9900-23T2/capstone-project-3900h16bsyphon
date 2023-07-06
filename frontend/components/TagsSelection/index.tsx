@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
+import React from 'react';
 import style from './TagsSelection.module.css';
 import { Autocomplete, TextField, Typography } from '@mui/material';
 import TagBox from '../TagBox';
@@ -8,7 +7,7 @@ import { Tag } from '../../types/requests';
 type TagsProps = {
   tags: Tag[],
   isCreator?: boolean,
-  setTagSelection: (tags: Tag[]) => void,
+  setTagSelection: React.Dispatch<React.SetStateAction<Tag[]>>,
   backgroundColor?: string,
   color?: string,
 }
