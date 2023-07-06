@@ -46,11 +46,14 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .service(server::echo)
             .route("/", web::get().to(server::hello))
-            .route("/auth/signup", web::post().to(server::auth::create_user))
-            .route("/auth/login", web::post().to(server::auth::auth))
-            .route(
-                "/auth/hello",
-                web::get().to(server::hello).wrap(amw.clone()),
+            .service(
+                scope("/auth")
+                    .route("/auth/signup", web::post().to(server::auth::create_user))
+                    .route("/auth/login", web::post().to(server::auth::auth))
+                    .route(
+                        "/auth/hello",
+                        web::get().to(server::hello).wrap(amw.clone()),
+                    ),
             )
             .service(
                 scope("/user")
@@ -58,116 +61,57 @@ async fn main() -> std::io::Result<()> {
                     .route("list", web::get().to(server::user::get_users))
                     .route("profile", web::get().to(server::user::get_user)),
             )
-            .route(
-                "/queue/create",
-                web::post()
-                    .to(server::queue::create_queue)
-                    .wrap(amw.clone()),
+            .service(
+                scope("/course")
+                    .wrap(amw.clone())
+                    .route(
+                        "/create_offering",
+                        web::post().to(server::course::create_offering),
+                    )
+                    .route(
+                        "/get_tutored",
+                        web::get().to(server::course::get_courses_tutored),
+                    )
+                    .route("/get", web::get().to(server::course::get_offering_by_id))
+                    .route("/list", web::get().to(server::course::get_offerings))
+                    .route("/tags", web::get().to(server::course::fetch_course_tags))
+                    .route(
+                        "/join_with_tutor_link",
+                        web::put().to(server::course::join_with_tutor_link),
+                    ),
             )
-            .route(
-                "/queue/get_by_course",
-                web::get()
-                    .to(server::queue::get_queues_by_course)
-                    .wrap(amw.clone()),
+            .service(
+                scope("/request")
+                    .wrap(amw.clone())
+                    .route("/create", web::post().to(server::request::create_request))
+                    .route(
+                        "/get_info",
+                        web::get().to(server::request::request_info_wrapper),
+                    )
+                    .route(
+                        "/all_requests_for_queue",
+                        web::get().to(server::request::all_requests_for_queue),
+                    ),
             )
-            .route(
-                "/course/create_offering",
-                web::post()
-                    .to(server::course::create_offering)
-                    .wrap(amw.clone()),
+            .service(
+                scope("/queue")
+                    .wrap(amw.clone())
+                    .route("/create", web::post().to(server::queue::create_queue))
+                    .route("/get", web::get().to(server::queue::get_queue_by_id))
+                    .route(
+                        "/get_by_course",
+                        web::get().to(server::queue::get_queues_by_course),
+                    )
+                    .route("/is_open", web::get().to(server::queue::get_is_open))
+                    .route("/tags", web::get().to(server::queue::fetch_queue_tags)),
             )
-            .route(
-                "/courses/get_tutored",
-                web::get()
-                    .to(server::course::get_courses_tutored)
-                    .wrap(amw.clone()),
-            )
-            .route(
-                "/course/get",
-                web::get()
-                    .to(server::course::get_offering_by_id)
-                    .wrap(amw.clone()),
-            )
-            .route(
-                "/course/list",
-                web::get()
-                    .to(server::course::get_offerings)
-                    .wrap(amw.clone()),
-            )
-            .route(
-                "/course/tags",
-                web::get()
-                    .to(server::course::fetch_course_tags)
-                    .wrap(amw.clone()),
-            )
-            .route(
-                "/course/join_with_tutor_link",
-                web::put()
-                    .to(server::course::join_with_tutor_link)
-                    .wrap(amw.clone()),
-            )
-            .route(
-                "/request/create",
-                web::post()
-                    .to(server::request::create_request)
-                    .wrap(amw.clone()),
-            )
-            .route(
-                "/request/get_info",
-                web::get()
-                    .to(server::request::request_info_wrapper)
-                    .wrap(amw.clone()),
-            )
-            .route(
-                "/request/all_requests_for_queue",
-                web::get()
-                    .to(server::request::all_requests_for_queue)
-                    .wrap(amw.clone()),
-            )
-            .route(
-                "/queue/is_open",
-                web::get().to(server::queue::get_is_open).wrap(amw.clone()),
-            )
-            .route(
-                "/queue/tags",
-                web::get()
-                    .to(server::queue::fetch_queue_tags)
-                    .wrap(amw.clone()),
-            )
-            .route(
-                "history/request_count",
-                web::get()
-                    .to(server::history::get_request_count)
-                    .wrap(amw.clone()),
-            )
-            .route(
-                "queue/get",
-                web::get()
-                    .to(server::queue::get_queue_by_id)
-                    .wrap(amw.clone()),
-            )
-            .route(
-                "queue/get",
-                web::get()
-                    .to(server::queue::get_queue_by_id)
-                    .wrap(amw.clone()),
-            )
-            .route(
-                "history/request_count",
-                web::get()
-                    .to(server::history::get_request_count)
-                    .wrap(amw.clone()),
-            )
-            .route(
-                "queue/get",
-                web::get().to(server::queue::get_queue_by_id).wrap(amw.clone()),
-            )
-            .route(
-                "queue/get",
-                web::get().to(server::queue::get_queue_by_id).wrap(amw.clone()),
-            )
+            .service(scope("history").wrap(amw.clone()).route(
+                "/request_count",
+                web::get().to(server::history::get_request_count),
+            ))
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
+            .route("/{tail:.*}", web::put().to(server::res404))
     })
     .bind({
         let host = host_port_from_env();
