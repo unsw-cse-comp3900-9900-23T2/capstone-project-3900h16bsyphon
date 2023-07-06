@@ -1,22 +1,20 @@
 use crate::{
     entities,
-    models::{CreateQueueRequest, GetQueuesByCourseQuery, QueueReturnModel, GetQueueByIdQuery, GetActiveQueuesQuery, GetQueueTagsQuery},
-    server::user::validate_user,
+    models::{
+        CreateQueueRequest, GetActiveQueuesQuery, GetQueueByIdQuery, GetQueueTagsQuery,
+        GetQueuesByCourseQuery, QueueReturnModel, TokenClaims,
+    },
     test_is_user,
-    utils::db::db,
+    utils::{db::db, user::validate_user},
 };
 use actix_web::{
     web::{self, Query, ReqData},
     HttpResponse,
 };
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QuerySelect, ActiveValue, EntityOrSelect};
 
 use futures::future::join_all;
-use sea_orm::{
-    ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QuerySelect, EntityOrSelect, ActiveValue::{NotSet, self},
-};
 use serde_json::json;
-
-use crate::models::auth::TokenClaims;
 
 pub async fn create_queue(
     token: ReqData<TokenClaims>,
@@ -30,30 +28,40 @@ pub async fn create_queue(
         .await
         .expect("Db broke");
 
-    let tag_creation_futures = req_body.tags.iter()
+    let tag_creation_futures = req_body
+        .tags
+        .iter()
         .filter(|tag| tag.tag_id == -1) // check if tag already exists
         .map(|tag| {
             entities::tags::ActiveModel {
-                tag_id: NotSet,
+                tag_id: ActiveValue::NotSet,
                 name: ActiveValue::Set(tag.name.clone()),
-            }.insert(db)
+            }
+            .insert(db)
         });
     let new_tags = join_all(tag_creation_futures).await;
     let mut new_tags_iter = new_tags.into_iter();
-    let tag_queue_addition = req_body.tags.iter()
-        .map(|tag| {
-            // crazy: we iterate over the tags again, but this time we get their id if they arent given
-            entities::queue_tags::ActiveModel {
-                tag_id: ActiveValue::Set(if tag.tag_id != -1 {tag.tag_id} else {new_tags_iter.next().unwrap().unwrap().tag_id}),
-                queue_id: ActiveValue::Set(queue.queue_id),
-                is_priority: ActiveValue::Set(tag.is_priority),
-            }.insert(db)
-        });
+    let tag_queue_addition = req_body.tags.iter().map(|tag| {
+        // crazy: we iterate over the tags again, but this time we get their id if they arent given
+        entities::queue_tags::ActiveModel {
+            tag_id: ActiveValue::Set(if tag.tag_id != -1 {
+                tag.tag_id
+            } else {
+                new_tags_iter.next().unwrap().unwrap().tag_id
+            }),
+            queue_id: ActiveValue::Set(queue.queue_id),
+            is_priority: ActiveValue::Set(tag.is_priority),
+        }
+        .insert(db)
+    });
     join_all(tag_queue_addition).await;
     HttpResponse::Ok().json(queue)
 }
 
-pub async fn get_queue_by_id(token: ReqData<TokenClaims>, query: Query<GetQueueByIdQuery>) -> HttpResponse {
+pub async fn get_queue_by_id(
+    token: ReqData<TokenClaims>,
+    query: Query<GetQueueByIdQuery>,
+) -> HttpResponse {
     let db = db();
     if let Err(e) = validate_user(&token, db).await {
         log::debug!("failed to verify user:{:?}", e);
@@ -65,9 +73,7 @@ pub async fn get_queue_by_id(token: ReqData<TokenClaims>, query: Query<GetQueueB
         .expect("Db broke");
     match queue {
         Some(q) => HttpResponse::Ok().json(web::Json(q)),
-        None => {
-            HttpResponse::NotFound().json("No queue of that id!")
-        }
+        None => HttpResponse::NotFound().json("No queue of that id!"),
     }
 }
 
@@ -125,13 +131,17 @@ pub async fn get_queues_by_course(
     HttpResponse::Ok().json(the_course)
 }
 
-pub async fn fetch_queue_tags(token: ReqData<TokenClaims>, query: web::Query<GetQueueTagsQuery>) -> HttpResponse {
+pub async fn fetch_queue_tags(
+    token: ReqData<TokenClaims>,
+    query: web::Query<GetQueueTagsQuery>,
+) -> HttpResponse {
     let db = db();
     test_is_user!(token, db);
     let tags = entities::tags::Entity::find()
         .left_join(entities::queues::Entity)
         .filter(entities::queue_tags::Column::QueueId.eq(query.queue_id))
-        .column(entities::tags::Column::TagId).distinct()
+        .column(entities::tags::Column::TagId)
+        .distinct()
         .column(entities::tags::Column::Name)
         .all(db)
         .await
@@ -139,7 +149,10 @@ pub async fn fetch_queue_tags(token: ReqData<TokenClaims>, query: web::Query<Get
     HttpResponse::Ok().json(web::Json(tags))
 }
 
-pub async fn get_is_open(token: ReqData<TokenClaims>, query: Query<GetActiveQueuesQuery>) -> HttpResponse {
+pub async fn get_is_open(
+    token: ReqData<TokenClaims>,
+    query: Query<GetActiveQueuesQuery>,
+) -> HttpResponse {
     let db = db();
     let error = validate_user(&token, db).await.err();
     if error.is_some() {
@@ -150,15 +163,14 @@ pub async fn get_is_open(token: ReqData<TokenClaims>, query: Query<GetActiveQueu
         .filter(entities::queues::Column::QueueId.eq(query.queue_id))
         .into_model::<QueueReturnModel>()
         .one(db)
-        .await.expect("db broke");
+        .await
+        .expect("db broke");
 
     // return queues result result
     match queues_result {
-        Some(queues_result) => HttpResponse::Ok().json(
-            json!({
-                "is_open" : web::Json(queues_result.is_available)
-            })
-        ),
-        None => HttpResponse::BadRequest().json("no queue found")
+        Some(queues_result) => HttpResponse::Ok().json(json!({
+            "is_open" : web::Json(queues_result.is_available)
+        })),
+        None => HttpResponse::BadRequest().json("no queue found"),
     }
 }

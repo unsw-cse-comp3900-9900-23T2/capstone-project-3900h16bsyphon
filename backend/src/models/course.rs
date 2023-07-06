@@ -62,10 +62,10 @@ impl CreateOfferingBody {
             "title": Self::validate_title(&self.title).err(),
             "admins": Self::validate_tutors(self.admins.as_ref().unwrap_or(&Vec::new())).err(),
         });
-        if errs.as_object().unwrap().values().any(|v| !v.is_null()) {
-            return Err(HttpResponse::BadRequest().json(errs));
+        match errs.as_object().unwrap().values().any(|v| !v.is_null()) {
+            true => Err(HttpResponse::BadRequest().json(errs)),
+            false => Ok(()),
         }
-        Ok(())
     }
 
     pub fn validate_tutors(tutors: &[i32]) -> Result<(), Vec<i32>> {

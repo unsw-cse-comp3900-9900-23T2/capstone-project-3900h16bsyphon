@@ -1,17 +1,22 @@
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
+
+use crate::{entities, models, utils::db::db};
+use models::request::{AllRequestsForQueueBody, RequestInfoBody};
+
 use futures::executor::block_on;
 use futures::future::join_all;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::test_is_user;
-use crate::{entities, utils::db::db};
 
-use crate::models::{CreateRequest, TokenClaims, FetchCourseTagsReturnModel};
+use crate::models::{CreateRequest, FetchCourseTagsReturnModel, TokenClaims};
 
-pub async fn create_request(token: ReqData<TokenClaims>, request_creation: web::Json<CreateRequest>) -> HttpResponse {
+pub async fn create_request(
+    token: ReqData<TokenClaims>,
+    request_creation: web::Json<CreateRequest>,
+) -> HttpResponse {
     let db = db();
     let request_creation = request_creation.into_inner();
     let request = entities::requests::ActiveModel {
@@ -29,7 +34,8 @@ pub async fn create_request(token: ReqData<TokenClaims>, request_creation: web::
         entities::request_tags::ActiveModel {
             request_id: ActiveValue::Set(insertion.request_id),
             tag_id: ActiveValue::Set(tag),
-        }.insert(db)
+        }
+        .insert(db)
     });
     join_all(tag_insertion).await;
     HttpResponse::Ok().json(json!({"request_id": insertion.request_id}))
@@ -46,18 +52,8 @@ pub async fn request_info_wrapper(
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RequestInfoBody {
-    pub request_id: i32,
-}
-
 // given user -> give all requests
 // given queue -> all requests
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AllRequestsForQueueBody {
-    pub queue_id: i32,
-}
 
 pub async fn all_requests_for_queue(
     token: ReqData<TokenClaims>,
@@ -85,6 +81,8 @@ pub async fn all_requests_for_queue(
     HttpResponse::Ok().json(requests)
 }
 
+/// TODO: This is really cringe, don't do whatever this is
+/// There should be a way to move this into the models
 pub async fn request_info_not_web(
     _token: ReqData<TokenClaims>,
     body: web::Query<RequestInfoBody>,
@@ -111,7 +109,8 @@ pub async fn request_info_not_web(
     let tags = entities::tags::Entity::find()
         .left_join(entities::requests::Entity)
         .left_join(entities::queues::Entity)
-        .column(entities::tags::Column::TagId).distinct()
+        .column(entities::tags::Column::TagId)
+        .distinct()
         .column(entities::tags::Column::Name)
         .column(entities::queue_tags::Column::IsPriority)
         .filter(entities::request_tags::Column::RequestId.eq(request.request_id))

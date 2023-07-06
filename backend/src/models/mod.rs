@@ -9,5 +9,6 @@ pub use auth::*;
 pub use course::*;
 pub use history::*;
 pub use queue::*;
+pub use queue::*;
 pub use request::*;
 pub use user::*;

@@ -8,17 +8,19 @@ use rand::Rng;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
 
-use crate::{models::{
-    AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink, TokenClaims, INV_CODE_LEN, GetCourseTagsQuery, FetchCourseTagsReturnModel,
-}, test_is_user};
 use crate::{
     entities,
-    models::{CourseOfferingReturnModel, GetOfferingByIdQuery},
-    server,
-    utils::db::db,
+    models::{
+        AddTutorToCourseBody, CourseOfferingReturnModel, CreateOfferingBody,
+        FetchCourseTagsReturnModel, GetCourseTagsQuery, JoinWithTutorLink, TokenClaims,
+        INV_CODE_LEN, GetOfferingByIdQuery,
+    },
+    test_is_user,
+    utils::{
+        db::db,
+        user::{validate_admin, validate_user},
+    },
 };
-
-use server::user::{validate_admin, validate_user};
 
 pub async fn create_offering(
     token: ReqData<TokenClaims>,
@@ -36,15 +38,16 @@ pub async fn create_offering(
 
     // Create Course
     let body = body.into_inner();
-    let active_course = entities::course_offerings::ActiveModel {
+    let course = (entities::course_offerings::ActiveModel {
         course_offering_id: ActiveValue::NotSet,
         course_code: ActiveValue::Set(body.course_code),
         title: ActiveValue::Set(body.title),
         tutor_invite_code: ActiveValue::Set(Some(gen_unique_inv_code().await)),
         start_date: ActiveValue::Set(body.start_date.unwrap_or_else(today)),
-    };
-
-    let course = active_course.insert(db).await.expect("Db broke");
+    })
+    .insert(db)
+    .await
+    .expect("Db broke");
     log::info!("Created Course: {:?}", course);
 
     // Add admins
@@ -84,14 +87,17 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
     }
 }
 
-
-pub async fn fetch_course_tags(token: ReqData<TokenClaims>, query: web::Query<GetCourseTagsQuery>) -> HttpResponse {
+pub async fn fetch_course_tags(
+    token: ReqData<TokenClaims>,
+    query: web::Query<GetCourseTagsQuery>,
+) -> HttpResponse {
     let db = db();
     test_is_user!(token, db);
     let tags = entities::tags::Entity::find()
         .inner_join(entities::queues::Entity)
         .filter(entities::queues::Column::CourseOfferingId.eq(query.course_id))
-        .column(entities::tags::Column::TagId).distinct()
+        .column(entities::tags::Column::TagId)
+        .distinct()
         .column(entities::tags::Column::Name)
         .column(entities::queue_tags::Column::IsPriority)
         .into_model::<FetchCourseTagsReturnModel>()
@@ -100,7 +106,6 @@ pub async fn fetch_course_tags(token: ReqData<TokenClaims>, query: web::Query<Ge
         .expect("Db broke");
     HttpResponse::Ok().json(web::Json(tags))
 }
-
 
 pub async fn get_courses_tutored(token: ReqData<TokenClaims>) -> HttpResponse {
     let db = db();

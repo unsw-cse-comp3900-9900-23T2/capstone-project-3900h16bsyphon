@@ -12,3 +12,13 @@ pub struct CreateRequest {
     pub is_clusterable: bool,
     pub status: Option<Statuses>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RequestInfoBody {
+    pub request_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AllRequestsForQueueBody {
+    pub queue_id: i32,
+}
