@@ -1,17 +1,27 @@
-use actix_web::{web, HttpResponse, Responder, dev::ServiceRequest, HttpMessage};
-
-use actix_web_httpauth::{extractors::{basic::BasicAuth, bearer::{BearerAuth, self}, AuthenticationError}, headers::www_authenticate::bearer::Bearer};
+use actix_web::{dev::ServiceRequest, web, HttpMessage, HttpResponse, Responder};
+use actix_web_httpauth::{
+    extractors::{
+        basic::BasicAuth,
+        bearer::{self, BearerAuth},
+        AuthenticationError,
+    },
+    headers::www_authenticate::bearer::Bearer,
+};
 
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait};
 use serde_json::json;
 use sha2::Sha256;
+
 use crate::{
-    entities, models::auth::CreateUserBody, models::auth::TokenClaims, utils::auth::hash_pass,
-    utils::db::db, SECRET,
+    entities::users,
+    models::auth::CreateUserBody,
+    models::{auth::TokenClaims, AuthTokenClaims},
+    utils::auth::hash_pass,
+    utils::db::db,
+    SECRET,
 };
-use entities::users;
 
 /// Handler that validates a bearer token. This is used as the source
 /// for our `HttpAuthentication` middleware.
@@ -73,7 +83,7 @@ pub async fn validator_admin(
                 true => {
                     req.extensions_mut().insert(AuthTokenClaims::from(value));
                     Ok(req)
-                },
+                }
                 false => Err((auth_err_from_req(&req).into(), req)),
             }
         }

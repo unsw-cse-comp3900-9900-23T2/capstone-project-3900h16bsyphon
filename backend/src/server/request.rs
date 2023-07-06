@@ -1,17 +1,14 @@
-use std::slice::Iter;
-
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
-use futures::FutureExt;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter};
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-use crate::utils::AsyncCollect;
-use crate::{entities, utils::db::db};
-
-use super::user::validate_admin;
-use crate::models::{request, CreateRequest, TokenClaims};
+use crate::{entities, models, utils, utils::db::db};
+use models::{
+    auth::TokenClaims,
+    request::{AllRequestsForQueueBody, CreateRequest, RequestInfoBody},
+};
+use utils::user::validate_admin;
 
 /// TODO: Add authentication here
 pub async fn create_request(body: web::Json<CreateRequest>) -> HttpResponse {
@@ -78,18 +75,8 @@ pub async fn request_info(
     HttpResponse::Ok().json(request_json)
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RequestInfoBody {
-    pub request_id: i32,
-}
-
 // given user -> give all requests
 // given queue -> all requests
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AllRequestsForQueueBody {
-    pub queue_id: i32,
-}
 
 pub async fn all_requests_for_queue(
     token: ReqData<TokenClaims>,

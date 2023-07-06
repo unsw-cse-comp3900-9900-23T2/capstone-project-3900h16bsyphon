@@ -5,20 +5,20 @@ use actix_web::{
 use chrono::NaiveDate;
 use futures::executor::block_on;
 use rand::Rng;
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect, RelationTrait};
+use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
 
 use crate::models::{
-    AddTutorToCourseBody, CreateOfferingBody, JoinWithTutorLink, TokenClaims, INV_CODE_LEN,
+    AddTutorToCourseBody, CourseOfferingReturnModel, CreateOfferingBody, GetOfferingByIdQuery,
+    JoinWithTutorLink, TokenClaims, INV_CODE_LEN,
 };
 use crate::{
     entities,
-    models::{CourseOfferingReturnModel, GetOfferingByIdQuery},
-    server,
-    utils::db::db,
+    utils::{
+        db::db,
+        user::{validate_admin, validate_user},
+    },
 };
-
-use server::user::{validate_admin, validate_user};
 
 pub async fn create_offering(
     token: ReqData<TokenClaims>,

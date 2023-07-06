@@ -29,3 +29,13 @@ impl From<CreateRequest> for entities::requests::ActiveModel {
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RequestInfoBody {
+    pub request_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AllRequestsForQueueBody {
+    pub queue_id: i32,
+}

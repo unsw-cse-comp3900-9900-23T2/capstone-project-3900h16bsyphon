@@ -1,18 +1,15 @@
-use crate::{
-    entities,
-    models::{CreateQueueRequest, GetQueuesByCourseQuery, QueueReturnModel},
-    server::user::validate_user,
-    utils::db::db,
-};
 use actix_web::{
     web::{self, Query, ReqData},
     HttpResponse,
 };
-use sea_orm::{
-    ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QuerySelect,
-};
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 
-use crate::models::auth::TokenClaims;
+use crate::{entities, models, utils};
+use models::{
+    auth::TokenClaims,
+    queue::{CreateQueueRequest, GetQueuesByCourseQuery, QueueReturnModel},
+};
+use utils::{db::db, user::validate_user};
 
 pub async fn create_queue(
     token: ReqData<TokenClaims>,
@@ -66,7 +63,16 @@ pub async fn get_queues_by_course(
         .await
         .expect("db broke")
         .iter()
-        .map(|json| json.as_object().unwrap().get("first_name").unwrap().as_str().unwrap().to_string()).collect::<Vec<_>>();
+        .map(|json| {
+            json.as_object()
+                .unwrap()
+                .get("first_name")
+                .unwrap()
+                .as_str()
+                .unwrap()
+                .to_string()
+        })
+        .collect::<Vec<_>>();
 
     log::info!("{:?}", tutors);
     the_course.iter_mut().for_each(|it| {
