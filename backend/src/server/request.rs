@@ -111,10 +111,8 @@ pub async fn request_info_not_web(
     let tags = entities::tags::Entity::find()
         .left_join(entities::requests::Entity)
         .left_join(entities::queues::Entity)
-        .columns([
-            entities::tags::Column::TagId,
-            entities::tags::Column::Name,
-        ])
+        .column(entities::tags::Column::TagId).distinct()
+        .column(entities::tags::Column::Name)
         .column(entities::queue_tags::Column::IsPriority)
         .filter(entities::request_tags::Column::RequestId.eq(request.request_id))
         .into_model::<FetchCourseTagsReturnModel>()

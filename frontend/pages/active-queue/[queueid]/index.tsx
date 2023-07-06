@@ -6,25 +6,12 @@ import MetaData from '../../../components/MetaData';
 import Header from '../../../components/Header';
 import { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../../utils';
+import { UserRequest } from '../../../types/requests';
 
-type Request = {
-  zid: number,
-  requestId: number,
-  firstName: string,
-  lastName: string,
-  title: string,
-  tags: {
-    name: string,
-    tagId: number,
-    isPriority: boolean,
-  }[],
-  status: string,
-  description: string,
-}
 const ActiveQueue = () => {
   const router = useRouter();
   
-  const [requests, setRequests] = useState<Request[]>([]);
+  const [requests, setRequests] = useState<UserRequest[]>([]);
   const [requestData, setRequestData] = useState({
     queueTitle: 'COMP1521 Thursday Week 5 Help Session',
     queueId: 1,

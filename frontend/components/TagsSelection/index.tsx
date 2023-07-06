@@ -3,12 +3,7 @@ import React, { useState } from 'react';
 import style from './TagsSelection.module.css';
 import { Autocomplete, TextField, Typography } from '@mui/material';
 import TagBox from '../TagBox';
-
-type Tag = {
-  tagId: number,
-  name: string,
-  isPriority: boolean
-};
+import { Tag } from '../../types/requests';
 
 type TagsProps = {
   tags: Tag[],

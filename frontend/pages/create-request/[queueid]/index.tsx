@@ -14,16 +14,11 @@ import { useRouter } from 'next/router';
 import { authenticatedPostFetch, authenticatedGetFetch, toCamelCase } from '../../../utils';
 import TagsSelection from '../../../components/TagsSelection';
 import Header from '../../../components/Header';
+import { Tag } from '../../../types/requests';
 
 const MIN_TITLE = 5;
 
 const MIN_DESCRIPTION = 50;
-
-type Tag = {
-  tagId: number,
-  name: string,
-  isPriority: boolean
-};
 
 export default function CreateRequest() {
   const router = useRouter();

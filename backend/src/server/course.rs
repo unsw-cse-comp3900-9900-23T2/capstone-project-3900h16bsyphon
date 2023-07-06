@@ -89,9 +89,9 @@ pub async fn fetch_course_tags(token: ReqData<TokenClaims>, query: web::Query<Ge
     let db = db();
     test_is_user!(token, db);
     let tags = entities::tags::Entity::find()
-        .left_join(entities::queues::Entity)
+        .inner_join(entities::queues::Entity)
         .filter(entities::queues::Column::CourseOfferingId.eq(query.course_id))
-        .column(entities::tags::Column::TagId)
+        .column(entities::tags::Column::TagId).distinct()
         .column(entities::tags::Column::Name)
         .column(entities::queue_tags::Column::IsPriority)
         .into_model::<FetchCourseTagsReturnModel>()

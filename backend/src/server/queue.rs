@@ -131,7 +131,7 @@ pub async fn fetch_queue_tags(token: ReqData<TokenClaims>, query: web::Query<Get
     let tags = entities::tags::Entity::find()
         .left_join(entities::queues::Entity)
         .filter(entities::queue_tags::Column::QueueId.eq(query.queue_id))
-        .column(entities::tags::Column::TagId)
+        .column(entities::tags::Column::TagId).distinct()
         .column(entities::tags::Column::Name)
         .all(db)
         .await

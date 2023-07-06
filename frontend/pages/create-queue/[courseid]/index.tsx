@@ -12,12 +12,8 @@ import { authenticatedGetFetch, authenticatedPostFetch, toCamelCase } from '../.
 import { useRouter } from 'next/router';
 import TagsSelection from '../../../components/TagsSelection';
 import Header from '../../../components/Header';
+import { Tag } from '../../../types/requests';
 
-type Tag = {
-  tagId: number,
-  name: string,
-  isPriority: boolean
-};
 
 const QueueCreationPage = () => {
   const [date, setDate] = useState<Dayjs>(dayjs(new Date()));
