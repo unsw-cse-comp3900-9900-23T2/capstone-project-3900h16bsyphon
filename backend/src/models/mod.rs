@@ -6,7 +6,7 @@ pub mod request;
 pub mod user;
 
 
-use actix_web::{HttpResponse, HttpResponseBuilder};
+use actix_web::{HttpResponse, HttpResponseBuilder, Responder};
 pub use auth::*;
 pub use course::*;
 pub use history::*;

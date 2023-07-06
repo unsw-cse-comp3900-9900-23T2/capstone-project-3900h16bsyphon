@@ -32,7 +32,10 @@ pub async fn auth(credentials: BasicAuth) -> SyphonResult<HttpResponse> {
 
     let jwt_secret = Hmac::<Sha256>::new_from_slice(SECRET.as_bytes()).unwrap();
     match pass {
-        None => Err(SyphonError::Json(json!("no_password"), StatusCode::BAD_REQUEST)),
+        None => Err(SyphonError::Json(
+            json!("no_password"),
+            StatusCode::BAD_REQUEST,
+        )),
         Some(pass) => {
             // 1. check user in db
             let db = db();
@@ -49,10 +52,16 @@ pub async fn auth(credentials: BasicAuth) -> SyphonResult<HttpResponse> {
 
             // Verify Pw Validity
             if let Err(e) = CreateUserBody::verify_password(pass) {
-                return Err(SyphonError::Json(json! ({"password": e}), StatusCode::BAD_REQUEST));
+                return Err(SyphonError::Json(
+                    json!({ "password": e }),
+                    StatusCode::BAD_REQUEST,
+                ));
             }
             if user.hashed_pw != hash_pass(pass).unwrap() {
-                return Err(SyphonError::Json(json! {{"password": "incorrect password"}}, StatusCode::BAD_REQUEST));
+                return Err(SyphonError::Json(
+                    json! {{"password": "incorrect password"}},
+                    StatusCode::BAD_REQUEST,
+                ));
             }
 
             // Create Claims Token
@@ -66,12 +75,9 @@ pub async fn auth(credentials: BasicAuth) -> SyphonResult<HttpResponse> {
     }
 }
 
-pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse {
+pub async fn create_user(body: web::Json<CreateUserBody>) -> SyphonResult<HttpResponse> {
     let user = body.into_inner();
-    if let Err(e) = user.verify_user() {
-        log::debug!("failed to verify user:{:?}", e);
-        return e;
-    }
+    user.verify_user()?;
 
     let hash = hash_pass(&user.password).expect("validates hashability");
 
@@ -79,21 +85,13 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse {
     let db = db();
 
     // Check if user already exists
-    let prev_user_res = users::Entity::find_by_id(actual_zid)
-        .one(db)
-        .await
-        .map_err(|e| {
-            log::warn!("DB Brokee when finding user ??:\n\t{}", e);
-            HttpResponse::InternalServerError().body("AHHHH ME BROKEY BAD")
-        });
-    match prev_user_res {
-        Err(e) => return e,
-        Ok(Some(prev_user)) => {
-            return HttpResponse::Conflict().json(json!({
-                "zid": format!("User Already Exists: {}", prev_user.zid)
-            }))
-        }
-        Ok(_) => {}
+    let prev_user_res = users::Entity::find_by_id(actual_zid).one(db).await?;
+
+    if let Some(prev_user) = prev_user_res {
+        return Err(SyphonError::Json(
+            json!({ "zid": format!("User Already Exists: {}", prev_user.zid) }),
+            StatusCode::CONFLICT,
+        ));
     };
 
     // Insert the new user into Db
@@ -107,7 +105,7 @@ pub async fn create_user(body: web::Json<CreateUserBody>) -> HttpResponse {
 
     let created_user = active_user.insert(db).await.expect("Db broke");
 
-    HttpResponse::Ok().json(created_user)
+    Ok(HttpResponse::Ok().json(created_user))
 }
 
 pub async fn make_admin(zid: &str) {
@@ -121,8 +119,12 @@ pub async fn make_admin(zid: &str) {
         .map_err(|e| {
             log::warn!("DB Broke when finding admin ??:\n\t{}", e);
         })
-        .unwrap()
-        .unwrap();
+        .expect("Db Err");
+
+    let user = match user {
+        Some(u) => u,
+        None => return log::warn!("User {} not found. Cannot make admin", zid),
+    };
 
     users::ActiveModel {
         is_org_admin: ActiveValue::Set(true),
