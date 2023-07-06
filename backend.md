@@ -297,6 +297,8 @@ pub trait ActiveModelTrait: Clone + Debug {
 }
 ```
 
+---
+
 # Inserting with ActiveModel
 
 With `insert`, we move away an `ActiveModel` (potential state change)
