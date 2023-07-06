@@ -1,6 +1,4 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-unused-expressions */
-import React, { useState } from 'react';
+import React from 'react';
 import { FormGroup, Typography } from '@mui/material';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -11,9 +9,9 @@ import style from './SyphonTimePicker.module.css';
 
 type SyphonTimePickerProps = {
     timeStart: Dayjs,
-    setTimeStart: (timeStart: Dayjs) => void,
+    setTimeStart: React.Dispatch<React.SetStateAction<Dayjs>>,
     timeEnd: Dayjs, 
-    setTimeEnd: (timeEnd: Dayjs) => void,
+    setTimeEnd: React.Dispatch<React.SetStateAction<Dayjs>>,
 }
 
 const SyphonTimePicker = (props: SyphonTimePickerProps) => {
@@ -25,13 +23,13 @@ const SyphonTimePicker = (props: SyphonTimePickerProps) => {
           <TimePicker
             label="Time Start"
             value={props.timeStart}
-            onChange={(newValue) => {newValue && props.setTimeStart(newValue);}}
+            onChange={(newValue) => newValue && props.setTimeStart(newValue) }
             defaultValue={props.timeEnd}
           />
           <TimePicker
             label="Time End"
             value={props.timeEnd}
-            onChange={(newValue) => {newValue && props.setTimeEnd(newValue);}}
+            onChange={(newValue) => newValue && props.setTimeEnd(newValue) }
             defaultValue={props.timeEnd}
           />
         </LocalizationProvider>

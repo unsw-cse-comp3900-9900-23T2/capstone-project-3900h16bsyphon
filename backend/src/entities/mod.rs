@@ -6,6 +6,7 @@ pub mod clusters;
 pub mod course_offerings;
 pub mod faqs;
 pub mod messages;
+pub mod queue_tags;
 pub mod queue_tutors;
 pub mod queues;
 pub mod request_images;

@@ -93,6 +93,12 @@ async fn main() -> std::io::Result<()> {
                     .wrap(amw.clone()),
             )
             .route(
+                "/course/tags",
+                web::get()
+                    .to(server::course::fetch_course_tags)
+                    .wrap(amw.clone()),
+            )
+            .route(
                 "/course/join_with_tutor_link",
                 web::put()
                     .to(server::course::join_with_tutor_link)
@@ -107,7 +113,7 @@ async fn main() -> std::io::Result<()> {
             .route(
                 "/request/get_info",
                 web::get()
-                    .to(server::request::request_info)
+                    .to(server::request::request_info_wrapper)
                     .wrap(amw.clone()),
             )
             .route(
@@ -120,6 +126,12 @@ async fn main() -> std::io::Result<()> {
                 "/queue/is_open",
                 web::get()
                     .to(server::queue::get_is_open)
+                    .wrap(amw.clone()),
+            )
+            .route(
+                "/queue/tags",
+                web::get()
+                    .to(server::queue::fetch_queue_tags)
                     .wrap(amw.clone()),
             )
             .route(

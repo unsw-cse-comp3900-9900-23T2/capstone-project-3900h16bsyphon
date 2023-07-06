@@ -17,7 +17,12 @@ const defaultData  = {
   lastName: 'Doe',
   status: 'Unresolved',
   title: 'Pls help me with printing this array - im so stuck!',
-  tags: ['Assignment 1', 'Subset 0'],
+  queueId: 1,
+  tags: [{
+    name: 'tag',
+    isPriority: false,
+    tagId: 1,
+  }],
   isClusterable: false,
   previousRequests: 5,
   description:
@@ -74,9 +79,9 @@ const WaitingScreen = () => {
             status={requestData.status}
             firstName={requestData.firstName}
             lastName={requestData.lastName}
-            tags={requestData.tags}
+            tags={requestData.tags.map((tag) => tag.name)}
             title={requestData.title}
-            queueId={router.query.queueid as string | undefined}
+            queueId={requestData.queueId}
             description={requestData.description}
           />
         </Box>

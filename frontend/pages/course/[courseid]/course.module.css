@@ -48,10 +48,3 @@
   align-items: center;
   margin-top: 3%;
 }
-
-.title {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 3%
-}

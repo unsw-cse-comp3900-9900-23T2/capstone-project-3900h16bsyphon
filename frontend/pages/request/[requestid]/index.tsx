@@ -59,7 +59,7 @@ const Request = ({ requestId }: RequestProps) => {
             lastName={requestData.lastName}
             tags={requestData.tags}
             title={requestData.title}
-            queueId={requestData.queueId.toString()}
+            queueId={requestData.queueId}
             description={requestData.description}
           />
         </div>

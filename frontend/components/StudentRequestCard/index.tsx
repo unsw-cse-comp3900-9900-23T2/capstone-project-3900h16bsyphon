@@ -16,7 +16,7 @@ type StudentRequestCardProps = {
   tags: string[],
   status: string,
   description: string,
-  queueId?: string,
+  queueId: number,
 }
 
 const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags, status, queueId }: StudentRequestCardProps) => {
@@ -25,12 +25,11 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags
     const findRequests = async () => {
       const res = await authenticatedGetFetch('/history/request_count', {
         zid: zid.toString(),
-        queue_id: queueId as string
+        queue_id: queueId.toString()
       });
       const value = await res.json();
       setPreviousRequests(value.count);
     };
-    if (!queueId) return;
     findRequests();
   }, [queueId, zid]);
 

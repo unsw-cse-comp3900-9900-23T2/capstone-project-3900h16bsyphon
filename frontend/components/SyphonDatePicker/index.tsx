@@ -1,20 +1,18 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-unused-expressions */
-import React, { useState } from 'react';
+import React from 'react';
 
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DateCalendar, DateField, DatePicker } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers';
 import { FormGroup, Typography } from '@mui/material';
 
-import dayjs, { Dayjs } from 'dayjs';
+import { Dayjs } from 'dayjs';
 
 import style from './SyphonDatePicker.module.css';
 import pageStyle from '../../pages/create-queue/[courseid]/CreateQueue.module.css';
 
 type DatePickerProps = {
     date: Dayjs,
-    setDate: (date: Dayjs) => void,
+    setDate: React.Dispatch<React.SetStateAction<Dayjs>>,
 }
 
 const SyphonDatePicker = ({date, setDate}: DatePickerProps) => {
@@ -25,7 +23,7 @@ const SyphonDatePicker = ({date, setDate}: DatePickerProps) => {
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             value={date}
-            onChange={(e) => {e && setDate(e);}}
+            onChange={(e) => e && setDate(e) }
             defaultValue={date}
             format="ddd, DD/MM/YYYY"
           />
