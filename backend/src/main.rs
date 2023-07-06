@@ -1,13 +1,10 @@
-use std::fmt::Display;
-
 use actix_cors::Cors;
 use actix_web::{
     http, middleware,
     web::{self, scope},
-    App, HttpServer, ResponseError,
+    App, HttpServer,
 };
 use actix_web_httpauth::middleware::HttpAuthentication;
-use sea_orm::{DbErr, EntityTrait, ColumnTrait};
 
 pub mod entities;
 pub mod models;
@@ -17,7 +14,7 @@ pub mod utils;
 
 use crate::prelude::*;
 
-use utils::{auth::validator, db::db};
+use utils::auth::validator;
 #[macro_use]
 extern crate lazy_static;
 
@@ -59,8 +56,8 @@ async fn main() -> std::io::Result<()> {
                 scope("/user")
                     .wrap(amw.clone())
                     .route("list", web::get().to(server::user::get_users))
-                    .route("profile", web::get().to(server::user::get_user)
-            ))
+                    .route("profile", web::get().to(server::user::get_user)),
+            )
             .route(
                 "/queue/create",
                 web::post()
@@ -151,7 +148,6 @@ async fn main() -> std::io::Result<()> {
     })?
     .run()
     .await?;
-
 
     log::info!("Server ended. Exiting Now");
 

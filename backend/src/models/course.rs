@@ -6,7 +6,7 @@ use sea_orm::FromQueryResult;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-use crate::{server::course::check_user_exists, entities};
+use crate::server::course::check_user_exists;
 
 pub const INV_CODE_LEN: usize = 6;
 
@@ -50,10 +50,10 @@ impl CreateOfferingBody {
             "title": Self::validate_title(&self.title).err(),
             "admins": Self::validate_tutors(self.admins.as_ref().unwrap_or(&Vec::new())).err(),
         });
-        if errs.as_object().unwrap().values().any(|v| !v.is_null()) {
-            return Err(HttpResponse::BadRequest().json(errs));
+        match errs.as_object().unwrap().values().any(|v| !v.is_null()) {
+            true => Err(HttpResponse::BadRequest().json(errs)),
+            false => Ok(()),
         }
-        Ok(())
     }
 
     pub fn validate_tutors(tutors: &Vec<i32>) -> Result<(), Vec<i32>> {

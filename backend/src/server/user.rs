@@ -2,11 +2,10 @@ use actix_web::{web::ReqData, HttpResponse};
 
 use crate::models::auth::TokenClaims;
 use crate::models::user::*;
+use crate::utils::user::validate_user;
 use crate::{entities, utils::db::db};
 
-use sea_orm::{
-    ColumnTrait, DatabaseConnection, EntityTrait, JoinType, QueryFilter, QuerySelect, RelationTrait,
-};
+use sea_orm::{ColumnTrait, EntityTrait, JoinType, QueryFilter, QuerySelect, RelationTrait};
 
 pub async fn get_users(token: ReqData<TokenClaims>) -> HttpResponse {
     let db = db();
@@ -108,48 +107,4 @@ pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
 
     // return user
     HttpResponse::Ok().json(user_return)
-}
-
-pub async fn validate_user(
-    token: &ReqData<TokenClaims>,
-    db: &DatabaseConnection,
-) -> Result<(), HttpResponse> {
-    let creator_id = token.username;
-    let user = entities::users::Entity::find_by_id(creator_id)
-        .one(db)
-        .await;
-
-    match user {
-        Ok(Some(_)) => Ok(()),
-        Ok(None) => Err(HttpResponse::Forbidden().json("User Does Not Exist")),
-        Err(e) => {
-            log::warn!("Db broke?: {:?}", e);
-            Err(HttpResponse::InternalServerError().json("Db Broke"))
-        }
-    }
-}
-
-pub async fn validate_admin(
-    token: &ReqData<TokenClaims>,
-    db: &DatabaseConnection,
-) -> Result<(), HttpResponse> {
-    let creator_id = token.username;
-    let user = entities::users::Entity::find_by_id(creator_id)
-        .one(db)
-        .await;
-
-    // Validate Admin Perms
-    match user {
-        Ok(Some(user)) => {
-            if !user.is_org_admin {
-                return Err(HttpResponse::Forbidden().json("Not Admin"));
-            }
-        }
-        Ok(None) => return Err(HttpResponse::Forbidden().json("User Does Not Exist")),
-        Err(e) => {
-            log::warn!("Db broke?: {:?}", e);
-            return Err(HttpResponse::InternalServerError().json("Db Broke"));
-        }
-    }
-    Ok(())
 }

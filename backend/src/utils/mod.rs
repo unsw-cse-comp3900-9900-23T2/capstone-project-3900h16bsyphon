@@ -1,5 +1,6 @@
 pub mod auth;
 pub mod db;
+pub mod user;
 
 
 // #[async_trait] pub trait AsyncCollect<T>: Iterator + Sized where T: Send,
