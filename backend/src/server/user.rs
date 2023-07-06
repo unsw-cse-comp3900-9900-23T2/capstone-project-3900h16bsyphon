@@ -1,38 +1,12 @@
 use actix_web::{web::ReqData, HttpResponse};
-use serde::{Deserialize, Serialize};
 
 use crate::models::auth::TokenClaims;
+use crate::models::user::*;
 use crate::{entities, utils::db::db};
 
 use sea_orm::{
-    ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult, JoinType, QueryFilter,
-    QuerySelect, RelationTrait,
+    ColumnTrait, DatabaseConnection, EntityTrait, JoinType, QueryFilter, QuerySelect, RelationTrait,
 };
-
-#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
-pub struct UserReturnModel {
-    zid: i32,
-    first_name: String,
-    last_name: String,
-    is_org_admin: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
-pub struct UserPermissionCourseCodeModel {
-    course_code: String,
-    course_offering_id: i32,
-    title: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UserProfileReturnModel {
-    zid: i32,
-    is_org_admin: bool,
-    first_name: String,
-    last_name: String,
-    tutor: Vec<UserPermissionCourseCodeModel>,
-    course_admin: Vec<UserPermissionCourseCodeModel>,
-}
 
 pub async fn get_users(token: ReqData<TokenClaims>) -> HttpResponse {
     let db = db();
@@ -75,9 +49,11 @@ pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
     // get all courses user tutors
     let tutors = entities::tutors::Entity::find()
         .select_only()
-        .column(entities::course_offerings::Column::CourseCode)
-        .column(entities::course_offerings::Column::CourseOfferingId)
-        .column(entities::course_offerings::Column::Title)
+        .columns([
+            entities::course_offerings::Column::CourseCode,
+            entities::course_offerings::Column::CourseOfferingId,
+            entities::course_offerings::Column::Title,
+        ])
         .filter(entities::tutors::Column::Zid.eq(user_id))
         .join(
             JoinType::InnerJoin,
