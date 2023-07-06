@@ -48,10 +48,10 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(server::hello))
             .service(
                 scope("/auth")
-                    .route("/auth/signup", web::post().to(server::auth::create_user))
-                    .route("/auth/login", web::post().to(server::auth::auth))
+                    .route("/signup", web::post().to(server::auth::create_user))
+                    .route("/login", web::post().to(server::auth::auth))
                     .route(
-                        "/auth/hello",
+                        "/hello",
                         web::get().to(server::hello).wrap(amw.clone()),
                     ),
             )
