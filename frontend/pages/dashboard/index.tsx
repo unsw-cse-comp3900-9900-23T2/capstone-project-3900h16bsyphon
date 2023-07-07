@@ -42,7 +42,7 @@ const Dashboard: NextPage = () => {
     };
 
     const fetchCoursesTutored = async () => {
-      let res = await authenticatedGetFetch('/courses/get_tutored', {});
+      let res = await authenticatedGetFetch('/course/get_tutored', {});
       if (!res.ok) {
         console.error('authentication failed, or something broke, check network tab');
         return;
