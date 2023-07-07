@@ -5,6 +5,7 @@ use crate::models::CreateUserBody;
 use crate::server::auth::create_user;
 pub use crate::utils::db::initialise_db;
 use actix_web::web::Json;
+use actix_web::ResponseError;
 
 /// Secret used to hash passwords.
 /// Requires `SECRET` to be set as and environemnt variable or in
@@ -35,19 +36,16 @@ pub async fn register_org_admins() {
         password: admin_pass,
     }))
     .await;
-    match created_res.status() {
+    match created_res
+        .as_ref()
+        .map_or_else(|e| e.status_code(), |res| res.status())
+    {
         actix_web::http::StatusCode::OK => log::info!("Created admin user"),
         actix_web::http::StatusCode::CONFLICT => log::warn!("Admin already exists"),
         actix_web::http::StatusCode::INTERNAL_SERVER_ERROR => {
             return log::error!("Internal Error While Creating Admin")
         }
-        _ => {
-            return log::error!(
-                "Error when creating admin: {:?}, {:?}",
-                created_res,
-                created_res.body()
-            )
-        }
+        _ => return log::error!("Error when creating admin: {:?}", created_res,),
     }
     // Add Admin Perms
     crate::server::auth::make_admin("z0000000").await;
