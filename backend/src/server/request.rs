@@ -13,7 +13,7 @@ use serde_json::json;
 use crate::test_is_user;
 
 use crate::models::{
-    CreateRequest, FetchCourseTagsReturnModel, SyphonError, SyphonResult, TokenClaims,
+    CreateRequest, FetchCourseTagsReturnModel, SyphonError, SyphonResult, TokenClaims, RequestInfoReturn,
 };
 
 pub async fn create_request(
@@ -87,7 +87,7 @@ pub async fn all_requests_for_queue(
 pub async fn request_info_not_web(
     _token: ReqData<TokenClaims>,
     body: web::Query<RequestInfoBody>,
-) -> SyphonResult<serde_json::Value> {
+) -> SyphonResult<RequestInfoReturn> {
     let db = db();
     let body = body.into_inner();
     // Get the request from the database
@@ -117,18 +117,18 @@ pub async fn request_info_not_web(
         .all(db)
         .await?;
 
-    Ok(json!({
-        "request_id": request.request_id,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "zid": request.zid,
-        "queue_id": request.queue_id,
-        "title": request.title,
-        "description": request.description,
-        "is_clusterable": request.is_clusterable,
-        "status": request.status,
-        "tags": tags
-    }))
+    Ok(RequestInfoReturn {
+        request_id: request.request_id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        zid: request.zid,
+        queue_id: request.queue_id,
+        title: request.title,
+        description: request.description,
+        is_clusterable: request.is_clusterable,
+        status: request.status,
+        tags: tags
+    })
 }
 
 pub async fn disable_cluster(
