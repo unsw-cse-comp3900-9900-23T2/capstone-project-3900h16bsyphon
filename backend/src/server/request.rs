@@ -133,3 +133,32 @@ pub async fn request_info_not_web(
 
     Ok(request_json)
 }
+
+pub async fn disable_cluster(
+    _token: ReqData<TokenClaims>,
+    body: web::Json<RequestInfoBody>,
+) -> HttpResponse {
+    let db = db();
+    let body = body.into_inner();
+
+    // find request by id
+    let db_request = entities::requests::Entity::find_by_id(body.request_id)
+        .one(db)
+        .await
+        .map_err(|_e| {
+            HttpResponse::InternalServerError().body("request id does not exist");
+        })
+        .unwrap()
+        .unwrap();
+
+    // update is_clusterable to false
+    entities::requests::ActiveModel {
+        is_clusterable: ActiveValue::Set(false),
+        ..db_request.into()
+    }
+    .update(db)
+    .await
+    .expect("db broke");
+
+    HttpResponse::Ok().json({})
+}

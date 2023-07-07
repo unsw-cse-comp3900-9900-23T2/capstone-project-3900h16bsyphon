@@ -91,7 +91,8 @@ async fn main() -> std::io::Result<()> {
                     .route(
                         "/all_requests_for_queue",
                         web::get().to(server::request::all_requests_for_queue),
-                    ),
+                    )
+                    .route("/disable_cluster", web::put().to(server::request::disable_cluster))
             )
             .service(
                 scope("/queue")

@@ -41,7 +41,7 @@ const ViewQueue = () => {
       setCourseData(toCamelCase(d));
     };
     let getTutored = async () => {
-      const res = await authenticatedGetFetch('/courses/get_tutored', {});
+      const res = await authenticatedGetFetch('/course/get_tutored', {});
       let d = await res.json();
       setIsTutor(
         toCamelCase(d).some((course: {courseCode: string}) => course.courseCode === courseData.courseCode)
