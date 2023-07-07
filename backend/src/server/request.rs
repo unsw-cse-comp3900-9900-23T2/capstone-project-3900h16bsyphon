@@ -1,3 +1,4 @@
+use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
 
@@ -11,7 +12,9 @@ use serde_json::json;
 
 use crate::test_is_user;
 
-use crate::models::{CreateRequest, FetchCourseTagsReturnModel, TokenClaims};
+use crate::models::{
+    CreateRequest, FetchCourseTagsReturnModel, SyphonError, SyphonResult, TokenClaims,
+};
 
 pub async fn create_request(
     token: ReqData<TokenClaims>,
@@ -44,12 +47,10 @@ pub async fn create_request(
 pub async fn request_info_wrapper(
     token: ReqData<TokenClaims>,
     body: web::Query<RequestInfoBody>,
-) -> HttpResponse {
-    let res = request_info_not_web(token, body).await;
-    match res {
-        Ok(res) => HttpResponse::Ok().json(res),
-        Err(e) => e,
-    }
+) -> SyphonResult<HttpResponse> {
+    let res = request_info_not_web(token, body).await?;
+
+    Ok(HttpResponse::Ok().json(res))
 }
 
 // given user -> give all requests
@@ -86,24 +87,22 @@ pub async fn all_requests_for_queue(
 pub async fn request_info_not_web(
     _token: ReqData<TokenClaims>,
     body: web::Query<RequestInfoBody>,
-) -> Result<serde_json::Value, HttpResponse> {
+) -> SyphonResult<serde_json::Value> {
     let db = db();
     let body = body.into_inner();
     // Get the request from the database
     let db_request = entities::requests::Entity::find_by_id(body.request_id)
         .one(db)
-        .await
-        .expect("Db broke");
-    let request = match db_request {
-        None => return Err(HttpResponse::NotFound().body("Request not found")),
-        Some(req) => req,
-    };
+        .await?;
+    let request = db_request.ok_or(SyphonError::Json(
+        "Request not found".into(),
+        StatusCode::NOT_FOUND,
+    ))?;
 
     // User Data
     let user = entities::users::Entity::find_by_id(request.zid)
         .one(db)
-        .await
-        .expect("Db broke")
+        .await?
         .expect("token valid => user valid");
 
     let tags = entities::tags::Entity::find()
@@ -116,9 +115,9 @@ pub async fn request_info_not_web(
         .filter(entities::request_tags::Column::RequestId.eq(request.request_id))
         .into_model::<FetchCourseTagsReturnModel>()
         .all(db)
-        .await
-        .expect("Db broke");
-    let request_json = json!({
+        .await?;
+
+    Ok(json!({
         "request_id": request.request_id,
         "first_name": user.first_name,
         "last_name": user.last_name,
@@ -129,9 +128,7 @@ pub async fn request_info_not_web(
         "is_clusterable": request.is_clusterable,
         "status": request.status,
         "tags": tags
-    });
-
-    Ok(request_json)
+    }))
 }
 
 pub async fn disable_cluster(
