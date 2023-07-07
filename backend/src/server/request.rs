@@ -2,18 +2,19 @@ use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
 
+use crate::utils::user::validate_user;
 use crate::{entities, models, utils::db::db};
 use models::request::{AllRequestsForQueueBody, RequestInfoBody};
 
 use futures::executor::block_on;
-use futures::future::join_all;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
 
 use crate::test_is_user;
 
 use crate::models::{
-    CreateRequest, FetchCourseTagsReturnModel, SyphonError, SyphonResult, TokenClaims, RequestInfoReturn,
+    CreateRequest, FetchCourseTagsReturnModel, RequestInfoReturn, SyphonError, SyphonResult,
+    TokenClaims,
 };
 
 pub async fn create_request(
@@ -55,31 +56,38 @@ pub async fn request_info_wrapper(
 
 // given user -> give all requests
 // given queue -> all requests
+use futures::future::join_all;
 
 pub async fn all_requests_for_queue(
     token: ReqData<TokenClaims>,
     body: web::Query<AllRequestsForQueueBody>,
-) -> HttpResponse {
+) -> SyphonResult<HttpResponse> {
     let db = db();
     let body = body.into_inner();
-    test_is_user!(token, db);
+    // TODO: Fix validate_user to use SyphonResult
+    if let Err(e) = validate_user(&token, db).await {
+        return Ok(e);
+    }
+
     // Find all related requests
     // TODO: dont do cringe loop of all
-    let requests: Vec<_> = entities::requests::Entity::find()
+    let requests = entities::requests::Entity::find()
         .filter(entities::requests::Column::QueueId.eq(body.queue_id))
         .all(db)
-        .await
-        .expect("Db broke")
+        .await?
         .into_iter()
         .map(|req| req.request_id)
         .map(|request_id| {
             request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
-        })
-        .map(block_on)
-        .map(|res| res.unwrap())
-        .collect();
+        });
 
-    HttpResponse::Ok().json(requests)
+   let requests = join_all(requests)
+        .await
+        .into_iter()
+        .filter_map(Result::ok)
+        .collect::<Vec<_>>();
+
+    Ok(HttpResponse::Ok().json(requests))
 }
 
 /// TODO: This is really cringe, don't do whatever this is
@@ -127,7 +135,7 @@ pub async fn request_info_not_web(
         description: request.description,
         is_clusterable: request.is_clusterable,
         status: request.status,
-        tags: tags
+        tags: tags,
     })
 }
 
