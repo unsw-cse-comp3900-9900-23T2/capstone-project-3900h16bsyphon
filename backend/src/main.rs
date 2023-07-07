@@ -1,7 +1,7 @@
 use actix_cors::Cors;
 use actix_web::{
-    http, middleware,
-    web::{self, scope},
+    http,
+    web::{},
     App, HttpServer,
 };
 use actix_web_httpauth::middleware::HttpAuthentication;
@@ -91,7 +91,8 @@ async fn main() -> std::io::Result<()> {
                     .route(
                         "/all_requests_for_queue",
                         web::get().to(server::request::all_requests_for_queue),
-                    ),
+                    )
+                    .route("/disable_cluster", web::put().to(server::request::disable_cluster))
             )
             .service(
                 scope("/queue")
