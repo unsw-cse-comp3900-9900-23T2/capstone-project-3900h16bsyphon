@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect } from 'react';
-import { DataGrid, GridCellEditStopParams, GridRowSpacingParams, MuiEvent } from '@mui/x-data-grid';
+import { DataGrid, GridRowSpacingParams } from '@mui/x-data-grid';
 import style from './FAQs.module.css';
 import { Typography } from '@mui/material';
 import { authenticatedGetFetch, authenticatedPostFetch } from '../../utils';
-import { useRouter } from 'next/router';
 
 type FAQ = {
   id: number;
@@ -12,7 +11,7 @@ type FAQ = {
 };
 
 type FAQsProps = {
-  course_offering_id: String;
+  course_offering_id: string;
 };
 
 const defaultData : FAQ[] = [
@@ -30,15 +29,15 @@ const defaultData : FAQ[] = [
 const FAQs = ({ course_offering_id }: FAQsProps) => {
   const [data, setData] = React.useState(defaultData);
   useEffect(() => {
-    authenticatedGetFetch('/queue/get_faqs', {
-      course_offering_id: course_offering_id.toString(),
+    authenticatedGetFetch('/faqs/get', {
+      course_offering_id: course_offering_id
     })
       .then((res) => res.json())
       .then((res) => {setData(res);})
       .catch((err) => {
         console.error(err);
       });
-  }, []);
+  }, [course_offering_id]);
   const getRowSpacing = useCallback((params: GridRowSpacingParams) => {
     return {
       top: params.isFirstVisible ? 0 : 5,
@@ -60,7 +59,7 @@ const FAQs = ({ course_offering_id }: FAQsProps) => {
         getRowSpacing={getRowSpacing}
         editMode='cell'
         onCellEditStop={() => {
-          authenticatedPostFetch('/queue/add_faqs', data)
+          authenticatedPostFetch('/faqs/add', data)
             .then((res) => {console.log(res);})
             .catch((err) => {
               console.error(err);

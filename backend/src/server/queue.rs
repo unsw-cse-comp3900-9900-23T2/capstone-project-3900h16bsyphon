@@ -2,7 +2,7 @@ use crate::{
     entities,
     models::{
         CreateQueueRequest, GetActiveQueuesQuery, GetQueueByIdQuery, GetQueueTagsQuery,
-        GetQueuesByCourseQuery, QueueReturnModel, TokenClaims, AddFaqRequest, FaqData, GetFaqsQuery,
+        GetQueuesByCourseQuery, QueueReturnModel, TokenClaims
     },
     test_is_user,
     utils::{db::db, user::validate_user},
@@ -175,63 +175,3 @@ pub async fn get_is_open(
     }
 }
 
-
-pub async fn add_faqs(
-    token: ReqData<TokenClaims>,
-    req_body: web::Json<AddFaqRequest>,
-) -> HttpResponse {
-    let db = db();
-    test_is_user!(token, db);
-    let error = validate_user(&token, db).await.err();
-    if error.is_some() {
-        return error.unwrap();
-    }
-    let req_body = req_body.into_inner();
-    let queue = entities::queues::Entity::find_by_id(req_body.queue_id)
-        .one(db)
-        .await
-        .expect("Db broke");
-
-    if queue.is_none() {
-        return HttpResponse::NotFound().json("No queue of that id!");
-    };
-
-    let course_offering_id = queue.unwrap().course_offering_id;
-
-    let faq_data : FaqData = FaqData {
-        course_offering_id,
-        question: req_body.question,
-        answer: req_body.answer,
-    };
-
-    let faq = entities::faqs::ActiveModel {
-        course_offering_id: ActiveValue::Set(faq_data.course_offering_id),
-        question: ActiveValue::Set(faq_data.question),
-        answer: ActiveValue::Set(faq_data.answer),
-    }
-    .insert(db)
-    .await
-    .expect("Db broke");
-    
-
-    HttpResponse::Ok().json(faq)
-}
-
-pub async fn get_faqs(
-    token: ReqData<TokenClaims>,
-    query: Query<GetFaqsQuery>,
-) -> HttpResponse {
-    let db = db();
-    test_is_user!(token, db);
-    let error = validate_user(&token, db).await.err();
-    if error.is_some() {
-        return error.unwrap();
-    }
-    let faq = entities::faqs::Entity::find()
-        .filter(entities::faqs::Column::CourseOfferingId.eq(query.course_offering_id))
-        .all(db)
-        .await
-        .expect("Db broke");
-
-    HttpResponse::Ok().json(faq)
-}
