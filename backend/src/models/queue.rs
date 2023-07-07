@@ -70,3 +70,4 @@ pub struct QueueReturnModel {
 pub struct GetQueueByIdQuery {
     pub queue_id: i32
 }
+

@@ -106,7 +106,7 @@ const QueueCreationPage = () => {
               setTimeLimit={setTimeLimit}
             />
 
-            <FAQs />
+            <FAQs course_offering_id={`${router.query.courseid}`} />
             <Button variant="contained" className={style.button} onClick={submit}>Create Queue</Button>
           </Card>
         </Box>
