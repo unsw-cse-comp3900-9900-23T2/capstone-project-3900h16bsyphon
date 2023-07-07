@@ -9,8 +9,7 @@ import { useRouter } from 'next/router';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import Header from '../../../components/Header';
 import MetaData from '../../../components/MetaData';
-import { authenticatedGetFetch, authenticatedPutFetch, toCamelCase } from '../../../utils';
-import TagBox from '../../../components/TagBox';
+import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 
 const Request = () => {
   const router = useRouter();
@@ -27,18 +26,6 @@ const Request = () => {
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
   });
-
-  const disableCluster = async () => {
-    const res = await authenticatedPutFetch('/request/disable_cluster', {
-      request_id: Number.parseInt(`${router.query.requestid}`)
-    });
-    if (!res.ok) {
-      console.log('error');
-      return;
-    }
-    router.reload();
-    return;
-  };
 
   useEffect(() => {
     let getRequest = async() => {
@@ -61,16 +48,6 @@ const Request = () => {
           {data.queueTitle}
         </Typography>
       </div>
-      {data.isClusterable ? (
-        <div className={styles.clusterContainer}>
-          <TagBox
-            text="You have been added to a cluster by the tutor! You question will be answered as a group. Click the button to remove yourself"
-            backgroundColor="var(--colour-main-orange-200)"
-            color="var(--colour-main-orange-900)"
-          />
-          <Button className={styles.removeBtn} onClick={disableCluster}>Remove</Button>
-        </div>
-      ) : null}
       <Box className={styles.cardBox}>
         <div className={styles.buttonContainer}>
           <Button className={styles.greenButton} variant='contained' onClick={() => router.push(`/active-queue/${data.queueId}`)}>Resolve</Button>
