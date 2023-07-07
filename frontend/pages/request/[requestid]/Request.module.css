@@ -48,3 +48,19 @@
 .cardContainer {
     width: 60%;
 }
+
+.clusterContainer {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.removeBtn {
+    background-color: var(--colour-main-orange-200);
+    color: var(--colour-main-orange-900);
+}
+
+.removeBtn:hover {
+    background-color: var(--colour-main-orange-400);
+}

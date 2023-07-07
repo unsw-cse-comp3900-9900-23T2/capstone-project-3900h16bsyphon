@@ -1,7 +1,7 @@
 use actix_cors::Cors;
 use actix_web::{
-    http,
-    web::{},
+    http, middleware,
+    web::{self, scope},
     App, HttpServer,
 };
 use actix_web_httpauth::middleware::HttpAuthentication;
