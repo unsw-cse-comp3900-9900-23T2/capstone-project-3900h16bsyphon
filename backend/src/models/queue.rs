@@ -68,5 +68,11 @@ pub struct QueueReturnModel {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetQueueByIdQuery {
-    pub queue_id: i32
+    pub queue_id: i32,
+}
+
+impl From<i32> for GetQueueByIdQuery {
+    fn from(queue_id: i32) -> Self {
+        Self { queue_id }
+    }
 }

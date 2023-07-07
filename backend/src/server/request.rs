@@ -2,17 +2,12 @@ use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
 
-use crate::utils::user::validate_user;
-use crate::{entities, models, utils::db::db};
-use models::request::{AllRequestsForQueueBody, RequestInfoBody};
-
-use futures::executor::block_on;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
 
-use crate::test_is_user;
-
-use crate::models::{
+use crate::{entities, models, utils::db::db};
+use models::{
+    request::{AllRequestsForQueueBody, RequestInfoBody},
     CreateRequest, FetchCourseTagsReturnModel, RequestInfoReturn, SyphonError, SyphonResult,
     TokenClaims,
 };
@@ -64,10 +59,6 @@ pub async fn all_requests_for_queue(
 ) -> SyphonResult<HttpResponse> {
     let db = db();
     let body = body.into_inner();
-    // TODO: Fix validate_user to use SyphonResult
-    if let Err(e) = validate_user(&token, db).await {
-        return Ok(e);
-    }
 
     // Find all related requests
     // TODO: dont do cringe loop of all
@@ -81,7 +72,7 @@ pub async fn all_requests_for_queue(
             request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
         });
 
-   let requests = join_all(requests)
+    let requests = join_all(requests)
         .await
         .into_iter()
         .filter_map(Result::ok)
