@@ -37,8 +37,6 @@ const WaitingScreen = () => {
   useEffect(() => {
     let getRequest = async () => {
       let res = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.requestid}`});
-      console.log('got res');
-      console.log(res);
       if (res.status === 404) {
         setReqState('Not Found');
       } else if (res.status === 403) {
@@ -62,7 +60,7 @@ const WaitingScreen = () => {
   }
 
   return (
-    <> 
+    <>
       <Header />
       <div className={styles.pageContainer}>
         <div className={styles.queueTitle}>
@@ -74,7 +72,7 @@ const WaitingScreen = () => {
           <div className={styles.buttonContainer}>
             <Button className={styles.greenButton} variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
           </div>
-          <StudentRequestCard 
+          <StudentRequestCard
             zid={requestData.zid}
             status={requestData.status}
             firstName={requestData.firstName}
