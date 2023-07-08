@@ -3,7 +3,7 @@ use actix_web::{
     HttpResponse,
 };
 use chrono::NaiveDate;
-use futures::executor::block_on;
+use futures::{executor::block_on, future::join_all};
 use rand::Rng;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
@@ -51,11 +51,12 @@ pub async fn create_offering(
     log::info!("Created Course: {:?}", course);
 
     // Add admins
-    body.admins
-        .unwrap_or_default()
-        .into_iter()
-        .map(|id| add_course_admin(course.course_offering_id, id))
-        .for_each(block_on);
+    join_all(
+        body.admins
+            .unwrap_or_default()
+            .into_iter()
+            .map(|id| add_course_admin(course.course_offering_id, id)),
+    ).await;
 
     HttpResponse::Ok().json(web::Json(course))
 }
@@ -342,6 +343,5 @@ pub async fn check_user_exists(user_id: i32) -> SyphonResult<Result<i32, i32>> {
         .one(db())
         .await?
         .map(|u| u.zid)
-        .ok_or(user_id)
-    )
+        .ok_or(user_id))
 }

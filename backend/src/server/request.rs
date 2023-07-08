@@ -64,7 +64,7 @@ pub async fn all_requests_for_queue(
     test_is_user!(token, db);
     // Find all related requests
     // TODO: dont do cringe loop of all
-    let requests: Vec<_> = entities::requests::Entity::find()
+    let requests_future = entities::requests::Entity::find()
         .filter(entities::requests::Column::QueueId.eq(body.queue_id))
         .all(db)
         .await
@@ -73,10 +73,13 @@ pub async fn all_requests_for_queue(
         .map(|req| req.request_id)
         .map(|request_id| {
             request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
-        })
-        .map(block_on)
-        .map(|res| res.unwrap())
-        .collect();
+        });
+    // Ignores DbErrors - No Panic. Also no 500 Return
+    let requests = join_all(requests_future)
+        .await
+        .into_iter()
+        .filter_map(Result::ok)
+        .collect::<Vec<_>>();
 
     HttpResponse::Ok().json(requests)
 }
