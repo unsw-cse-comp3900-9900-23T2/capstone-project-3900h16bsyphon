@@ -45,6 +45,14 @@
     padding: 5px 25px;
 }
 
+.genericButton {
+    height: 45px;
+    font-weight: bold;
+    background-color: var(--colour-main-purple-200);
+    color: var(--colour-main-purple-900);
+    padding: 5px 25px;
+}
+
 .label {
     font-weight: bold;
     text-align: center;

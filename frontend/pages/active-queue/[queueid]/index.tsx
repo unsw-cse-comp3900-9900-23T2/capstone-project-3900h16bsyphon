@@ -58,6 +58,10 @@ const ActiveQueue = () => {
     router.reload();
   };
 
+  const handleCopyQueueLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+  };
+
   return <>
     <MetaData />
     <Header />
@@ -107,6 +111,7 @@ const ActiveQueue = () => {
           </div>
         </Box>
         <div className={styles.buttonContainer}>
+          <Button className={styles.genericButton} variant='contained' onClick={handleCopyQueueLink}>Copy Queue Link</Button>
           <Button className={styles.settingsButton} variant='contained' onClick={() => router.push(`/course/${requestData.courseOfferingId}`)}>Settings</Button>
         </div>
       </div>
