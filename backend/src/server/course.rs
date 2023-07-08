@@ -1,6 +1,6 @@
 use actix_web::{
     web::{self, ReqData},
-    HttpResponse,
+    HttpResponse, http::StatusCode,
 };
 use chrono::NaiveDate;
 use futures::future::join_all;
@@ -13,7 +13,7 @@ use crate::{
     models::{
         AddTutorToCourseBody, CourseOfferingReturnModel, CreateOfferingBody,
         FetchCourseTagsReturnModel, GetCourseTagsQuery, JoinWithTutorLink, TokenClaims,
-        INV_CODE_LEN, GetOfferingByIdQuery, AddTutorToCoursesBody, SyphonResult,
+        INV_CODE_LEN, GetOfferingByIdQuery, AddTutorToCoursesBody, SyphonResult, SyphonError,
     },
     test_is_user,
     utils::{
@@ -157,12 +157,6 @@ pub async fn get_courses_admined(token: ReqData<TokenClaims>) -> HttpResponse {
     }
 
     let course_offering_result = entities::course_offerings::Entity::find()
-        .select_only()
-        .column(entities::course_offerings::Column::CourseOfferingId)
-        .column(entities::course_offerings::Column::CourseCode)
-        .column(entities::course_offerings::Column::Title)
-        .column(entities::course_offerings::Column::StartDate)
-        .column(entities::course_offerings::Column::TutorInviteCode)
         .right_join(entities::users::Entity)
         .filter(entities::tutors::Column::Zid.eq(token.username).and(entities::tutors::Column::IsCourseAdmin.eq(true)))
         .into_model::<CourseOfferingReturnModel>()
@@ -285,7 +279,7 @@ pub async fn add_tutor(
 pub async fn add_tutor_to_courses(
     token: ReqData<TokenClaims>,
     body: web::Json<AddTutorToCoursesBody>,
-) -> HttpResponse {
+) -> SyphonResult<HttpResponse> {
     let db = db();
     let body = body.into_inner();
 
@@ -306,8 +300,14 @@ pub async fn add_tutor_to_courses(
                 .await
                 .expect("db broke")
             {
-                None => return HttpResponse::Forbidden().json("Not Admin"),
-                Some(t) if !t.is_course_admin => return HttpResponse::Forbidden().json("Not Admin"),
+                None => return Err(SyphonError::Json(
+                    json!("Not Admin"),
+                    StatusCode::FORBIDDEN,
+                )),
+                Some(t) if !t.is_course_admin => return Err(SyphonError::Json(
+                    json!("Not Admin"),
+                    StatusCode::FORBIDDEN,
+                )),
                 Some(_) => {}
             }
         }
@@ -323,9 +323,18 @@ pub async fn add_tutor_to_courses(
     
         let (course, user) = match (db_course, db_user) {
             (Some(c), Some(t)) => (c, t),
-            (Some(_), None) => return not_exist_error(vec!["user"]),
-            (None, Some(_)) => return not_exist_error(vec!["course"]),
-            (None, None) => return not_exist_error(vec!["course", "user"]),
+            (Some(_), None) => return Err(SyphonError::Json(
+                json!(vec!["user"]),
+                StatusCode::NOT_FOUND,
+            )),
+            (None, Some(_)) => return Err(SyphonError::Json(
+                json!(vec!["course"]),
+                StatusCode::NOT_FOUND,
+            )),
+            (None, None) => return Err(SyphonError::Json(
+                json!(vec!["course", "user"]),
+                StatusCode::NOT_FOUND,
+            )),
         };
     
         let db_tutor = entities::tutors::Entity::find_by_id((user.zid, course.course_offering_id))
@@ -347,7 +356,7 @@ pub async fn add_tutor_to_courses(
         .expect("db broke");
     }
 
-    HttpResponse::Ok().json("ok")
+    Ok(HttpResponse::Ok().json("ok"))
 }
 
 /// Join a course using a tutor link. If already tutor, does nothing and is
