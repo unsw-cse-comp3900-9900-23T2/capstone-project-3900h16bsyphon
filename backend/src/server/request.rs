@@ -2,21 +2,22 @@ use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
 
+use futures::future::join_all;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
-use serde_json::json;
 
 use crate::{entities, models, utils::db::db};
 use models::{
     request::{AllRequestsForQueueBody, RequestInfoBody},
-    CreateRequest, FetchCourseTagsReturnModel, RequestInfoReturn, SyphonError, SyphonResult,
+    CreateRequest, CreateRequestResponse, QueueRequest, SyphonError, SyphonResult, Tag,
     TokenClaims,
 };
 
 pub async fn create_request(
     token: ReqData<TokenClaims>,
     request_creation: web::Json<CreateRequest>,
-) -> HttpResponse {
+) -> SyphonResult<HttpResponse> {
     let db = db();
+    // insert request itself
     let request_creation = request_creation.into_inner();
     let request = entities::requests::ActiveModel {
         request_id: ActiveValue::NotSet,
@@ -28,7 +29,9 @@ pub async fn create_request(
         is_clusterable: ActiveValue::Set(request_creation.is_clusterable),
         status: ActiveValue::Set(request_creation.status),
     };
-    let insertion = request.insert(db).await.expect("Db broke");
+
+    // tag insertion
+    let insertion = request.insert(db).await?;
     let tag_insertion = request_creation.tags.into_iter().map(|tag| {
         entities::request_tags::ActiveModel {
             request_id: ActiveValue::Set(insertion.request_id),
@@ -37,21 +40,34 @@ pub async fn create_request(
         .insert(db)
     });
     join_all(tag_insertion).await;
-    HttpResponse::Ok().json(json!({"request_id": insertion.request_id}))
+    let is_priority = entities::tags::Entity::find()
+        .left_join(entities::queues::Entity)
+        .right_join(entities::requests::Entity)
+        .filter(entities::request_tags::Column::RequestId.eq(insertion.request_id))
+        .filter(entities::queue_tags::Column::IsPriority.eq(true))
+        .filter(entities::queue_tags::Column::QueueId.eq(insertion.queue_id))
+        .one(db)
+        .await?;
+    if is_priority.is_some() {
+        entities::requests::ActiveModel {
+            order: ActiveValue::Set(0),
+            ..entities::requests::ActiveModel::from(insertion.clone())
+        }
+        .update(db)
+        .await?;
+    }
+
+    Ok(HttpResponse::Ok().json(CreateRequestResponse {
+        request_id: insertion.request_id,
+    }))
 }
 
 pub async fn request_info_wrapper(
     token: ReqData<TokenClaims>,
     body: web::Query<RequestInfoBody>,
 ) -> SyphonResult<HttpResponse> {
-    let res = request_info_not_web(token, body).await?;
-
-    Ok(HttpResponse::Ok().json(res))
+    Ok(HttpResponse::Ok().json(request_info_not_web(token, body).await?))
 }
-
-// given user -> give all requests
-// given queue -> all requests
-use futures::future::join_all;
 
 pub async fn all_requests_for_queue(
     token: ReqData<TokenClaims>,
@@ -59,10 +75,9 @@ pub async fn all_requests_for_queue(
 ) -> SyphonResult<HttpResponse> {
     let db = db();
     let body = body.into_inner();
-
     // Find all related requests
     // TODO: dont do cringe loop of all
-    let requests = entities::requests::Entity::find()
+    let requests_future = entities::requests::Entity::find()
         .filter(entities::requests::Column::QueueId.eq(body.queue_id))
         .all(db)
         .await?
@@ -71,13 +86,13 @@ pub async fn all_requests_for_queue(
         .map(|request_id| {
             request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
         });
-
-    let requests = join_all(requests)
+    // Ignores DbErrors - No Panic. Also no 500 Return
+    let mut requests = join_all(requests_future)
         .await
         .into_iter()
         .filter_map(Result::ok)
         .collect::<Vec<_>>();
-
+    requests.sort_by(|a, b| a.order.cmp(&b.order));
     Ok(HttpResponse::Ok().json(requests))
 }
 
@@ -86,7 +101,7 @@ pub async fn all_requests_for_queue(
 pub async fn request_info_not_web(
     _token: ReqData<TokenClaims>,
     body: web::Query<RequestInfoBody>,
-) -> SyphonResult<RequestInfoReturn> {
+) -> SyphonResult<QueueRequest> {
     let db = db();
     let body = body.into_inner();
     // Get the request from the database
@@ -95,7 +110,7 @@ pub async fn request_info_not_web(
         .await?;
     let request = db_request.ok_or(SyphonError::Json(
         "Request not found".into(),
-        StatusCode::NOT_FOUND,
+        StatusCode::BAD_REQUEST,
     ))?;
 
     // User Data
@@ -108,15 +123,17 @@ pub async fn request_info_not_web(
         .left_join(entities::requests::Entity)
         .left_join(entities::queues::Entity)
         .column(entities::tags::Column::TagId)
-        .distinct()
+        .distinct_on([entities::tags::Column::TagId])
         .column(entities::tags::Column::Name)
         .column(entities::queue_tags::Column::IsPriority)
         .filter(entities::request_tags::Column::RequestId.eq(request.request_id))
-        .into_model::<FetchCourseTagsReturnModel>()
+        .filter(entities::queues::Column::QueueId.eq(request.queue_id))
+        .into_model::<Tag>()
         .all(db)
-        .await?;
+        .await
+        .expect("Db broke");
 
-    Ok(RequestInfoReturn {
+    let request_value = QueueRequest {
         request_id: request.request_id,
         first_name: user.first_name,
         last_name: user.last_name,
@@ -126,8 +143,11 @@ pub async fn request_info_not_web(
         description: request.description,
         is_clusterable: request.is_clusterable,
         status: request.status,
-        tags: tags,
-    })
+        order: request.order,
+        tags,
+    };
+
+    Ok(request_value)
 }
 
 pub async fn disable_cluster(
@@ -156,5 +176,5 @@ pub async fn disable_cluster(
     .await
     .expect("db broke");
 
-    HttpResponse::Ok().json({})
+    HttpResponse::Ok().json(())
 }

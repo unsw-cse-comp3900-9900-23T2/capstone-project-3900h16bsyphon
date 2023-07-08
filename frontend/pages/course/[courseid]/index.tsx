@@ -36,6 +36,7 @@ const ViewQueue = () => {
       setData(toCamelCase(d));
     };
     let getCourse = async () => {
+      if (!router.query.courseid) return;
       const res = await authenticatedGetFetch('/course/get', {course_id: `${router.query.courseid}`});
       let d = await res.json();
       setCourseData(toCamelCase(d));

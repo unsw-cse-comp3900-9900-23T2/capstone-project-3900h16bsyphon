@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styles from './Header.module.css';
 import Avatar from '@mui/material/Avatar';
 import PersonIcon from '@mui/icons-material/Person';
@@ -14,6 +14,7 @@ const Header = () => {
     router.push('/'); 
     setToken('');
   };
+
   return (
     <div className={styles.header}>
       <h1 className={styles.heading}>
@@ -21,7 +22,7 @@ const Header = () => {
       </h1>
       <div className={styles.right}>
         <NotificationsModal />
-        <Avatar onClick={() => router.push('/user-profile')} className={styles.profile}>
+        <Avatar onClick={() => router.push('/user-profile/current')} className={styles.profile}>
           <PersonIcon />
         </Avatar>
         <Button className={styles.button} onClick={() => logout()}>Log out</Button>

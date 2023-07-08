@@ -10,17 +10,9 @@ import React, { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../utils';
 import { CourseOfferingData } from '../../types/courses';
 
-type CourseOffering = {
-  title: string;
-  courseCode: string;
-  startDate: string;
-  courseOfferingId: number;
-  tutorInviteCode: string;
-}
-
 const Dashboard: NextPage = () => {
-  const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
-  const [myCourses, setMyCourses] = useState<CourseOffering[]>([]);
+  const [courseOfferings, setCourseOfferings] = useState<CourseOfferingData[]>([]);
+  const [myCourses, setMyCourses] = useState<CourseOfferingData[]>([]);
   const [myProfile, setMyProfile ] = useState<any>({});
   useEffect(() => {
     const fetchCourseOfferings = async () => {
@@ -30,15 +22,7 @@ const Dashboard: NextPage = () => {
         return;
       }
       let courseOfferings = await res.json();
-      setCourseOfferings(courseOfferings?.map((course: CourseOfferingData) => (
-        {
-          title: course.title,
-          courseCode: course.course_code,
-          startDate: course.start_date,
-          courseOfferingId: course.course_offering_id,
-          tutorInviteCode: course.tutor_invite_code
-        }
-      )));
+      setCourseOfferings(toCamelCase(courseOfferings));
     };
 
     const fetchCoursesTutored = async () => {
@@ -76,8 +60,13 @@ const Dashboard: NextPage = () => {
                 <CreateCourseOfferingModal />
               </div>
               <div className={styles.cards}>
-                {courseOfferings?.map((d, index) => (
-                  <CourseOfferingCard key={index} title={`${d.courseCode} - ${d.title}`} inviteCode={d.tutorInviteCode} index={index}/>
+                {courseOfferings?.map(d => (
+                  <CourseOfferingCard
+                    key={d.courseOfferingId}
+                    title={`${d.courseCode} - ${d.title}`}
+                    inviteCode={d.tutorInviteCode}
+                    courseOfferingId={d.courseOfferingId}
+                  />
                 ))}
               </div>
             </>

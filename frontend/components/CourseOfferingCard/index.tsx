@@ -11,11 +11,11 @@ import Link from 'next/link';
 // TODO: add more props in
 type CourseOfferingCardProps = {
   title: string;
-  index: number;
   inviteCode: string;  
+  courseOfferingId: number;
 }
 
-const CourseOfferingCard = ({ title, inviteCode, index } : CourseOfferingCardProps) => {
+const CourseOfferingCard = ({ title, inviteCode, courseOfferingId } : CourseOfferingCardProps) => {
   return (
     <Card>
       <CardContent>
@@ -24,9 +24,9 @@ const CourseOfferingCard = ({ title, inviteCode, index } : CourseOfferingCardPro
         </Typography>
       </CardContent>
       <CardActions>
-        <Link href={`/course/${index}`}><Button disableElevation className={styles.queueBtn}>QUEUES</Button></Link>
+        <Link href={`/course/${courseOfferingId}`}><Button disableElevation className={styles.queueBtn}>QUEUES</Button></Link>
         <Button disableElevation className={styles.analyticsBtn}>ANALYTICS</Button>
-        <Link href={`/course/${index}`}><Button disableElevation className={styles.tutorPageBtn}>TUTOR PAGE</Button></Link>
+        <Link href={`/course/${courseOfferingId}`}><Button disableElevation className={styles.tutorPageBtn}>TUTOR PAGE</Button></Link>
         <TutorInviteModal inviteCode={inviteCode}/>
       </CardActions>
     </Card>

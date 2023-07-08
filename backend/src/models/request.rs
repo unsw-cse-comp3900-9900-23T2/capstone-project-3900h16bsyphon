@@ -4,6 +4,7 @@ use crate::entities;
 use entities::sea_orm_active_enums::Statuses;
 
 use super::FetchCourseTagsReturnModel;
+use super::Tag;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CreateRequest {
@@ -13,6 +14,11 @@ pub struct CreateRequest {
     pub tags: Vec<i32>,
     pub is_clusterable: bool,
     pub status: Option<Statuses>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CreateRequestResponse {
+    pub request_id: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -26,15 +32,16 @@ pub struct AllRequestsForQueueBody {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct RequestInfoReturn {
+pub struct QueueRequest {
     pub request_id: i32,
     pub first_name: String,
     pub last_name: String,
     pub zid: i32,
+    pub order: i32,
     pub queue_id: i32,
     pub title: String,
     pub description: String,
     pub is_clusterable: bool,
     pub status: Option<Statuses>,
-    pub tags: Vec<FetchCourseTagsReturnModel>,
+    pub tags: Vec<Tag>,
 }

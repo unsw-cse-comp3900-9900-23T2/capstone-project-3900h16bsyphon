@@ -8,6 +8,7 @@
 .cardBox {
     padding: 0px 50px;
     display: flex;
+    flex-grow: 1;
     flex-direction: column;
     justify-content: space-between;
     gap: 25px;
@@ -25,19 +26,62 @@
 }
 
 .closeQueueButton {
+    height: 45px;
+    font-weight: bold;
+    background-color: var(--colour-main-red-200);
+    color: var(--colour-main-red-900);
+    padding: 5px 25px;
+}
+
+.closeQueueButton:hover {
+    background-color: var(--colour-main-red-600);
+}
+
+.settingsButton {
+    height: 45px;
     font-weight: bold;
     background-color: var(--colour-main-grey-200);
     color: black;
     padding: 5px 25px;
 }
 
-.closeQueueButton:hover {
+.genericButton {
+    height: 45px;
+    font-weight: bold;
+    background-color: var(--colour-main-purple-200);
+    color: var(--colour-main-purple-900);
+    padding: 5px 25px;
+}
+
+.label {
+    font-weight: bold;
+    text-align: center;
+    align-content: center;
+    flex-grow: 1;
+}
+
+.select {
+    background-color: var(--colour-main-purple-400);
+    font-weight: bold;
+    color: black;
+    padding: 5px 25px;
+    height: 45px;
+}
+
+.settingsButton:hover {
     background-color: var(--colour-main-grey-400);
+}
+
+.body {
+    display: flex;
+    flex-direction: row;
+    width: 95%;
+    column-gap: 5%;
 }
 
 .buttonContainer {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    min-width: 25%;
+    min-width: 20%;
 }
