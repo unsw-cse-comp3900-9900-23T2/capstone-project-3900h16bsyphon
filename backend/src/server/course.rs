@@ -3,7 +3,7 @@ use actix_web::{
     HttpResponse,
 };
 use chrono::NaiveDate;
-use futures::{executor::block_on, future::join_all};
+use futures::future::join_all;
 use rand::Rng;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
@@ -56,7 +56,8 @@ pub async fn create_offering(
             .unwrap_or_default()
             .into_iter()
             .map(|id| add_course_admin(course.course_offering_id, id)),
-    ).await;
+    )
+    .await;
 
     HttpResponse::Ok().json(web::Json(course))
 }

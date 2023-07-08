@@ -1,6 +1,6 @@
 use actix_web::HttpResponse;
 use chrono::NaiveDate;
-use futures::{executor::block_on, future::join_all};
+use futures::future::join_all;
 use regex::Regex;
 use sea_orm::FromQueryResult;
 use serde::{Deserialize, Serialize};

@@ -4,7 +4,6 @@ use actix_web::HttpResponse;
 use crate::{entities, models, utils::db::db};
 use models::request::{AllRequestsForQueueBody, RequestInfoBody};
 
-use futures::executor::block_on;
 use futures::future::join_all;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
