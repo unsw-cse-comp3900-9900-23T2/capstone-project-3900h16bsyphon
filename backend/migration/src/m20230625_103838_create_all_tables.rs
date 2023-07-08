@@ -159,7 +159,13 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(Faqs::Answer).string().not_null())
                     .col(ColumnDef::new(Faqs::Question).string().not_null())
-                    .primary_key(Index::create().col(Faqs::CourseOfferingId))
+                    .col(
+                        ColumnDef::new(Faqs::FaqId)
+                            .integer()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
                     .to_owned(),
             )
             .await?;
@@ -493,6 +499,7 @@ enum Faqs {
     CourseOfferingId,
     Question,
     Answer,
+    FaqId
 }
 
 #[derive(Iden)]

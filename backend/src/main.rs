@@ -50,10 +50,7 @@ async fn main() -> std::io::Result<()> {
                 scope("/auth")
                     .route("/signup", web::post().to(server::auth::create_user))
                     .route("/login", web::post().to(server::auth::auth))
-                    .route(
-                        "/hello",
-                        web::get().to(server::hello).wrap(amw.clone()),
-                    ),
+                    .route("/hello", web::get().to(server::hello).wrap(amw.clone())),
             )
             .service(
                 scope("/user")
@@ -103,13 +100,14 @@ async fn main() -> std::io::Result<()> {
                         web::get().to(server::queue::get_queues_by_course),
                     )
                     .route("/is_open", web::get().to(server::queue::get_is_open))
-                    .route("/tags", web::get().to(server::queue::fetch_queue_tags))
+                    .route("/tags", web::get().to(server::queue::fetch_queue_tags)),
             )
             .service(
                 scope("/faqs")
                     .wrap(amw.clone())
-                    .route("/add", web::post().to(server::faqs::add_faqs)))
-                    .route("/get", web::get().to(server::faqs::get_faqs))
+                    .route("/add", web::post().to(server::faqs::add_faqs))
+                    .route("/get", web::get().to(server::faqs::get_faqs)),
+            )
             .service(scope("history").wrap(amw.clone()).route(
                 "/request_count",
                 web::get().to(server::history::get_request_count),

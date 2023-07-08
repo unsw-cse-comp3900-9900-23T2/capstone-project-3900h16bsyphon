@@ -12,6 +12,7 @@ import { useRouter } from 'next/router';
 import TagsSelection from '../../../components/TagsSelection';
 import Header from '../../../components/Header';
 import { Tag } from '../../../types/requests';
+import { error } from 'console';
 
 
 const QueueCreationPage = () => {
@@ -44,12 +45,17 @@ const QueueCreationPage = () => {
       const data = await res.json();
       setTags(toCamelCase(data));
     };
+
     if (!router.query.courseid) return;
     fetchCourse();
     fetchTags();
   }, [router.query.courseid]);
 
   const submit = async () => {
+    if (title === '') {
+      alert('Please enter a title');
+      return;
+    }
     const body = {
       title,
       time_start: timeStart.format('YYYY-MM-DDTHH:mm:ss'),
@@ -106,7 +112,7 @@ const QueueCreationPage = () => {
               setTimeLimit={setTimeLimit}
             />
 
-            <FAQs course_offering_id={`${router.query.courseid}`} />
+            <FAQs courseOfferingId={router.query.courseid} />
             <Button variant="contained" className={style.button} onClick={submit}>Create Queue</Button>
           </Card>
         </Box>
