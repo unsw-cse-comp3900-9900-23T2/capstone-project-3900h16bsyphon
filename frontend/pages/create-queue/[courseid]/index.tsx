@@ -27,6 +27,7 @@ const QueueCreationPage = () => {
   const [title, setTitle] = useState('');
   const [timeLimit, setTimeLimit] = useState(0);
   const [course, setCourse] = useState('');
+  const [error, setError] = useState<{title?: string}>({});
   // complaining about not using announcement, will do later.
   // eslint-disable-next-line
   const [announcement, _setAnnouncement] = useState<string>('hi');
@@ -53,7 +54,7 @@ const QueueCreationPage = () => {
 
   const submit = async () => {
     if (title === '') {
-      alert('Please enter a title');
+      setError({title: 'Title cannot be empty'});
       return;
     }
     const body = {
@@ -91,6 +92,8 @@ const QueueCreationPage = () => {
                 variant='outlined'
                 fullWidth
                 className={style.textField}
+                error={!!error.title}
+                helperText={error.title}
               />
             </FormGroup>
             <SyphonDatePicker date={date} setDate={setDate}/>
