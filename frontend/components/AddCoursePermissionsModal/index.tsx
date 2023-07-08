@@ -51,14 +51,16 @@ const AddCoursePermissionsModal = ({
 
   const handleSave = () => {
     const saveCoursePermissions = async () => {
-      const course_ids = currentSelected.map(c => c.courseOfferingId);
+      // send the courses that arent already added
+      const newCourses = currentSelected.filter((c) => !coursesTutored.includes(c));
+      const course_ids = newCourses.map(c => c.courseOfferingId);
       const res = await authenticatedPutFetch('/course/add_tutor_to_courses', { tutor_id: tutorId, course_ids });
       if (!res.ok) {
         console.error('authentication failed, or something broke with adding course permissions, check network tab');
         return;
       }
       // if everything went ok with adding courses, update the list 
-      setCoursesTutored(currentSelected);
+      setCoursesTutored([...coursesTutored, ...newCourses]);
 
     };
     saveCoursePermissions();
