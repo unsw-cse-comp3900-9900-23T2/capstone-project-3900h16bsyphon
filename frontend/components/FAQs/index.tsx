@@ -96,7 +96,7 @@ const FAQs = ({ courseOfferingId, tutor = false }: FAQsProps) => {
           color="inherit"
           key={id}
         />])
-      })
+      });
   }
 
   const toolbar = () => (
