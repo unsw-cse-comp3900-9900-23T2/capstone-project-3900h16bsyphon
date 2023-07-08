@@ -138,7 +138,7 @@ pub async fn get_courses_tutored(token: ReqData<TokenClaims>) -> HttpResponse {
     }
 }
 
-pub async fn get_courses_admined(token: ReqData<TokenClaims>) -> HttpResponse {
+pub async fn get_courses_admined(token: ReqData<TokenClaims>) -> SyphonError<HttpResponse> {
     let db = db();
     let error = validate_user(&token, db).await.err();
     if error.is_some() {
@@ -389,8 +389,6 @@ pub async fn join_with_tutor_link(
         course_offering_id: ActiveValue::Set(course.course_offering_id),
         is_course_admin: ActiveValue::Set(false),
     };
-
-    // If already tutor, do nothing -> idempotent go brr
 
     // Insert
     entities::tutors::Entity::insert(active_tutor)
