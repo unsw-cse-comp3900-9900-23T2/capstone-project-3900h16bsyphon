@@ -1,7 +1,8 @@
+use actix_web::web;
 use actix_web::{web::ReqData, HttpResponse};
 
 use crate::models::auth::TokenClaims;
-use crate::models::user::*;
+use crate::models::user::{*, self};
 use crate::utils::user::validate_user;
 use crate::{entities, utils::db::db};
 
@@ -36,14 +37,14 @@ pub async fn get_users(token: ReqData<TokenClaims>) -> HttpResponse {
     }
 }
 
-pub async fn get_user(token: ReqData<TokenClaims>) -> HttpResponse {
+pub async fn get_user(token: ReqData<TokenClaims>, body: web::Query<UserInfoBody>) -> HttpResponse {
     let db = db();
 
     if let Err(err) = validate_user(&token, db).await {
         return err;
     }
 
-    let user_id = token.username;
+    let user_id = body.user_id.unwrap_or(token.username);
 
     // get all courses user tutors
     let tutors = entities::tutors::Entity::find()

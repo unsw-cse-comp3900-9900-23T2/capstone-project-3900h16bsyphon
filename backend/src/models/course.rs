@@ -46,6 +46,12 @@ pub struct AddTutorToCourseBody {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AddTutorToCoursesBody {
+    pub tutor_id: i32,
+    pub course_ids: Vec<i32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JoinWithTutorLink {
     pub tutor_link: String,
 }

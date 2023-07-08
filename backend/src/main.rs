@@ -78,6 +78,13 @@ async fn main() -> std::io::Result<()> {
                     .route(
                         "/join_with_tutor_link",
                         web::put().to(server::course::join_with_tutor_link),
+                    )
+                    .route("/get_courses_admined",
+                        web::get().to(server::course::get_courses_admined),
+                    )
+                    .route(
+                        "/add_tutor_to_courses",
+                        web::put().to(server::course::add_tutor_to_courses),
                     ),
             )
             .service(
@@ -106,10 +113,14 @@ async fn main() -> std::io::Result<()> {
                     .route("/is_open", web::get().to(server::queue::get_is_open))
                     .route("/tags", web::get().to(server::queue::fetch_queue_tags)),
             )
-            .service(scope("/history").wrap(amw.clone()).route(
-                "/request_count",
-                web::get().to(server::history::get_request_count),
-            ))
+            .service(
+                scope("history")
+                    .wrap(amw.clone())
+                    .route(
+                        "/request_count",
+                        web::get().to(server::history::get_request_count),
+                    )
+            )
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
             .route("/{tail:.*}", web::put().to(server::res404))

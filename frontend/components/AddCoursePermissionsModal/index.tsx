@@ -1,30 +1,18 @@
-import React, { useState } from 'react';
+import React, { Dispatch, SetStateAction, useState, useEffect } from 'react';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
 import styles from './AddCoursePermissionsModal.module.css';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import { CourseOfferingData } from '../../types/courses';
+
 import {
-  FormControl,
-  MenuItem,
-  OutlinedInput,
-  Select,
-  SelectChangeEvent,
+  Autocomplete,
+  TextField,
   Typography,
 } from '@mui/material';
 import UserPermissionsBox from '../UserPermissionBox';
-
-const courses = [
-  'COMP1511',
-  'COMP1521',
-  'COMP2041',
-  'COMP1531',
-  'COMP1541',
-  'COMP1551',
-  'COMP2511',
-  'COMP2521',
-  'COMP2531',
-];
+import { authenticatedGetFetch, authenticatedPutFetch, toCamelCase } from '../../utils';
 
 type CoursePermission = {
   courseCode: string,
@@ -33,27 +21,50 @@ type CoursePermission = {
 }
 
 type AddCoursePermissionsModalProps = {
-  tutor: CoursePermission[];
+  coursesTutored: CoursePermission[];
+  setCoursesTutored: Dispatch<SetStateAction<CoursePermission[]>>;
+  tutorId: number;
 }
 
 const AddCoursePermissionsModal = ({
-  tutor,
+  coursesTutored, setCoursesTutored, tutorId
 }: AddCoursePermissionsModalProps) => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  
+  useEffect(() => {
+    setCurrentSelected(coursesTutored);
+  }, [coursesTutored]);
 
-  const [tutorPermissionList, setTutorPermissionList] =
-    useState<string[]>(tutor?.map((x) => x.courseCode));
+  const [courseOfferings, setCourseOfferings] = useState<CourseOfferingData[]>([]);
 
-  const handleChange = (event: SelectChangeEvent<string>) => {
-    const {
-      target: { value },
-    } = event;
-    setTutorPermissionList(
-      // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value
-    );
+  const [currentSelected, setCurrentSelected] = useState<CoursePermission[]>([]);
+
+  useEffect(() => {
+    const getCourseOfferings = async () => {
+      const res = await authenticatedGetFetch('/course/get_courses_admined', {});
+      setCourseOfferings(toCamelCase(await res.json()));
+    };
+    getCourseOfferings();
+  }, []);
+
+  const handleSave = () => {
+    const saveCoursePermissions = async () => {
+      // send the courses that arent already added
+      const newCourses = currentSelected.filter((c) => !coursesTutored.includes(c));
+      const course_ids = newCourses.map(c => c.courseOfferingId);
+      const res = await authenticatedPutFetch('/course/add_tutor_to_courses', { tutor_id: tutorId, course_ids });
+      if (!res.ok) {
+        console.error('authentication failed, or something broke with adding course permissions, check network tab');
+        return;
+      }
+      // if everything went ok with adding courses, update the list 
+      setCoursesTutored([...coursesTutored, ...newCourses]);
+
+    };
+    saveCoursePermissions();
+    handleClose();
   };
 
   return (
@@ -84,45 +95,40 @@ const AddCoursePermissionsModal = ({
               <CloseIcon />
             </IconButton>
           </div>
-
-          <FormControl className={styles.formContainer} >
-            <Select
-              multiple
-              displayEmpty
-              value={tutorPermissionList as unknown as string}
-              onChange={handleChange}
-              input={<OutlinedInput />}
-              renderValue={(selected) => {
-                if (selected.length === 0) {
-                  return <em>Select courses</em>;
-                }
-
-                return (selected as unknown as string[]).join(', ');
-              }}
-              inputProps={{ 'aria-label': 'Without label' }}
-            >
-              {courses?.map((course) => (
-                <MenuItem key={course} value={course}>
-                  {course}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
+          <Autocomplete
+            fullWidth
+            multiple
+            id="tags-standard"
+            options={courseOfferings.map(co => {
+              const item: CoursePermission = {
+                courseCode: co.courseCode, 
+                courseOfferingId: co.courseOfferingId, 
+                title: co.title};
+              return item;
+            })}
+            isOptionEqualToValue={(option, value) => option.courseOfferingId === value.courseOfferingId}
+            value={currentSelected}
+            getOptionLabel={(option) => option.courseCode}
+            onChange={(_, value) => {
+              console.log('the value inside on change rn is', value);
+              setCurrentSelected(value);
+            }}
+            renderInput={(params) => (<TextField {...params} fullWidth />)}
+          />
           <div className={styles.userPermissions}>
-            {tutorPermissionList?.map((course, i) => (
+            {currentSelected?.map((course, i) => (
               <UserPermissionsBox
                 key={i}
                 permission="Tutor"
-                courseOffering={course}
+                courseOffering={course.courseCode}
               />
             ))}
             {}
           </div>
         
           <div className={styles.buttonContainer} >
-            <Button onClick={handleClose} variant='contained' className={styles.text}>
-              Add courses
+            <Button onClick={handleSave} variant='contained' className={styles.text}>
+              Save
             </Button>
           </div>
         </div>
