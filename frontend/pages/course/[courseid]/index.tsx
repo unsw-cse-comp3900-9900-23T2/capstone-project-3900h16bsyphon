@@ -1,4 +1,3 @@
-/* eslint-disable */
 import MetaData from '../../../components/MetaData';
 import Header from '../../../components/Header';
 import Button from '@mui/material/Button';
@@ -28,7 +27,6 @@ const ViewQueue = () => {
     },
   ]);
   const [courseData, setCourseData] = useState<any>({title: 'COMP1000'});
-  console.log('coursedata:', courseData);
   const [isTutor, setIsTutor] = useState(false);
   useEffect(() => {
     let getQueues = async () => {
@@ -40,9 +38,7 @@ const ViewQueue = () => {
     let getCourse = async () => {
       if (!router.query.courseid) return;
       const res = await authenticatedGetFetch('/course/get', {course_id: `${router.query.courseid}`});
-      console.log('res:', res);
       let d = await res.json();
-      console.log('result of fetch: ', d);
       setCourseData(toCamelCase(d));
     };
     let getTutored = async () => {
