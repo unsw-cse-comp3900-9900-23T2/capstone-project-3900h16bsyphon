@@ -36,7 +36,7 @@ const LogIn: NextPage = () => {
       password: '',
     });
     setToken(response);
-    setUserId(zid);
+    setUserId(zid.replace('z', ''));
     router.push('/dashboard');
 
   };

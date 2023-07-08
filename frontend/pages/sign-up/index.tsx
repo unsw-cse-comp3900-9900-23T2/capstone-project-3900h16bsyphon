@@ -73,7 +73,7 @@ const LogIn: NextPage = () => {
       });
     let loginResponse = await loginRes.json();
     setToken(loginResponse);
-    setUserId(zid);
+    setUserId(zid.replace('z', ''));
     router.push('/dashboard');
   };
 

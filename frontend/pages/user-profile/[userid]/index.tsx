@@ -3,6 +3,7 @@ import UserProfileCard from '../../../components/UserProfileCard';
 import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 import styles from './UserProfilePage.module.css';
 import Header from '../../../components/Header';
+import { useRouter } from 'next/router';
 
 type CoursePermission = {
   courseCode: string,
@@ -28,16 +29,19 @@ const userInformation: UserProfileCardProps = {
 };
 
 export default function UserProfile() {
+  const router = useRouter();
   const [responseData, setResponseData] = useState<UserProfileCardProps>(userInformation);
   
   useEffect(() => {
+    console.log('the userprofile user_id queury is', router.query.userid);
     const getData = async () => {
-      const res = await authenticatedGetFetch('/user/profile', {});
+      const res = await authenticatedGetFetch('/user/profile', { user_id: `${router.query.userid}` });
       if (!res.ok) {
         console.error('authentication failed, or something broke, check network tab');
         return;
       }
       setResponseData(toCamelCase(await res.json()));
+      console.log('the response data inside user-profile/zid is', responseData);
     };
     getData();
   },[]);
