@@ -33,7 +33,6 @@ export default function UserProfile() {
   const [responseData, setResponseData] = useState<UserProfileCardProps>(userInformation);
   
   useEffect(() => {
-    console.log('the userprofile user_id queury is', router.query.userid);
     const getData = async () => {
       const res = await authenticatedGetFetch('/user/profile', 
         router.query.userid === 'current' ? 
@@ -45,8 +44,6 @@ export default function UserProfile() {
         return;
       }
       setResponseData(toCamelCase(await res.json()));
-      
-      console.log('the response data inside user-profile/zid is', responseData);
     };
     getData();
   },[router]);

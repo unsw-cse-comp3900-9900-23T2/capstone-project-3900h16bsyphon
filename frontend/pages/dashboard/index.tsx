@@ -30,15 +30,7 @@ const Dashboard: NextPage = () => {
         return;
       }
       let courseOfferings = await res.json();
-      setCourseOfferings(courseOfferings?.map((course: CourseOfferingData) => (
-        {
-          title: course.title,
-          courseCode: course.course_code,
-          startDate: course.start_date,
-          courseOfferingId: course.course_offering_id,
-          tutorInviteCode: course.tutor_invite_code
-        }
-      )));
+      setCourseOfferings(toCamelCase(courseOfferings));
     };
 
     const fetchCoursesTutored = async () => {

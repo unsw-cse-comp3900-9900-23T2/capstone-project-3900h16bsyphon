@@ -12,19 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import UserPermissionsBox from '../UserPermissionBox';
-import { authenticatedGetFetch, toCamelCase } from '../../utils';
-
-const courses = [
-  'COMP1511',
-  'COMP1521',
-  'COMP2041',
-  'COMP1531',
-  'COMP1541',
-  'COMP1551',
-  'COMP2511',
-  'COMP2521',
-  'COMP2531',
-];
+import { authenticatedGetFetch, authenticatedPutFetch, toCamelCase } from '../../utils';
 
 type CoursePermission = {
   courseCode: string,
@@ -35,28 +23,50 @@ type CoursePermission = {
 type AddCoursePermissionsModalProps = {
   coursesTutored: CoursePermission[];
   setCoursesTutored: Dispatch<SetStateAction<CoursePermission[]>>;
+  tutorId: number;
 }
 
 const AddCoursePermissionsModal = ({
-  coursesTutored, setCoursesTutored
+  coursesTutored, setCoursesTutored, tutorId
 }: AddCoursePermissionsModalProps) => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  
+  useEffect(() => {
+    setCurrentSelected(coursesTutored);
+  }, [coursesTutored]);
 
-  const [tutorPermissionList, setTutorPermissionList] =
-    useState<string[]>(coursesTutored?.map((x) => x.courseCode));
-
+  // all the options in the drop down
   const [courseOfferings, setCourseOfferings] = useState<CourseOfferingData[]>([]);
+
+  const [currentSelected, setCurrentSelected] = useState<CoursePermission[]>([]);
 
   useEffect(() => {
     const getCourseOfferings = async () => {
       const res = await authenticatedGetFetch('/course/get_courses_admined', {});
-      setCourseOfferings(await res.json());
-      console.log('the course offerings in the modal are ', courseOfferings);
+      setCourseOfferings(toCamelCase(await res.json()));
     };
     getCourseOfferings();
   }, []);
+
+  const handleSave = () => {
+    console.log('saving uwu');
+    const saveCoursePermissions = async () => {
+      const course_ids = currentSelected.map(c => c.courseOfferingId);
+      console.log('course ids are ', course_ids);
+      const res = await authenticatedPutFetch('/course/add_tutor_to_courses', { tutor_id: tutorId, course_ids });
+      if (!res.ok) {
+        console.error('authentication failed, or something broke with adding course permissions, check network tab');
+        return;
+      }
+      // if everything went ok with adding courses, update the list 
+      setCoursesTutored(currentSelected);
+
+    };
+    saveCoursePermissions();
+    handleClose();
+  };
 
   return (
     <div>
@@ -91,30 +101,35 @@ const AddCoursePermissionsModal = ({
             multiple
             id="tags-standard"
             options={courseOfferings.map(co => {
-              return {course_code: co.course_code, course_offering_id: co.course_offering_id, title: co.title};
+              const item: CoursePermission = {
+                courseCode: co.courseCode, 
+                courseOfferingId: co.courseOfferingId, 
+                title: co.title};
+              return item;
             })}
-            getOptionLabel={(option) => option.course_code}
+            isOptionEqualToValue={(option, value) => option.courseOfferingId === value.courseOfferingId}
+            value={currentSelected}
+            getOptionLabel={(option) => option.courseCode}
             onChange={(_, value) => {
               console.log('the value inside on change rn is', value);
-              // setAdmins(matches?.map((user) => user.zid));
+              setCurrentSelected(value);
             }}
             renderInput={(params) => (<TextField {...params} fullWidth />)}
           />
-            
           <div className={styles.userPermissions}>
-            {tutorPermissionList?.map((course, i) => (
+            {currentSelected?.map((course, i) => (
               <UserPermissionsBox
                 key={i}
                 permission="Tutor"
-                courseOffering={course}
+                courseOffering={course.courseCode}
               />
             ))}
             {}
           </div>
         
           <div className={styles.buttonContainer} >
-            <Button onClick={handleClose} variant='contained' className={styles.text}>
-              Add courses
+            <Button onClick={handleSave} variant='contained' className={styles.text}>
+              Save
             </Button>
           </div>
         </div>

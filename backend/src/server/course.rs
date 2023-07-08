@@ -136,7 +136,6 @@ pub async fn get_courses_tutored(token: ReqData<TokenClaims>) -> HttpResponse {
     }
 }
 
-
 pub async fn get_courses_admined(token: ReqData<TokenClaims>) -> HttpResponse {
     let db = db();
     let error = validate_user(&token, db).await.err();
@@ -274,11 +273,11 @@ pub async fn add_tutor(
     HttpResponse::Ok().json("ok")
 }
 
-/// Add a tutor to the given course.
+/// Add a tutor to the given courses (multiple).
 /// ## Preconditions
 /// - The user making the request must be a course admin
 /// ## Returns
-/// - Forbidden: if the user making the request is not a course admin
+/// - Forbidden: if the user making the request is not a (course admin OR org user)
 /// - 200 with empty body if successful return
 /// - 400 if the course or any of the users dont not exist
 pub async fn add_tutor_to_courses(

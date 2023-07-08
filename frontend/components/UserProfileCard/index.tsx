@@ -4,7 +4,7 @@ import styles from './UserProfileCard.module.css';
 import { useRouter } from 'next/router';
 import AddCoursePermissionsModal from '../AddCoursePermissionsModal';
 import { formatZid } from '../../utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type CoursePermission = {
   courseCode: string,
@@ -28,12 +28,21 @@ export default function UserProfileCard({
   courseAdmin,
 }: UserProfileCardProps) {
   const router = useRouter();
-
   const [coursesTutored, setCoursesTutored] = useState<CoursePermission[]>(tutor);
+
+  useEffect(() => {
+    setCoursesTutored(tutor);
+  },[tutor]);
 
   const navigateToDashboard = () => {
     router.push('/dashboard');
   };
+
+
+  useEffect(() => {
+    console.log('tutor in userprofilecard are ', tutor);
+    console.log('courses tutored in userprofilecard are ', coursesTutored);
+  },[tutor, coursesTutored]);
 
   return (
     <Box className={styles.cardBox}>
@@ -96,7 +105,7 @@ export default function UserProfileCard({
             </Typography>
           </div>
           <div className={styles.userPermissions}>
-            {tutor?.map((course, i) => (
+            {coursesTutored?.map((course, i) => (
               <UserPermissionsBox
                 key={i}
                 permission="Tutor"
@@ -114,7 +123,7 @@ export default function UserProfileCard({
           </div>
 
           <div className={styles.buttonContainer}>
-            <AddCoursePermissionsModal coursesTutored={coursesTutored} setCoursesTutored={setCoursesTutored} />
+            <AddCoursePermissionsModal coursesTutored={coursesTutored} setCoursesTutored={setCoursesTutored} tutorId={zid}/>
             <Button onClick={navigateToDashboard} className={styles.backButton} variant='contained' size='medium'>Back</Button>
           </div>
         </CardContent>
