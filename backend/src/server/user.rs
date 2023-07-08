@@ -2,7 +2,7 @@ use actix_web::web;
 use actix_web::{web::ReqData, HttpResponse};
 
 use crate::models::auth::TokenClaims;
-use crate::models::user::*;
+use crate::models::user::{*, self};
 use crate::utils::user::validate_user;
 use crate::{entities, utils::db::db};
 
@@ -37,7 +37,14 @@ pub async fn get_users(token: ReqData<TokenClaims>) -> HttpResponse {
     }
 }
 
-    pub async fn get_user(token: ReqData<TokenClaims>, body: web::Query<UserInfoBody>) -> HttpResponse {
+pub async fn get_current_user(token: ReqData<TokenClaims>) -> HttpResponse {
+    let body = UserInfoBody {
+        user_id: token.username,
+    };
+    return get_user(token, actix_web::web::Query(body)).await;
+}
+
+pub async fn get_user(token: ReqData<TokenClaims>, body: web::Query<UserInfoBody>) -> HttpResponse {
     let db = db();
 
     if let Err(err) = validate_user(&token, db).await {

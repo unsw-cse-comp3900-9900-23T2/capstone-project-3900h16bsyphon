@@ -59,7 +59,8 @@ async fn main() -> std::io::Result<()> {
                 scope("/user")
                     .wrap(amw.clone())
                     .route("list", web::get().to(server::user::get_users))
-                    .route("profile", web::get().to(server::user::get_user)),
+                    .route("profile", web::get().to(server::user::get_user))
+                    .route("current", web::get().to(server::user::get_current_user)),
             )
             .service(
                 scope("/course")

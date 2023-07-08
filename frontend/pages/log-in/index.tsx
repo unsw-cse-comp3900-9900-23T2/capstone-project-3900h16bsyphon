@@ -5,7 +5,7 @@ import TextInput from '../../components/TextInput';
 import { FormEvent, useState } from 'react';
 import Button from '@mui/material/Button';
 import { useRouter } from 'next/router';
-import { setToken, setUserId } from '../../utils';
+import { setToken } from '../../utils';
 
 const LogIn: NextPage = () => {
   const [zid, setZid] = useState('');
@@ -36,7 +36,6 @@ const LogIn: NextPage = () => {
       password: '',
     });
     setToken(response);
-    setUserId(zid.replace('z', ''));
     router.push('/dashboard');
 
   };

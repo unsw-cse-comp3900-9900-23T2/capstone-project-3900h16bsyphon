@@ -7,7 +7,7 @@ import Header from '../../components/Header';
 import MetaData from '../../components/MetaData';
 import CreateCourseOfferingModal from '../../components/CreateCourseOfferingModal';
 import React, { useEffect, useState } from 'react';
-import { authenticatedGetFetch, toCamelCase, getUserId } from '../../utils';
+import { authenticatedGetFetch, toCamelCase } from '../../utils';
 import { CourseOfferingData } from '../../types/courses';
 
 type CourseOffering = {
@@ -51,7 +51,7 @@ const Dashboard: NextPage = () => {
       setMyCourses(toCamelCase(courses));
     };
     const fetchUserProfile = async () => {
-      const res = await authenticatedGetFetch('/user/profile', { user_id: `${getUserId()}`});
+      const res = await authenticatedGetFetch('/user/current', {});
       if (!res.ok) {
         console.error('authentication failed, or something broke, check network tab');
         return;

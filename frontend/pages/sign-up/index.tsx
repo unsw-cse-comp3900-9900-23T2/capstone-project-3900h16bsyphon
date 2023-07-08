@@ -6,7 +6,7 @@ import TextInput from '../../components/TextInput';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/router';
 import Button from '@mui/material/Button';
-import { setToken, setUserId, toCamelCase } from '../../utils';
+import { setToken, toCamelCase } from '../../utils';
 
 const LogIn: NextPage = () => {
   const [zid, setZid] = useState('');
@@ -73,7 +73,6 @@ const LogIn: NextPage = () => {
       });
     let loginResponse = await loginRes.json();
     setToken(loginResponse);
-    setUserId(zid.replace('z', ''));
     router.push('/dashboard');
   };
 
