@@ -88,7 +88,8 @@ async fn main() -> std::io::Result<()> {
                     .route(
                         "/all_requests_for_queue",
                         web::get().to(server::request::all_requests_for_queue),
-                    ),
+                    )
+                    .route("/disable_cluster", web::put().to(server::request::disable_cluster))
             )
             .service(
                 scope("/queue")
@@ -109,7 +110,7 @@ async fn main() -> std::io::Result<()> {
                     .route("/get", web::get().to(server::faqs::get_faqs))
                     .route("/delete", web::delete().to(server::faqs::delete_faqs)),
             )
-            .service(scope("history").wrap(amw.clone()).route(
+            .service(scope("/history").wrap(amw.clone()).route(
                 "/request_count",
                 web::get().to(server::history::get_request_count),
             ))

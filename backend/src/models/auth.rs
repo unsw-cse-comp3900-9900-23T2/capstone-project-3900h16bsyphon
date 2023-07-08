@@ -1,7 +1,8 @@
-use actix_web::HttpResponse;
+use actix_web::http::StatusCode;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
+use crate::models::{SyphonError, SyphonResult};
 use crate::server::auth::parse_zid;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -43,7 +44,7 @@ pub struct CreateUserBody {
 }
 
 impl CreateUserBody {
-    pub fn verify_user(&self) -> Result<(), HttpResponse> {
+    pub fn verify_user(&self) -> SyphonResult<()> {
         let errs = json!({
             "first_name": Self::verify_name(&self.first_name).err(),
             "last_name": Self::verify_name(&self.last_name).err(),
@@ -52,7 +53,7 @@ impl CreateUserBody {
         });
         match errs.as_object().unwrap().iter().all(|(_, v)| v.is_null()) {
             true => Ok(()),
-            false => Err(HttpResponse::BadRequest().json(errs)),
+            false => Err(SyphonError::Json(errs, StatusCode::BAD_REQUEST)),
         }
     }
 

@@ -4,7 +4,6 @@ use actix_web::HttpResponse;
 use crate::{entities, models, utils::db::db};
 use models::request::{AllRequestsForQueueBody, RequestInfoBody};
 
-use futures::executor::block_on;
 use futures::future::join_all;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
@@ -64,7 +63,7 @@ pub async fn all_requests_for_queue(
     test_is_user!(token, db);
     // Find all related requests
     // TODO: dont do cringe loop of all
-    let requests: Vec<_> = entities::requests::Entity::find()
+    let requests_future = entities::requests::Entity::find()
         .filter(entities::requests::Column::QueueId.eq(body.queue_id))
         .all(db)
         .await
@@ -73,10 +72,13 @@ pub async fn all_requests_for_queue(
         .map(|req| req.request_id)
         .map(|request_id| {
             request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
-        })
-        .map(block_on)
-        .map(|res| res.unwrap())
-        .collect();
+        });
+    // Ignores DbErrors - No Panic. Also no 500 Return
+    let requests = join_all(requests_future)
+        .await
+        .into_iter()
+        .filter_map(Result::ok)
+        .collect::<Vec<_>>();
 
     HttpResponse::Ok().json(requests)
 }
@@ -143,4 +145,31 @@ pub async fn request_info_not_web(
     Ok(request_json)
 }
 
+pub async fn disable_cluster(
+    _token: ReqData<TokenClaims>,
+    body: web::Json<RequestInfoBody>,
+) -> HttpResponse {
+    let db = db();
+    let body = body.into_inner();
 
+    // find request by id
+    let db_request = entities::requests::Entity::find_by_id(body.request_id)
+        .one(db)
+        .await
+        .map_err(|_e| {
+            HttpResponse::InternalServerError().body("request id does not exist");
+        })
+        .unwrap()
+        .unwrap();
+
+    // update is_clusterable to false
+    entities::requests::ActiveModel {
+        is_clusterable: ActiveValue::Set(false),
+        ..db_request.into()
+    }
+    .update(db)
+    .await
+    .expect("db broke");
+
+    HttpResponse::Ok().json({})
+}

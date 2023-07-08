@@ -3,7 +3,7 @@ use actix_web::{
     HttpResponse,
 };
 use chrono::NaiveDate;
-use futures::executor::block_on;
+use futures::future::join_all;
 use rand::Rng;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
@@ -12,8 +12,8 @@ use crate::{
     entities,
     models::{
         AddTutorToCourseBody, CourseOfferingReturnModel, CreateOfferingBody,
-        FetchCourseTagsReturnModel, GetCourseTagsQuery, JoinWithTutorLink, TokenClaims,
-        INV_CODE_LEN, GetOfferingByIdQuery,
+        FetchCourseTagsReturnModel, GetCourseTagsQuery, GetOfferingByIdQuery, JoinWithTutorLink,
+        SyphonResult, TokenClaims, INV_CODE_LEN,
     },
     test_is_user,
     utils::{
@@ -32,7 +32,7 @@ pub async fn create_offering(
     }
 
     // Validate Course Data
-    if let Err(e) = body.validate() {
+    if let Err(e) = body.validate().await {
         return e;
     }
 
@@ -51,11 +51,13 @@ pub async fn create_offering(
     log::info!("Created Course: {:?}", course);
 
     // Add admins
-    body.admins
-        .unwrap_or_default()
-        .into_iter()
-        .map(|id| add_course_admin(course.course_offering_id, id))
-        .for_each(block_on);
+    join_all(
+        body.admins
+            .unwrap_or_default()
+            .into_iter()
+            .map(|id| add_course_admin(course.course_offering_id, id)),
+    )
+    .await;
 
     HttpResponse::Ok().json(web::Json(course))
 }
@@ -332,11 +334,15 @@ pub fn today() -> NaiveDate {
     chrono::Utc::now().naive_utc().date()
 }
 
-pub async fn check_user_exists(user_id: i32) -> bool {
-    let db = db();
-    entities::users::Entity::find_by_id(user_id)
-        .one(db)
-        .await
-        .expect("db broke")
-        .is_some()
+/// Check if a user exists
+/// # Returns
+/// - Ok(Ok(zid)) if user exists
+/// - Ok(Err(zid)) if user does not exist
+/// - Err(SyphonError) if db broke
+pub async fn check_user_exists(user_id: i32) -> SyphonResult<Result<i32, i32>> {
+    Ok(entities::users::Entity::find_by_id(user_id)
+        .one(db())
+        .await?
+        .map(|u| u.zid)
+        .ok_or(user_id))
 }
