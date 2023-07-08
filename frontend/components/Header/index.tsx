@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import NotificationsModal from '../NotificationsModal';
-import { setToken, setUserId } from '../../utils';
+import { setToken, setUserId, getUserId } from '../../utils';
 
 const Header = () => {
   const router = useRouter();
@@ -23,7 +23,7 @@ const Header = () => {
       </h1>
       <div className={styles.right}>
         <NotificationsModal />
-        <Avatar onClick={() => router.push('/user-profile')} className={styles.profile}>
+        <Avatar onClick={() => router.push(`/user-profile/${getUserId()}`)} className={styles.profile}>
           <PersonIcon />
         </Avatar>
         <Button className={styles.button} onClick={() => logout()}>Log out</Button>
