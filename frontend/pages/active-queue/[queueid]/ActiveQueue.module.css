@@ -29,7 +29,7 @@
     height: 45px;
     font-weight: bold;
     background-color: var(--colour-main-red-200);
-    color: black;
+    color: var(--colour-main-red-900);
     padding: 5px 25px;
 }
 
@@ -48,6 +48,8 @@
 .label {
     font-weight: bold;
     text-align: center;
+    align-content: center;
+    flex-grow: 1;
 }
 
 .select {

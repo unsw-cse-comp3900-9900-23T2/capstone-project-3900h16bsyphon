@@ -3,7 +3,6 @@ import style from './TagsSelection.module.css';
 import { Autocomplete, TextField, Typography } from '@mui/material';
 import TagBox from '../TagBox';
 import { Tag } from '../../types/requests';
-import { FireplaceSharp } from '@mui/icons-material';
 
 type TagsProps = {
   tags: Tag[],
@@ -44,7 +43,7 @@ const TagsSelection = ({ tags, tagSelection, isCreator, setTagSelection, color =
         renderOption={(props, option) => (
           <li {...props} style={{columnGap: 5}}>
             {option}
-            {tags.find((tag) => tag.name === option)?.isPriority ? <FireplaceSharp />: <></>}
+            {tags.find((tag) => tag.name === option)?.isPriority ? '🔥': <></>}
           </li>
         )}
         renderTags={(value) =>

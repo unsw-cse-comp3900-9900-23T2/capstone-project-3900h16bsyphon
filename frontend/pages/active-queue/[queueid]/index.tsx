@@ -69,7 +69,7 @@ const ActiveQueue = () => {
       </div>
       <div className={styles.body}>
         <div className={styles.buttonContainer}>
-          <FormControl>
+          <FormControl size='small' >
             <InputLabel className={styles.label} id="sort-queue-select-label"> Sort Queue </InputLabel>
             <Select
               labelId="sort-queue-select-label"
