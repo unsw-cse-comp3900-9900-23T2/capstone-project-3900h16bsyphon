@@ -6,14 +6,16 @@ import Button from '@mui/material/Button';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import NotificationsModal from '../NotificationsModal';
-import { setToken } from '../../utils';
+import { setToken, setUserId } from '../../utils';
 
 const Header = () => {
   const router = useRouter();
   const logout = () => {
     router.push('/'); 
     setToken('');
+    setUserId('');
   };
+
   return (
     <div className={styles.header}>
       <h1 className={styles.heading}>

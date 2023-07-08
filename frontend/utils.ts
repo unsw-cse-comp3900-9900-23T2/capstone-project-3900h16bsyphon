@@ -54,6 +54,10 @@ export const getToken = () => getCookie('token');
 
 export const setToken = (token: string) => setCookie('token', token);
 
+export const getUserId = () => getCookie('userid');
+
+export const setUserId = (userid: string) => setCookie('userid', userid);
+
 export const toCamelCase = (obj: any) : any => {
   let rtn = obj;
   if (!rtn || typeof (obj) !== 'object') {
