@@ -59,7 +59,7 @@ const ActiveQueue = () => {
   };
 
   const handleCopyQueueLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    navigator.clipboard.writeText(window.location.href.replace('active-queue', 'create-request'));
   };
 
   return <>
