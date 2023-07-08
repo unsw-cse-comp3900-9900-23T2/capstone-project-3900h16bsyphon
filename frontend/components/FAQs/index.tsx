@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect } from 'react';
-import { DataGrid, GridColDef, GridEditingState, GridRowEditStopParams, GridRowId, GridRowSpacingParams, GridState, GridToolbarContainer, MuiEvent, unstable_gridTabIndexColumnHeaderFilterSelector, useGridApiRef } from '@mui/x-data-grid';
+import React, { useEffect } from 'react';
+import { DataGrid, GridColDef} from '@mui/x-data-grid';
 import style from './FAQs.module.css';
 import { Button, Typography } from '@mui/material';
-import { authenticatedGetFetch, authenticatedPostFetch, toCamelCase } from '../../utils';
+import { authenticatedGetFetch, authenticatedPostFetch} from '../../utils';
 import AddIcon from '@mui/icons-material/Add';
 
 type FAQ = {
