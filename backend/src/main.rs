@@ -76,7 +76,8 @@ async fn main() -> std::io::Result<()> {
                         "/join_with_tutor_link",
                         web::put().to(server::course::join_with_tutor_link),
                     )
-                    .route("/get_courses_admined",
+                    .route(
+                        "/get_courses_admined",
                         web::get().to(server::course::get_courses_admined),
                     )
                     .route(
@@ -99,6 +100,10 @@ async fn main() -> std::io::Result<()> {
                     .route(
                         "/disable_cluster",
                         web::put().to(server::request::disable_cluster),
+                    )
+                    .route(
+                        "/set_status",
+                        web::put().to(server::request::set_request_status),
                     ),
             )
             .service(
@@ -117,14 +122,10 @@ async fn main() -> std::io::Result<()> {
                         web::put().to(server::queue::update_tag_priority),
                     ),
             )
-            .service(
-                scope("history")
-                    .wrap(amw.clone())
-                    .route(
-                        "/request_count",
-                        web::get().to(server::history::get_request_count),
-                    )
-            )
+            .service(scope("history").wrap(amw.clone()).route(
+                "/request_count",
+                web::get().to(server::history::get_request_count),
+            ))
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
             .route("/{tail:.*}", web::put().to(server::res404))

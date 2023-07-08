@@ -186,7 +186,7 @@ pub async fn disable_cluster(
 
 /// # Returns
 /// - Err(400) => request does not exist
-pub async fn put_request_status(
+pub async fn set_request_status(
     token: ReqData<TokenClaims>,
     body: web::Json<PutRequestStatusBody>,
 ) -> SyphonResult<HttpResponse> {
