@@ -36,3 +36,9 @@
     gap: 10px;
     width: 25%;
 }
+
+.faqContainer {
+    display: flex;
+    flex-direction: column;
+    margin-top: 3%;
+}

@@ -118,6 +118,14 @@ pub async fn request_info_not_web(
         .all(db)
         .await
         .expect("Db broke");
+
+    let course_offering_id = entities::queues::Entity::find_by_id(request.queue_id)
+            .one(db)
+            .await
+            .expect("Db broke")
+            .expect("queue doesn't exist")
+            .course_offering_id;
+
     let request_json = json!({
         "request_id": request.request_id,
         "first_name": user.first_name,
@@ -128,8 +136,11 @@ pub async fn request_info_not_web(
         "description": request.description,
         "is_clusterable": request.is_clusterable,
         "status": request.status,
-        "tags": tags
+        "tags": tags,
+        "course_offering_id": course_offering_id,
     });
 
     Ok(request_json)
 }
+
+

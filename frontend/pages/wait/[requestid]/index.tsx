@@ -9,6 +9,7 @@ import { useRouter } from 'next/router';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 import Header from '../../../components/Header';
+import FAQs from '../../../components/FAQs';
 
 const defaultData  = {
   zid: 5303033,
@@ -18,6 +19,7 @@ const defaultData  = {
   status: 'Unresolved',
   title: 'Pls help me with printing this array - im so stuck!',
   queueId: 1,
+  courseOfferingId: 1,
   tags: [{
     name: 'tag',
     isPriority: false,
@@ -33,6 +35,8 @@ const WaitingScreen = () => {
   const router = useRouter();
   const [requestData, setData] = useState(defaultData);
   const  [reqState, setReqState] = useState('Unresolved');
+  const [courseOfferingId, setCourseOfferingId] = useState(-1);
+
   console.log(router.query.requestid);
   useEffect(() => {
     let getRequest = async () => {
@@ -54,6 +58,7 @@ const WaitingScreen = () => {
     }
     getRequest();
   }, [router.query.requestid]);
+
 
   if (reqState === 'Not Found') {
     router.push('/404');
@@ -85,6 +90,11 @@ const WaitingScreen = () => {
             description={requestData.description}
           />
         </Box>
+        <div className={styles.faqContainer}>
+          <FAQs courseOfferingId={requestData.courseOfferingId.toString()} 
+            tutor={false} 
+          />
+        </div>
       </div>
     </>
   );

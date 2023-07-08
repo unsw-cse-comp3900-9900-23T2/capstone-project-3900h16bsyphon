@@ -13,6 +13,7 @@ type FAQ = {
 
 type FAQsProps = {
   courseOfferingId: string | string[] | undefined;
+  tutor?: boolean;
 };
 
 const defaultData : FAQ[] = [
@@ -27,7 +28,7 @@ const defaultData : FAQ[] = [
     answer: 'The math book had been feeling down lately, burdened by the weight of numbers and equations that seemed to stretch endlessly across its pages. It had grown tired of being seen as a mere tool for solving problems, longing to be appreciated for the beauty and elegance hidden within its mathematical realm. Each day, as it watched novels being read with delight and poetry being recited with passion, the math book couldn\'t help but feel left out, confined to a world where its true potential went unnoticed. It yearned for the day when someone would open its cover not out of obligation, but with genuine curiosity and a desire to explore the intricacies of numbers. The math book dreamt of being embraced, not for its ability to calculate, but for its power to unlock the secrets of the universe and inspire minds. So, as it sat on the shelf, a tinge of sadness permeated its pages, silently hoping that one day, someone would see beyond its numerical facade and discover the wonders that lay within.'
   }];
 
-const FAQs = ({ courseOfferingId }: FAQsProps) => {
+const FAQs = ({ courseOfferingId, tutor = false }: FAQsProps) => {
   const [data, setData] = React.useState(defaultData);
 
   useEffect(() => {
@@ -74,6 +75,7 @@ const FAQs = ({ courseOfferingId }: FAQsProps) => {
       <DataGrid 
         columns={columns}
         rows={data}
+        isCellEditable={() => tutor}
         className={style.grid}
         getRowHeight={() => 'auto'} 
         autoHeight={true}
@@ -94,12 +96,12 @@ const FAQs = ({ courseOfferingId }: FAQsProps) => {
         }}
         aria-label='FAQs'
       />
-      <Button color="primary" 
+      {tutor && <Button color="primary" 
         startIcon={<AddIcon />} 
         onClick={addRow}
         className={style.addButton}>
         Add FAQ
-      </Button>
+      </Button>}
     </div>
   );
 };
