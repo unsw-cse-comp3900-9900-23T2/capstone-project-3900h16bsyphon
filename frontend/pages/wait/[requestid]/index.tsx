@@ -75,7 +75,7 @@ const WaitingScreen = () => {
       <Header />
       <div className={styles.pageContainer}>
         <div className={styles.queueTitle}>
-          <Typography className={styles.text} variant='h3'>
+          <Typography variant='h3'>
             {requestData.queueTitle}
           </Typography>
         </div>
@@ -98,7 +98,7 @@ const WaitingScreen = () => {
             status={requestData.status}
             firstName={requestData.firstName}
             lastName={requestData.lastName}
-            tags={requestData.tags.map((tag) => tag.name)}
+            tags={requestData.tags}
             title={requestData.title}
             queueId={requestData.queueId}
             description={requestData.description}

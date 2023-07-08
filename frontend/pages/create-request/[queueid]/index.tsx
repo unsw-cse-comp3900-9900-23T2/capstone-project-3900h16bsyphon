@@ -77,23 +77,21 @@ export default function CreateRequest() {
         <Box className={styles.cardBox}>
           <Card className={styles.cardContainer}>
             <div className={styles.cardHeader}>
-              <Typography className={styles.text} variant="h4">
+              <Typography variant="h4">
                 Create Request
               </Typography>
             </div>
-
             <CardContent className={styles.cardContent}>
               <div>
                 <div className={styles.headingWordCount}>
-                  <Typography className={styles.text} variant="subtitle1">
+                  <Typography variant="subtitle1">
                     Title
                   </Typography>
-                  <Typography className={styles.text} variant="subtitle1">
+                  <Typography variant="subtitle1">
                     {(MIN_TITLE - titleWordCount) < 0 ? 0 : MIN_TITLE - titleWordCount} more words required
                   </Typography>
                 </div>
                 <TextField
-                  className={styles.text}
                   id="outlined-input"
                   value={title}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,17 +102,16 @@ export default function CreateRequest() {
               </div>
               <div>
                 <div className={styles.headingWordCount}>
-                  <Typography className={styles.text} variant="subtitle1">
+                  <Typography variant="subtitle1">
                     Description
                   </Typography>
-                  <Typography className={styles.text} variant="subtitle1">
+                  <Typography variant="subtitle1">
                     {(MIN_DESCRIPTION - descriptionWordCount) < 0 ? 0 : MIN_DESCRIPTION - descriptionWordCount} more words required
                   </Typography>
                 </div>
                 <TextField
                   multiline
                   rows={4}
-                  className={styles.text}
                   value={description}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                     setDescription(event.target.value);
@@ -123,7 +120,7 @@ export default function CreateRequest() {
                   id="outlined-input"
                   fullWidth />
               </div>
-              <TagsSelection tags={tags} setTagSelection={setTagSelection} color='black' backgroundColor='#e3e3e3' />
+              <TagsSelection tagSelection={tagSelection} tags={tags} setTagSelection={setTagSelection} color='black' backgroundColor='#e3e3e3' />
               <FormControlLabel
                 control={<Checkbox checked={isClusterable} onChange={() => setIsClusterable(!isClusterable)} />}
                 label="Allow for clustering similar requests?"

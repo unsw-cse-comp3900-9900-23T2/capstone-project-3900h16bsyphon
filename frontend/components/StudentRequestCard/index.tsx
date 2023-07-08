@@ -7,13 +7,14 @@ import {
 import styles from './StudentRequestCard.module.css';
 import TagBox from '../TagBox';
 import { authenticatedGetFetch, formatZid } from '../../utils';
+import type { Tag } from '../../types/requests';
 
 type StudentRequestCardProps = {
   zid: number,
   firstName: string,
   lastName: string,
   title: string,
-  tags: string[],
+  tags: Tag[],
   status: string,
   description: string,
   queueId: number,
@@ -76,11 +77,11 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags
       </div>
       <div className={styles.tagContainer}>
         {tags?.map((tag, i) => {
-          return <TagBox text={tag} key={i} backgroundColor='#EDB549' color='white' />;
+          return <TagBox text={tag.name} key={i} isPriority={tag.isPriority} backgroundColor='#EDB549' color='white' />;
         })}
       </div>
       <div>
-        <Typography className={styles.text} variant='body1'>
+        <Typography variant='body1'>
           {description}
         </Typography>
       </div>

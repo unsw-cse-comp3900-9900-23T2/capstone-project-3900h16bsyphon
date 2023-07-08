@@ -104,7 +104,8 @@ async fn main() -> std::io::Result<()> {
                         web::get().to(server::queue::get_queues_by_course),
                     )
                     .route("/is_open", web::get().to(server::queue::get_is_open))
-                    .route("/tags", web::get().to(server::queue::fetch_queue_tags)),
+                    .route("/tags", web::get().to(server::queue::fetch_queue_tags))
+                    .route("/tags/set_priority", web::put().to(server::queue::update_tag_priority))
             )
             .service(scope("/history").wrap(amw.clone()).route(
                 "/request_count",

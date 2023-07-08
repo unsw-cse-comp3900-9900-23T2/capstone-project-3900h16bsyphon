@@ -2,7 +2,7 @@ use crate::{
     entities,
     models::{
         CreateQueueRequest, GetActiveQueuesQuery, GetQueueByIdQuery, GetQueueTagsQuery,
-        GetQueuesByCourseQuery, QueueReturnModel, TokenClaims,
+        GetQueuesByCourseQuery, QueueReturnModel, TokenClaims, Tag, SyphonResult, FlipTagPriority,
     },
     test_is_user,
     utils::{db::db, user::validate_user},
@@ -131,18 +131,66 @@ pub async fn get_queues_by_course(
     HttpResponse::Ok().json(the_course)
 }
 
+pub async fn update_tag_priority(_: ReqData<TokenClaims>, body: web::Json<FlipTagPriority>) -> SyphonResult<HttpResponse> {
+    let db = db();
+    let item = match entities::queue_tags::Entity::find_by_id((body.tag_id, body.queue_id)).one(db).await? {
+        Some(item) => item,
+        None => return Ok(HttpResponse::NotFound().json("No tag of that id!")),
+    };
+    let has_tag = entities::requests::Entity::find()
+        .left_join(entities::tags::Entity)
+        .filter(entities::request_tags::Column::TagId.eq(body.tag_id))
+        .filter(entities::requests::Column::QueueId.eq(body.queue_id))
+        .all(db)
+        .await?;
+    let model = entities::queue_tags::ActiveModel {
+        is_priority: ActiveValue::Set(body.is_priority),
+        ..item.into()
+    };
+    model.update(db).await?;
+    let priority_tags = entities::queue_tags::Entity::find()
+        .left_join(entities::tags::Entity)
+        .filter(entities::queue_tags::Column::IsPriority.eq(true))
+        .filter(entities::queue_tags::Column::QueueId.eq(body.queue_id))
+        .all(db)
+        .await?.iter().map(|item| item.tag_id).collect::<Vec<_>>();
+
+    let is_priority = has_tag.clone().into_iter()
+        .map(|item|
+            entities::request_tags::Entity::find()
+            .filter(entities::request_tags::Column::RequestId.eq(item.request_id))
+            .filter(entities::request_tags::Column::TagId.is_in(priority_tags.clone()))
+            .one(db)
+        );
+    let is_priority = join_all(is_priority).await;
+
+    let models = is_priority.into_iter().zip(has_tag).filter_map(|(item, request)| {
+        let checked = item.unwrap();
+        Some(entities::requests::ActiveModel {
+            request_id: ActiveValue::Unchanged(request.request_id),
+            order: ActiveValue::Set(if checked.is_some() { 0 } else { 1 }),
+            ..Default::default()
+        }.update(db))
+    
+    });
+    join_all(models).await;
+    Ok(HttpResponse::Ok().json("Success!"))
+}
+
 pub async fn fetch_queue_tags(
     token: ReqData<TokenClaims>,
     query: web::Query<GetQueueTagsQuery>,
 ) -> HttpResponse {
     let db = db();
     test_is_user!(token, db);
-    let tags = entities::tags::Entity::find()
-        .left_join(entities::queues::Entity)
+    let tags = entities::queue_tags::Entity::find()
+        .left_join(entities::tags::Entity)
         .filter(entities::queue_tags::Column::QueueId.eq(query.queue_id))
-        .column(entities::tags::Column::TagId)
+        .column(entities::queue_tags::Column::TagId)
         .distinct()
+        .column(entities::queue_tags::Column::IsPriority)
         .column(entities::tags::Column::Name)
+        .into_model::<Tag>()
         .all(db)
         .await
         .expect("Db broke");

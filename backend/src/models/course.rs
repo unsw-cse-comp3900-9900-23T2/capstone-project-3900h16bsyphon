@@ -19,13 +19,6 @@ pub struct CourseOfferingReturnModel {
     pub tutor_invite_code: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
-pub struct FetchCourseTagsReturnModel {
-    pub tag_id: i32,
-    pub name: String,
-    pub is_priority: bool,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetCourseTagsQuery {
     pub course_id: i32,
