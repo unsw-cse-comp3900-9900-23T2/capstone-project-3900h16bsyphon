@@ -35,7 +35,7 @@ async fn main() -> std::io::Result<()> {
             .allowed_origin("http://localhost:3000")
             .allowed_origin("http://127.0.0.1:3000")
             .allowed_origin("http://frontend:3000")
-            .allowed_methods(vec!["GET", "POST", "PUT"])
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
             .expose_headers(&[actix_web::http::header::CONTENT_DISPOSITION])
@@ -106,7 +106,8 @@ async fn main() -> std::io::Result<()> {
                 scope("/faqs")
                     .wrap(amw.clone())
                     .route("/add", web::post().to(server::faqs::add_faqs))
-                    .route("/get", web::get().to(server::faqs::get_faqs)),
+                    .route("/get", web::get().to(server::faqs::get_faqs))
+                    .route("/delete", web::delete().to(server::faqs::delete_faqs)),
             )
             .service(scope("history").wrap(amw.clone()).route(
                 "/request_count",

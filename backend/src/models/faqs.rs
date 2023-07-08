@@ -27,3 +27,9 @@ impl From<AddFaqRequest> for entities::faqs::ActiveModel {
 pub struct GetFaqsQuery {
     pub course_offering_id: i32,
 }
+
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DeleteFaqQuery {
+    pub faq_id: i32,
+}

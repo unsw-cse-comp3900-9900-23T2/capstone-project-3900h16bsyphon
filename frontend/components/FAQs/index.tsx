@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
-import { DataGrid, GridColDef} from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridColDef, GridFilterAltIcon, GridToolbarContainer, GridToolbarFilterButton} from '@mui/x-data-grid';
 import style from './FAQs.module.css';
 import { Button, Typography } from '@mui/material';
-import { authenticatedGetFetch, authenticatedPostFetch} from '../../utils';
+import { authenticatedDeleteFetch, authenticatedGetFetch, authenticatedPostFetch} from '../../utils';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 
 type FAQ = {
   id: number;
@@ -15,6 +16,8 @@ type FAQsProps = {
   courseOfferingId: string | string[] | undefined;
   tutor?: boolean;
 };
+
+
 
 const defaultData : FAQ[] = [
   { id: 100, 
@@ -46,7 +49,7 @@ const FAQs = ({ courseOfferingId, tutor = false }: FAQsProps) => {
       setData(d);
     };
     getFAQs();
-  }, [courseOfferingId]);
+  }, [courseOfferingId, setData]);
 
   let addFAQ = async (row: any) => {
     let faq = {
@@ -61,47 +64,78 @@ const FAQs = ({ courseOfferingId, tutor = false }: FAQsProps) => {
   };
 
   const addRow = () => {
-    setData([...data, { id : 1, question: '...enter question...', answer: '...enter answer...' }]);
+    if (data.filter((e) => e.id === 0).length > 0) return;
+    setData([...data, { id : 0, question: '...enter question...', answer: '...enter answer...' }]);
+  };
+
+  const handleDeleteClick = (id: number) => async () => {
+    let res = await authenticatedDeleteFetch('/faqs/delete', { faq_id: id.toString() });
+    if (res.ok) {
+      setData(data.filter((e) => e.id !== id));
+    } else {
+      console.log(res);
+    }
   };
   
   const columns: GridColDef[] = [
     { field: 'question', headerName: 'Question', width: 500, editable: true, headerAlign: 'center'},
     { field: 'answer', headerName: 'Answer', width: 500, editable: true, headerAlign: 'center'},
+    { field: 'actions', headerName: 'Delete', width: 100, headerAlign: 'center', type: 'actions', cellClassName: 'actions',
+      getActions: ({ id }) => ([<GridActionsCellItem
+        icon={<DeleteIcon />}
+        label="Delete"
+        onClick={handleDeleteClick(Number.parseInt(id.toString()))}
+        color="inherit"
+        key={id}
+      />])
+    },
   ];
 
+  const toolbar = () => (
+    <GridToolbarContainer>
+      <Button color="primary" 
+        startIcon={<AddIcon />} 
+        onClick={addRow}
+        className={style.addButton}>
+          Add FAQ
+      </Button>
+      <GridToolbarFilterButton/>
+    </GridToolbarContainer>
+  );
   return (
     <div>
       <Typography variant="h6" className={style.pageTitle}>Frequently Asked Questions</Typography>
+
       <DataGrid 
         columns={columns}
         rows={data}
         isCellEditable={() => tutor}
         className={style.grid}
-        getRowHeight={() => 'auto'} 
-        autoHeight={true}
+        getRowClassName={() => 'Row'}
+        getRowHeight={() => 'auto'}
         pageSizeOptions={[5, 10, 20, 100]}
         editMode='row'
         processRowUpdate={(newRow) => {
           console.log(newRow);
           const updatedRow = { ...newRow, isNew: false };
           if (newRow.question === '...enter question...' || newRow.answer === '...enter answer...') return updatedRow;
+          setData((prev) => prev.map((row) => (row.id === newRow.id ? updatedRow : row)));
           addFAQ(updatedRow);
           return updatedRow;
         }}
+        slots = {{
+          toolbar: toolbar,
+        }}
         sx={{
-          border: 0.8,
-          '&.MuiDataGrid-root--densityCompact .MuiDataGrid-cell': { py: '10px' },
-          '&.MuiDataGrid-root--densityStandard .MuiDataGrid-cell': { py: '18px' },
-          '&.MuiDataGrid-root--densityComfortable .MuiDataGrid-cell': { py: '26px' },
+          border: 0.5,
+          '&.MuiDataGrid-root--densityCompact .MuiDataGrid-cell': { py: '8px' },
+          '&.MuiDataGrid-root--densityStandard .MuiDataGrid-cell': { py: '15px' },
+          '&.MuiDataGrid-root--densityComfortable .MuiDataGrid-cell': { py: '22px' },
+          '& .MuiDataGrid-columnHeaders': { backgroundColor: '#f5f5f5', borderTop: 0.5, borderBottom: 0.5},
         }}
         aria-label='FAQs'
       />
-      {tutor && <Button color="primary" 
-        startIcon={<AddIcon />} 
-        onClick={addRow}
-        className={style.addButton}>
-        Add FAQ
-      </Button>}
+
     </div>
   );
 };
