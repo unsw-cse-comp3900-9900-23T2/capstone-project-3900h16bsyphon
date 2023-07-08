@@ -37,7 +37,6 @@ const AddCoursePermissionsModal = ({
     setCurrentSelected(coursesTutored);
   }, [coursesTutored]);
 
-  // all the options in the drop down
   const [courseOfferings, setCourseOfferings] = useState<CourseOfferingData[]>([]);
 
   const [currentSelected, setCurrentSelected] = useState<CoursePermission[]>([]);
@@ -51,10 +50,8 @@ const AddCoursePermissionsModal = ({
   }, []);
 
   const handleSave = () => {
-    console.log('saving uwu');
     const saveCoursePermissions = async () => {
       const course_ids = currentSelected.map(c => c.courseOfferingId);
-      console.log('course ids are ', course_ids);
       const res = await authenticatedPutFetch('/course/add_tutor_to_courses', { tutor_id: tutorId, course_ids });
       if (!res.ok) {
         console.error('authentication failed, or something broke with adding course permissions, check network tab');

@@ -38,12 +38,6 @@ export default function UserProfileCard({
     router.push('/dashboard');
   };
 
-
-  useEffect(() => {
-    console.log('tutor in userprofilecard are ', tutor);
-    console.log('courses tutored in userprofilecard are ', coursesTutored);
-  },[tutor, coursesTutored]);
-
   return (
     <Box className={styles.cardBox}>
       <Card className={styles.cardContainer}>
