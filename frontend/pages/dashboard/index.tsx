@@ -10,17 +10,9 @@ import React, { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../utils';
 import { CourseOfferingData } from '../../types/courses';
 
-type CourseOffering = {
-  title: string;
-  courseCode: string;
-  startDate: string;
-  courseOfferingId: number;
-  tutorInviteCode: string;
-}
-
 const Dashboard: NextPage = () => {
-  const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>([]);
-  const [myCourses, setMyCourses] = useState<CourseOffering[]>([]);
+  const [courseOfferings, setCourseOfferings] = useState<CourseOfferingData[]>([]);
+  const [myCourses, setMyCourses] = useState<CourseOfferingData[]>([]);
   const [myProfile, setMyProfile ] = useState<any>({});
   useEffect(() => {
     const fetchCourseOfferings = async () => {
