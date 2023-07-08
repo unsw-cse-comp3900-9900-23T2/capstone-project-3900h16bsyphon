@@ -12,8 +12,8 @@ use crate::{
     entities,
     models::{
         AddTutorToCourseBody, CourseOfferingReturnModel, CreateOfferingBody,
-        FetchCourseTagsReturnModel, GetCourseTagsQuery, JoinWithTutorLink, TokenClaims,
-        INV_CODE_LEN, GetOfferingByIdQuery,
+        FetchCourseTagsReturnModel, GetCourseTagsQuery, GetOfferingByIdQuery, JoinWithTutorLink,
+        SyphonResult, TokenClaims, INV_CODE_LEN,
     },
     test_is_user,
     utils::{
@@ -32,7 +32,7 @@ pub async fn create_offering(
     }
 
     // Validate Course Data
-    if let Err(e) = body.validate() {
+    if let Err(e) = body.validate().await {
         return e;
     }
 
@@ -332,11 +332,16 @@ pub fn today() -> NaiveDate {
     chrono::Utc::now().naive_utc().date()
 }
 
-pub async fn check_user_exists(user_id: i32) -> bool {
-    let db = db();
-    entities::users::Entity::find_by_id(user_id)
-        .one(db)
-        .await
-        .expect("db broke")
-        .is_some()
+/// Check if a user exists
+/// # Returns
+/// - Ok(Ok(zid)) if user exists
+/// - Ok(Err(zid)) if user does not exist
+/// - Err(SyphonError) if db broke
+pub async fn check_user_exists(user_id: i32) -> SyphonResult<Result<i32, i32>> {
+    Ok(entities::users::Entity::find_by_id(user_id)
+        .one(db())
+        .await?
+        .map(|u| u.zid)
+        .ok_or(user_id)
+    )
 }

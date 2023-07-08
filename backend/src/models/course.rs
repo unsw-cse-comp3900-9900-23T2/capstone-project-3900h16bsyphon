@@ -1,6 +1,6 @@
 use actix_web::HttpResponse;
 use chrono::NaiveDate;
-use futures::executor::block_on;
+use futures::{executor::block_on, future::join_all};
 use regex::Regex;
 use sea_orm::FromQueryResult;
 use serde::{Deserialize, Serialize};
@@ -56,11 +56,11 @@ pub struct GetOfferingByIdQuery {
 }
 
 impl CreateOfferingBody {
-    pub fn validate(&self) -> Result<(), HttpResponse> {
+    pub async fn validate(&self) -> Result<(), HttpResponse> {
         let errs = json!({
             "course_code": Self::validate_code(&self.course_code).err(),
             "title": Self::validate_title(&self.title).err(),
-            "admins": Self::validate_tutors(self.admins.as_ref().unwrap_or(&Vec::new())).err(),
+            "admins": Self::validate_tutors(self.admins.as_ref().unwrap_or(&Vec::new())).await.err(),
         });
         match errs.as_object().unwrap().values().any(|v| !v.is_null()) {
             true => Err(HttpResponse::BadRequest().json(errs)),
@@ -68,13 +68,15 @@ impl CreateOfferingBody {
         }
     }
 
-    pub fn validate_tutors(tutors: &[i32]) -> Result<(), Vec<i32>> {
-        let non_exist: Vec<i32> = tutors
-            .iter()
-            // TODO: check_user_exists should be in user
-            .filter(|id| !block_on(check_user_exists(**id)))
-            .copied()
-            .collect();
+    pub async fn validate_tutors(tutors: &[i32]) -> Result<(), Vec<i32>> {
+        // TODO: check_user_exists should be in user
+        let tutor_queries = join_all(tutors.into_iter().map(|id| check_user_exists(*id)));
+        let non_exist = tutor_queries
+            .await
+            .into_iter()
+            .filter_map(Result::ok)
+            .filter_map(Result::err)
+            .collect::<Vec<i32>>();
 
         match non_exist.is_empty() {
             true => Ok(()),
