@@ -37,13 +37,6 @@ pub async fn get_users(token: ReqData<TokenClaims>) -> HttpResponse {
     }
 }
 
-pub async fn get_current_user(token: ReqData<TokenClaims>) -> HttpResponse {
-    let body = UserInfoBody {
-        user_id: token.username,
-    };
-    return get_user(token, actix_web::web::Query(body)).await;
-}
-
 pub async fn get_user(token: ReqData<TokenClaims>, body: web::Query<UserInfoBody>) -> HttpResponse {
     let db = db();
 
@@ -51,7 +44,7 @@ pub async fn get_user(token: ReqData<TokenClaims>, body: web::Query<UserInfoBody
         return err;
     }
 
-    let user_id = body.user_id;
+    let user_id = body.user_id.unwrap_or(token.username);
 
     // get all courses user tutors
     let tutors = entities::tutors::Entity::find()

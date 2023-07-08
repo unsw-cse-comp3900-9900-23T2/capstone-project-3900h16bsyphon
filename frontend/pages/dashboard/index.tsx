@@ -51,7 +51,7 @@ const Dashboard: NextPage = () => {
       setMyCourses(toCamelCase(courses));
     };
     const fetchUserProfile = async () => {
-      const res = await authenticatedGetFetch('/user/current', {});
+      const res = await authenticatedGetFetch('/user/profile', {});
       if (!res.ok) {
         console.error('authentication failed, or something broke, check network tab');
         return;

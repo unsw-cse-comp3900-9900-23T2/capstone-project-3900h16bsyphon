@@ -35,21 +35,17 @@ export default function UserProfile() {
   useEffect(() => {
     console.log('the userprofile user_id queury is', router.query.userid);
     const getData = async () => {
-      if (router.query.userid === 'current') {
-        const res = await authenticatedGetFetch('/user/current', {});
-        if (!res.ok) {
-          console.error('authentication failed, or something broke, check network tab');
-          return;
-        }
-        setResponseData(toCamelCase(await res.json()));
-      } else {
-        const res = await authenticatedGetFetch('/user/profile', { user_id: `${router.query.userid}` });
-        if (!res.ok) {
-          console.error('authentication failed, or something broke, check network tab');
-          return;
-        }
-        setResponseData(toCamelCase(await res.json()));
+      const res = await authenticatedGetFetch('/user/profile', 
+        router.query.userid === 'current' ? 
+          {} : 
+          { user_id: `${router.query.userid}` }
+      );
+      if (!res.ok) {
+        console.error('authentication failed, or something broke, check network tab');
+        return;
       }
+      setResponseData(toCamelCase(await res.json()));
+      
       console.log('the response data inside user-profile/zid is', responseData);
     };
     getData();

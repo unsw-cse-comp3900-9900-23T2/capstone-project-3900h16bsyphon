@@ -19,7 +19,7 @@ pub struct UserPermissionCourseCodeModel {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserInfoBody {
-    pub user_id: i32,
+    pub user_id: Option<i32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
