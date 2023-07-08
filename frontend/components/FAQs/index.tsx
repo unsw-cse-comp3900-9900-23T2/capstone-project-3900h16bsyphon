@@ -33,9 +33,9 @@ const FAQs = ({ courseOfferingId, tutor = false }: FAQsProps) => {
   const [data, setData] = React.useState(defaultData);
 
   useEffect(() => {
-    let getFAQs = async () => {
+    let listFAQs = async () => {
       if (!courseOfferingId) return;
-      let res = await authenticatedGetFetch('/faqs/get', {
+      let res = await authenticatedGetFetch('/faqs/list', {
         course_offering_id: courseOfferingId as string,
       });
       let d = await res.json();
@@ -46,7 +46,7 @@ const FAQs = ({ courseOfferingId, tutor = false }: FAQsProps) => {
       });
       setData(d);
     };
-    getFAQs();
+    listFAQs();
   }, [courseOfferingId, setData]);
 
   let createFAQ = async (row: any) => {

@@ -66,7 +66,7 @@ pub async fn update_faqs(
     HttpResponse::Ok().json(existed_faq.clone().unwrap())
 }
 
-pub async fn get_faqs(
+pub async fn list_faqs(
     token: ReqData<TokenClaims>,
     query: Query<GetFaqsQuery>,
 ) -> HttpResponse {
