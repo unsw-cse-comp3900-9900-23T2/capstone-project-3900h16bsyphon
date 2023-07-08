@@ -106,9 +106,10 @@ async fn main() -> std::io::Result<()> {
             .service(
                 scope("/faqs")
                     .wrap(amw.clone())
-                    .route("/add", web::post().to(server::faqs::add_faqs))
+                    .route("/create", web::post().to(server::faqs::create_faqs))
                     .route("/get", web::get().to(server::faqs::get_faqs))
-                    .route("/delete", web::delete().to(server::faqs::delete_faqs)),
+                    .route("/delete", web::delete().to(server::faqs::delete_faqs))
+                    .route("/update", web::put().to(server::faqs::update_faqs)),
             )
             .service(scope("/history").wrap(amw.clone()).route(
                 "/request_count",

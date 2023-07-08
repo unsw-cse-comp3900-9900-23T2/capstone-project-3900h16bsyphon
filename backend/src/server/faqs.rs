@@ -1,7 +1,7 @@
 use crate::{
     entities::{self, faqs},
     models::{
-        TokenClaims, AddFaqRequest, GetFaqsQuery, DeleteFaqQuery,
+        TokenClaims, AddFaqRequest, GetFaqsQuery, DeleteFaqQuery, UpdateFaqRequest,
     },
     test_is_user,
     utils::db::db,
@@ -13,7 +13,7 @@ use actix_web::{
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, ActiveValue};
 use serde_json::json;
 
-pub async fn add_faqs(
+pub async fn create_faqs(
     token: ReqData<TokenClaims>,
     req_body: web::Json<AddFaqRequest>,
 ) -> HttpResponse {
@@ -27,27 +27,43 @@ pub async fn add_faqs(
     log::info!("Add faq request: {:?}", req_body);
     let req_body = req_body.into_inner();
 
-    let existed_faq = faqs::Entity::find_by_id(req_body.faq_id.unwrap())
-        .one(db)
-        .await
-        .expect("Db broke");
-
-    if existed_faq.is_some() {
-        faqs::ActiveModel {
-            question: ActiveValue::Set(req_body.question),
-            answer: ActiveValue::Set(req_body.answer),
-            ..existed_faq.clone().unwrap().into()
-        }.update(db).await.expect("Db broke");
-
-        return HttpResponse::Ok().json(existed_faq.clone().unwrap());
-    }
-
     let faq = entities::faqs::ActiveModel::from(req_body.clone())
     .insert(db)
     .await
     .expect("Db broke");
 
-    HttpResponse::Ok().json(faq)
+    return HttpResponse::Ok().json(faq);
+}
+
+pub async fn update_faqs(
+    token: ReqData<TokenClaims>,
+    req_body: web::Json<UpdateFaqRequest>,
+) -> HttpResponse {
+    let db = db();
+    test_is_user!(token, db);
+    let error = validate_user(&token, db).await.err();
+    if error.is_some() {
+        return error.unwrap();
+    }
+
+    log::info!("Update faq request: {:?}", req_body);
+    let req_body = req_body.into_inner();
+
+    let existed_faq = faqs::Entity::find_by_id(req_body.faq_id)
+        .one(db)
+        .await
+        .expect("Db broke");
+
+    if existed_faq.is_none() {
+        return HttpResponse::BadRequest().json(json!({"error": "Faq not found"}));
+    }
+    faqs::ActiveModel {
+        question: ActiveValue::Set(req_body.question),
+        answer: ActiveValue::Set(req_body.answer),
+        ..existed_faq.clone().unwrap().into()
+    }.update(db).await.expect("Db broke");
+
+    HttpResponse::Ok().json(existed_faq.clone().unwrap())
 }
 
 pub async fn get_faqs(

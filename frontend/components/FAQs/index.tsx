@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react';
-import { DataGrid, GridActionsCellItem, GridColDef, GridFilterAltIcon, GridNoRowsOverlay, GridOverlay, GridToolbarContainer, GridToolbarFilterButton} from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridColDef, GridOverlay, GridToolbarContainer, GridToolbarFilterButton} from '@mui/x-data-grid';
 import style from './FAQs.module.css';
 import { Button, Typography } from '@mui/material';
-import { authenticatedDeleteFetch, authenticatedGetFetch, authenticatedPostFetch} from '../../utils';
+import { authenticatedDeleteFetch, authenticatedGetFetch, authenticatedPostFetch, authenticatedPutFetch} from '../../utils';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
-import { get } from 'http';
 
 type FAQ = {
   id: number;
@@ -17,8 +16,6 @@ type FAQsProps = {
   courseOfferingId: string | string[] | undefined;
   tutor?: boolean;
 };
-
-
 
 const defaultData : FAQ[] = [
   { id: 100, 
@@ -52,19 +49,31 @@ const FAQs = ({ courseOfferingId, tutor = false }: FAQsProps) => {
     getFAQs();
   }, [courseOfferingId, setData]);
 
-  let addFAQ = async (row: any) => {
+  let createFAQ = async (row: any) => {
     let faq = {
-      faq_id: row.id === 0 ? null : row.id as number,
       question: row.question as string,
       answer: row.answer as string,
       course_offering_id: Number.parseInt(courseOfferingId as string),
     };
-    let res = await authenticatedPostFetch('/faqs/add', faq);
+    let res = await authenticatedPostFetch('/faqs/create', faq);
     if (res.ok) {
       let d = await res.json();
       setData(data.map((e) => (e.id === 0 ? { ...e, id: d.faq_id, answer: d.answer, question: d.question } : e)));
     } 
   };
+
+  let updateFAQ = async (row: any) => {
+    let faq = {
+      faq_id: row.id as number,
+      question: row.question as string,
+      answer: row.answer as string,
+    };
+    let res = await authenticatedPutFetch('/faqs/update', faq);
+    if (!res.ok) {
+      console.log(res);
+    }
+  };
+
 
   const addRow = () => {
     if (data.filter((e) => e.id === 0).length > 0) return;
@@ -126,8 +135,11 @@ const FAQs = ({ courseOfferingId, tutor = false }: FAQsProps) => {
         processRowUpdate={(newRow) => {
           const updatedRow = { ...newRow, isNew: false };
           if (newRow.question === '...enter question...' || newRow.answer === '...enter answer...') return updatedRow;
-          addFAQ(updatedRow);
-          
+          if (newRow.id !== 0) {
+            updateFAQ(updatedRow);
+          } else {
+            createFAQ(updatedRow);
+          }
           return updatedRow;
         }}
         slots = {{

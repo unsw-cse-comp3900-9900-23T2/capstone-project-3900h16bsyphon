@@ -6,7 +6,6 @@ use crate::entities;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AddFaqRequest {
-    pub faq_id: Option<i32>,
     pub course_offering_id: i32,
     pub question: String,
     pub answer: String,
@@ -32,4 +31,11 @@ pub struct GetFaqsQuery {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DeleteFaqQuery {
     pub faq_id: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UpdateFaqRequest {
+    pub faq_id: i32,
+    pub question: String,
+    pub answer: String,
 }
