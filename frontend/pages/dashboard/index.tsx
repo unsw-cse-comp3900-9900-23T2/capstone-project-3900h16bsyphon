@@ -61,7 +61,7 @@ const Dashboard: NextPage = () => {
               </div>
               <div className={styles.cards}>
                 {courseOfferings?.map((d, index) => (
-                  <CourseOfferingCard key={index} title={`${d.courseCode} - ${d.title}`} inviteCode={d.tutorInviteCode} index={index}/>
+                  <CourseOfferingCard key={index} title={`${d.courseCode} - ${d.title}`} inviteCode={d.tutorInviteCode} courseOfferingId={d.courseOfferingId} />
                 ))}
               </div>
             </>

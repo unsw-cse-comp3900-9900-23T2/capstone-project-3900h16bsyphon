@@ -1,9 +1,9 @@
 import styles from './Request.module.css';
 import React, { useEffect, useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Button, 
+import {
+  Box,
+  Typography,
+  Button,
 } from '@mui/material';
 import { useRouter } from 'next/router';
 import StudentRequestCard from '../../../components/StudentRequestCard';
@@ -28,7 +28,7 @@ const Request = () => {
   });
 
   useEffect(() => {
-    let getRequest = async() => {
+    let getRequest = async () => {
       if (!router.query.requestid) return;
       const res = await authenticatedGetFetch('/request/get_info', {
         request_id: `${router.query.requestid}`,
@@ -49,12 +49,15 @@ const Request = () => {
         </Typography>
       </div>
       <Box className={styles.cardBox}>
+        {/* TODO: Only show the actions we need + fix the colours */}
         <div className={styles.buttonContainer}>
-          <Button className={styles.greenButton} variant='contained' onClick={() => router.push(`/active-queue/${data.queueId}`)}>Resolve</Button>
+          <Button onClick={() => router.push(`/active-queue/${data.queueId}`)}>Resolve</Button>
+          <Button className={styles.greenButton} variant='contained' onClick={() => router.push(`/active-queue/${data.queueId}`)}>Claim</Button>
+          <Button className={styles.greenButton} variant='contained' onClick={() => router.push(`/active-queue/${data.queueId}`)}>UnResolve</Button>
           <Button className={styles.redButton} variant='contained' onClick={() => router.push(`/active-queue/${data.queueId}`)}>Not Found</Button>
         </div>
         <div className={styles.cardContainer}>
-          <StudentRequestCard 
+          <StudentRequestCard
             zid={data.zid}
             status={data.status}
             firstName={data.firstName}
