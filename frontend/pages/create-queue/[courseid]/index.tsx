@@ -94,7 +94,7 @@ const QueueCreationPage = () => {
               timeEnd={timeEnd} 
               setTimeEnd={setTimeEnd} 
             />
-            <TagsSelection tags={tags} setTagSelection={setTagSelection} isCreator />
+            <TagsSelection tagSelection={tagSelection} tags={tags} setTagSelection={setTagSelection} isCreator />
             <SwitchToggles 
               isAvailable={isAvailable} 
               setIsAvailable={setIsAvailable}

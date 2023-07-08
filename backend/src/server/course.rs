@@ -12,7 +12,7 @@ use crate::{
     entities,
     models::{
         AddTutorToCourseBody, CourseOfferingReturnModel, CreateOfferingBody,
-        FetchCourseTagsReturnModel, GetCourseTagsQuery, JoinWithTutorLink, TokenClaims,
+        Tag, GetCourseTagsQuery, JoinWithTutorLink, TokenClaims,
         INV_CODE_LEN, GetOfferingByIdQuery, AddTutorToCoursesBody, SyphonResult, SyphonError,
     },
     test_is_user,
@@ -95,17 +95,19 @@ pub async fn fetch_course_tags(
 ) -> HttpResponse {
     let db = db();
     test_is_user!(token, db);
-    let tags = entities::tags::Entity::find()
+    let mut tags = entities::queue_tags::Entity::find()
         .inner_join(entities::queues::Entity)
+        .inner_join(entities::tags::Entity)
         .filter(entities::queues::Column::CourseOfferingId.eq(query.course_id))
-        .column(entities::tags::Column::TagId)
-        .distinct()
+        .column(entities::queue_tags::Column::TagId)
+        .distinct_on([entities::queue_tags::Column::TagId])
         .column(entities::tags::Column::Name)
         .column(entities::queue_tags::Column::IsPriority)
-        .into_model::<FetchCourseTagsReturnModel>()
+        .into_model::<Tag>()
         .all(db)
         .await
         .expect("Db broke");
+    tags.iter_mut().for_each(|tag| tag.is_priority = false);
     HttpResponse::Ok().json(web::Json(tags))
 }
 

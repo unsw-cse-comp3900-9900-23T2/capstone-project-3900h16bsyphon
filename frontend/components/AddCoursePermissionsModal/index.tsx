@@ -86,7 +86,7 @@ const AddCoursePermissionsModal = ({
       >
         <div className={styles.container}>
           <div className={styles.titleContainer}>
-            <Typography className={styles.text} variant='h4'>Edit Course Permissions</Typography>
+            <Typography variant='h4'>Edit Course Permissions</Typography>
             <IconButton
               onClick={handleClose}
               size='small'
@@ -127,7 +127,7 @@ const AddCoursePermissionsModal = ({
           </div>
         
           <div className={styles.buttonContainer} >
-            <Button onClick={handleSave} variant='contained' className={styles.text}>
+            <Button onClick={handleSave} variant='contained'>
               Save
             </Button>
           </div>

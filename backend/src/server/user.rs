@@ -2,7 +2,7 @@ use actix_web::web;
 use actix_web::{web::ReqData, HttpResponse};
 
 use crate::models::auth::TokenClaims;
-use crate::models::user::{*, self};
+use crate::models::user::*;
 use crate::utils::user::validate_user;
 use crate::{entities, utils::db::db};
 

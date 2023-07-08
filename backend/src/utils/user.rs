@@ -1,7 +1,7 @@
 use actix_web::{web::ReqData, HttpResponse};
 use sea_orm::{DatabaseConnection, EntityTrait};
 
-use crate::{models::TokenClaims, entities};
+use crate::{entities, models::TokenClaims};
 
 pub async fn validate_user(
     token: &ReqData<TokenClaims>,

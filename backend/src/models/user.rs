@@ -1,6 +1,5 @@
 use sea_orm::FromQueryResult;
-use serde::{Serialize, Deserialize};
-
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
 pub struct UserReturnModel {

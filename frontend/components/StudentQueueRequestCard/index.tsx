@@ -4,13 +4,14 @@ import { useRouter } from 'next/router';
 import TagBox from '../TagBox';
 import { useEffect, useState } from 'react';
 import { authenticatedGetFetch, formatZid } from '../../utils';
+import type { Tag } from '../../types/requests';
 
 type StudentQueueRequestCardProps = {
   zid: number,
   firstName: string,
   lastName: string,
   title: string,
-  tags: string[],
+  tags: Tag[],
   requestId: number,
   status: string,
   queueId?: string
@@ -81,7 +82,7 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, tags, reques
         </div>
         <div className={styles.tagContainer}>
           {tags?.map((tag, i) => {
-            return <TagBox text={tag} key={i} backgroundColor='#EDB549' color='white' />;
+            return <TagBox text={tag.name} key={i} isPriority={tag.isPriority} backgroundColor='#EDB549' color='white' />;
           })}
         </div>
         <CardActions className={styles.cardActions}>

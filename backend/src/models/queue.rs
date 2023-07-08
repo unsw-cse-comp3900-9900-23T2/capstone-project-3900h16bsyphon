@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::entities;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, FromQueryResult)]
 pub struct Tag {
     pub tag_id: i32,
     pub name: String,
@@ -68,5 +68,12 @@ pub struct QueueReturnModel {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetQueueByIdQuery {
-    pub queue_id: i32
+    pub queue_id: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct FlipTagPriority {
+    pub queue_id: i32,
+    pub is_priority: bool,
+    pub tag_id: i32,
 }
