@@ -138,7 +138,7 @@ pub async fn get_courses_tutored(token: ReqData<TokenClaims>) -> HttpResponse {
     }
 }
 
-pub async fn get_courses_admined(token: ReqData<TokenClaims>) -> SyphonError<HttpResponse> {
+pub async fn get_courses_admined(token: ReqData<TokenClaims>) -> HttpResponse {
     let db = db();
     let error = validate_user(&token, db).await.err();
     if error.is_some() {
