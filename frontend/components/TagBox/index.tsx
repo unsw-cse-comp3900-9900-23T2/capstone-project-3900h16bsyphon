@@ -12,7 +12,7 @@ type TagBoxProps = {
 
 const TagBox = ({ text, backgroundColor, color, bold = true, onClick, isPriority }: TagBoxProps) => (
   <CardActionArea onClick={onClick} className={styles.tagContainer} style={{ backgroundColor: isPriority ? '#EDB6B6' : backgroundColor }} >
-    <Typography style={{ color, fontWeight: bold ? 'bold' : 'normal' }} variant='body1'>{text}</Typography>
+    <Typography style={{ color: isPriority ? '#FFF' : color, fontWeight: bold ? 'bold' : 'normal' }} variant='body1'>{text}</Typography>
     {isPriority && '🔥' }
   </CardActionArea>
 );
