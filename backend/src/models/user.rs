@@ -1,6 +1,5 @@
 use sea_orm::FromQueryResult;
-use serde::{Serialize, Deserialize};
-
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
 pub struct UserReturnModel {
@@ -15,6 +14,11 @@ pub struct UserPermissionCourseCodeModel {
     pub course_code: String,
     pub course_offering_id: i32,
     pub title: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserInfoBody {
+    pub user_id: Option<i32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

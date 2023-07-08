@@ -19,13 +19,6 @@ pub struct CourseOfferingReturnModel {
     pub tutor_invite_code: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
-pub struct FetchCourseTagsReturnModel {
-    pub tag_id: i32,
-    pub name: String,
-    pub is_priority: bool,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetCourseTagsQuery {
     pub course_id: i32,
@@ -43,6 +36,12 @@ pub struct CreateOfferingBody {
 pub struct AddTutorToCourseBody {
     pub tutor_id: i32,
     pub course_id: i32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AddTutorToCoursesBody {
+    pub tutor_id: i32,
+    pub course_ids: Vec<i32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -70,7 +69,7 @@ impl CreateOfferingBody {
 
     pub async fn validate_tutors(tutors: &[i32]) -> Result<(), Vec<i32>> {
         // TODO: check_user_exists should be in user
-        let tutor_queries = join_all(tutors.into_iter().map(|id| check_user_exists(*id)));
+        let tutor_queries = join_all(tutors.iter().map(|id| check_user_exists(*id)));
         let non_exist = tutor_queries
             .await
             .into_iter()
