@@ -3,8 +3,13 @@ use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
 
 use futures::future::join_all;
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter,
+    QuerySelect,
+};
+use serde_json::json;
 
+use crate::models::PutRequestStatusBody;
 use crate::{entities, models, utils::db::db};
 use models::{
     request::{AllRequestsForQueueBody, RequestInfoBody},
@@ -177,4 +182,41 @@ pub async fn disable_cluster(
     .expect("db broke");
 
     HttpResponse::Ok().json(())
+}
+
+/// # Returns
+/// - Err(400) => request does not exist
+pub async fn put_request_status(
+    token: ReqData<TokenClaims>,
+    body: web::Json<PutRequestStatusBody>,
+) -> SyphonResult<HttpResponse> {
+    let body = body.into_inner();
+    let db = db();
+
+    // Get Request
+    let request = entities::requests::Entity::find_by_id(body.request_id)
+        .one(db)
+        .await?
+        .ok_or(SyphonError::RequestNotExist(body.request_id))?;
+
+    let tutor_model = entities::tutors::Entity::find_by_id((token.username, request.queue_id))
+        .one(db)
+        .await?;
+
+    // Can edit self. Only tutors can edit others
+    let _editing_self = match (token.username == request.zid, tutor_model) {
+        (false, None) => return Err(SyphonError::Json(json!("Not Tutor"), StatusCode::FORBIDDEN)),
+        (true, _) => true,
+        (false, Some(_)) => false,
+    };
+
+    // Update Request
+    let _ = entities::requests::ActiveModel {
+        status: ActiveValue::Set(Some(body.status.clone())),
+        ..request.into()
+    }
+    .update(db)
+    .await?;
+
+    Ok(HttpResponse::Ok().json(body))
 }

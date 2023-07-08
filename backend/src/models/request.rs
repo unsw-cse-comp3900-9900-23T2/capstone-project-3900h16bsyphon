@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 use crate::entities;
 use entities::sea_orm_active_enums::Statuses;
 
-use super::FetchCourseTagsReturnModel;
 use super::Tag;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -44,4 +43,10 @@ pub struct QueueRequest {
     pub is_clusterable: bool,
     pub status: Option<Statuses>,
     pub tags: Vec<Tag>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PutRequestStatusBody {
+    pub request_id: i32,
+    pub status: Statuses,
 }
