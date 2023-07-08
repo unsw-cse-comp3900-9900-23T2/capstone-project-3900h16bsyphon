@@ -14,6 +14,11 @@ lazy_static! {
             .max_connections(100)
             .min_connections(5)
             .to_owned();
+        // # Safety:
+        // Happens only during initialisation.
+        // No other threads are running.
+        // We force initialisation to happen in main, before other futures
+        // can be created.
         block_on(async { Database::connect(opt).await.unwrap() })
     };
 }

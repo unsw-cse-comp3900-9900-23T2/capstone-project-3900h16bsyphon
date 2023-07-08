@@ -42,5 +42,5 @@ pub struct QueueRequest {
     pub description: String,
     pub is_clusterable: bool,
     pub status: Option<Statuses>,
-    pub tags: Vec<Tag>
+    pub tags: Vec<Tag>,
 }

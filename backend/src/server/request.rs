@@ -8,7 +8,9 @@ use models::request::{AllRequestsForQueueBody, RequestInfoBody};
 use futures::future::join_all;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 
-use crate::models::{CreateRequest, TokenClaims, Tag, SyphonResult, CreateRequestResponse, QueueRequest, SyphonError};
+use crate::models::{
+    CreateRequest, CreateRequestResponse, QueueRequest, SyphonError, SyphonResult, Tag, TokenClaims,
+};
 
 pub async fn create_request(
     token: ReqData<TokenClaims>,
@@ -50,10 +52,14 @@ pub async fn create_request(
         entities::requests::ActiveModel {
             order: ActiveValue::Set(0),
             ..entities::requests::ActiveModel::from(insertion.clone())
-        }.update(db).await?;
+        }
+        .update(db)
+        .await?;
     }
 
-    Ok(HttpResponse::Ok().json(CreateRequestResponse {request_id : insertion.request_id}))
+    Ok(HttpResponse::Ok().json(CreateRequestResponse {
+        request_id: insertion.request_id,
+    }))
 }
 
 pub async fn request_info_wrapper(
@@ -76,7 +82,7 @@ pub async fn all_requests_for_queue(
     let body = body.into_inner();
     // Find all related requests
     // TODO: dont do cringe loop of all
-    let request_futures = entities::requests::Entity::find()
+    let requests_future = entities::requests::Entity::find()
         .filter(entities::requests::Column::QueueId.eq(body.queue_id))
         .all(db)
         .await?
@@ -85,10 +91,11 @@ pub async fn all_requests_for_queue(
         .map(|request_id| {
             request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
         });
-    let results = join_all(request_futures).await;
-    let mut requests = results
+    // Ignores DbErrors - No Panic. Also no 500 Return
+    let mut requests = join_all(requests_future)
+        .await
         .into_iter()
-        .map(|res| res.unwrap())
+        .filter_map(Result::ok)
         .collect::<Vec<_>>();
     requests.sort_by(|a, b| a.order.cmp(&b.order));
     Ok(HttpResponse::Ok().json(requests))
@@ -107,7 +114,12 @@ pub async fn request_info_not_web(
         .one(db)
         .await?;
     let request = match db_request {
-        None => return Err(SyphonError::Json("Request not found".into(), StatusCode::BAD_REQUEST)),
+        None => {
+            return Err(SyphonError::Json(
+                "Request not found".into(),
+                StatusCode::BAD_REQUEST,
+            ))
+        }
         Some(req) => req,
     };
 
@@ -142,7 +154,7 @@ pub async fn request_info_not_web(
         is_clusterable: request.is_clusterable,
         status: request.status,
         order: request.order,
-        tags: tags
+        tags,
     };
 
     Ok(request_value)
@@ -174,5 +186,5 @@ pub async fn disable_cluster(
     .await
     .expect("db broke");
 
-    HttpResponse::Ok().json({})
+    HttpResponse::Ok().json(())
 }

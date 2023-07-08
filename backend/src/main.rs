@@ -50,10 +50,7 @@ async fn main() -> std::io::Result<()> {
                 scope("/auth")
                     .route("/signup", web::post().to(server::auth::create_user))
                     .route("/login", web::post().to(server::auth::auth))
-                    .route(
-                        "/hello",
-                        web::get().to(server::hello).wrap(amw.clone()),
-                    ),
+                    .route("/hello", web::get().to(server::hello).wrap(amw.clone())),
             )
             .service(
                 scope("/user")
@@ -92,7 +89,10 @@ async fn main() -> std::io::Result<()> {
                         "/all_requests_for_queue",
                         web::get().to(server::request::all_requests_for_queue),
                     )
-                    .route("/disable_cluster", web::put().to(server::request::disable_cluster))
+                    .route(
+                        "/disable_cluster",
+                        web::put().to(server::request::disable_cluster),
+                    ),
             )
             .service(
                 scope("/queue")
@@ -105,7 +105,10 @@ async fn main() -> std::io::Result<()> {
                     )
                     .route("/is_open", web::get().to(server::queue::get_is_open))
                     .route("/tags", web::get().to(server::queue::fetch_queue_tags))
-                    .route("/tags/set_priority", web::put().to(server::queue::update_tag_priority))
+                    .route(
+                        "/tags/set_priority",
+                        web::put().to(server::queue::update_tag_priority),
+                    ),
             )
             .service(scope("/history").wrap(amw.clone()).route(
                 "/request_count",

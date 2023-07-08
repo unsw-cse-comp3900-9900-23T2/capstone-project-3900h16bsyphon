@@ -5,7 +5,6 @@ pub mod queue;
 pub mod request;
 pub mod user;
 
-
 use actix_web::HttpResponseBuilder;
 pub use auth::*;
 pub use course::*;
@@ -20,18 +19,17 @@ pub type SyphonResult<T> = Result<T, SyphonError>;
 #[derive(Debug)]
 pub enum SyphonError {
     Json(serde_json::Value, actix_web::http::StatusCode),
-    DbError(sea_orm::DbErr)
+    DbError(sea_orm::DbErr),
 }
 
 impl std::fmt::Display for SyphonError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             SyphonError::Json(val, _) => std::fmt::Display::fmt(val, f),
-            SyphonError::DbError(_) => write!(f, "Internal Db Error")
+            SyphonError::DbError(_) => write!(f, "Internal Db Error"),
         }
     }
 }
-
 
 impl SyphonError {
     fn deserialise_body(&self) -> Result<String, serde_json::Error> {
@@ -46,7 +44,7 @@ impl actix_web::ResponseError for SyphonError {
     fn status_code(&self) -> actix_web::http::StatusCode {
         match self {
             SyphonError::Json(_, code) => *code,
-            SyphonError::DbError(_) => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR
+            SyphonError::DbError(_) => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 

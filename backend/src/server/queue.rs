@@ -1,8 +1,9 @@
 use crate::{
     entities,
     models::{
-        CreateQueueRequest, GetActiveQueuesQuery, GetQueueByIdQuery, GetQueueTagsQuery,
-        GetQueuesByCourseQuery, QueueReturnModel, TokenClaims, Tag, SyphonResult, FlipTagPriority,
+        CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery, GetQueueByIdQuery,
+        GetQueueTagsQuery, GetQueuesByCourseQuery, QueueReturnModel, SyphonResult, Tag,
+        TokenClaims,
     },
     test_is_user,
     utils::{db::db, user::validate_user},
@@ -11,7 +12,10 @@ use actix_web::{
     web::{self, Query, ReqData},
     HttpResponse,
 };
-use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QuerySelect, ActiveValue, EntityOrSelect};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter,
+    QuerySelect,
+};
 
 use futures::future::join_all;
 use serde_json::json;
@@ -131,9 +135,15 @@ pub async fn get_queues_by_course(
     HttpResponse::Ok().json(the_course)
 }
 
-pub async fn update_tag_priority(_: ReqData<TokenClaims>, body: web::Json<FlipTagPriority>) -> SyphonResult<HttpResponse> {
+pub async fn update_tag_priority(
+    _: ReqData<TokenClaims>,
+    body: web::Json<FlipTagPriority>,
+) -> SyphonResult<HttpResponse> {
     let db = db();
-    let item = match entities::queue_tags::Entity::find_by_id((body.tag_id, body.queue_id)).one(db).await? {
+    let item = match entities::queue_tags::Entity::find_by_id((body.tag_id, body.queue_id))
+        .one(db)
+        .await?
+    {
         Some(item) => item,
         None => return Ok(HttpResponse::NotFound().json("No tag of that id!")),
     };
@@ -153,25 +163,27 @@ pub async fn update_tag_priority(_: ReqData<TokenClaims>, body: web::Json<FlipTa
         .filter(entities::queue_tags::Column::IsPriority.eq(true))
         .filter(entities::queue_tags::Column::QueueId.eq(body.queue_id))
         .all(db)
-        .await?.iter().map(|item| item.tag_id).collect::<Vec<_>>();
+        .await?
+        .iter()
+        .map(|item| item.tag_id)
+        .collect::<Vec<_>>();
 
-    let is_priority = has_tag.clone().into_iter()
-        .map(|item|
-            entities::request_tags::Entity::find()
+    let is_priority = has_tag.clone().into_iter().map(|item| {
+        entities::request_tags::Entity::find()
             .filter(entities::request_tags::Column::RequestId.eq(item.request_id))
             .filter(entities::request_tags::Column::TagId.is_in(priority_tags.clone()))
             .one(db)
-        );
+    });
     let is_priority = join_all(is_priority).await;
 
-    let models = is_priority.into_iter().zip(has_tag).filter_map(|(item, request)| {
+    let models = is_priority.into_iter().zip(has_tag).map(|(item, request)| {
         let checked = item.unwrap();
-        Some(entities::requests::ActiveModel {
+        entities::requests::ActiveModel {
             request_id: ActiveValue::Unchanged(request.request_id),
             order: ActiveValue::Set(if checked.is_some() { 0 } else { 1 }),
             ..Default::default()
-        }.update(db))
-    
+        }
+        .update(db)
     });
     join_all(models).await;
     Ok(HttpResponse::Ok().json("Success!"))
