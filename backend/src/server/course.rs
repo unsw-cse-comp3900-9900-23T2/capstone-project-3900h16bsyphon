@@ -136,6 +136,48 @@ pub async fn get_courses_tutored(token: ReqData<TokenClaims>) -> HttpResponse {
     }
 }
 
+
+pub async fn get_courses_admined(token: ReqData<TokenClaims>) -> HttpResponse {
+    let db = db();
+    let error = validate_user(&token, db).await.err();
+    if error.is_some() {
+        return error.unwrap();
+    }
+
+    let user = entities::users::Entity::find_by_id(token.username)
+        .one(db)
+        .await
+        .unwrap()
+        .unwrap();
+    
+    // if user is org admin, they can see the full list of courses
+    if user.is_org_admin {
+        return get_offerings(token).await;
+    }
+
+    let course_offering_result = entities::course_offerings::Entity::find()
+        .select_only()
+        .column(entities::course_offerings::Column::CourseOfferingId)
+        .column(entities::course_offerings::Column::CourseCode)
+        .column(entities::course_offerings::Column::Title)
+        .column(entities::course_offerings::Column::StartDate)
+        .column(entities::course_offerings::Column::TutorInviteCode)
+        .right_join(entities::users::Entity)
+        .filter(entities::tutors::Column::Zid.eq(token.username).and(entities::tutors::Column::IsCourseAdmin.eq(true)))
+        .into_model::<CourseOfferingReturnModel>()
+        .all(db)
+        .await;
+    
+    // return course offering result
+    match course_offering_result {
+        Ok(course_offering_result) => HttpResponse::Ok().json(web::Json(course_offering_result)),
+        Err(e) => {
+            log::warn!("Db broke?: {:?}", e);
+            HttpResponse::InternalServerError().json("Db Broke")
+        }
+    }
+}
+
 pub async fn get_offering_by_id(
     token: ReqData<TokenClaims>,
     body: web::Query<GetOfferingByIdQuery>,

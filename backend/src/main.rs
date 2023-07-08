@@ -79,6 +79,9 @@ async fn main() -> std::io::Result<()> {
                         "/join_with_tutor_link",
                         web::put().to(server::course::join_with_tutor_link),
                     )
+                    .route("/get_courses_admined",
+                        web::get().to(server::course::get_courses_admined),
+                    )
                     .route(
                         "/add_tutor_to_courses",
                         web::put().to(server::course::add_tutor_to_courses),

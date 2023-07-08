@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
+import React, { Dispatch, SetStateAction, useState, useEffect } from 'react';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
 import styles from './AddCoursePermissionsModal.module.css';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import { CourseOfferingData } from '../../types/courses';
+
 import {
-  FormControl,
-  MenuItem,
-  OutlinedInput,
-  Select,
-  SelectChangeEvent,
+  Autocomplete,
+  TextField,
   Typography,
 } from '@mui/material';
 import UserPermissionsBox from '../UserPermissionBox';
+import { authenticatedGetFetch, toCamelCase } from '../../utils';
 
 const courses = [
   'COMP1511',
@@ -33,28 +33,30 @@ type CoursePermission = {
 }
 
 type AddCoursePermissionsModalProps = {
-  tutor: CoursePermission[];
+  coursesTutored: CoursePermission[];
+  setCoursesTutored: Dispatch<SetStateAction<CoursePermission[]>>;
 }
 
 const AddCoursePermissionsModal = ({
-  tutor,
+  coursesTutored, setCoursesTutored
 }: AddCoursePermissionsModalProps) => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const [tutorPermissionList, setTutorPermissionList] =
-    useState<string[]>(tutor?.map((x) => x.courseCode));
+    useState<string[]>(coursesTutored?.map((x) => x.courseCode));
 
-  const handleChange = (event: SelectChangeEvent<string>) => {
-    const {
-      target: { value },
-    } = event;
-    setTutorPermissionList(
-      // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value
-    );
-  };
+  const [courseOfferings, setCourseOfferings] = useState<CourseOfferingData[]>([]);
+
+  useEffect(() => {
+    const getCourseOfferings = async () => {
+      const res = await authenticatedGetFetch('/course/get_courses_admined', {});
+      setCourseOfferings(await res.json());
+      console.log('the course offerings in the modal are ', courseOfferings);
+    };
+    getCourseOfferings();
+  }, []);
 
   return (
     <div>
@@ -84,31 +86,21 @@ const AddCoursePermissionsModal = ({
               <CloseIcon />
             </IconButton>
           </div>
-
-          <FormControl className={styles.formContainer} >
-            <Select
-              multiple
-              displayEmpty
-              value={tutorPermissionList as unknown as string}
-              onChange={handleChange}
-              input={<OutlinedInput />}
-              renderValue={(selected) => {
-                if (selected.length === 0) {
-                  return <em>Select courses</em>;
-                }
-
-                return (selected as unknown as string[]).join(', ');
-              }}
-              inputProps={{ 'aria-label': 'Without label' }}
-            >
-              {courses?.map((course) => (
-                <MenuItem key={course} value={course}>
-                  {course}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
+          <Autocomplete
+            fullWidth
+            multiple
+            id="tags-standard"
+            options={courseOfferings.map(co => {
+              return {course_code: co.course_code, course_offering_id: co.course_offering_id, title: co.title};
+            })}
+            getOptionLabel={(option) => option.course_code}
+            onChange={(_, value) => {
+              console.log('the value inside on change rn is', value);
+              // setAdmins(matches?.map((user) => user.zid));
+            }}
+            renderInput={(params) => (<TextField {...params} fullWidth />)}
+          />
+            
           <div className={styles.userPermissions}>
             {tutorPermissionList?.map((course, i) => (
               <UserPermissionsBox

@@ -4,6 +4,7 @@ import styles from './UserProfileCard.module.css';
 import { useRouter } from 'next/router';
 import AddCoursePermissionsModal from '../AddCoursePermissionsModal';
 import { formatZid } from '../../utils';
+import { useState } from 'react';
 
 type CoursePermission = {
   courseCode: string,
@@ -26,8 +27,9 @@ export default function UserProfileCard({
   tutor,
   courseAdmin,
 }: UserProfileCardProps) {
-
   const router = useRouter();
+
+  const [coursesTutored, setCoursesTutored] = useState<CoursePermission[]>(tutor);
 
   const navigateToDashboard = () => {
     router.push('/dashboard');
@@ -112,7 +114,7 @@ export default function UserProfileCard({
           </div>
 
           <div className={styles.buttonContainer}>
-            <AddCoursePermissionsModal tutor={tutor} />
+            <AddCoursePermissionsModal coursesTutored={coursesTutored} setCoursesTutored={setCoursesTutored} />
             <Button onClick={navigateToDashboard} className={styles.backButton} variant='contained' size='medium'>Back</Button>
           </div>
         </CardContent>
