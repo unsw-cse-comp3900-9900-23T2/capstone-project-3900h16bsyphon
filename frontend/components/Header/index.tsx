@@ -22,7 +22,7 @@ const Header = () => {
       </h1>
       <div className={styles.right}>
         <NotificationsModal />
-        <Avatar onClick={() => router.push('/user-profile')} className={styles.profile}>
+        <Avatar onClick={() => router.push('/user-profile/current')} className={styles.profile}>
           <PersonIcon />
         </Avatar>
         <Button className={styles.button} onClick={() => logout()}>Log out</Button>
