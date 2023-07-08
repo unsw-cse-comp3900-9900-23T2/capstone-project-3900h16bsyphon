@@ -12,3 +12,8 @@
 .addButton {
     padding: 5px 25px;
 }
+
+.noRows {
+    min-height: 10vh;
+    max-height: 15vh;
+}

@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
-import { DataGrid, GridActionsCellItem, GridColDef, GridFilterAltIcon, GridToolbarContainer, GridToolbarFilterButton} from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridColDef, GridFilterAltIcon, GridNoRowsOverlay, GridOverlay, GridToolbarContainer, GridToolbarFilterButton} from '@mui/x-data-grid';
 import style from './FAQs.module.css';
 import { Button, Typography } from '@mui/material';
 import { authenticatedDeleteFetch, authenticatedGetFetch, authenticatedPostFetch} from '../../utils';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import { get } from 'http';
 
 type FAQ = {
   id: number;
@@ -53,14 +54,16 @@ const FAQs = ({ courseOfferingId, tutor = false }: FAQsProps) => {
 
   let addFAQ = async (row: any) => {
     let faq = {
-      faq_id: row.id as number,
+      faq_id: row.id === 0 ? null : row.id as number,
       question: row.question as string,
       answer: row.answer as string,
       course_offering_id: Number.parseInt(courseOfferingId as string),
     };
-    console.log('posting...');
-    console.log(faq);
-    await authenticatedPostFetch('/faqs/add', faq);
+    let res = await authenticatedPostFetch('/faqs/add', faq);
+    if (res.ok) {
+      let d = await res.json();
+      setData(data.map((e) => (e.id === 0 ? { ...e, id: d.faq_id, answer: d.answer, question: d.question } : e)));
+    } 
   };
 
   const addRow = () => {
@@ -80,25 +83,30 @@ const FAQs = ({ courseOfferingId, tutor = false }: FAQsProps) => {
   const columns: GridColDef[] = [
     { field: 'question', headerName: 'Question', width: 500, editable: true, headerAlign: 'center'},
     { field: 'answer', headerName: 'Answer', width: 500, editable: true, headerAlign: 'center'},
-    { field: 'actions', headerName: 'Delete', width: 100, headerAlign: 'center', type: 'actions', cellClassName: 'actions',
-      getActions: ({ id }) => ([<GridActionsCellItem
-        icon={<DeleteIcon />}
-        label="Delete"
-        onClick={handleDeleteClick(Number.parseInt(id.toString()))}
-        color="inherit"
-        key={id}
-      />])
-    },
+    
   ];
+
+  if (tutor) {
+    columns.push(
+      { field: 'actions', headerName: 'Delete', width: 100, headerAlign: 'center', type: 'actions', cellClassName: 'actions',
+        getActions: ({ id }) => ([<GridActionsCellItem
+          icon={<DeleteIcon />}
+          label="Delete"
+          onClick={handleDeleteClick(Number.parseInt(id.toString()))}
+          color="inherit"
+          key={id}
+        />])
+      })
+  }
 
   const toolbar = () => (
     <GridToolbarContainer>
-      <Button color="primary" 
+      {tutor && <Button color="primary" 
         startIcon={<AddIcon />} 
         onClick={addRow}
         className={style.addButton}>
           Add FAQ
-      </Button>
+      </Button>}
       <GridToolbarFilterButton/>
     </GridToolbarContainer>
   );
@@ -116,15 +124,15 @@ const FAQs = ({ courseOfferingId, tutor = false }: FAQsProps) => {
         pageSizeOptions={[5, 10, 20, 100]}
         editMode='row'
         processRowUpdate={(newRow) => {
-          console.log(newRow);
           const updatedRow = { ...newRow, isNew: false };
           if (newRow.question === '...enter question...' || newRow.answer === '...enter answer...') return updatedRow;
-          setData((prev) => prev.map((row) => (row.id === newRow.id ? updatedRow : row)));
           addFAQ(updatedRow);
+          
           return updatedRow;
         }}
         slots = {{
           toolbar: toolbar,
+          noRowsOverlay: () => <GridOverlay className={style.noRows}> No FAQs</GridOverlay>,
         }}
         sx={{
           border: 0.5,
