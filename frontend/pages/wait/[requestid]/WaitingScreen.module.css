@@ -31,10 +31,10 @@
 }
 
 .buttonContainer {
+    min-width: 15%;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 25%;
 }
 
 .clusterContainer {
