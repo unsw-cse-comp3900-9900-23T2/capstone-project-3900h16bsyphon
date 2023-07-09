@@ -37,6 +37,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
 
   useEffect(() => {
     const getRequestData = async () => {
+      console.log('requestId in CreateRequestCard is ', requestId);
       const res = await authenticatedGetFetch('/request/get_info', { request_id: `${requestId}` });
       if (!res.ok) {
         console.error('authentication failed, or something broke with fetching request in CreateRequestCard, check network tab');

@@ -8,10 +8,10 @@ import { useRouter } from 'next/router';
 const EditRequest = () => {
   const router = useRouter();
 
-  const [requestId, setRequestId] = useState(Number.parseInt(`${router.query.requestId}`));
+  const [requestId, setRequestId] = useState(Number.parseInt(`${router.query.requestid}`));
   useEffect(() => {
-    setRequestId(Number.parseInt(`${router.query.requestId}`));
-  }, [router.query.requestId]);
+    setRequestId(Number.parseInt(`${router.query.requestid}`));
+  }, [router.query.requestid]);
 
   return <>
     <Header />
