@@ -22,21 +22,6 @@ const TagsSelection = ({ tags, tagSelection, isCreator, setTagSelection, color =
     });
   };
 
-  // this is so silly but we need to have this to deal with how create queue uses this 
-  // https://stackoverflow.com/questions/23130292/test-for-array-of-string-type-in-typescript
-  const  isStringArray = (value: any): value is string[] => {
-    if (value instanceof Array) {
-      for (const item of value) {
-        if (typeof item !== 'string') {
-          return false;
-        }
-      }
-      return true;
-    }
-    return false;
-  };
-  
-
   const onClick = isCreator ? togglePriority : () => { };
   return (
     <div className={style.tags}>
@@ -45,14 +30,11 @@ const TagsSelection = ({ tags, tagSelection, isCreator, setTagSelection, color =
         id="size-small-outlined"
         size="medium"
         onChange={(_, value) => {
-          console.log('the value inside the onchange tagselection is', value );
-          if (isStringArray(value)) {
-            setTagSelection(value.map((tagName) => {
-              return { tagId: -1, name: tagName, isPriority: false };
-            }));
-          } else {
-            setTagSelection(value as Tag[]);
-          }
+          // ensure everything inside value is a Tag type and not string 
+          // need to do this bc of create queue >:(
+          setTagSelection(value.map((tag) => {
+            return (typeof tag === 'string') ? { tagId: -1, name: tag, isPriority: false } : tag;
+          }));
         }}       
         options={tags}
         multiple
@@ -68,11 +50,11 @@ const TagsSelection = ({ tags, tagSelection, isCreator, setTagSelection, color =
           </li>
         )}
         renderTags={(value) =>
-          value.map((tag) => (
+          value.map((tag, idx) => (
             <TagBox
               onClick={() => onClick(tag)}
               isPriority={tag.isPriority}
-              key={tag.tagId}
+              key={idx}
               text={tag.name}
               color={color}
               backgroundColor={backgroundColor}
