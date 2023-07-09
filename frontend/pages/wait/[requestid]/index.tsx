@@ -89,22 +89,27 @@ const WaitingScreen = () => {
             <Button className={styles.removeBtn} onClick={disableCluster}>Remove</Button>
           </div>
         ) : null}
-        <Box className={styles.cardBox}>
+        <div className={styles.body}>
           <div className={styles.buttonContainer}>
             <Button className={styles.greenButton} variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
             <Button className={styles.greyButton} variant='contained' onClick={() => router.push(`/edit-request/${router.query.requestid}`)}>Edit Request</Button>
           </div>
-          <StudentRequestCard
-            zid={requestData.zid}
-            status={requestData.status}
-            firstName={requestData.firstName}
-            lastName={requestData.lastName}
-            tags={requestData.tags}
-            title={requestData.title}
-            queueId={requestData.queueId}
-            description={requestData.description}
-          />
-        </Box>
+          <Box className={styles.cardBox}>
+            <StudentRequestCard
+              zid={requestData.zid}
+              status={requestData.status}
+              firstName={requestData.firstName}
+              lastName={requestData.lastName}
+              tags={requestData.tags}
+              title={requestData.title}
+              queueId={requestData.queueId}
+              description={requestData.description}
+            />
+          </Box>
+          <div className={styles.chatContainer}>
+            {/* please place the chat component inside this div! */}
+          </div>
+        </div>
       </div>
     </>
   );

@@ -7,11 +7,7 @@
 }
 
 .cardBox {
-    padding: 0px 50px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    gap: 1.5em;
+    flex: 4;
 }
 
 .queueTitle {
@@ -41,7 +37,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 25%;
+    flex: 1;
 }
 
 .clusterContainer {
@@ -58,4 +54,14 @@
 
 .removeBtn:hover {
     background-color: var(--colour-main-orange-400);
+}
+
+.chatContainer {
+    flex: 2;
+}
+
+.body {
+    display: flex;
+    width: 95%;
+    column-gap: 5%;
 }
