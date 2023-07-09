@@ -66,7 +66,7 @@ pub async fn create_request(
 
 
 pub async fn edit_request(
-    token: ReqData<TokenClaims>,
+    _token: ReqData<TokenClaims>,
     edit_request_body: web::Json<EditRequestBody>,
 ) -> SyphonResult<HttpResponse> {
     let db = db();
@@ -104,7 +104,7 @@ pub async fn edit_request(
         .await
         .expect("Db broke");
 
-    // tag insertion TODO -- ask about how this shit works wtf ??
+    // reinsert new tags
     let tag_insertion = edit_request_body.tags.into_iter().map(|tag_id| {
         entities::request_tags::ActiveModel {
             request_id: ActiveValue::Set(edit_request_body.request_id),

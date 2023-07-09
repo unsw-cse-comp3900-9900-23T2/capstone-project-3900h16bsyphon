@@ -37,20 +37,17 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
 
   useEffect(() => {
     const getRequestData = async () => {
-      console.log('requestId in CreateRequestCard is ', requestId);
       const res = await authenticatedGetFetch('/request/get_info', { request_id: `${requestId}` });
       if (!res.ok) {
         console.error('authentication failed, or something broke with fetching request in CreateRequestCard, check network tab');
         return;
       }
       const requestInfo = toCamelCase(await res.json());
-      console.log('the request info is: ', requestInfo);
       setTitle(requestInfo.title);
       setDescription(requestInfo.description);
       setIsClusterable(requestInfo.isClusterable);
       setTagSelection(requestInfo.tags);
       setCurrentQueueId(requestInfo.queueId);
-      console.log('tagselection once we fetch the request are ', tagSelection);
     };
     // only want to fetch the request information if card is in edit mode
     if (isEditMode) getRequestData();
@@ -61,7 +58,6 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
       const res = await authenticatedGetFetch('/queue/tags', {queue_id: `${currentQueueId}`});
       const data = await res.json();
       setTags(toCamelCase(data));
-      console.log('tags inside create request card are ', tags);
     };
     if (!currentQueueId) return;
     fetchTags();
@@ -83,7 +79,6 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
   };
 
   const handleEditRequestSubmit = async () => {
-    console.log('submitting edit request! :D');
     const body = {
       request_id: requestId,
       title: title,
