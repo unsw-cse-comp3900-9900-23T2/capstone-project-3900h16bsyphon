@@ -234,3 +234,4 @@ pub async fn get_is_open(
         None => HttpResponse::BadRequest().json("no queue found"),
     }
 }
+

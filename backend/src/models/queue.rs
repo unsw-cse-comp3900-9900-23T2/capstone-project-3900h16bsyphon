@@ -68,7 +68,7 @@ pub struct QueueReturnModel {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetQueueByIdQuery {
-    pub queue_id: i32,
+    pub queue_id: i32
 }
 
 impl From<i32> for GetQueueByIdQuery {

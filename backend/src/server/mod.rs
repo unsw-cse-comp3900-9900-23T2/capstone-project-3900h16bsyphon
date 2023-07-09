@@ -10,6 +10,7 @@ pub mod history;
 pub mod queue;
 pub mod request;
 pub mod user;
+pub mod faqs;
 
 #[post("/echo")]
 pub async fn echo(req_body: String) -> impl Responder {

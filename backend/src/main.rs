@@ -35,7 +35,7 @@ async fn main() -> std::io::Result<()> {
             .allowed_origin("http://localhost:3000")
             .allowed_origin("http://127.0.0.1:3000")
             .allowed_origin("http://frontend:3000")
-            .allowed_methods(vec!["GET", "POST", "PUT"])
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
             .expose_headers(&[actix_web::http::header::CONTENT_DISPOSITION])
@@ -122,7 +122,19 @@ async fn main() -> std::io::Result<()> {
                         web::put().to(server::queue::update_tag_priority),
                     ),
             )
-            .service(scope("history").wrap(amw.clone()).route(
+            .service(scope("/history").wrap(amw.clone()).route(
+                "/request_count",
+                web::get().to(server::history::get_request_count),
+            ))
+            .service(
+                scope("/faqs")
+                    .wrap(amw.clone())
+                    .route("/create", web::post().to(server::faqs::create_faqs))
+                    .route("/list", web::get().to(server::faqs::list_faqs))
+                    .route("/delete", web::delete().to(server::faqs::delete_faqs))
+                    .route("/update", web::put().to(server::faqs::update_faqs)),
+            )
+            .service(scope("/history").wrap(amw.clone()).route(
                 "/request_count",
                 web::get().to(server::history::get_request_count),
             ))

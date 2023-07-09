@@ -9,6 +9,7 @@ import { useRouter } from 'next/router';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { authenticatedGetFetch, toCamelCase, authenticatedPutFetch } from '../../../utils';
 import Header from '../../../components/Header';
+import FAQs from '../../../components/FAQs';
 import TagBox from '../../../components/TagBox';
 
 const WaitingScreen = () => {
@@ -21,6 +22,7 @@ const WaitingScreen = () => {
     status: 'Unresolved',
     title: 'Pls help me with printing this array - im so stuck!',
     queueId: 1,
+    courseOfferingId: 1,
     tags: [{
       name: 'tag',
       isPriority: false,
@@ -64,6 +66,7 @@ const WaitingScreen = () => {
     getRequest();
   }, [router.query.requestid]);
 
+
   if (reqState === 'Not Found') {
     router.push('/404');
   } else if (reqState === 'Forbidden') {
@@ -104,6 +107,11 @@ const WaitingScreen = () => {
             description={requestData.description}
           />
         </Box>
+        <div className={styles.faqContainer}>
+          <FAQs courseOfferingId={requestData.courseOfferingId.toString()} 
+            tutor={false} 
+          />
+        </div>
       </div>
     </>
   );
