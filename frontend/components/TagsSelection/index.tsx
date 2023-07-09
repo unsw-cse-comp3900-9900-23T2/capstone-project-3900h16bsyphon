@@ -54,18 +54,6 @@ const TagsSelection = ({ tags, tagSelection, isCreator, setTagSelection, color =
             setTagSelection(value as Tag[]);
           }
         }}       
-        //   setTagSelection((oldTagSelection) => {
-
-        // }
-   
-        // value.map((tagString) => {
-        //   const alreadySelected = oldTagSelection.find((tag) => tag.name === tagString);
-        //   if (alreadySelected) return alreadySelected;
-        //   const tag = tags.find((tag) => tag.name === tagString);
-        //   if (tag) return tag;
-        //   return { tagId: -1, name: tagString, isPriority: false };
-        // })
-          
         options={tags}
         multiple
         value={tagSelection}
