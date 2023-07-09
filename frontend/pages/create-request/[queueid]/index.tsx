@@ -17,7 +17,6 @@ import Header from '../../../components/Header';
 import { Tag } from '../../../types/requests';
 
 const MIN_TITLE = 5;
-
 const MIN_DESCRIPTION = 50;
 
 export default function CreateRequest() {
@@ -126,7 +125,7 @@ export default function CreateRequest() {
                 label="Allow for clustering similar requests?"
               />
               <div className={styles.buttonContainer}>
-                <Button onClick={() => router.push('/dashboard')} className={styles.backButton} variant='contained' size='medium'>Back to Dashboard</Button>
+                <Button onClick={() => router.back()} className={styles.backButton} variant='contained' size='medium'>Back</Button>
                 <Button onClick={handleSubmit} className={styles.createButton} variant='contained' size='medium'>Create Request</Button>
               </div>
             </CardContent>
