@@ -6,7 +6,7 @@ use sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter};
 
 use crate::{
     entities,
-    models::{GetRequestCountBody, GetRequestCountResponse, TokenClaims},
+    models::{GetRequestCountBody, GetRequestCountResponse, TokenClaims, GetRequestDetailsBody, SyphonResult, RequestInfo},
     test_is_user,
     utils::db::db,
 };
@@ -34,4 +34,29 @@ pub async fn get_request_count(
         .await
         .expect("db broke?");
     HttpResponse::Ok().json(GetRequestCountResponse { count: res })
+}
+
+pub async fn get_previous_request_details(token: ReqData<TokenClaims>, query: Query<GetRequestDetailsBody>) -> SyphonResult<HttpResponse> {
+    let db = db();
+    let user = token.username;
+    let requests = entities::requests::Entity::find()
+        .filter(entities::requests::Column::Zid.eq(user))
+        .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+        .find_with_related(entities::tags::Entity)
+        .all(db).await?;
+    let result = requests.iter().map(|(r, tag)| {
+        let tags = tag.iter().map(|t| t.name.clone()).collect::<Vec<String>>();
+        RequestInfo {
+            request_id: r.request_id,
+            zid: r.zid,
+            queue_id: r.queue_id,
+            title: r.title.clone(),
+            description: r.description.clone(),
+            order: r.order,
+            is_clusterable: r.is_clusterable,
+            status: r.status.clone(),
+            tags,
+        }
+    }).collect::<Vec<_>>();
+    Ok(HttpResponse::Ok().json(result))
 }

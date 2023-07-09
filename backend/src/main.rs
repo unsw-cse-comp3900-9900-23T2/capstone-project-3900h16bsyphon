@@ -124,6 +124,10 @@ async fn main() -> std::io::Result<()> {
                         "/request_count",
                         web::get().to(server::history::get_request_count),
                     )
+                    .route(
+                        "/request_details",
+                        web::get().to(server::history::get_previous_request_details),
+                    )
             )
             .service(
                 scope("/faqs")

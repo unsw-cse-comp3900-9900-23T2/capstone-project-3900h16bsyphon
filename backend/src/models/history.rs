@@ -7,6 +7,11 @@ pub struct GetRequestCountBody {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetRequestDetailsBody {
+    pub queue_id: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetRequestCountResponse {
     pub count: u64,
 }

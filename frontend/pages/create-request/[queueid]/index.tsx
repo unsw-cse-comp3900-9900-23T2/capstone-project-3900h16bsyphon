@@ -15,6 +15,8 @@ import { authenticatedPostFetch, authenticatedGetFetch, toCamelCase } from '../.
 import TagsSelection from '../../../components/TagsSelection';
 import Header from '../../../components/Header';
 import { Tag } from '../../../types/requests';
+import TagBox from '../../../components/TagBox';
+import { QuestionMark } from '@mui/icons-material';
 
 const MIN_TITLE = 5;
 
@@ -29,6 +31,7 @@ export default function CreateRequest() {
   const [isClusterable, setIsClusterable] = useState(false);
   const [tagSelection, setTagSelection] = useState<Tag[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [tagHistory, setTagHistory] = useState<Record<string, number>>({});
 
   const handleSubmit = async () => {
     const body = {
@@ -50,8 +53,24 @@ export default function CreateRequest() {
       const data = await res.json();
       setTags(toCamelCase(data));
     };
+    const fetchPreviousRequests = async () => {
+      const res = await authenticatedGetFetch('/history/request_details', {queue_id: `${router.query.queueid}`});
+      const data = toCamelCase(await res.json());
+      let tags: Record<string, number> = {};
+      for (let request of data) {
+        request.tags.forEach((tag: string) => {
+          if (tags[tag]) {
+            tags[tag] += 1;
+          } else {
+            tags[tag] = 1;
+          }
+        });
+      }
+      setTagHistory(tags);
+    };
     if (!router.query.queueid) return;
     fetchTags();
+    fetchPreviousRequests();
   }, [router.query.queueid]);
 
   useEffect(() => {
@@ -81,6 +100,23 @@ export default function CreateRequest() {
                 Create Request
               </Typography>
             </div>
+            <TagBox
+              text={(
+                <div className={styles.tagBox}>
+                  <QuestionMark className={styles.question} />
+                  <div className={styles.nestedTagBox}>
+                    <Typography variant='h6'>Request History</Typography>
+                    <Typography> {
+                      Object.keys(tagHistory).length === 0 ?
+                        'you have no previous requests for this course. Happy first question!':
+                        'You have previously submitted' + Object.keys(tagHistory).map((tag: string) => ` ${tagHistory[tag]} request${tagHistory[tag] === 1 ? '': 's'} for '${tag}'`).join('and ') + '.'
+                    } </Typography>
+                  </div>
+                </div>
+              )}
+              backgroundColor="var(--colour-main-purple-200)"
+              color="var(--colour-main-purple-900)"
+            />
             <CardContent className={styles.cardContent}>
               <div>
                 <div className={styles.headingWordCount}>
