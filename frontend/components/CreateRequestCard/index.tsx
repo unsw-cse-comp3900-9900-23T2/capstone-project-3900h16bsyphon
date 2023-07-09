@@ -11,7 +11,7 @@ import {
   Checkbox
 } from '@mui/material';
 import { useRouter } from 'next/router';
-import { authenticatedPostFetch, authenticatedGetFetch, toCamelCase } from '../../utils';
+import { authenticatedPostFetch, authenticatedGetFetch, toCamelCase, authenticatedPutFetch } from '../../utils';
 import TagsSelection from '../TagsSelection';
 import { Tag } from '../../types/requests';
 
@@ -85,6 +85,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
   const handleEditRequestSubmit = async () => {
     console.log('submitting edit request! :D');
     const body = {
+      request_id: requestId,
       title: title,
       description: description,
       is_clusterable: isClusterable,
@@ -92,7 +93,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
       tags: tagSelection.map((tag) => tag.tagId),
       queue_id: Number.parseInt(`${currentQueueId}`),
     };
-    let res = await authenticatedPostFetch('/request/create', body);
+    let res = await authenticatedPutFetch('/request/edit', body);
     if (res.ok) router.push(`/wait/${requestId}`);
   };
 

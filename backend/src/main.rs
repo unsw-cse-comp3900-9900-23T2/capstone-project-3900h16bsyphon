@@ -90,7 +90,7 @@ async fn main() -> std::io::Result<()> {
                     .route("/create", web::post().to(server::request::create_request))
                     .route(
                         "/edit",
-                        web::get().to(server::request::edit_request),
+                        web::put().to(server::request::edit_request),
                     )
                     .route(
                         "/get_info",
