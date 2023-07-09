@@ -30,6 +30,13 @@
     background-color:var(--colour-main-green-400);
 }
 
+.greyButton {
+    font-weight: bold;
+    padding: 5px 25px;
+    background-color: var(--colour-main-grey-400);
+    color: var(--colour-main-grey-600);
+}
+
 .buttonContainer {
     display: flex;
     flex-direction: column;

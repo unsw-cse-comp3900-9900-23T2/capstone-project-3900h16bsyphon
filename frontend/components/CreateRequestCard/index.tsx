@@ -90,8 +90,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
       queue_id: Number.parseInt(`${currentQueueId}`),
     };
     let res = await authenticatedPostFetch('/request/create', body);
-    let value = toCamelCase(await res.json());
-    if (res.ok) router.push(`/wait/${value.requestId}`);
+    if (res.ok) router.push(`/wait/${requestId}`);
   };
 
   useEffect(() => {

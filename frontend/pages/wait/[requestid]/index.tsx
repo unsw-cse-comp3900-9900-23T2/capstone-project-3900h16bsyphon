@@ -92,6 +92,7 @@ const WaitingScreen = () => {
         <Box className={styles.cardBox}>
           <div className={styles.buttonContainer}>
             <Button className={styles.greenButton} variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
+            <Button className={styles.greyButton} variant='contained' onClick={() => router.push(`/edit-request/${router.query.requestid}`)}>Edit Request</Button>
           </div>
           <StudentRequestCard
             zid={requestData.zid}
