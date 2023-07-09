@@ -81,6 +81,17 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
 
   const handleEditRequestSubmit = async () => {
     console.log('submitting edit request! :D');
+    const body = {
+      title: title,
+      description: description,
+      is_clusterable: isClusterable,
+      status: 'Unseen',
+      tags: tagSelection.map((tag) => tag.tagId),
+      queue_id: Number.parseInt(`${currentQueueId}`),
+    };
+    let res = await authenticatedPostFetch('/request/create', body);
+    let value = toCamelCase(await res.json());
+    if (res.ok) router.push(`/wait/${value.requestId}`);
   };
 
   useEffect(() => {

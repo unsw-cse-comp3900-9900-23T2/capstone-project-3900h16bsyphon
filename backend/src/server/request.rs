@@ -1,7 +1,9 @@
 use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
+use serde_json::json;
 
+use crate::models::request::EditRequestBody;
 use crate::{entities, models, utils::db::db};
 use models::request::{AllRequestsForQueueBody, RequestInfoBody};
 
@@ -9,7 +11,7 @@ use futures::future::join_all;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 
 use crate::models::{
-    CreateRequest, CreateRequestResponse, QueueRequest, SyphonError, SyphonResult, Tag, TokenClaims,
+    CreateRequest, CreateRequestResponse, QueueRequest, SyphonError, SyphonResult, Tag, TokenClaims, request,
 };
 
 pub async fn create_request(
@@ -60,6 +62,70 @@ pub async fn create_request(
     Ok(HttpResponse::Ok().json(CreateRequestResponse {
         request_id: insertion.request_id,
     }))
+}
+
+
+pub async fn edit_request(
+    token: ReqData<TokenClaims>,
+    edit_request_body: web::Json<EditRequestBody>,
+) -> SyphonResult<HttpResponse> {
+    let db = db();
+
+    log::info!("Edit student request: {:?}", edit_request_body);
+    let edit_request_body = edit_request_body.into_inner();
+
+    let existing_request = entities::requests::Entity::find_by_id(edit_request_body.request_id)
+        .one(db)
+        .await 
+        .expect("Db broke");
+
+    if existing_request.is_none() {
+        return Err(SyphonError::Json(
+            json!("request to edit cannot be found"), 
+            StatusCode::NOT_FOUND
+        ));
+    }
+
+    // update request 
+    entities::requests::ActiveModel {
+        title: ActiveValue::Set(edit_request_body.title),
+        description: ActiveValue::Set(edit_request_body.description),
+        is_clusterable: ActiveValue::Set(edit_request_body.is_clusterable),
+        ..existing_request.clone().unwrap().into()
+    }
+    .update(db)
+    .await
+    .expect("Db broke");
+
+    // tag insertion TODO -- ask about how this shit works wtf ??
+    // let insertion = request.insert(db).await?;
+    // let tag_insertion = edit_request_body.tags.into_iter().map(|tag| {
+    //     entities::request_tags::ActiveModel {
+    //         request_id: ActiveValue::Set(insertion.request_id),
+    //         tag_id: ActiveValue::Set(tag),
+    //     }
+    //     .insert(db)
+    // });
+    // join_all(tag_insertion).await;
+    // let is_priority = entities::tags::Entity::find()
+    //     .left_join(entities::queues::Entity)
+    //     .right_join(entities::requests::Entity)
+    //     .filter(entities::request_tags::Column::RequestId.eq(insertion.request_id))
+    //     .filter(entities::queue_tags::Column::IsPriority.eq(true))
+    //     .filter(entities::queue_tags::Column::QueueId.eq(insertion.queue_id))
+    //     .one(db)
+    //     .await?;
+    // if is_priority.is_some() {
+    //     entities::requests::ActiveModel {
+    //         order: ActiveValue::Set(0),
+    //         ..entities::requests::ActiveModel::from(insertion.clone())
+    //     }
+    //     .update(db)
+    //     .await?;
+    // }
+
+    // TODO: change the return 
+    Ok(HttpResponse::Ok().json("OK"))
 }
 
 pub async fn request_info_wrapper(
