@@ -24,13 +24,11 @@ const SyphonTimePicker = (props: SyphonTimePickerProps) => {
             label="Time Start"
             value={props.timeStart}
             onChange={(newValue) => newValue && props.setTimeStart(newValue) }
-            defaultValue={props.timeEnd}
           />
           <TimePicker
             label="Time End"
             value={props.timeEnd}
             onChange={(newValue) => newValue && props.setTimeEnd(newValue) }
-            defaultValue={props.timeEnd}
           />
         </LocalizationProvider>
       </FormGroup>

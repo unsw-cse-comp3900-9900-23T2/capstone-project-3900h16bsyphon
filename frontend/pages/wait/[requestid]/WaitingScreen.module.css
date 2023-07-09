@@ -37,6 +37,11 @@
     gap: 10px;
 }
 
+.faqContainer {
+    display: flex;
+    flex-direction: column;
+    margin-top: 3%;
+}
 .clusterContainer {
     display: flex;
     flex-direction: row;
