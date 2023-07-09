@@ -14,13 +14,29 @@ type TagsProps = {
 }
 
 const TagsSelection = ({ tags, tagSelection, isCreator, setTagSelection, color = 'var(--colour-main-purple-900)', backgroundColor = 'var(--colour-main-purple-200)' }: TagsProps) => {
-  const togglePriority = (index: number) => {
+  
+  const togglePriority = (tag: Tag) => {
     setTagSelection((oldTags) => {
-      const newTags = [...oldTags];
-      newTags[index].isPriority = !newTags[index].isPriority;
-      return newTags;
+      const tagToChange = {...tag, isPriority: !tag.isPriority};
+      return[...oldTags, tagToChange];
     });
   };
+
+  // this is so silly but we need to have this to deal with how create queue uses this 
+  // https://stackoverflow.com/questions/23130292/test-for-array-of-string-type-in-typescript
+  const  isStringArray = (value: any): value is string[] => {
+    if (value instanceof Array) {
+      for (const item of value) {
+        if (typeof item !== 'string') {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  };
+  
+
   const onClick = isCreator ? togglePriority : () => { };
   return (
     <div className={style.tags}>
@@ -28,31 +44,48 @@ const TagsSelection = ({ tags, tagSelection, isCreator, setTagSelection, color =
       <Autocomplete
         id="size-small-outlined"
         size="medium"
-        onChange={(_, value) => setTagSelection((oldTagSelection) =>
-          value.map((tagString) => {
-            const alreadySelected = oldTagSelection.find((tag) => tag.name === tagString);
-            if (alreadySelected) return alreadySelected;
-            const tag = tags.find((tag) => tag.name === tagString);
-            if (tag) return tag;
-            return { tagId: -1, name: tagString, isPriority: false };
-          }))}
-        options={tags.map((option) => option.name)}
-        multiple={true}
+        onChange={(_, value) => {
+          console.log('the value inside the onchange tagselection is', value );
+          if (isStringArray(value)) {
+            setTagSelection(value.map((tagName) => {
+              return { tagId: -1, name: tagName, isPriority: false };
+            }));
+          } else {
+            setTagSelection(value as Tag[]);
+          }
+        }}       
+        //   setTagSelection((oldTagSelection) => {
+
+        // }
+   
+        // value.map((tagString) => {
+        //   const alreadySelected = oldTagSelection.find((tag) => tag.name === tagString);
+        //   if (alreadySelected) return alreadySelected;
+        //   const tag = tags.find((tag) => tag.name === tagString);
+        //   if (tag) return tag;
+        //   return { tagId: -1, name: tagString, isPriority: false };
+        // })
+          
+        options={tags}
+        multiple
+        value={tagSelection}
+        getOptionLabel={(option) => typeof option === 'string' ? option : option.name}
+        isOptionEqualToValue={(option, value) => option.tagId === value.tagId}
         renderInput={(params) => <TextField {...params} />}
         freeSolo={isCreator}
         renderOption={(props, option) => (
           <li {...props} style={{columnGap: 5}}>
-            {option}
-            {tags.find((tag) => tag.name === option)?.isPriority ? '🔥': <></>}
+            {option.name}
+            {option.isPriority ? '🔥': ''}
           </li>
         )}
         renderTags={(value) =>
-          value.map((content, index) => (
+          value.map((tag) => (
             <TagBox
-              onClick={() => onClick(index)}
-              isPriority={tagSelection[index].isPriority}
-              key={index}
-              text={content}
+              onClick={() => onClick(tag)}
+              isPriority={tag.isPriority}
+              key={tag.tagId}
+              text={tag.name}
               color={color}
               backgroundColor={backgroundColor}
               bold={false}

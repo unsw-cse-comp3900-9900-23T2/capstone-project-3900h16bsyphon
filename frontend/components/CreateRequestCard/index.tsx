@@ -48,8 +48,9 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
       setTitle(requestInfo.title);
       setDescription(requestInfo.description);
       setIsClusterable(requestInfo.isClusterable);
-      setTags(requestInfo.tags);
+      setTagSelection(requestInfo.tags);
       setCurrentQueueId(requestInfo.queueId);
+      console.log('tagselection once we fetch the request are ', tagSelection);
     };
     // only want to fetch the request information if card is in edit mode
     if (isEditMode) getRequestData();
@@ -60,6 +61,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
       const res = await authenticatedGetFetch('/queue/tags', {queue_id: `${currentQueueId}`});
       const data = await res.json();
       setTags(toCamelCase(data));
+      console.log('tags inside create request card are ', tags);
     };
     if (!currentQueueId) return;
     fetchTags();
@@ -164,7 +166,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
           />
           <div className={styles.buttonContainer}>
             <Button onClick={() => router.back()} className={styles.backButton} variant='contained' size='medium'>Back</Button>
-            <Button onClick={isEditMode ? handleEditRequestSubmit : handleCreateRequestSubmit} className={styles.createButton} variant='contained' size='medium'>Create Request</Button>
+            <Button onClick={isEditMode ? handleEditRequestSubmit : handleCreateRequestSubmit} className={styles.createButton} variant='contained' size='medium'>{isEditMode ? 'Edit' : 'Create'} Request</Button>
           </div>
         </CardContent>
       </Card>
