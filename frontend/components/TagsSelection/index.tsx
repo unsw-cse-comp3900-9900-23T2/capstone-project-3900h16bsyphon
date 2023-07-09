@@ -18,7 +18,7 @@ const TagsSelection = ({ tags, tagSelection, isCreator, setTagSelection, color =
   const togglePriority = (tag: Tag) => {
     setTagSelection((oldTags) => {
       const tagToChange = {...tag, isPriority: !tag.isPriority};
-      return[...oldTags.filter((t) => t.tagId !== tag.tagId), tagToChange];
+      return[...oldTags.filter((t) => t.name !== tag.name), tagToChange];
     });
   };
 
