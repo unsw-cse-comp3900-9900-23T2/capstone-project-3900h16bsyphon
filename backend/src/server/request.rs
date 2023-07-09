@@ -87,7 +87,7 @@ pub async fn edit_request(
     }
 
     // update request 
-    entities::requests::ActiveModel {
+    let update_result = entities::requests::ActiveModel {
         title: ActiveValue::Set(edit_request_body.title),
         description: ActiveValue::Set(edit_request_body.description),
         is_clusterable: ActiveValue::Set(edit_request_body.is_clusterable),
@@ -97,34 +97,41 @@ pub async fn edit_request(
     .await
     .expect("Db broke");
 
-    // tag insertion TODO -- ask about how this shit works wtf ??
-    // let insertion = request.insert(db).await?;
-    // let tag_insertion = edit_request_body.tags.into_iter().map(|tag| {
-    //     entities::request_tags::ActiveModel {
-    //         request_id: ActiveValue::Set(insertion.request_id),
-    //         tag_id: ActiveValue::Set(tag),
-    //     }
-    //     .insert(db)
-    // });
-    // join_all(tag_insertion).await;
-    // let is_priority = entities::tags::Entity::find()
-    //     .left_join(entities::queues::Entity)
-    //     .right_join(entities::requests::Entity)
-    //     .filter(entities::request_tags::Column::RequestId.eq(insertion.request_id))
-    //     .filter(entities::queue_tags::Column::IsPriority.eq(true))
-    //     .filter(entities::queue_tags::Column::QueueId.eq(insertion.queue_id))
-    //     .one(db)
-    //     .await?;
-    // if is_priority.is_some() {
-    //     entities::requests::ActiveModel {
-    //         order: ActiveValue::Set(0),
-    //         ..entities::requests::ActiveModel::from(insertion.clone())
-    //     }
-    //     .update(db)
-    //     .await?;
-    // }
+    // delete all tags, then insert them again
+    entities::request_tags::Entity::delete_many()
+        .filter(entities::request_tags::Column::RequestId.eq(edit_request_body.request_id))
+        .exec(db)
+        .await
+        .expect("Db broke");
 
-    // TODO: change the return 
+    // tag insertion TODO -- ask about how this shit works wtf ??
+    let tag_insertion = edit_request_body.tags.into_iter().map(|tag_id| {
+        entities::request_tags::ActiveModel {
+            request_id: ActiveValue::Set(edit_request_body.request_id),
+            tag_id: ActiveValue::Set(tag_id),
+        }
+        .insert(db)
+    });
+
+    // handle priority tag logic
+    join_all(tag_insertion).await;
+    let is_priority = entities::tags::Entity::find()
+        .left_join(entities::queues::Entity)
+        .right_join(entities::requests::Entity)
+        .filter(entities::request_tags::Column::RequestId.eq(edit_request_body.request_id))
+        .filter(entities::queue_tags::Column::IsPriority.eq(true))
+        .filter(entities::queue_tags::Column::QueueId.eq(edit_request_body.queue_id))
+        .one(db)
+        .await?;
+    if is_priority.is_some() {
+        entities::requests::ActiveModel {
+            order: ActiveValue::Set(0),
+            ..entities::requests::ActiveModel::from(update_result.clone())
+        }
+        .update(db)
+        .await?;
+    }
+
     Ok(HttpResponse::Ok().json("OK"))
 }
 
