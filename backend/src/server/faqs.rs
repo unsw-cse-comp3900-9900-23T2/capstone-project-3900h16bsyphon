@@ -1,28 +1,21 @@
 use crate::{
     entities::{self, faqs},
     models::{
-        TokenClaims, AddFaqRequest, GetFaqsQuery, DeleteFaqQuery, UpdateFaqRequest,
+        AddFaqRequest, GetFaqsQuery, DeleteFaqQuery, UpdateFaqRequest, SyphonResult, SyphonError,
     },
-    test_is_user,
     utils::db::db,
 };
 use actix_web::{
-    web::{self, Query, ReqData},
-    HttpResponse,
+    web::{self, Query},
+    HttpResponse, http::StatusCode,
 };
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, ActiveValue};
 use serde_json::json;
 
 pub async fn create_faqs(
-    token: ReqData<TokenClaims>,
     req_body: web::Json<AddFaqRequest>,
-) -> HttpResponse {
+) -> SyphonResult<HttpResponse>{
     let db = db();
-    test_is_user!(token, db);
-    let error = validate_user(&token, db).await.err();
-    if error.is_some() {
-        return error.unwrap();
-    }
 
     log::info!("Add faq request: {:?}", req_body);
     let req_body = req_body.into_inner();
@@ -32,19 +25,13 @@ pub async fn create_faqs(
     .await
     .expect("Db broke");
 
-    return HttpResponse::Ok().json(faq);
+    Ok(HttpResponse::Ok().json(faq))
 }
 
 pub async fn update_faqs(
-    token: ReqData<TokenClaims>,
     req_body: web::Json<UpdateFaqRequest>,
-) -> HttpResponse {
+) -> SyphonResult<HttpResponse>{
     let db = db();
-    test_is_user!(token, db);
-    let error = validate_user(&token, db).await.err();
-    if error.is_some() {
-        return error.unwrap();
-    }
 
     log::info!("Update faq request: {:?}", req_body);
     let req_body = req_body.into_inner();
@@ -55,7 +42,7 @@ pub async fn update_faqs(
         .expect("Db broke");
 
     if existed_faq.is_none() {
-        return HttpResponse::BadRequest().json(json!({"error": "Faq not found"}));
+        return Err(SyphonError::Json(json!({"error": "Faq not found"}), StatusCode::NOT_FOUND));
     }
     faqs::ActiveModel {
         question: ActiveValue::Set(req_body.question),
@@ -63,41 +50,32 @@ pub async fn update_faqs(
         ..existed_faq.clone().unwrap().into()
     }.update(db).await.expect("Db broke");
 
-    HttpResponse::Ok().json(existed_faq.clone().unwrap())
+    Ok(HttpResponse::Ok().json(json!({"success": "Faq updated"})))
 }
 
 pub async fn list_faqs(
-    token: ReqData<TokenClaims>,
     query: Query<GetFaqsQuery>,
-) -> HttpResponse {
+) -> SyphonResult<HttpResponse> {
     let db = db();
-    test_is_user!(token, db);
-    let error = validate_user(&token, db).await.err();
-    if error.is_some() {
-        return error.unwrap();
-    }
+
     let faq = entities::faqs::Entity::find()
         .filter(entities::faqs::Column::CourseOfferingId.eq(query.course_offering_id))
         .all(db)
         .await
         .expect("Db broke");
 
-    HttpResponse::Ok().json(faq)
+    Ok(HttpResponse::Ok().json(faq))
 }
 
 pub async fn delete_faqs(
-    token: ReqData<TokenClaims>,
     query: Query<DeleteFaqQuery>,
-) -> HttpResponse {
+) -> SyphonResult<HttpResponse>{
     let db = db();
-    test_is_user!(token, db);
-    let error = validate_user(&token, db).await.err();
-    if error.is_some() {
-        return error.unwrap();
-    }
+
     let _res = entities::faqs::Entity::delete_by_id(query.faq_id)
         .exec(db)
         .await
         .expect("Db broke");
-    HttpResponse::Ok().json(json!({"success": "Faq deleted"}))
+
+    Ok(HttpResponse::Ok().json(json!({"success": "Faq deleted"})))
 }
