@@ -125,8 +125,8 @@ async fn main() -> std::io::Result<()> {
                         web::get().to(server::history::get_request_count),
                     )
                     .route(
-                        "/request_details",
-                        web::get().to(server::history::get_previous_request_details),
+                        "/previous_tags",
+                        web::get().to(server::history::get_previous_tag_details),
                     )
             )
             .service(

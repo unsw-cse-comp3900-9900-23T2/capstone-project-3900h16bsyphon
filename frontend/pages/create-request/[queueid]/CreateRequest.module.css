@@ -75,8 +75,9 @@
     justify-content: space-between;
 }
 
-.question {
+.questionIcon {
     display: flex;
+    padding: 5px;
     border-radius: 5px;
     background-color: var(--colour-main-purple-600);
     color: white;

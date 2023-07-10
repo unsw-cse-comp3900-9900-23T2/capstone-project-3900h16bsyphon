@@ -45,16 +45,3 @@ pub struct QueueRequest {
     pub tags: Vec<Tag>,
     pub course_offering_id: i32,
 }
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RequestInfo {
-    pub request_id: i32,
-    pub zid: i32,
-    pub order: i32,
-    pub queue_id: i32,
-    pub title: String,
-    pub description: String,
-    pub is_clusterable: bool,
-    pub status: Option<Statuses>,
-    pub tags: Vec<String>,
-}
