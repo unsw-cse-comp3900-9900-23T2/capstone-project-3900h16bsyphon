@@ -79,7 +79,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
     return 'You have previously submitted:' +
     Object.keys(tagHistory).map(
       (tag: string) => ` ${tagHistory[tag]} request${tagHistory[tag] === 1 ? '': 's'} for "${tag}"`
-    ).join('and ') +
+    ).join(' and ') +
     '.';
   };
 
