@@ -21,7 +21,7 @@ const Request = () => {
     lastName: 'Doe',
     status: 'In Progress',
     title: 'Pls help me with printing this array - im so stuck!',
-    tags: ['Assignment 1', 'Subset 0'],
+    tags: [{ name: 'Assignment 1', tagId: 1, isPriority: false }],
     isClusterable: false,
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
@@ -44,7 +44,7 @@ const Request = () => {
     <Header />
     <div className={styles.pageContainer}>
       <div className={styles.queueTitle}>
-        <Typography className={styles.text} variant='h2'>
+        <Typography variant='h2'>
           {data.queueTitle}
         </Typography>
       </div>

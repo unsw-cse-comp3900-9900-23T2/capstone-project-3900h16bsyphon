@@ -14,6 +14,9 @@ import { useRouter } from 'next/router';
 import { authenticatedPostFetch, authenticatedGetFetch, toCamelCase, authenticatedPutFetch } from '../../utils';
 import TagsSelection from '../TagsSelection';
 import { Tag } from '../../types/requests';
+import TagBox from '../TagBox';
+import { QuestionMark } from '@mui/icons-material';
+
 
 type CreateRequestCardProps = {
   isEditMode: boolean;
@@ -33,6 +36,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
   const [isClusterable, setIsClusterable] = useState(false);
   const [tagSelection, setTagSelection] = useState<Tag[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [tagHistory, setTagHistory] = useState<Record<string, number>>({});
   const [currentQueueId, setCurrentQueueId] = useState(queueId);
 
   useEffect(() => {
@@ -59,10 +63,25 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
       const data = await res.json();
       setTags(toCamelCase(data));
     };
+    const fetchPreviousRequests = async () => {
+      const res = await authenticatedGetFetch('/history/previous_tags', {queue_id: `${currentQueueId}`});
+      setTagHistory(await res.json());
+    };
     if (!currentQueueId) return;
     fetchTags();
+    fetchPreviousRequests();
   }, [currentQueueId]);
 
+  const generateHistoryText = () => {
+    if (Object.keys(tagHistory).length === 0) {
+      return 'you have no previous requests for this course. Happy first question!';
+    }
+    return 'You have previously submitted:' +
+    Object.keys(tagHistory).map(
+      (tag: string) => ` ${tagHistory[tag]} request${tagHistory[tag] === 1 ? '': 's'} for "${tag}"`
+    ).join('and ') +
+    '.';
+  };
 
   const handleCreateRequestSubmit = async () => {
     const body = {
@@ -116,6 +135,19 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
             {isEditMode ? 'Edit' : 'Create'} Request
           </Typography>
         </div>
+        <TagBox
+          text={(
+            <div className={styles.tagBox}>
+              <QuestionMark className={styles.questionIcon} />
+              <div className={styles.nestedTagBox}>
+                <Typography variant='h6'>Request History</Typography>
+                <Typography> {generateHistoryText()} </Typography>
+              </div>
+            </div>
+          )}
+          backgroundColor="var(--colour-main-purple-200)"
+          color="var(--colour-main-purple-900)"
+        />
         <CardContent className={styles.cardContent}>
           <div>
             <div className={styles.headingWordCount}>

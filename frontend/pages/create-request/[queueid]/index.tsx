@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 import Header from '../../../components/Header';
 import CreateRequestCard from '../../../components/CreateRequestCard';
 
-
 export default function CreateRequest() {
   const router = useRouter();
 
@@ -20,6 +19,5 @@ export default function CreateRequest() {
         <CreateRequestCard requestId={undefined} isEditMode={false} queueId={queueId} />
       </div>
     </>
-
   );
 }
