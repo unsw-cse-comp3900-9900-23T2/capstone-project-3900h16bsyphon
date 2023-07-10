@@ -76,8 +76,7 @@ pub async fn edit_request(
 
     let existing_request = entities::requests::Entity::find_by_id(edit_request_body.request_id)
         .one(db)
-        .await 
-        .expect("Db broke");
+        .await?;
 
     if existing_request.is_none() {
         return Err(SyphonError::Json(
@@ -94,15 +93,13 @@ pub async fn edit_request(
         ..existing_request.clone().unwrap().into()
     }
     .update(db)
-    .await
-    .expect("Db broke");
+    .await?;
 
     // delete all tags, then insert them again
     entities::request_tags::Entity::delete_many()
         .filter(entities::request_tags::Column::RequestId.eq(edit_request_body.request_id))
         .exec(db)
-        .await
-        .expect("Db broke");
+        .await?;
 
     // reinsert new tags
     let tag_insertion = edit_request_body.tags.into_iter().map(|tag_id| {
