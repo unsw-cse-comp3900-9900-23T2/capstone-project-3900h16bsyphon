@@ -76,21 +76,18 @@ pub async fn edit_request(
 
     let existing_request = entities::requests::Entity::find_by_id(edit_request_body.request_id)
         .one(db)
-        .await?;
-
-    if existing_request.is_none() {
-        return Err(SyphonError::Json(
+        .await?
+        .ok_or(SyphonError::Json(
             json!("request to edit cannot be found"), 
             StatusCode::NOT_FOUND
-        ));
-    }
+        ))?;
 
     // update request 
     let update_result = entities::requests::ActiveModel {
         title: ActiveValue::Set(edit_request_body.title),
         description: ActiveValue::Set(edit_request_body.description),
         is_clusterable: ActiveValue::Set(edit_request_body.is_clusterable),
-        ..existing_request.clone().unwrap().into()
+        ..existing_request.clone().into()
     }
     .update(db)
     .await?;
