@@ -54,4 +54,5 @@ pub struct QueueRequest {
     pub is_clusterable: bool,
     pub status: Option<Statuses>,
     pub tags: Vec<Tag>,
+    pub course_offering_id: i32,
 }

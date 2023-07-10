@@ -4,6 +4,7 @@ pub mod history;
 pub mod queue;
 pub mod request;
 pub mod user;
+pub mod faqs;
 
 use actix_web::HttpResponseBuilder;
 pub use auth::*;
@@ -13,6 +14,7 @@ pub use queue::*;
 pub use queue::*;
 pub use request::*;
 pub use user::*;
+pub use faqs::*;
 
 pub type SyphonResult<T> = Result<T, SyphonError>;
 

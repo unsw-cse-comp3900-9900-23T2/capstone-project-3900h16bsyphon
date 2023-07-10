@@ -12,6 +12,7 @@ import { useRouter } from 'next/router';
 import TagsSelection from '../../../components/TagsSelection';
 import Header from '../../../components/Header';
 import { Tag } from '../../../types/requests';
+import { error } from 'console';
 
 
 const QueueCreationPage = () => {
@@ -26,6 +27,7 @@ const QueueCreationPage = () => {
   const [title, setTitle] = useState('');
   const [timeLimit, setTimeLimit] = useState(0);
   const [course, setCourse] = useState('');
+  const [error, setError] = useState<{title?: string}>({});
   // complaining about not using announcement, will do later.
   // eslint-disable-next-line
   const [announcement, _setAnnouncement] = useState<string>('hi');
@@ -44,12 +46,17 @@ const QueueCreationPage = () => {
       const data = await res.json();
       setTags(toCamelCase(data));
     };
+
     if (!router.query.courseid) return;
     fetchCourse();
     fetchTags();
   }, [router.query.courseid]);
 
   const submit = async () => {
+    if (title === '') {
+      setError({title: 'Title cannot be empty'});
+      return;
+    }
     const body = {
       title,
       time_start: timeStart.format('YYYY-MM-DDTHH:mm:ss'),
@@ -85,6 +92,8 @@ const QueueCreationPage = () => {
                 variant='outlined'
                 fullWidth
                 className={style.textField}
+                error={!!error.title}
+                helperText={error.title}
               />
             </FormGroup>
             <SyphonDatePicker date={date} setDate={setDate}/>
@@ -106,7 +115,7 @@ const QueueCreationPage = () => {
               setTimeLimit={setTimeLimit}
             />
 
-            <FAQs />
+            <FAQs courseOfferingId={router.query.courseid} tutor={true}/>
             <Button variant="contained" className={style.button} onClick={submit}>Create Queue</Button>
           </Card>
         </Box>

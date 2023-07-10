@@ -24,7 +24,6 @@ const SyphonDatePicker = ({date, setDate}: DatePickerProps) => {
           <DatePicker
             value={date}
             onChange={(e) => e && setDate(e) }
-            defaultValue={date}
             format="ddd, DD/MM/YYYY"
           />
         </LocalizationProvider>
