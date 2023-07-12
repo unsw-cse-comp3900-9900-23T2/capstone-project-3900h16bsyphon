@@ -17,7 +17,6 @@ import { Tag } from '../../types/requests';
 import TagBox from '../TagBox';
 import { QuestionMark } from '@mui/icons-material';
 
-
 type CreateRequestCardProps = {
   isEditMode: boolean;
   queueId?: number;

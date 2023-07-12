@@ -106,7 +106,7 @@ const ActiveQueue = () => {
                 />
               ))
             ) : (
-              <div> There are no requests </div>
+              <div>There are no requests</div>
             )}
           </div>
         </Box>
