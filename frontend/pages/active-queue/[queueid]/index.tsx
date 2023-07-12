@@ -112,7 +112,7 @@ const ActiveQueue = () => {
         </Box>
         <div className={styles.buttonContainer}>
           <Button className={styles.genericButton} variant='contained' onClick={handleCopyQueueLink}>Copy Queue Link</Button>
-          <Button className={styles.settingsButton} variant='contained' onClick={() => router.push(`/course/${requestData.courseOfferingId}`)}>Settings</Button>
+          <Button className={styles.settingsButton} variant='contained' onClick={() => router.push(`/edit-queue/${router.query.queueid}`)}>Settings</Button>
         </div>
       </div>
     </div>

@@ -25,7 +25,6 @@ const TagsSelection = ({ tags, tagSelection, isCreator, setTagSelection, color =
   const onClick = isCreator ? togglePriority : () => { };
   return (
     <div className={style.tags}>
-      <Typography variant='body1'>Tags (you must choose at least one)</Typography>
       <Autocomplete
         id="size-small-outlined"
         size="medium"
