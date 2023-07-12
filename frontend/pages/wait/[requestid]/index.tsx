@@ -12,7 +12,7 @@ import Header from '../../../components/Header';
 import TagBox from '../../../components/TagBox';
 import InformationCard from '../../../components/InformationCard';
 import { QueueData } from '../../../types/queues';
-import { RequestData, UserRequest } from '../../../types/requests';
+import { RequestData } from '../../../types/requests';
 
 const WaitingScreen = () => {
   const router = useRouter();
@@ -101,7 +101,7 @@ const WaitingScreen = () => {
           setPositionInQueue(unresolvedRequests + 1);
           break;
         }
-        if (request.status !== 'Resolved') {
+        if (request.status === 'Unresolved') {
           unresolvedRequests++;
         } 
       }
