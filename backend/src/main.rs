@@ -43,7 +43,7 @@ async fn main() -> std::io::Result<()> {
             .max_age(3600);
         App::new()
             .wrap(middleware::Logger::default())
-            .wrap(cors)
+            // .wrap(cors)
             .service(server::echo)
             .route("/", web::get().to(server::hello))
             .service(
@@ -134,6 +134,7 @@ async fn main() -> std::io::Result<()> {
                 "/request_count",
                 web::get().to(server::history::get_request_count),
             ))
+            .service(scope("/ws/{path}").route("/", web::post().to(server::sockets::start_socket_conn)))
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
             .route("/{tail:.*}", web::put().to(server::res404))
@@ -149,4 +150,8 @@ async fn main() -> std::io::Result<()> {
     log::info!("Server ended. Exiting Now");
 
     Ok(())
+}
+
+async fn ws() -> impl actix_web::Responder {
+    ""
 }
