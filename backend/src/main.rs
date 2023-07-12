@@ -90,6 +90,10 @@ async fn main() -> std::io::Result<()> {
                     .wrap(amw.clone())
                     .route("/create", web::post().to(server::request::create_request))
                     .route(
+                        "/edit",
+                        web::put().to(server::request::edit_request),
+                    )
+                    .route(
                         "/get_info",
                         web::get().to(server::request::request_info_wrapper),
                     )
@@ -120,7 +124,20 @@ async fn main() -> std::io::Result<()> {
                     .route(
                         "/tags/set_priority",
                         web::put().to(server::queue::update_tag_priority),
-                    ),
+                    )
+                    .route("/update", web::put().to(server::queue::update_queue)),
+            )
+            .service(
+                scope("/history")
+                    .wrap(amw.clone())
+                    .route(
+                        "/request_count",
+                        web::get().to(server::history::get_request_count),
+                    )
+                    .route(
+                        "/previous_tags",
+                        web::get().to(server::history::get_previous_tag_details),
+                    )
             )
             .service(
                 scope("/faqs")
@@ -130,10 +147,6 @@ async fn main() -> std::io::Result<()> {
                     .route("/delete", web::delete().to(server::faqs::delete_faqs))
                     .route("/update", web::put().to(server::faqs::update_faqs)),
             )
-            .service(scope("/history").wrap(amw.clone()).route(
-                "/request_count",
-                web::get().to(server::history::get_request_count),
-            ))
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
             .route("/{tail:.*}", web::put().to(server::res404))

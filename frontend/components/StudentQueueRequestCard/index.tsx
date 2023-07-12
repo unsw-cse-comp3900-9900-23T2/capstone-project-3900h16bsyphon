@@ -1,10 +1,11 @@
-import { Button, Card, CardActionArea, CardActions, Typography } from '@mui/material';
+import { Button, Card, CardActionArea, CardActions, IconButton, Typography } from '@mui/material';
 import styles from './StudentQueueRequestCard.module.css';
 import { useRouter } from 'next/router';
 import TagBox from '../TagBox';
 import { useEffect, useState } from 'react';
 import { authenticatedGetFetch, formatZid } from '../../utils';
 import type { Tag } from '../../types/requests';
+import { ArrowDownward, ArrowUpward } from '@mui/icons-material';
 
 type StudentQueueRequestCardProps = {
   zid: number,
@@ -14,7 +15,7 @@ type StudentQueueRequestCardProps = {
   tags: Tag[],
   requestId: number,
   status: string,
-  queueId?: string
+  queueId?: string,
 }
 
 const StudentQueueRequestCard = ({ zid, firstName, lastName, title, tags, requestId, status, queueId }: StudentQueueRequestCardProps) => {
@@ -86,6 +87,11 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, tags, reques
           })}
         </div>
         <CardActions className={styles.cardActions}>
+          <div className={styles.orderContainer}>
+            <IconButton aria-label="move up button"><ArrowUpward /></IconButton>
+            <IconButton aria-label="move down button"><ArrowDownward /></IconButton>
+          </div>
+          {/* TODO: unhardcode */}
           {(status === 'Unresolved') && <Button className={styles.claimButton} variant='contained' onClick={() => router.push('/wait/1')}>
           Claim
           </Button>}
