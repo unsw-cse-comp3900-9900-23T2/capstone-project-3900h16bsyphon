@@ -5,7 +5,7 @@ use actix_web::HttpResponse;
 use futures::future::join_all;
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter,
-    QuerySelect,
+    QuerySelect, Related,
 };
 use serde_json::json;
 
@@ -139,12 +139,11 @@ pub async fn request_info_not_web(
         .expect("Db broke");
 
     let course_offering_id = entities::queues::Entity::find_by_id(request.queue_id)
-            .one(db)
-            .await
-            .expect("Db broke")
-            .expect("queue doesn't exist")
-            .course_offering_id;
-
+        .one(db)
+        .await
+        .expect("Db broke")
+        .expect("queue doesn't exist")
+        .course_offering_id;
 
     let request_value = QueueRequest {
         request_id: request.request_id,
@@ -195,6 +194,7 @@ pub async fn disable_cluster(
 
 /// # Returns
 /// - Err(400) => request does not exist
+/// ...
 pub async fn set_request_status(
     token: ReqData<TokenClaims>,
     body: web::Json<PutRequestStatusBody>,
@@ -208,7 +208,13 @@ pub async fn set_request_status(
         .await?
         .ok_or(SyphonError::RequestNotExist(body.request_id))?;
 
-    let tutor_model = entities::tutors::Entity::find_by_id((token.username, request.queue_id))
+    let course_offering_id = entities::queues::Entity::find_by_id(request.queue_id)
+        .one(db)
+        .await?
+        .expect("Q exists because request exists")
+        .course_offering_id;
+
+    let tutor_model = entities::tutors::Entity::find_by_id((token.username, course_offering_id))
         .one(db)
         .await?;
 
@@ -220,7 +226,7 @@ pub async fn set_request_status(
     };
 
     // Update Request
-    let _ = entities::requests::ActiveModel {
+    entities::requests::ActiveModel {
         status: ActiveValue::Set(Some(body.status.clone())),
         ..request.into()
     }
