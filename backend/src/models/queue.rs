@@ -19,8 +19,8 @@ pub struct GetQueueTagsQuery {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CreateQueueRequest {
     pub title: String,
-    pub time_start: NaiveDateTime,
-    pub time_end: NaiveDateTime,
+    pub start_time: NaiveDateTime,
+    pub end_time: NaiveDateTime,
     pub tags: Vec<Tag>,
     pub is_visible: bool,
     pub is_available: bool,
@@ -34,8 +34,8 @@ impl From<CreateQueueRequest> for entities::queues::ActiveModel {
         Self {
             queue_id: ActiveValue::NotSet,
             title: ActiveValue::Set(value.title),
-            start_time: ActiveValue::Set(value.time_start),
-            end_time: ActiveValue::Set(value.time_end),
+            start_time: ActiveValue::Set(value.start_time),
+            end_time: ActiveValue::Set(value.end_time),
             is_visible: ActiveValue::Set(value.is_visible),
             is_available: ActiveValue::Set(value.is_available),
             time_limit: ActiveValue::Set(value.time_limit),
@@ -77,3 +77,19 @@ pub struct FlipTagPriority {
     pub is_priority: bool,
     pub tag_id: i32,
 }
+
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UpdateQueueRequest {
+    pub queue_id: i32,
+    pub title: String,
+    pub start_time: NaiveDateTime,
+    pub end_time: NaiveDateTime,
+    pub tags: Vec<Tag>,
+    pub is_visible: bool,
+    pub is_available: bool,
+    pub time_limit: Option<i32>,
+    pub announcement: String,
+    pub course_id: i32,
+}
+
