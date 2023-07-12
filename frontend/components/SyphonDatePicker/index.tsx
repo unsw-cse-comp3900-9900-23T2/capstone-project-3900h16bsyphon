@@ -18,7 +18,6 @@ type DatePickerProps = {
 const SyphonDatePicker = ({date, setDate}: DatePickerProps) => {
   return (
     <div className={style.datePicker}>
-      <Typography variant="body1" className={style.label}>Date</Typography>
       <FormGroup className={pageStyle.formGroup} row={true}> 
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
