@@ -38,31 +38,29 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
   const router = useRouter();
   
   useEffect(() => {
-    if (isEdit && queueId) {
-      const fetchQueue = async () => {
-        const res = await authenticatedGetFetch('/queue/get', {queue_id: queueId as string});
-        const data = await res.json();
-        const queue = toCamelCase(data);
-        setDate(dayjs(queue.startTime));
-        setTimeStart(dayjs(queue.startTime));
-        setTimeEnd(dayjs(queue.endTime));
-        setIsVisible(queue.isVisible);
-        setIsAvailable(queue.isAvailable);
-        setIsTimeLimit(queue.isTimeLimit);
-        setTitle(queue.title);
-        setTimeLimit(queue.timeLimit);
-        setAnnouncement(queue.announcement);
-      };
-      const fetchQueueTags = async () => {
-        const res = await authenticatedGetFetch('/queue/tags', {queue_id: queueId as string});
-        const data = await res.json();
-        setTagSelection(toCamelCase(data));
-      };
-      fetchQueue();
-      fetchQueueTags();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queueId]);
+    if (!isEdit || !queueId) return;
+    const fetchQueue = async () => {
+      const res = await authenticatedGetFetch('/queue/get', {queue_id: queueId as string});
+      const data = await res.json();
+      const queue = toCamelCase(data);
+      setDate(dayjs(queue.startTime));
+      setTimeStart(dayjs(queue.startTime));
+      setTimeEnd(dayjs(queue.endTime));
+      setIsVisible(queue.isVisible);
+      setIsAvailable(queue.isAvailable);
+      setIsTimeLimit(queue.isTimeLimit);
+      setTitle(queue.title);
+      setTimeLimit(queue.timeLimit);
+      setAnnouncement(queue.announcement);
+    };
+    const fetchQueueTags = async () => {
+      const res = await authenticatedGetFetch('/queue/tags', {queue_id: queueId as string});
+      const data = await res.json();
+      setTagSelection(toCamelCase(data));
+    };
+    fetchQueue();
+    fetchQueueTags();
+  }, [queueId, isEdit]);
 
   useEffect(() => {
     const fetchCourse = async () => {
