@@ -1,3 +1,4 @@
+use actix::Actor;
 use actix_cors::Cors;
 use actix_web::{
     http, middleware,
@@ -12,7 +13,7 @@ pub mod prelude;
 pub mod server;
 pub mod utils;
 
-use crate::prelude::*;
+use crate::{prelude::*, utils::sockets::lobby::Lobby};
 
 use utils::auth::validator;
 #[macro_use]
@@ -26,6 +27,7 @@ async fn main() -> std::io::Result<()> {
     std::env::var("SECRET").expect("SECRET must be set");
 
     register_org_admins().await;
+    let lobby = Lobby::default().start();
 
     // Auth middleware
     let amw = HttpAuthentication::bearer(validator);
@@ -43,9 +45,11 @@ async fn main() -> std::io::Result<()> {
             .max_age(3600);
         App::new()
             .wrap(middleware::Logger::default())
+            .app_data(lobby.clone())
             // .wrap(cors)
             .service(server::echo)
             .route("/", web::get().to(server::hello))
+            .service(scope("/sock").route("/sock", web::get().to(server::hello)))
             .service(
                 scope("/auth")
                     .route("/signup", web::post().to(server::auth::create_user))
@@ -134,7 +138,6 @@ async fn main() -> std::io::Result<()> {
                 "/request_count",
                 web::get().to(server::history::get_request_count),
             ))
-            .service(scope("/ws/{path}").route("/", web::post().to(server::sockets::start_socket_conn)))
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
             .route("/{tail:.*}", web::put().to(server::res404))
@@ -150,8 +153,4 @@ async fn main() -> std::io::Result<()> {
     log::info!("Server ended. Exiting Now");
 
     Ok(())
-}
-
-async fn ws() -> impl actix_web::Responder {
-    ""
 }
