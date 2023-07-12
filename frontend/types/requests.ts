@@ -15,4 +15,5 @@ export type UserRequest = {
   tags: Tag[],
   status: string,
   description: string,
+  order: number
 };

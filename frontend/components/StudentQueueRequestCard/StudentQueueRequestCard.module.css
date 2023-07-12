@@ -63,3 +63,8 @@
     background-color: var(--colour-main-red-200);
     color: var(--colour-main-red-900);
 }
+
+.orderContainer {
+    display: flex;
+    flex-direction: row;
+}
