@@ -20,7 +20,7 @@ const EditQueue = () => {
 
   return (
     <>
-      <QueueSettings courseOfferingId={courseid} queueId={router.query.queueid as string} isEdit={true}/>
+      <QueueSettings courseOfferingId={courseid} queueId={router.query.queueid} isEdit={true}/>
     </>
   );
 };

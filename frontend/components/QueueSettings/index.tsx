@@ -15,8 +15,8 @@ import { useRouter } from 'next/router';
 
 
 type QueueSettingsProps = {
-    courseOfferingId: string;
-    queueId?: string;
+    courseOfferingId: string | string[] | undefined;
+    queueId?: string | string[] | undefined;
     isEdit: boolean;
 };
 
@@ -54,7 +54,7 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
         setAnnouncement(queue.announcement);
       };
       const fetchQueueTags = async () => {
-        const res = await authenticatedGetFetch('/queue/tags', {queue_id: queueId});
+        const res = await authenticatedGetFetch('/queue/tags', {queue_id: queueId as string});
         const data = await res.json();
         setTagSelection(toCamelCase(data));
       };
@@ -66,14 +66,14 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
 
   useEffect(() => {
     const fetchCourse = async () => {
-      const res = await authenticatedGetFetch('/course/get', {course_id: courseOfferingId});
+      const res = await authenticatedGetFetch('/course/get', {course_id: courseOfferingId as string});
       // TODO: this type is incorrect
       const data: {course_code: string} = await res.json();
       setCourse(data.course_code);
     };
 
     const fetchTags = async () => {
-      const res = await authenticatedGetFetch('/course/tags', {course_id: courseOfferingId});
+      const res = await authenticatedGetFetch('/course/tags', {course_id: courseOfferingId as string});
       const data = await res.json();
       setTags(toCamelCase(data));
     };
@@ -101,7 +101,7 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
       is_available: isAvailable,
       time_limit: timeLimit,
       announcement,
-      course_id: Number.parseInt(courseOfferingId),
+      course_id: Number.parseInt(courseOfferingId as string),
     };
     let res = await authenticatedPostFetch('/queue/create', body);
     let data = await res.json();
@@ -127,7 +127,7 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
       is_available: isAvailable,
       time_limit: timeLimit,
       announcement: announcement,
-      course_id: Number.parseInt(courseOfferingId),
+      course_id: Number.parseInt(courseOfferingId as string),
     };
     let res = await authenticatedPutFetch('/queue/update', body);
     console.log(body);
@@ -143,7 +143,9 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
       <div className={style.container}> 
         <Box className={style.cardBox}>
           <Card className={style.cardContainer}>
-            <Typography variant="h5" className={style.pageTitle}>Create a new Queue for {course}</Typography>
+            {isEdit? <Typography variant="h5" className={style.pageTitle}>Edit Queue for {course}</Typography>
+              : <Typography variant="h5" className={style.pageTitle}>Create a new Queue for {course}</Typography>
+            }
             <Typography variant="body1" className={style.title}>Queue Title</Typography>
             <FormGroup className={style.formGroup}>
               <TextField

@@ -5,7 +5,7 @@ const CreateQueue = () => {
   const router = useRouter();
   return (
     <>
-      <QueueSettings courseOfferingId={`${router.query.courseid}`} isEdit={false}/>
+      <QueueSettings courseOfferingId={router.query.courseid} isEdit={false}/>
     </>
   );
 };

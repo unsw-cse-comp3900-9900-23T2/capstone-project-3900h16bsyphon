@@ -251,7 +251,7 @@ pub async fn update_queue(
             StatusCode::NOT_FOUND,
         ))?;
 
-    let model = entities::queues::ActiveModel {
+    let _model = entities::queues::ActiveModel {
         queue_id: ActiveValue::Unchanged(body.queue_id),
         is_available: ActiveValue::Set(body.is_available),
         start_time: ActiveValue::Set(body.start_time),
@@ -259,6 +259,7 @@ pub async fn update_queue(
         announcement: ActiveValue::Set(body.announcement.clone()),
         time_limit: ActiveValue::Set(body.time_limit),
         is_visible: ActiveValue::Set(body.is_visible),
+        title: ActiveValue::Set(body.title.clone()),
         ..queue.clone().into()
     }.update(db).await?;
 
