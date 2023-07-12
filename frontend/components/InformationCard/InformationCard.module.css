@@ -1,0 +1,16 @@
+
+.card {
+    width: 100%;
+    border: solid 1px var(--colour-main-grey-400);
+}
+
+.title {
+    font-weight: bold;
+    text-align: center;
+    padding-bottom: 0.5em;
+}
+
+.content {
+    text-align: left;
+    padding-bottom: 0em;
+}

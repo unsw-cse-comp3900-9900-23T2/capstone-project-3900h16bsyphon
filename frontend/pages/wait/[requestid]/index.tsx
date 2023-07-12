@@ -9,8 +9,9 @@ import { useRouter } from 'next/router';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { authenticatedGetFetch, toCamelCase, authenticatedPutFetch } from '../../../utils';
 import Header from '../../../components/Header';
-import FAQs from '../../../components/FAQs';
 import TagBox from '../../../components/TagBox';
+import InformationCard from '../../../components/InformationCard';
+import { QueueData } from '../../../types/queues';
 
 const WaitingScreen = () => {
   const router = useRouter();
@@ -32,8 +33,11 @@ const WaitingScreen = () => {
     previousRequests: 5,
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    order: 1,
   });
   const [reqState, setReqState] = useState('Unresolved');
+  const [announcement, setAnnouncement] = useState('');
+  const [waitingTime, setWaitingTime] = useState(0);
 
   const disableCluster = async () => {
     const res = await authenticatedPutFetch('/request/disable_cluster', {
@@ -64,8 +68,25 @@ const WaitingScreen = () => {
       return;
     }
     getRequest();
+
   }, [router.query.requestid]);
 
+  useEffect(() => {
+    let getQueueData = async () => {
+      let res = await authenticatedGetFetch('/queue/get', {queue_id: `${requestData.queueId}`});
+      let d : QueueData = toCamelCase(await res.json());
+      if (d.announcement) {
+        setAnnouncement(d.announcement);
+      }
+      if (d.timeLimit) {
+        setWaitingTime(d.timeLimit * (requestData.order - 1));
+      } else {
+        setWaitingTime(20 * (requestData.order - 1));
+      }
+
+    };
+    getQueueData();
+  }, [requestData.queueId, requestData.order]);
 
   if (reqState === 'Not Found') {
     router.push('/404');
@@ -96,6 +117,8 @@ const WaitingScreen = () => {
           <div className={styles.buttonContainer}>
             <Button className={styles.greenButton} variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
             <Button className={styles.greyButton} variant='contained' onClick={() => router.push(`/edit-request/${router.query.requestid}`)}>Edit Request</Button>
+            <InformationCard content={[`Current Position: ${requestData.order}`, `Estimated Waiting Time: ${waitingTime}`]} />
+            <InformationCard title="Announcement" content={[announcement as string]} />
           </div>
           <Box className={styles.cardBox}>
             <StudentRequestCard
