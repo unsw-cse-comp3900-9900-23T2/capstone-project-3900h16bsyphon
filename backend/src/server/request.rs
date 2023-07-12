@@ -8,7 +8,7 @@ use crate::{entities, models, utils::db::db};
 use models::request::{AllRequestsForQueueBody, RequestInfoBody};
 
 use futures::future::join_all;
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
+use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect, PaginatorTrait};
 
 use crate::models::{
     CreateRequest, CreateRequestResponse, QueueRequest, SyphonError, SyphonResult, Tag, TokenClaims,
@@ -16,18 +16,27 @@ use crate::models::{
 
 pub async fn create_request(
     token: ReqData<TokenClaims>,
-    request_creation: web::Json<CreateRequest>,
+    body: web::Json<CreateRequest>,
 ) -> SyphonResult<HttpResponse> {
     let db = db();
+    let request_creation = body.into_inner();
+
+    // find order number given queue id
+    let req_count = entities::requests::Entity::find()
+       .filter(entities::requests::Column::QueueId.eq(request_creation.queue_id))
+       .count(db)
+       .await
+       .unwrap_or(0);
+   let order = req_count + 1;
+
     // insert request itself
-    let request_creation = request_creation.into_inner();
     let request = entities::requests::ActiveModel {
         request_id: ActiveValue::NotSet,
         zid: ActiveValue::Set(token.username),
         queue_id: ActiveValue::Set(request_creation.queue_id),
         title: ActiveValue::Set(request_creation.title),
         description: ActiveValue::Set(request_creation.description),
-        order: ActiveValue::Set(1), // TODO: unhardcode
+        order: ActiveValue::Set(order.try_into().unwrap()),
         is_clusterable: ActiveValue::Set(request_creation.is_clusterable),
         status: ActiveValue::Set(request_creation.status),
     };

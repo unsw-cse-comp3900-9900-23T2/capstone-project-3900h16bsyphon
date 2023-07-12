@@ -14,7 +14,7 @@ type StudentQueueRequestCardProps = {
   tags: Tag[],
   requestId: number,
   status: string,
-  queueId?: string
+  queueId?: string,
 }
 
 const StudentQueueRequestCard = ({ zid, firstName, lastName, title, tags, requestId, status, queueId }: StudentQueueRequestCardProps) => {
