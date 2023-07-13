@@ -1,12 +1,8 @@
-type Payload =  {
-    Type: 'open' | 'message' | 'close';
-    Contents: string;
-    ClientID?: string;
-  }
+import { Message } from './types/messages';
 
 export default class Client {
   socket: WebSocket;
-  messages: Payload[] = []; // conversation
+  messages: Message[] = []; // conversation
   clientID: string;
 
   constructor(url: string, clientID: string) {
@@ -45,7 +41,7 @@ export default class Client {
     };
   }
 
-  public send(message: Payload) {
+  public send(message: Message) {
     if (this.socket.readyState === this.socket.OPEN) {
       this.socket.send(JSON.stringify(message));
     } else {

@@ -13,6 +13,7 @@ import TagBox from '../../../components/TagBox';
 import InformationCard from '../../../components/InformationCard';
 import { QueueData } from '../../../types/queues';
 import { RequestData } from '../../../types/requests';
+import ChatBox from '../../../components/Chat';
 
 const WaitingScreen = () => {
   const router = useRouter();
@@ -161,7 +162,7 @@ const WaitingScreen = () => {
             />
           </Box>
           <div className={styles.chatContainer}>
-            {/* please place the chat component inside this div! */}
+            <ChatBox />
           </div>
         </div>
       </div>
