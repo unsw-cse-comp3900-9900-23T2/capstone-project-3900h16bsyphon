@@ -85,9 +85,7 @@ const WaitingScreen = () => {
       if (!queueData) return;
       let res = await authenticatedGetFetch('/request/all_requests_for_queue', {queue_id: `${requestData.queueId}`});
       let d = toCamelCase(await res.json());
-      if (!d) {
-        return;
-      }
+      if (!d) return;
 
       let unresolvedRequests = 0;
       for (let i = 0; i < d.length; i++) {
