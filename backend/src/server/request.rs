@@ -270,7 +270,9 @@ pub async fn set_request_status(
     token: ReqData<TokenClaims>,
     body: web::Json<PutRequestStatusBody>,
 ) -> SyphonResult<HttpResponse> {
+
     let body = body.into_inner();
+
     let db = db();
 
     // Get Request

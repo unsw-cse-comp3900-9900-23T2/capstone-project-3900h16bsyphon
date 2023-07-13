@@ -5,10 +5,10 @@ export type Tag = {
 };
 
 export enum Status {
-  NotFound = 'not_found',
-  Seeing = 'seeing',
-  Seen = 'seen',
-  Unseen = 'unseen',
+  NotFound = 'NotFound',
+  Seeing = 'Seeing',
+  Seen = 'Seen',
+  Unseen = 'Unseen',
 }
 
 export type UserRequest = {

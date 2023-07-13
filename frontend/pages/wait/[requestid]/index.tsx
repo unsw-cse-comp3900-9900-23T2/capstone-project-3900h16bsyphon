@@ -68,9 +68,7 @@ const WaitingScreen = () => {
   const handleResolve = () => {
 
     const resolveRequest = async () => {
-      console.log('handling resolve request inside wait page for student');
-
-      const res = await authenticatedPutFetch('/request/set_status', { request_id: `${router.query.requestid}`, status: Status.Seen });
+      const res = await authenticatedPutFetch('/request/set_status', {request_id: Number.parseInt(`${router.query.requestid}`), status: Status.Seen});
       if (!res.ok) {
         console.log('error: something went wrong with resolve request; check network tab');
         return;
