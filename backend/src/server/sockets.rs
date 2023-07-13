@@ -9,6 +9,7 @@ pub async fn start_socket_conn(
     stream: web::Payload,
     server: web::Data<Addr<Lobby>>,
 ) -> Result<HttpResponse, actix_web::Error> {
+    log::debug!("called fn");
     let wsconn = WsConn::new(Uuid::new_v4(), server.get_ref().clone());
     actix_web_actors::ws::start(wsconn, &req, stream)
 }

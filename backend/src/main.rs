@@ -2,7 +2,7 @@ use actix::Actor;
 use actix_cors::Cors;
 use actix_web::{
     http, middleware,
-    web::{self, scope},
+    web::{self, scope, Data},
     App, HttpServer,
 };
 use actix_web_httpauth::middleware::HttpAuthentication;
@@ -27,7 +27,7 @@ async fn main() -> std::io::Result<()> {
     std::env::var("SECRET").expect("SECRET must be set");
 
     register_org_admins().await;
-    let lobby = Lobby::default().start();
+    let lobby = Data::new(Lobby::default().start());
 
     // Auth middleware
     let amw = HttpAuthentication::bearer(validator);
@@ -49,7 +49,7 @@ async fn main() -> std::io::Result<()> {
             // .wrap(cors)
             .service(server::echo)
             .route("/", web::get().to(server::hello))
-            .service(scope("/sock").route("/sock", web::get().to(server::hello)))
+            .service(scope("/sock").route("/sock", web::get().to(server::sockets::start_socket_conn)))
             .service(
                 scope("/auth")
                     .route("/signup", web::post().to(server::auth::create_user))

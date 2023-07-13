@@ -94,6 +94,7 @@ impl Actor for WsConn {
 
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
+        log::info!("\n\nGot message: {:?}", msg);
         match msg {
             Ok(ws::Message::Ping(msg)) => {
                 self.hb = Instant::now();
@@ -114,12 +115,15 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
             Ok(ws::Message::Nop) => (),
             // Let the lobby deal w/ text messages and figure out where to
             // redirect
-            Ok(Text(s)) => self.lobby_addr.do_send(ClientActorMessage {
-                id: self.id,
-                msg: s.into(),
+            Ok(Text(s)) => {
+                // ctx.binary("data");
+                ctx.text("{\"type\": \"text\", \"data\": \"data\"}");
+                log::debug!("Is a message of the text typy");
+                self.lobby_addr.do_send(ClientActorMessage {
+                id: self.id, msg: s.into(),
                 room_id: self.room,
-            }),
-            Err(e) => todo!("handle this or die ig?"),
+            })},
+            Err(_) => todo!("handle this or die ig?"),
         }
     }
 }
