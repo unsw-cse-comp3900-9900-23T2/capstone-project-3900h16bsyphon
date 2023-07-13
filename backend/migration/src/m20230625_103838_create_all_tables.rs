@@ -225,12 +225,18 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(RequestStatusLog::RequestId).integer().not_null())
+                    .col(ColumnDef::new(RequestStatusLog::TutorId).integer().not_null())
                     .col(ColumnDef::new(RequestStatusLog::Status).enumeration(Statuses::Table, Statuses::iter().skip(1)))
                     .col(ColumnDef::new(RequestStatusLog::EventTime).date_time().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .to(Requests::Table, Requests::RequestId)
                             .from(RequestStatusLog::Table, RequestStatusLog::RequestId),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .to(Users::Table, Users::Zid)
+                            .from(RequestStatusLog::Table, RequestStatusLog::TutorId),
                     )
                     .to_owned(),
             )
@@ -507,6 +513,7 @@ enum RequestStatusLog {
     Table,
     LogId,
     RequestId,
+    TutorId,
     EventTime,
     Status,
 }

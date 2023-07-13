@@ -10,6 +10,7 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub log_id: i32,
     pub request_id: i32,
+    pub tutor_id: i32,
     pub status: Option<Statuses>,
     pub event_time: DateTime,
 }
@@ -24,11 +25,25 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Requests,
+    #[sea_orm(
+        belongs_to = "super::users::Entity",
+        from = "Column::TutorId",
+        to = "super::users::Column::Zid",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Users,
 }
 
 impl Related<super::requests::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Requests.def()
+    }
+}
+
+impl Related<super::users::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Users.def()
     }
 }
 
