@@ -101,7 +101,7 @@ const WaitingScreen = () => {
           setPositionInQueue(unresolvedRequests + 1);
           break;
         }
-        if (request.status === 'Unresolved') {
+        if (request.status === 'Unseen') {
           unresolvedRequests++;
         } 
       }
