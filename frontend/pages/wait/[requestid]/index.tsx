@@ -10,7 +10,9 @@ import StudentRequestCard from '../../../components/StudentRequestCard';
 import { authenticatedGetFetch, toCamelCase, authenticatedPutFetch } from '../../../utils';
 import Header from '../../../components/Header';
 import TagBox from '../../../components/TagBox';
-import { Status } from '../../../types/requests';
+import InformationCard from '../../../components/InformationCard';
+import { QueueData } from '../../../types/queues';
+import { RequestData, Status } from '../../../types/requests';
 
 const WaitingScreen = () => {
   const router = useRouter();
@@ -33,6 +35,9 @@ const WaitingScreen = () => {
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
   });
+  const [queueData, setQueueData] = useState<QueueData>();
+  const [waitingTime, setWaitingTime] = useState(0);
+  const [positionInQueue, setPositionInQueue] = useState(0);
 
   const disableCluster = async () => {
     const res = await authenticatedPutFetch('/request/disable_cluster', {
@@ -62,8 +67,44 @@ const WaitingScreen = () => {
       return;
     }
     getRequest();
+
   }, [router.query.requestid]);
 
+  useEffect(() => {
+    let getQueueData = async () => {
+      let res = await authenticatedGetFetch('/queue/get', {queue_id: `${requestData.queueId}`});
+      let d = await res.json();
+      setQueueData(toCamelCase(d));
+    };
+    getQueueData();
+  }, [requestData.queueId]);
+
+  useEffect(() => {
+    let getNumberOfRequests = async () => {
+      if (!queueData) return;
+      let res = await authenticatedGetFetch('/request/all_requests_for_queue', {queue_id: `${requestData.queueId}`});
+      let d = toCamelCase(await res.json());
+      if (!d) return;
+
+      let unresolvedRequests = 0;
+      for (const request of d) {
+        if (request.requestId === Number.parseInt(`${router.query.requestid}`)) {
+          setPositionInQueue(unresolvedRequests + 1);
+          break;
+        }
+        if (request.status === Status.Unseen) {
+          unresolvedRequests++;
+        } 
+      }
+      if (queueData.timeLimit) {
+        setWaitingTime(queueData.timeLimit * (positionInQueue - 1));
+      } else {
+        setWaitingTime((positionInQueue - 1) * 20);
+      }
+    };
+
+    getNumberOfRequests();
+  }, [queueData, requestData.queueId, router.query.requestid, positionInQueue]);
 
   const handleResolve = () => {
 
@@ -101,6 +142,8 @@ const WaitingScreen = () => {
           <div className={styles.buttonContainer}>
             <Button className={styles.greenButton} variant='contained' onClick={handleResolve}>Resolve</Button>
             <Button className={styles.greyButton} variant='contained' onClick={() => router.push(`/edit-request/${router.query.requestid}`)}>Edit Request</Button>
+            <InformationCard content={[`Current Position: ${positionInQueue}`, `Estimated Waiting Time: ${waitingTime} mins`]} />
+            <InformationCard title="Announcement" content={[queueData?.announcement as string]} />
           </div>
           <Box className={styles.cardBox}>
             <StudentRequestCard
