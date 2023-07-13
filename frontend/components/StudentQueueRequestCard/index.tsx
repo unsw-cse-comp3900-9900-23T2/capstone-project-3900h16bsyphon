@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import TagBox from '../TagBox';
 import { useEffect, useState } from 'react';
 import { authenticatedGetFetch, formatZid } from '../../utils';
-import type { Tag } from '../../types/requests';
+import { Status, Tag } from '../../types/requests';
 import { ArrowDownward, ArrowUpward } from '@mui/icons-material';
 
 type StudentQueueRequestCardProps = {
@@ -14,39 +14,39 @@ type StudentQueueRequestCardProps = {
   title: string,
   tags: Tag[],
   requestId: number,
-  status: string,
+  status: Status,
   queueId?: string,
 }
 
 const StudentQueueRequestCard = ({ zid, firstName, lastName, title, tags, requestId, status, queueId }: StudentQueueRequestCardProps) => {
   const router = useRouter();
 
-  const determineBackgroundColor = ( status: string ) => {
-    // TOOD: standardize these request status 
+  const determineBackgroundColor = (status: Status) => {
     switch (status) {
-    case 'Resolved':
+    case Status.Seen:
       return '#EDFFEE';
-    case 'Unresolved':
+    case Status.Unseen:
       return 'white';
-    case 'In Progress':
+    case Status.Seeing:
       return '#E3F0FC';
-    case 'Not Found':
+    case Status.NotFound:
       return '#F8E9E9';
     default:
       return 'white';
     }
   };
 
+
   const [backgroundColor, setBackgroundColor] = useState(determineBackgroundColor(status));
   const [previousRequests, setPreviousRequests] = useState(0);
   const handleNotFound = () => {
     // TODO: implement properly in the next sprint
-    setBackgroundColor(determineBackgroundColor('Not Found'));
+    setBackgroundColor(determineBackgroundColor(Status.NotFound));
   };
 
   const handleResolve = () => {
     // TODO: implement properly in the next sprint
-    setBackgroundColor(determineBackgroundColor('Resolve'));
+    setBackgroundColor(determineBackgroundColor(Status.Seen));
   };
 
   useEffect(() => {
@@ -92,13 +92,13 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, tags, reques
             <IconButton aria-label="move down button"><ArrowDownward /></IconButton>
           </div>
           {/* TODO: unhardcode */}
-          {(status === 'Unresolved') && <Button className={styles.claimButton} variant='contained' onClick={() => router.push('/wait/1')}>
+          {(status === Status.Unseen) && <Button className={styles.claimButton} variant='contained' onClick={() => router.push('/wait/1')}>
           Claim
           </Button>}
-          {(status === 'In Progress') && <Button className={styles.claimButton} variant='contained' onClick={handleResolve}>
+          {(status === Status.Seeing) && <Button className={styles.claimButton} variant='contained' onClick={handleResolve}>
           Resolve
           </Button>}
-          {(status === 'Unresolved') && <Button className={styles.notFoundButton} variant='contained' onClick={handleNotFound} >
+          {(status === Status.Unseen) && <Button className={styles.notFoundButton} variant='contained' onClick={handleNotFound} >
           Not Found
           </Button>}
         </CardActions>

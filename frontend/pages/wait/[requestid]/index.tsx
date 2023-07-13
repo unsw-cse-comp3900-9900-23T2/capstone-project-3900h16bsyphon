@@ -9,8 +9,8 @@ import { useRouter } from 'next/router';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { authenticatedGetFetch, toCamelCase, authenticatedPutFetch } from '../../../utils';
 import Header from '../../../components/Header';
-import FAQs from '../../../components/FAQs';
 import TagBox from '../../../components/TagBox';
+import { Status } from '../../../types/requests';
 
 const WaitingScreen = () => {
   const router = useRouter();
@@ -19,7 +19,7 @@ const WaitingScreen = () => {
     queueTitle: 'COMP1521 Thursday Week 5 Help Session',
     firstName: 'Jane',
     lastName: 'Doe',
-    status: 'Unresolved',
+    status: Status.Unseen,
     title: 'Pls help me with printing this array - im so stuck!',
     queueId: 1,
     courseOfferingId: 1,
@@ -33,7 +33,6 @@ const WaitingScreen = () => {
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
   });
-  const [reqState, setReqState] = useState('Unresolved');
 
   const disableCluster = async () => {
     const res = await authenticatedPutFetch('/request/disable_cluster', {
@@ -51,11 +50,10 @@ const WaitingScreen = () => {
     let getRequest = async () => {
       let res = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.requestid}`});
       if (res.status === 404) {
-        setReqState('Not Found');
+        router.push('/404');
       } else if (res.status === 403) {
-        setReqState('Forbidden');
+        router.push('/403');
       } else if (res.status === 200) {
-        setReqState('Success');
         let d = await res.json();
         setData(toCamelCase(d));
       }
@@ -67,11 +65,18 @@ const WaitingScreen = () => {
   }, [router.query.requestid]);
 
 
-  if (reqState === 'Not Found') {
-    router.push('/404');
-  } else if (reqState === 'Forbidden') {
-    router.push('/403');
-  }
+  const handleResolve = () => {
+
+    const resolveRequest = async () => {
+      const res = await authenticatedPutFetch('/request/set_status', {request_id: Number.parseInt(`${router.query.requestid}`), status: Status.Seen});
+      if (!res.ok) {
+        console.log('error: something went wrong with resolve request; check network tab');
+        return;
+      }
+      router.push('/dashboard');
+    };
+    resolveRequest();
+  };
 
   return (
     <>
@@ -94,7 +99,7 @@ const WaitingScreen = () => {
         ) : null}
         <div className={styles.body}>
           <div className={styles.buttonContainer}>
-            <Button className={styles.greenButton} variant='contained' onClick={() => router.push('/dashboard')}>Resolve</Button>
+            <Button className={styles.greenButton} variant='contained' onClick={handleResolve}>Resolve</Button>
             <Button className={styles.greyButton} variant='contained' onClick={() => router.push(`/edit-request/${router.query.requestid}`)}>Edit Request</Button>
           </div>
           <Box className={styles.cardBox}>
