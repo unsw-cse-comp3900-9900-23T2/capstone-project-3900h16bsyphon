@@ -33,6 +33,7 @@ const WaitingScreen = () => {
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
   });
+  const [isClusterable, setIsClusterable] = useState(requestData.isClusterable);
 
   const disableCluster = async () => {
     const res = await authenticatedPutFetch('/request/disable_cluster', {
@@ -42,7 +43,7 @@ const WaitingScreen = () => {
       console.log('error');
       return;
     }
-    router.reload();
+    setIsClusterable(false);
     return;
   };
 
@@ -87,7 +88,8 @@ const WaitingScreen = () => {
             {requestData.queueTitle}
           </Typography>
         </div>
-        {requestData.isClusterable ? (
+        {/* make state variable for isclusterable  */}
+        {isClusterable ? ( 
           <div className={styles.clusterContainer}>
             <TagBox
               text="You have been added to a cluster by the tutor! You question will be answered as a group. Click the button to remove yourself"
