@@ -90,7 +90,6 @@ const WaitingScreen = () => {
       if (!d) {
         return;
       }
-      console.log(d);
 
       let unresolvedRequests = 0;
       for (let i = 0; i < d.length; i++) {
