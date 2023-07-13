@@ -94,7 +94,7 @@ const ActiveQueue = () => {
             {requests && requests.length !== 0 ? (
               requests.map((request) => (
                 <StudentQueueRequestCard
-                  key={request.requestId}
+                  key={request.order}
                   requestId={request.requestId}
                   zid={request.zid}
                   firstName={request.firstName}
@@ -106,7 +106,7 @@ const ActiveQueue = () => {
                 />
               ))
             ) : (
-              <div> There are no requests </div>
+              <div>There are no requests</div>
             )}
           </div>
         </Box>

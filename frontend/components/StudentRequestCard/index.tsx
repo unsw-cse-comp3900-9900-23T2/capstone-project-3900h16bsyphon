@@ -7,7 +7,7 @@ import {
 import styles from './StudentRequestCard.module.css';
 import TagBox from '../TagBox';
 import { authenticatedGetFetch, formatZid } from '../../utils';
-import type { Tag } from '../../types/requests';
+import { Status, Tag } from '../../types/requests';
 
 type StudentRequestCardProps = {
   zid: number,
@@ -15,7 +15,7 @@ type StudentRequestCardProps = {
   lastName: string,
   title: string,
   tags: Tag[],
-  status: string,
+  status: Status,
   description: string,
   queueId: number,
 }
@@ -34,16 +34,16 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags
     findRequests();
   }, [queueId, zid]);
 
-  const determineBackgroundColour = (status: string) => {
+  const determineBackgroundColour = (status: Status) => {
     // TOOD: standardize these request status 
     switch (status) {
-    case 'Resolved':
+    case Status.Seen:
       return '#EDFFEE';
-    case 'Unresolved':
+    case Status.Unseen:
       return 'white';
-    case 'In Progress':
+    case Status.Seeing:
       return '#E3F0FC';
-    case 'Not Found':
+    case Status.NotFound:
       return '#F8E9E9';
     default:
       return 'white';

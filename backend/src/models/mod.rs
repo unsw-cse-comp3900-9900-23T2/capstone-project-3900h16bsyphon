@@ -22,6 +22,7 @@ pub type SyphonResult<T> = Result<T, SyphonError>;
 #[derive(Debug)]
 pub enum SyphonError {
     Json(serde_json::Value, actix_web::http::StatusCode),
+    RequestNotExist(i32),
     DbError(sea_orm::DbErr),
 }
 
@@ -30,6 +31,7 @@ impl std::fmt::Display for SyphonError {
         match self {
             SyphonError::Json(val, _) => std::fmt::Display::fmt(val, f),
             SyphonError::DbError(_) => write!(f, "Internal Db Error"),
+            SyphonError::RequestNotExist(id) => write!(f, "Request {} does not exist", id),
         }
     }
 }
@@ -39,6 +41,7 @@ impl SyphonError {
         match self {
             SyphonError::Json(body, _) => serde_json::to_string(body),
             SyphonError::DbError(_) => Ok(String::from("Internal Db Error")),
+            SyphonError::RequestNotExist(id) => Ok(format!("Request does not exist: {}", id)),
         }
     }
 }
@@ -48,6 +51,7 @@ impl actix_web::ResponseError for SyphonError {
         match self {
             SyphonError::Json(_, code) => *code,
             SyphonError::DbError(_) => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
+            SyphonError::RequestNotExist(_) => actix_web::http::StatusCode::BAD_REQUEST,
         }
     }
 
