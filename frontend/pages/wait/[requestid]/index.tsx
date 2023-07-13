@@ -75,7 +75,6 @@ const WaitingScreen = () => {
     let getQueueData = async () => {
       let res = await authenticatedGetFetch('/queue/get', {queue_id: `${requestData.queueId}`});
       let d = await res.json();
-      console.log(d);
       setQueueData(toCamelCase(d));
     };
     getQueueData();
