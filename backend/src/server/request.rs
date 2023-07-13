@@ -3,15 +3,16 @@ use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
 use serde_json::json;
 
-use crate::models::request::EditRequestBody;
 use crate::{entities, models, utils::db::db};
-use models::request::{AllRequestsForQueueBody, RequestInfoBody};
-
 use futures::future::join_all;
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect, PaginatorTrait};
-
-use crate::models::{
-    CreateRequest, CreateRequestResponse, QueueRequest, SyphonError, SyphonResult, Tag, TokenClaims,
+use models::{
+    AllRequestsForQueueBody, CreateRequest, CreateRequestResponse, EditRequestBody,
+    PutRequestStatusBody, QueueRequest, RequestInfoBody, SyphonError, SyphonResult, Tag,
+    TokenClaims,
+};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter,
+    QuerySelect,
 };
 
 pub async fn create_request(
@@ -23,11 +24,11 @@ pub async fn create_request(
 
     // find order number given queue id
     let req_count = entities::requests::Entity::find()
-       .filter(entities::requests::Column::QueueId.eq(request_creation.queue_id))
-       .count(db)
-       .await
-       .unwrap_or(0);
-   let order = req_count + 1;
+        .filter(entities::requests::Column::QueueId.eq(request_creation.queue_id))
+        .count(db)
+        .await
+        .unwrap_or(0);
+    let order = req_count + 1;
 
     // insert request itself
     let request = entities::requests::ActiveModel {
@@ -73,7 +74,6 @@ pub async fn create_request(
     }))
 }
 
-
 pub async fn edit_request(
     _token: ReqData<TokenClaims>,
     edit_request_body: web::Json<EditRequestBody>,
@@ -87,11 +87,11 @@ pub async fn edit_request(
         .one(db)
         .await?
         .ok_or(SyphonError::Json(
-            json!("request to edit cannot be found"), 
-            StatusCode::NOT_FOUND
+            json!("request to edit cannot be found"),
+            StatusCode::NOT_FOUND,
         ))?;
 
-    // update request 
+    // update request
     let update_result = entities::requests::ActiveModel {
         title: ActiveValue::Set(edit_request_body.title),
         description: ActiveValue::Set(edit_request_body.description),
@@ -142,13 +142,8 @@ pub async fn request_info_wrapper(
     token: ReqData<TokenClaims>,
     body: web::Query<RequestInfoBody>,
 ) -> SyphonResult<HttpResponse> {
-    let res: QueueRequest = request_info_not_web(token, body).await?;
-
-    Ok(HttpResponse::Ok().json(res))
+    Ok(HttpResponse::Ok().json(request_info_not_web(token, body).await?))
 }
-
-// given user -> give all requests
-// given queue -> all requests
 
 pub async fn all_requests_for_queue(
     token: ReqData<TokenClaims>,
@@ -189,15 +184,10 @@ pub async fn request_info_not_web(
     let db_request = entities::requests::Entity::find_by_id(body.request_id)
         .one(db)
         .await?;
-    let request = match db_request {
-        None => {
-            return Err(SyphonError::Json(
-                "Request not found".into(),
-                StatusCode::BAD_REQUEST,
-            ))
-        }
-        Some(req) => req,
-    };
+    let request = db_request.ok_or(SyphonError::Json(
+        "Request not found".into(),
+        StatusCode::BAD_REQUEST,
+    ))?;
 
     // User Data
     let user = entities::users::Entity::find_by_id(request.zid)
@@ -220,12 +210,11 @@ pub async fn request_info_not_web(
         .expect("Db broke");
 
     let course_offering_id = entities::queues::Entity::find_by_id(request.queue_id)
-            .one(db)
-            .await
-            .expect("Db broke")
-            .expect("queue doesn't exist")
-            .course_offering_id;
-
+        .one(db)
+        .await
+        .expect("Db broke")
+        .expect("queue doesn't exist")
+        .course_offering_id;
 
     let request_value = QueueRequest {
         request_id: request.request_id,
@@ -272,4 +261,48 @@ pub async fn disable_cluster(
     .expect("db broke");
 
     HttpResponse::Ok().json(())
+}
+
+/// # Returns
+/// - Err(400) => request does not exist
+/// ...
+pub async fn set_request_status(
+    token: ReqData<TokenClaims>,
+    body: web::Json<PutRequestStatusBody>,
+) -> SyphonResult<HttpResponse> {
+    let body = body.into_inner();
+    let db = db();
+
+    // Get Request
+    let request = entities::requests::Entity::find_by_id(body.request_id)
+        .one(db)
+        .await?
+        .ok_or(SyphonError::RequestNotExist(body.request_id))?;
+
+    let course_offering_id = entities::queues::Entity::find_by_id(request.queue_id)
+        .one(db)
+        .await?
+        .expect("Q exists because request exists")
+        .course_offering_id;
+
+    let tutor_model = entities::tutors::Entity::find_by_id((token.username, course_offering_id))
+        .one(db)
+        .await?;
+
+    // Can edit self. Only tutors can edit others
+    let _editing_self = match (token.username == request.zid, tutor_model) {
+        (false, None) => return Err(SyphonError::Json(json!("Not Tutor"), StatusCode::FORBIDDEN)),
+        (true, _) => true,
+        (false, Some(_)) => false,
+    };
+
+    // Update Request
+    entities::requests::ActiveModel {
+        status: ActiveValue::Set(Some(body.status.clone())),
+        ..request.into()
+    }
+    .update(db)
+    .await?;
+
+    Ok(HttpResponse::Ok().json(body))
 }

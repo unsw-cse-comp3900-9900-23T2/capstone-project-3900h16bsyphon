@@ -56,3 +56,9 @@ pub struct QueueRequest {
     pub tags: Vec<Tag>,
     pub course_offering_id: i32,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PutRequestStatusBody {
+    pub request_id: i32,
+    pub status: Statuses,
+}
