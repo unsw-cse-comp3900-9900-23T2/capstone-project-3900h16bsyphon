@@ -22,6 +22,8 @@ pub type SyphonResult<T> = Result<T, SyphonError>;
 pub enum SyphonError {
     Json(serde_json::Value, actix_web::http::StatusCode),
     RequestNotExist(i32),
+    QueueNotExist(i32),
+    NotTutor,
     DbError(sea_orm::DbErr),
     ActixError(actix_web::Error),
 }
@@ -31,7 +33,9 @@ impl std::fmt::Display for SyphonError {
         match self {
             SyphonError::Json(val, _) => std::fmt::Display::fmt(val, f),
             SyphonError::DbError(_) => write!(f, "Internal Db Error"),
+            SyphonError::NotTutor => write!(f, "Not Tutor"),
             SyphonError::RequestNotExist(id) => write!(f, "Request {} does not exist", id),
+            SyphonError::QueueNotExist(id) => write!(f, "Queue {} does not exist", id),
             SyphonError::ActixError(e) => write!(f, "{}", e),
         }
     }
@@ -42,7 +46,9 @@ impl SyphonError {
         match self {
             SyphonError::Json(body, _) => serde_json::to_string(body),
             SyphonError::DbError(_) => Ok(String::from("Internal Db Error")),
+            SyphonError::NotTutor => Ok(String::from("Not Tutor")),
             SyphonError::RequestNotExist(id) => Ok(format!("Request does not exist: {}", id)),
+            SyphonError::QueueNotExist(id) => Ok(format!("Queue does not exist: {}", id)),
             SyphonError::ActixError(e) => Ok(format!("{}", e.as_response_error().to_string())),
         }
     }
@@ -53,7 +59,9 @@ impl actix_web::ResponseError for SyphonError {
         match self {
             SyphonError::Json(_, code) => *code,
             SyphonError::DbError(_) => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
+            SyphonError::NotTutor => actix_web::http::StatusCode::FORBIDDEN,
             SyphonError::RequestNotExist(_) => actix_web::http::StatusCode::BAD_REQUEST,
+            SyphonError::QueueNotExist(_) => actix_web::http::StatusCode::BAD_REQUEST,
             SyphonError::ActixError(e) => e.as_response_error().status_code(),
         }
     }

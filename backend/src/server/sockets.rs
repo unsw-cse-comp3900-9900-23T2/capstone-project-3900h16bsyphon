@@ -5,6 +5,7 @@ use actix_web::{
     HttpRequest, HttpResponse,
 };
 use sea_orm::EntityTrait;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
@@ -48,6 +49,7 @@ pub fn conn_notifications(
     actix_web_actors::ws::start(conn, &req, stream)
 }
 
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct ConnAnnouncementsQuery {
     pub queue_id: i32,
 }
@@ -75,6 +77,7 @@ pub async fn conn_announcements(
     actix_web_actors::ws::start(conn, &req, stream)
 }
 
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct ConnRequestQuery {
     pub request_id: i32,
 }
@@ -88,7 +91,6 @@ pub async fn conn_request(
 ) -> SyphonResult<HttpResponse> {
     let req_id = req_id.request_id;
 
-    log::info!("Starting Request({}) socket for {}", req_id, token.username);
     let db = db();
     // Check that tutor or, owns request
     let request = entities::requests::Entity::find_by_id(req_id)
@@ -100,12 +102,54 @@ pub async fn conn_request(
         .await?;
     // Can edit self. Only tutors can edit others
     if token.username != request.zid && tutor_model.is_some() {
-        return Err(SyphonError::Json(json!("Not Tutor"), StatusCode::FORBIDDEN));
+        return Err(SyphonError::NotTutor);
     }
 
+    log::info!("Starting Request({}) socket for {}", req_id, token.username);
     let conn = WsConn::new(
         token.username,
         vec![SocketChannels::Request(req_id)],
+        unbox(lobby_addr),
+    );
+
+    Ok(actix_web_actors::ws::start(conn, &req, stream)?)
+}
+
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct ConnQueueQuery {
+    pub queue_id: i32,
+}
+
+pub async fn conn_queue(
+    token: ReqData<TokenClaims>,
+    req: HttpRequest,
+    req_id: web::Query<ConnQueueQuery>,
+    stream: web::Payload,
+    lobby_addr: web::Data<Addr<Lobby>>,
+) -> SyphonResult<HttpResponse> {
+    // Check if user is a tutor for the course the queue is for
+    let db = db();
+    let queue_id = req_id.queue_id;
+    let queue_model = entities::queues::Entity::find_by_id(queue_id)
+        .one(db)
+        .await?
+        .ok_or(SyphonError::QueueNotExist(queue_id))?;
+    let course_offering_id = queue_model.course_offering_id;
+    // Ensure user is a tutor for the course
+    entities::tutors::Entity::find_by_id((token.username, course_offering_id))
+        .one(db)
+        .await?
+        .ok_or(SyphonError::NotTutor)?;
+
+    // Start the connection
+    log::info!(
+        "Starting Queue({}) socket for {}",
+        req_id.queue_id,
+        token.username
+    );
+    let conn = WsConn::new(
+        token.username,
+        vec![SocketChannels::QueueData(queue_id)],
         unbox(lobby_addr),
     );
 
