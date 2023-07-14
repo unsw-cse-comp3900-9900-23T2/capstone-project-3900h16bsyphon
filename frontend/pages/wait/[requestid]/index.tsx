@@ -125,7 +125,7 @@ const WaitingScreen = () => {
       <div className={styles.pageContainer}>
         <div className={styles.queueTitle}>
           <Typography variant='h3'>
-            {requestData.queueTitle}
+            {queueData?.title}
           </Typography>
         </div>
         {/* make state variable for isclusterable  */}
