@@ -47,11 +47,17 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(middleware::Logger::default())
             .app_data(lobby.clone())
-            // .wrap(cors)
             .service(server::echo)
             .route("/", web::get().to(server::hello))
             .service(
-                scope("/sock").route("/sock", web::get().to(server::sockets::start_socket_conn)),
+                scope("/ws")
+                    .route(
+                        "/announcements",
+                        web::get().to(server::sockets::conn_announcements),
+                    )
+                    .route("/request", web::get().to(server::sockets::conn_request))
+                    .route("/queue", web::get().to(server::sockets::conn_queue))
+                    .route("/chat", web::get().to(server::sockets::conn_chat)),
             )
             .service(
                 scope("/auth")
