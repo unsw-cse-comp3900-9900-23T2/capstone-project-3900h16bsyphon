@@ -3,9 +3,8 @@ use actix::Context;
 use actix::Handler;
 use actix::Recipient;
 use std::collections::HashMap;
-use std::collections::HashSet;
 
-use crate::utils::sockets::messages::WsMessage;
+use crate::sockets::messages::WsMessage;
 use uuid::Uuid;
 
 use super::messages::ClientActorMessage;
@@ -14,9 +13,18 @@ use super::messages::Disconnect;
 
 type Socket = Recipient<WsMessage>;
 
+// TODO: use DashMap - worry abt Send / Sync
 pub struct Lobby {
+    /// Map zid to all connections for this person
+    connections: HashMap<i32, Vec<Socket>>,
+    /// request to thing
     sessions: HashMap<Uuid, Socket>,
-    rooms: HashMap<Uuid, HashSet<Uuid>>,
+    /// Map request_id to all sockets listeninig to that chat
+    chat_rooms: HashMap<i32, Vec<Socket>>,
+    /// Map queue_id to all sockets listening to annoucements
+    annoucements: HashMap<i32, Vec<Socket>>,
+    // TODO: queue data - more complex
+    queues: HashMap<i32, Vec<Socket>>,
 }
 
 impl Lobby {
@@ -33,8 +41,11 @@ impl Lobby {
 impl Default for Lobby {
     fn default() -> Self {
         Self {
+            connections: HashMap::new(),
             sessions: HashMap::new(),
-            rooms: HashMap::new(),
+            chat_rooms: HashMap::new(),
+            annoucements: HashMap::new(),
+            queues: HashMap::new(),
         }
     }
 }
@@ -76,8 +87,7 @@ impl Handler<Connect> for Lobby {
     }
 }
 
-impl Handler<WsMessage> for Lobby 
-{
+impl Handler<WsMessage> for Lobby {
     type Result = ();
 
     fn handle(&mut self, msg: WsMessage, ctx: &mut Self::Context) -> Self::Result {
@@ -85,8 +95,7 @@ impl Handler<WsMessage> for Lobby
     }
 }
 
-impl Handler<ClientActorMessage> for Lobby 
-{
+impl Handler<ClientActorMessage> for Lobby {
     type Result = ();
 
     fn handle(&mut self, msg: ClientActorMessage, ctx: &mut Self::Context) -> Self::Result {

@@ -11,9 +11,10 @@ pub mod entities;
 pub mod models;
 pub mod prelude;
 pub mod server;
+pub mod sockets;
 pub mod utils;
 
-use crate::{prelude::*, utils::sockets::lobby::Lobby};
+use crate::{prelude::*, sockets::lobby::Lobby};
 
 use utils::auth::validator;
 #[macro_use]
@@ -49,7 +50,9 @@ async fn main() -> std::io::Result<()> {
             // .wrap(cors)
             .service(server::echo)
             .route("/", web::get().to(server::hello))
-            .service(scope("/sock").route("/sock", web::get().to(server::sockets::start_socket_conn)))
+            .service(
+                scope("/sock").route("/sock", web::get().to(server::sockets::start_socket_conn)),
+            )
             .service(
                 scope("/auth")
                     .route("/signup", web::post().to(server::auth::create_user))

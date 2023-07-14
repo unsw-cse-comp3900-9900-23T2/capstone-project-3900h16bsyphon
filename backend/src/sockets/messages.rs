@@ -17,12 +17,27 @@ pub struct Connect {
 
 #[derive(Message)]
 #[rtype(result = "()")]
-/// WsConn asking to get removed from a lobby
+/// WsConn asking to be removed from a lobby and
+/// consequently, all associated channels.
 pub struct Disconnect {
     pub id: Uuid,
-    pub room_id: Uuid,
 }
 
+/// A WsConn asking to remove *all* associated connections
+/// for the given user from the lobby.
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct DisconnectAll {
+    zid: i32,
+}
+
+/// .
+/// .
+/// .
+/// .
+/// .
+/// .
+/// .
 #[derive(Message)]
 #[rtype(result = "()")]
 /// Client sends this to lobby

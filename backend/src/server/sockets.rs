@@ -1,15 +1,22 @@
 use actix::Addr;
-use actix_web::{web, HttpRequest, HttpResponse};
-use uuid::Uuid;
+use actix_web::{
+    web::{self, ReqData},
+    HttpRequest, HttpResponse,
+};
 
-use crate::utils::sockets::{lobby::Lobby, websockets::WsConn};
+use crate::{
+    models::TokenClaims,
+    sockets::{lobby::Lobby, websockets::WsConn},
+};
 
 pub async fn start_socket_conn(
+    token: ReqData<TokenClaims>,
     req: HttpRequest,
     stream: web::Payload,
     server: web::Data<Addr<Lobby>>,
 ) -> Result<HttpResponse, actix_web::Error> {
     log::debug!("called fn");
-    let wsconn = WsConn::new(Uuid::new_v4(), server.get_ref().clone());
-    actix_web_actors::ws::start(wsconn, &req, stream)
+    let addr = server.into_inner().as_ref().to_owned();
+    let connection = WsConn::new(token.username, vec![], addr);
+    actix_web_actors::ws::start(connection, &req, stream)
 }

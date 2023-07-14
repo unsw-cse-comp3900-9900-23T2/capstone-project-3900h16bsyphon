@@ -7,33 +7,41 @@ use log;
 use std::time::{Duration, Instant};
 use uuid::Uuid;
 
-use crate::utils::sockets::lobby::Lobby;
-
-use crate::utils::sockets::messages::{ClientActorMessage, Connect, Disconnect};
+use crate::sockets;
+use sockets::{
+    lobby::Lobby,
+    messages::{ClientActorMessage, Connect, Disconnect},
+};
 
 use super::messages::WsMessage;
+use super::SocketChannels;
 // use crate::lobby::Lobby; // as well as this
 //
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(10);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(30);
 
+#[derive(Debug)]
 pub struct WsConn {
+    /// zid of the user who created this connection
+    zid: i32,
     /// ID assigned to us by the socket
     id: Uuid,
     /// Each socket exists in a `room` (map from Uuid to socket id)
-    room: Uuid,
+    channels: Vec<SocketChannels>,
     /// Address of lobby that this socket exists in
     lobby_addr: Addr<Lobby>,
     /// Heartbeat. Used to check if socket is still alive every N seconds
     hb: Instant,
 }
 
+// TODO: re-write this stuff
 impl WsConn {
-    pub fn new(room: Uuid, lobby_addr: Addr<Lobby>) -> Self {
+    pub fn new(zid: i32, channels: Vec<SocketChannels>, lobby_addr: Addr<Lobby>) -> Self {
         Self {
+            zid,
             id: Uuid::new_v4(),
-            room,
+            channels,
             lobby_addr,
             hb: Instant::now(),
         }
@@ -42,11 +50,8 @@ impl WsConn {
     fn hb(&self, ctx: &mut ws::WebsocketContext<Self>) {
         ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
             if Instant::now().duration_since(act.hb) > CLIENT_TIMEOUT {
-                log::info!("Disconnecting failed heartbeat on :");
-                act.lobby_addr.do_send(Disconnect {
-                    id: act.id,
-                    room_id: act.room,
-                });
+                log::info!("Disconnecting failed heartbeat on {:?}:", self);
+                act.lobby_addr.do_send(Disconnect { id: act.id });
                 ctx.stop();
                 return;
             }
@@ -120,9 +125,11 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
                 ctx.text("{\"type\": \"text\", \"data\": \"data\"}");
                 log::debug!("Is a message of the text typy");
                 self.lobby_addr.do_send(ClientActorMessage {
-                id: self.id, msg: s.into(),
-                room_id: self.room,
-            })},
+                    id: self.id,
+                    msg: s.into(),
+                    room_id: self.room,
+                })
+            }
             Err(_) => todo!("handle this or die ig?"),
         }
     }
