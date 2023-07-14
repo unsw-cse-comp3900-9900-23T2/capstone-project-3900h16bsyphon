@@ -34,7 +34,7 @@ async fn main() -> std::io::Result<()> {
     let amw = HttpAuthentication::bearer(validator);
 
     HttpServer::new(move || {
-        let cors = Cors::default()
+        let _cors = Cors::default()
             .allowed_origin("http://localhost:3000")
             .allowed_origin("http://127.0.0.1:3000")
             .allowed_origin("http://frontend:3000")

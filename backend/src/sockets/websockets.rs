@@ -35,7 +35,6 @@ pub struct WsConn {
     hb: Instant,
 }
 
-// TODO: re-write this stuff
 impl WsConn {
     pub fn new(zid: i32, channels: Vec<SocketChannels>, lobby_addr: Addr<Lobby>) -> Self {
         Self {
@@ -48,9 +47,10 @@ impl WsConn {
     }
 
     fn hb(&self, ctx: &mut ws::WebsocketContext<Self>) {
-        ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
+        let Self { zid, id, .. } = *self;
+        ctx.run_interval(HEARTBEAT_INTERVAL, move |act, ctx| {
             if Instant::now().duration_since(act.hb) > CLIENT_TIMEOUT {
-                log::info!("Disconnecting failed heartbeat on {:?}:", self);
+                log::info!("Disconnecting failed heartbeat on {}; Socket: {}", zid, id);
                 act.lobby_addr.do_send(Disconnect { id: act.id });
                 ctx.stop();
                 return;
@@ -68,12 +68,12 @@ impl Actor for WsConn {
         self.hb(ctx);
         log::info!("Starting connection: {}", self.id);
 
-        let addr = ctx.address();
         self.lobby_addr
             .send(Connect {
-                addr: addr.recipient(),
-                lobby_id: self.room,
+                addr: ctx.address().recipient(),
+                channels: self.channels.clone(),
                 self_id: self.id,
+                zid: self.zid,
             })
             .into_actor(self)
             .then(|res, _, ctx| {
@@ -89,17 +89,19 @@ impl Actor for WsConn {
     fn stopping(&mut self, _: &mut Self::Context) -> Running {
         // Don't need to await. We don't care if this message gets read.
         // We kill ourselves anyways
-        self.lobby_addr.do_send(Disconnect {
-            id: self.id,
-            room_id: self.room,
-        });
+        self.lobby_addr.do_send(Disconnect { id: self.id });
         Running::Stop
     }
 }
 
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
-        log::info!("\n\nGot message: {:?}", msg);
+        log::info!(
+            "WsConn Recieved {:?};\n\tHandler zid: {}; Connection: {:?}",
+            msg,
+            self.zid,
+            self.id
+        );
         match msg {
             Ok(ws::Message::Ping(msg)) => {
                 self.hb = Instant::now();
@@ -123,12 +125,16 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
             Ok(Text(s)) => {
                 // ctx.binary("data");
                 ctx.text("{\"type\": \"text\", \"data\": \"data\"}");
-                log::debug!("Is a message of the text typy");
-                self.lobby_addr.do_send(ClientActorMessage {
-                    id: self.id,
-                    msg: s.into(),
-                    room_id: self.room,
-                })
+                log::debug!("Is a message of the text type");
+                let s1 = String::from(s);
+                log::debug!("As String: {}", s1);
+                // Current not actually taking in any messages from the client
+                // For chat, will probably do this through clients only
+                // Other stuff will just be done through HTTP actions
+                // self.lobby_addr.do_send(ClientActorMessage {
+                //     id: self.id,
+                //     msg: s.into(),
+                // })
             }
             Err(_) => todo!("handle this or die ig?"),
         }
