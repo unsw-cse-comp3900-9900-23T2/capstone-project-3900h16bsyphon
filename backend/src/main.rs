@@ -125,7 +125,8 @@ async fn main() -> std::io::Result<()> {
                         "/tags/set_priority",
                         web::put().to(server::queue::update_tag_priority),
                     )
-                    .route("/update", web::put().to(server::queue::update_queue)),
+                    .route("/update", web::put().to(server::queue::update_queue))
+                    .route("/close", web::put().to(server::queue::close_queue)),
             )
             .service(
                 scope("/history")

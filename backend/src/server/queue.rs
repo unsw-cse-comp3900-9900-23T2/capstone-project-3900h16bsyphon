@@ -3,7 +3,7 @@ use crate::{
     models::{
         CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery, GetQueueByIdQuery,
         GetQueueTagsQuery, GetQueuesByCourseQuery, QueueReturnModel, SyphonResult, Tag,
-        TokenClaims, SyphonError, UpdateQueueRequest,
+        TokenClaims, SyphonError, UpdateQueueRequest, CloseQueueRequest,
     },
     test_is_user,
     utils::{db::db, user::validate_user},
@@ -296,3 +296,38 @@ pub async fn update_queue(
     Ok(HttpResponse::Ok().json("Success!"))
 }
 
+pub async fn close_queue(
+    body: web::Json<CloseQueueRequest>,
+) -> SyphonResult<HttpResponse> {
+    let db = db();
+    log::info!("close queue");
+    log::info!("{:?}", body);
+
+    let queue = entities::queues::Entity::find_by_id(body.queue_id)
+        .one(db)
+        .await?
+        .ok_or(SyphonError::Json(
+            json!({"error" : "queue not found"}),
+            StatusCode::NOT_FOUND,
+        ))?;
+
+    // if the queue is already unavailable then we cant close it again so return error 
+    if !queue.is_available && !queue.is_visible {
+        return Err(SyphonError::Json(
+            json!({"error": "queue has already been closed"}),
+            StatusCode::METHOD_NOT_ALLOWED,
+        ));
+    }
+
+    // update the end time and set is_visible and is_available to false
+    entities::queues::ActiveModel {
+        queue_id: ActiveValue::Unchanged(body.queue_id),
+        is_available: ActiveValue::Set(false),
+        end_time: ActiveValue::Set(body.end_time),
+        is_visible: ActiveValue::Set(false),
+        ..queue.clone().into()
+    }.update(db).await?;
+
+
+    Ok(HttpResponse::Ok().json("Success!"))
+}

@@ -99,3 +99,8 @@ pub struct UpdateQueueRequest {
     pub course_id: i32,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CloseQueueRequest {
+    pub queue_id: i32,
+    pub end_time: NaiveDateTime,
+}
