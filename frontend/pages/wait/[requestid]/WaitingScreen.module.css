@@ -4,10 +4,12 @@
     align-items: center;
     min-height: 90vh;
     padding-top: 1%;
+    gap: 2%;
 }
 
 .cardBox {
     flex: 4;
+    max-width: 60%;
 }
 
 .queueTitle {
@@ -69,5 +71,5 @@
 .body {
     display: flex;
     width: 95%;
-    column-gap: 5%;
+    column-gap: 2%;
 }
