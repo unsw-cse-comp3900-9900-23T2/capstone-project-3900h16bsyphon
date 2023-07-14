@@ -22,6 +22,8 @@ pub struct Lobby {
     sessions: HashMap<Uuid, SessionData>,
     /// Map request_id to all sockets listeninig to that chat
     chat_rooms: HashMap<i32, BTreeSet<Uuid>>,
+    /// Map request_id to all sockets listening to that req
+    requests: HashMap<i32, BTreeSet<Uuid>>,
     /// Map queue_id to all sockets listening to annoucements
     annoucements: HashMap<i32, BTreeSet<Uuid>>,
     // TODO: queue data - more complex
@@ -45,6 +47,7 @@ impl Default for Lobby {
             connections: HashMap::new(),
             sessions: HashMap::new(),
             chat_rooms: HashMap::new(),
+            requests: HashMap::new(),
             annoucements: HashMap::new(),
             queues: HashMap::new(),
         }
@@ -80,7 +83,7 @@ impl Handler<Disconnect> for Lobby {
                 SocketChannels::QueueData(q_id) => self.queues.entry(q_id),
                 SocketChannels::Announcements(q_id) => self.annoucements.entry(q_id),
                 SocketChannels::Chat(r_id) => self.chat_rooms.entry(r_id),
-                _ => todo!(),
+                SocketChannels::Request(r_id) => self.requests.entry(r_id),
             }
             .or_default()
             .remove(&id);
@@ -147,7 +150,9 @@ impl Handler<Connect> for Lobby {
                 SocketChannels::Chat(req_id) => {
                     self.chat_rooms.entry(req_id).or_default().insert(uuid);
                 }
-                _ => todo!(),
+                SocketChannels::Request(req_id) => {
+                    self.chat_rooms.entry(req_id).or_default().insert(uuid);
+                }
             }
         }
     }
