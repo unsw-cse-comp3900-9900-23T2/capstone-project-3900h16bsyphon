@@ -15,7 +15,6 @@ use super::SocketChannels;
 
 type Socket = Recipient<WsMessage>;
 
-// TODO: use DashMap - worry abt Send / Sync
 pub struct Lobby {
     /// Map zid to all connections for this person
     connections: HashMap<i32, BTreeSet<Uuid>>,
@@ -81,6 +80,7 @@ impl Handler<Disconnect> for Lobby {
                 SocketChannels::QueueData(q_id) => self.queues.entry(q_id),
                 SocketChannels::Announcements(q_id) => self.annoucements.entry(q_id),
                 SocketChannels::Chat(r_id) => self.chat_rooms.entry(r_id),
+                _ => todo!(),
             }
             .or_default()
             .remove(&id);
@@ -147,6 +147,7 @@ impl Handler<Connect> for Lobby {
                 SocketChannels::Chat(req_id) => {
                     self.chat_rooms.entry(req_id).or_default().insert(uuid);
                 }
+                _ => todo!(),
             }
         }
     }

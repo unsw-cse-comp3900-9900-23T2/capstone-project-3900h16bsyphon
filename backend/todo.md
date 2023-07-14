@@ -8,7 +8,7 @@ Add sockets for the following 4 places:
 - Give a route to connect a socket that listens to any of the above
 
 ```
-GET /ws/notifications
+GET /ws/notifications    - for person
 GET /ws/queue/{id}       - For a student to listen to a status
 GET /ws/queue/           - For a tutor to listen to *all* queues
 GET /ws/chat/{request}   - Tutors have access + student of the chat

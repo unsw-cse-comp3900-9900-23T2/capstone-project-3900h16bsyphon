@@ -1,20 +1,20 @@
 pub mod auth;
 pub mod course;
+pub mod faqs;
 pub mod history;
 pub mod queue;
 pub mod request;
 pub mod user;
-pub mod faqs;
 
 use actix_web::HttpResponseBuilder;
 pub use auth::*;
 pub use course::*;
+pub use faqs::*;
 pub use history::*;
 pub use queue::*;
 pub use queue::*;
 pub use request::*;
 pub use user::*;
-pub use faqs::*;
 
 pub type SyphonResult<T> = Result<T, SyphonError>;
 
@@ -23,6 +23,7 @@ pub enum SyphonError {
     Json(serde_json::Value, actix_web::http::StatusCode),
     RequestNotExist(i32),
     DbError(sea_orm::DbErr),
+    ActixError(actix_web::Error),
 }
 
 impl std::fmt::Display for SyphonError {
@@ -31,6 +32,7 @@ impl std::fmt::Display for SyphonError {
             SyphonError::Json(val, _) => std::fmt::Display::fmt(val, f),
             SyphonError::DbError(_) => write!(f, "Internal Db Error"),
             SyphonError::RequestNotExist(id) => write!(f, "Request {} does not exist", id),
+            SyphonError::ActixError(e) => write!(f, "{}", e),
         }
     }
 }
@@ -41,6 +43,7 @@ impl SyphonError {
             SyphonError::Json(body, _) => serde_json::to_string(body),
             SyphonError::DbError(_) => Ok(String::from("Internal Db Error")),
             SyphonError::RequestNotExist(id) => Ok(format!("Request does not exist: {}", id)),
+            SyphonError::ActixError(e) => Ok(format!("{}", e.as_response_error().to_string())),
         }
     }
 }
@@ -51,6 +54,7 @@ impl actix_web::ResponseError for SyphonError {
             SyphonError::Json(_, code) => *code,
             SyphonError::DbError(_) => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
             SyphonError::RequestNotExist(_) => actix_web::http::StatusCode::BAD_REQUEST,
+            SyphonError::ActixError(e) => e.as_response_error().status_code(),
         }
     }
 
@@ -65,5 +69,12 @@ impl From<sea_orm::DbErr> for SyphonError {
     fn from(err: sea_orm::DbErr) -> Self {
         log::error!("Db Error: {}", err);
         SyphonError::DbError(err)
+    }
+}
+
+impl From<actix_web::Error> for SyphonError {
+    fn from(err: actix_web::Error) -> Self {
+        log::warn!("Actix Error: {}", err);
+        SyphonError::ActixError(err)
     }
 }

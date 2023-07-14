@@ -8,6 +8,7 @@ pub mod websockets;
 pub enum SocketChannels {
     Notifications(i32),
     QueueData(i32),
+    Request(i32),
     Announcements(i32),
     Chat(i32),
 }
