@@ -97,11 +97,16 @@ pub async fn conn_request(
         .one(db)
         .await?
         .ok_or(SyphonError::RequestNotExist(req_id))?;
-    let tutor_model = entities::tutors::Entity::find_by_id((token.username, request.queue_id))
+    let course_offering_id = entities::queues::Entity::find_by_id(request.queue_id)
         .one(db)
-        .await?;
-    // Can edit self. Only tutors can edit others
-    if token.username != request.zid && tutor_model.is_some() {
+        .await?
+        .expect("Q exists because request exists")
+        .course_offering_id;
+    let is_tutor = entities::tutors::Entity::find_by_id((token.username, course_offering_id))
+        .one(db)
+        .await?
+        .is_some();
+    if token.username != request.zid && !is_tutor {
         return Err(SyphonError::NotTutor);
     }
 
@@ -150,6 +155,51 @@ pub async fn conn_queue(
     let conn = WsConn::new(
         token.username,
         vec![SocketChannels::QueueData(queue_id)],
+        unbox(lobby_addr),
+    );
+
+    Ok(actix_web_actors::ws::start(conn, &req, stream)?)
+}
+
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct ConnChatQuery {
+    pub request_id: i32,
+}
+
+pub async fn conn_chat(
+    token: ReqData<TokenClaims>,
+    req: HttpRequest,
+    req_id: web::Query<ConnQueueQuery>,
+    stream: web::Payload,
+    lobby_addr: web::Data<Addr<Lobby>>,
+) -> SyphonResult<HttpResponse> {
+    let req_id = req_id.queue_id;
+
+    let db = db();
+    // Check that tutor or, owns request
+    // lol this is repeeated alot but its fine
+    let request = entities::requests::Entity::find_by_id(req_id)
+        .one(db)
+        .await?
+        .ok_or(SyphonError::RequestNotExist(req_id))?;
+    let course_offering_id = entities::queues::Entity::find_by_id(request.queue_id)
+        .one(db)
+        .await?
+        .expect("Q exists because request exists")
+        .course_offering_id;
+    let is_tutor = entities::tutors::Entity::find_by_id((token.username, course_offering_id))
+        .one(db)
+        .await?
+        .is_some();
+    if token.username != request.zid && !is_tutor {
+        return Err(SyphonError::NotTutor);
+    }
+
+    // Start the connection
+    log::info!("Starting Chat({}) socket for {}", req_id, token.username);
+    let conn = WsConn::new(
+        token.username,
+        vec![SocketChannels::Chat(req_id)],
         unbox(lobby_addr),
     );
 
