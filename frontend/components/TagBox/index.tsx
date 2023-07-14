@@ -1,8 +1,9 @@
 import { CardActionArea, Typography } from '@mui/material';
 import styles from './TagBox.module.css';
+import type { JSX } from 'react';
 
 type TagBoxProps = {
-    text: string,
+    text: string | JSX.Element,
     backgroundColor: string,
     color: string,
     isPriority?: boolean,

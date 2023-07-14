@@ -1,8 +1,10 @@
 .label {
     display: block;
     margin-bottom: 1em;
+    margin-top: 0.5em;
 }
 .timePicker {
     width: 100%;
     max-width: 1000px;
+    margin-bottom: 0.5em;
 }

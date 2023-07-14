@@ -94,7 +94,7 @@ const ActiveQueue = () => {
             {requests && requests.length !== 0 ? (
               requests.map((request) => (
                 <StudentQueueRequestCard
-                  key={request.requestId}
+                  key={request.order}
                   requestId={request.requestId}
                   zid={request.zid}
                   firstName={request.firstName}
@@ -106,13 +106,13 @@ const ActiveQueue = () => {
                 />
               ))
             ) : (
-              <div> There are no requests </div>
+              <div>There are no requests</div>
             )}
           </div>
         </Box>
         <div className={styles.buttonContainer}>
           <Button className={styles.genericButton} variant='contained' onClick={handleCopyQueueLink}>Copy Queue Link</Button>
-          <Button className={styles.settingsButton} variant='contained' onClick={() => router.push(`/course/${requestData.courseOfferingId}`)}>Settings</Button>
+          <Button className={styles.settingsButton} variant='contained' onClick={() => router.push(`/edit-queue/${router.query.queueid}`)}>Settings</Button>
         </div>
       </div>
     </div>

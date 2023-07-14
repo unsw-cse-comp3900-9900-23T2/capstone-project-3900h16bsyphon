@@ -17,7 +17,6 @@ type SyphonTimePickerProps = {
 const SyphonTimePicker = (props: SyphonTimePickerProps) => {
   return (
     <div className={style.timePicker}>
-      <Typography variant="body1" className={style.label}>Time</Typography>
       <FormGroup className={pageStyle.formGroup} row={true}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <TimePicker

@@ -14,6 +14,7 @@ pub use history::*;
 pub use queue::*;
 pub use queue::*;
 pub use request::*;
+use serde_json::Value;
 pub use user::*;
 
 pub type SyphonResult<T> = Result<T, SyphonError>;
@@ -42,7 +43,7 @@ impl std::fmt::Display for SyphonError {
 }
 
 impl SyphonError {
-    fn deserialise_body(&self) -> Result<String, serde_json::Error> {
+    fn serialise_body(&self) -> Result<String, serde_json::Error> {
         match self {
             SyphonError::Json(body, _) => serde_json::to_string(body),
             SyphonError::DbError(_) => Ok(String::from("Internal Db Error")),
@@ -67,7 +68,8 @@ impl actix_web::ResponseError for SyphonError {
     }
 
     fn error_response(&self) -> actix_web::HttpResponse<actix_web::body::BoxBody> {
-        let json_body = self.deserialise_body().unwrap();
+        let json_body: Value =
+            serde_json::from_str(self.serialise_body().unwrap().as_str()).unwrap();
 
         HttpResponseBuilder::new(self.status_code()).json(json_body)
     }
