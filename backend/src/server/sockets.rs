@@ -99,11 +99,9 @@ pub async fn conn_request(
         .one(db)
         .await?;
     // Can edit self. Only tutors can edit others
-    let _editing_self = match (token.username == request.zid, tutor_model) {
-        (false, None) => return Err(SyphonError::Json(json!("Not Tutor"), StatusCode::FORBIDDEN)),
-        (true, _) => true,
-        (false, Some(_)) => false,
-    };
+    if token.username != request.zid && tutor_model.is_some() {
+        return Err(SyphonError::Json(json!("Not Tutor"), StatusCode::FORBIDDEN));
+    }
 
     let conn = WsConn::new(
         token.username,
