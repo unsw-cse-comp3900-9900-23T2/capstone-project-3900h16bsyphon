@@ -128,6 +128,9 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
                 log::debug!("Is a message of the text type");
                 let s1 = String::from(s);
                 log::debug!("As String: {}", s1);
+                // to a json object
+                // read the "TYPE" matching ont
+                // send that struct to the lobby
                 // Current not actually taking in any messages from the client
                 // For chat, will probably do this through clients only
                 // Other stuff will just be done through HTTP actions

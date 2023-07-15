@@ -24,5 +24,46 @@ enum ListenEvents {
 }
 ```
 
+# Chat
 
-- Actor framework
+```rust
+
+struct SendMsg {
+    type: "SEND_MSG",
+    requeust_id: i32,
+    content: String,
+}
+// -> .... 
+
+struct RecieveMsg {
+    type: "RECV_MSG",
+    requeust_id: i32,
+    content: String,
+    sender: i32,
+}
+
+// ----
+
+// /ws/announcement/{queue_id}
+struct AnnouncementOut {
+    type: "ANNOUNCEMENT",
+    content: String,
+    sender: i32,
+    queue_id: i32,
+}
+
+struct AnnouncementIn {
+    type: "ANNOUNCEMENT",
+    content: String,
+}
+
+// /ws/queue{id}
+// - if anything change -> you get back new state
+// - Join Notifds
+
+struct JoinOut {
+    type: "JOIN",
+    zid: i32,
+}
+```
+

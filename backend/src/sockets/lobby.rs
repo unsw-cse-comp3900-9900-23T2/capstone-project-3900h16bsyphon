@@ -16,10 +16,9 @@ use super::SocketChannels;
 type Socket = Recipient<WsMessage>;
 
 pub struct Lobby {
+    sessions: HashMap<Uuid, SessionData>,
     /// Map zid to all connections for this person
     connections: HashMap<i32, BTreeSet<Uuid>>,
-    /// SocketId -> (zid, Socket) / Maybe not needed?
-    sessions: HashMap<Uuid, SessionData>,
     /// Map request_id to all sockets listeninig to that chat
     chat_rooms: HashMap<i32, BTreeSet<Uuid>>,
     /// Map request_id to all sockets listening to that req

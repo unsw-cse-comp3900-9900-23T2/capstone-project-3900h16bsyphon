@@ -2,14 +2,16 @@
 /* eslint-disable */
 import React, { useState, useCallback,  useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { getToken } from '../../utils';
 
 
 const Socket = () => {
 
-  const [socketUrl, setSocketUrl] = React.useState('ws:127.0.0.1:8000/sock/sock');
+  const token = getToken();
+  const [socketUrl, setSocketUrl] = React.useState('');
+  // const [socketUrl, setSocketUrl] = React.useState(`ws:127.0.0.1:8000/ws/dumb?access_token=${token}`);
 
-
-  // const socket = new WebSocket('ws://localhost:3000');
+  const socket = new WebSocket('');
   const wsReturn = useWebSocket(socketUrl);
   const { sendMessage, lastMessage, readyState, getWebSocket } = wsReturn;
   console.log('wsReturn', wsReturn);

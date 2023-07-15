@@ -34,7 +34,7 @@ async fn main() -> std::io::Result<()> {
     let amw = HttpAuthentication::bearer(validator);
 
     HttpServer::new(move || {
-        let _cors = Cors::default()
+        let cors = Cors::default()
             .allowed_origin("http://localhost:3000")
             .allowed_origin("http://127.0.0.1:3000")
             .allowed_origin("http://frontend:3000")
@@ -46,11 +46,14 @@ async fn main() -> std::io::Result<()> {
             .max_age(3600);
         App::new()
             .wrap(middleware::Logger::default())
+            .wrap(cors)
             .app_data(lobby.clone())
             .service(server::echo)
             .route("/", web::get().to(server::hello))
             .service(
                 scope("/ws")
+                    .wrap(amw.clone())
+                    .route("/dumb", web::get().to(server::sockets::start_socket_conn))
                     .route(
                         "/announcements",
                         web::get().to(server::sockets::conn_announcements),

@@ -4,7 +4,7 @@ use actix_web::{
     web::{self, ReqData},
     HttpRequest, HttpResponse,
 };
-use sea_orm::EntityTrait;
+use sea_orm::{EntityTrait, ModelTrait};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
