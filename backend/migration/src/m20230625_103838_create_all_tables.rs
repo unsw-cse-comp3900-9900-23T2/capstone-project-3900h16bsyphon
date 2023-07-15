@@ -111,6 +111,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Queues::EndTime).date_time().not_null())
                     .col(ColumnDef::new(Queues::IsVisible).boolean().not_null())
                     .col(ColumnDef::new(Queues::IsAvailable).boolean().not_null())
+                    .col(ColumnDef::new(Queues::IsSortedByPreviousRequestCount).boolean().not_null())
                     .col(ColumnDef::new(Queues::TimeLimit).integer())
                     .col(ColumnDef::new(Queues::Title).string().not_null())
                     .col(ColumnDef::new(Queues::Announcement).string().not_null())
@@ -467,6 +468,7 @@ enum Tutors {
 pub enum Queues {
     Table,
     QueueId,
+    IsSortedByPreviousRequestCount,
     StartTime,
     EndTime,
     IsVisible,

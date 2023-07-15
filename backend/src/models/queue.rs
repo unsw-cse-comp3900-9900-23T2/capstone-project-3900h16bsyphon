@@ -39,6 +39,7 @@ impl From<CreateQueueRequest> for entities::queues::ActiveModel {
             is_visible: ActiveValue::Set(value.is_visible),
             is_available: ActiveValue::Set(value.is_available),
             time_limit: ActiveValue::Set(value.time_limit),
+            is_sorted_by_previous_request_count: ActiveValue::Set(false),
             course_offering_id: ActiveValue::Set(value.course_id),
             announcement: ActiveValue::Set(value.announcement),
         }
@@ -99,3 +100,9 @@ pub struct UpdateQueueRequest {
     pub course_id: i32,
 }
 
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UpdateQueuePreviousRequestCount {
+    pub queue_id: i32,
+    pub is_sorted_by_previous_request_count: bool,
+}

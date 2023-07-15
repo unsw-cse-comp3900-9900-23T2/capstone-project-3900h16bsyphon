@@ -3,7 +3,7 @@ use crate::{
     models::{
         CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery, GetQueueByIdQuery,
         GetQueueTagsQuery, GetQueuesByCourseQuery, QueueReturnModel, SyphonResult, Tag,
-        TokenClaims, SyphonError, UpdateQueueRequest,
+        TokenClaims, SyphonError, UpdateQueueRequest, UpdateQueuePreviousRequestCount,
     },
     test_is_user,
     utils::{db::db, user::validate_user},
@@ -260,3 +260,15 @@ pub async fn update_queue(
     Ok(HttpResponse::Ok().json("Success!"))
 }
 
+pub async fn set_is_sorted_by_previous_request_count(body: web::Json<UpdateQueuePreviousRequestCount>)
+    -> SyphonResult<HttpResponse> {
+    let db = db();
+    let queue = entities::queues::Entity::find_by_id(body.queue_id)
+        .one(db)
+        .await?.ok_or(SyphonError::QueueNotExist(body.queue_id))?;
+    entities::queues::ActiveModel {
+        is_sorted_by_previous_request_count: sea_orm::ActiveValue::Set(body.is_sorted_by_previous_request_count),
+        ..queue.into()
+    }.update(db).await?;
+    Ok(HttpResponse::Ok().json("Success!"))
+}

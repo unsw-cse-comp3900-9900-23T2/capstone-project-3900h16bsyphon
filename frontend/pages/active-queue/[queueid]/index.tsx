@@ -16,6 +16,7 @@ const ActiveQueue = () => {
     title: 'COMP1521 Thursday Week 5 Help Session',
     queueId: 1,
     courseOfferingId: 1,
+    isSortedByPreviousRequestCount: false,
     requests,
   });
   const [tags, setTags] = useState<Tag[]>([]);
@@ -42,10 +43,8 @@ const ActiveQueue = () => {
     getQueueData();
     getQueueTags();
   }, [router.query.queueid]);
-  
-  const flipTagPriority = async (e: SelectChangeEvent<number>) => {
-    e.preventDefault();
-    let tagId = e.target.value;
+
+  const flipTagPriority = async (tagId: number) => {
     let tag = tags.find((t) => t.tagId === tagId);
     await authenticatedPutFetch(
       '/queue/tags/set_priority',
@@ -55,6 +54,25 @@ const ActiveQueue = () => {
         tag_id: tagId,
       }
     );
+  };
+
+  const flipRequestCountPriority = async () => {
+    await authenticatedPutFetch(
+      '/queue/set_is_sorted_by_previous_request_count',
+      {
+        queue_id: Number.parseInt(router.query.queueid as string),
+        is_sorted_by_previous_request_count: !requestData.isSortedByPreviousRequestCount,
+      }
+    );
+  };
+
+  const handleSubmit = async (e: SelectChangeEvent<number | string>) => {
+    e.preventDefault();
+    if (typeof(e.target.value) === 'number') {
+      await flipTagPriority(e.target.value);
+    } else if (e.target.value === 'prevRequestCount') {
+      await flipRequestCountPriority();
+    }
     router.reload();
   };
 
@@ -81,10 +99,11 @@ const ActiveQueue = () => {
               label='Sort Queue'
               className={styles.select}
               displayEmpty
-              onChange={flipTagPriority}
+              onChange={handleSubmit}
               sx={{ boxShadow: 'none', '.MuiOutlinedInput-notchedOutline': { border: 0 } }}
             >
               {tags.map((tag) => (<MenuItem key={tag.tagId} value={tag.tagId}>{tag.isPriority ? 'Unprioritise':  'Prioritise'} &quot;{tag.name}&quot;</MenuItem>))}
+              <MenuItem key={'key'} value='prevRequestCount'>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} requests by non-regulars</MenuItem>
             </Select>
           </FormControl>
           <Button className={styles.closeQueueButton} variant='contained' onClick={() => router.push(`/course/${requestData.courseOfferingId}`)}>Close Queue</Button>

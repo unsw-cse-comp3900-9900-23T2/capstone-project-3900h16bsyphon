@@ -118,7 +118,10 @@ pub async fn all_requests_for_queue(
     let db = db();
     let body = body.into_inner();
     // Find all related requests
-    // TODO: dont do cringe loop of all
+    let queue = entities::queues::Entity::find_by_id(body.queue_id)
+        .one(db).await?
+        .ok_or(SyphonError::QueueNotExist(body.queue_id))?;
+
     let requests_future = entities::requests::Entity::find()
         .filter(entities::requests::Column::QueueId.eq(body.queue_id))
         .all(db)
@@ -148,8 +151,12 @@ pub async fn all_requests_for_queue(
 
     let mut priority_request_zip: Vec<_> = requests.iter().zip(is_priority).collect();
     priority_request_zip.sort_by(|a, b| b.1.cmp(&a.1));
-
-    Ok(HttpResponse::Ok().json(priority_request_zip.iter().map(|v| v.0).collect::<Vec<_>>()))
+    let mut requests = priority_request_zip.iter().map(|v| v.0).collect::<Vec<_>>();
+    // sort by the number of requests a user has made if this is set
+    if queue.is_sorted_by_previous_request_count {
+        requests.sort_by(|a, b| a.previous_requests.cmp(&b.previous_requests));
+    }
+    Ok(HttpResponse::Ok().json(requests))
 }
 
 /// TODO: This is really cringe, don't do whatever this is
