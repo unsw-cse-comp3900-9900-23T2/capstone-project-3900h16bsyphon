@@ -102,7 +102,7 @@ const ActiveQueue = () => {
                   tags={request.tags}
                   title={request.title}
                   status={request.status}
-                  queueId={router.query.queueid as string | undefined}
+                  previousRequests={request.previousRequests}
                 />
               ))
             ) : (

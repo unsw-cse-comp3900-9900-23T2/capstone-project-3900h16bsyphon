@@ -5,10 +5,10 @@ export type Tag = {
 };
 
 export enum Status {
-  NotFound = 'NotFound',
-  Seeing = 'Seeing',
-  Seen = 'Seen',
-  Unseen = 'Unseen',
+  NotFound = 'not_found',
+  Seeing = 'seeing',
+  Seen = 'seen',
+  Unseen = 'unseen',
 }
 
 export type UserRequest = {
@@ -17,6 +17,7 @@ export type UserRequest = {
   queueId: number,
   firstName: string,
   lastName: string,
+  previousRequests: number,
   title: string,
   tags: Tag[],
   status: Status,

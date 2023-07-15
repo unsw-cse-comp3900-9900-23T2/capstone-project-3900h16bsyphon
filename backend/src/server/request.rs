@@ -3,6 +3,7 @@ use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
 use serde_json::json;
 
+use crate::entities::sea_orm_active_enums::Statuses;
 use crate::{entities, models, utils::db::db};
 use futures::future::join_all;
 use models::{
@@ -216,6 +217,15 @@ pub async fn request_info_not_web(
         .expect("queue doesn't exist")
         .course_offering_id;
 
+    let previous_requests = entities::requests::Entity::find()
+        .left_join(entities::queues::Entity)
+        .filter(entities::requests::Column::Zid.eq(request.zid))
+        .filter(entities::requests::Column::Status.eq(Statuses::Seen))
+        .filter(entities::queues::Column::CourseOfferingId.eq(course_offering_id))
+        .count(db)
+        .await
+        .expect("db broke?");
+
     let request_value = QueueRequest {
         request_id: request.request_id,
         first_name: user.first_name,
@@ -228,6 +238,7 @@ pub async fn request_info_not_web(
         status: request.status,
         order: request.order,
         course_offering_id: course_offering_id,
+        previous_requests,
         tags,
     };
 

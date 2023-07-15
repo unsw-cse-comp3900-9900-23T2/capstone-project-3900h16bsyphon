@@ -153,7 +153,7 @@ const WaitingScreen = () => {
               lastName={requestData.lastName}
               tags={requestData.tags}
               title={requestData.title}
-              queueId={requestData.queueId}
+              previousRequests={requestData.previousRequests}
               description={requestData.description}
             />
           </Box>
