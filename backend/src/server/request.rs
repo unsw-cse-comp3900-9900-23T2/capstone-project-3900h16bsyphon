@@ -199,7 +199,14 @@ pub async fn request_info_not_web(
     let previous_requests = entities::requests::Entity::find()
         .left_join(entities::queues::Entity)
         .filter(entities::requests::Column::Zid.eq(request.zid))
-        .filter(entities::requests::Column::Status.eq(Statuses::Seen))
+        .filter(
+            entities::requests::Column::Status.eq(Statuses::Seen)
+            .and(
+                 // it needs to be an older queue or older request
+                entities::queues::Column::QueueId.lt(request.queue_id)
+                .or(entities::requests::Column::Order.lt(request.order))
+            )
+        )
         .filter(entities::queues::Column::CourseOfferingId.eq(course_offering_id))
         .count(db)
         .await
