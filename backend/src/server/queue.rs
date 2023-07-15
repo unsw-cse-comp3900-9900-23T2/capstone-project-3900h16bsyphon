@@ -190,11 +190,10 @@ pub async fn update_tag_priority(
 }
 
 pub async fn fetch_queue_tags(
-    token: ReqData<TokenClaims>,
+    _token: ReqData<TokenClaims>,
     query: web::Query<GetQueueTagsQuery>,
-) -> HttpResponse {
+) -> SyphonResult<HttpResponse> {
     let db = db();
-    test_is_user!(token, db);
     let tags = entities::queue_tags::Entity::find()
         .left_join(entities::tags::Entity)
         .filter(entities::queue_tags::Column::QueueId.eq(query.queue_id))
@@ -204,9 +203,8 @@ pub async fn fetch_queue_tags(
         .column(entities::tags::Column::Name)
         .into_model::<Tag>()
         .all(db)
-        .await
-        .expect("Db broke");
-    HttpResponse::Ok().json(web::Json(tags))
+        .await?;
+    Ok(HttpResponse::Ok().json(web::Json(tags)))
 }
 
 pub async fn get_is_open(

@@ -67,7 +67,7 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags
           </div>
         </div>
         <div className={styles.previousRequestsContainer}>
-          <TagBox text={`PREVIOUS TOTAL REQUESTS: ${previousRequests - 1}`} backgroundColor='#D5CFFF' color='#3E368F' />
+          <TagBox text={`PREVIOUS TOTAL REQUESTS: ${previousRequests}`} backgroundColor='#D5CFFF' color='#3E368F' />
         </div>
       </div>
       <div>

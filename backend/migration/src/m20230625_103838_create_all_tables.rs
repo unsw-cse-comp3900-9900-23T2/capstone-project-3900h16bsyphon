@@ -207,7 +207,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Requests::Description).string().not_null())
                     .col(ColumnDef::new(Requests::Order).integer().not_null())
                     .col(ColumnDef::new(Requests::IsClusterable).boolean().not_null())
-                    .col(ColumnDef::new(Requests::Status).enumeration(Statuses::Table, Statuses::iter().skip(1)))
+                    .col(ColumnDef::new(Requests::Status).enumeration(Statuses::Table, Statuses::iter().skip(1)).not_null())
                     .to_owned(),
             )
             .await?;
@@ -225,7 +225,7 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(RequestStatusLog::RequestId).integer().not_null())
-                    .col(ColumnDef::new(RequestStatusLog::Status).enumeration(Statuses::Table, Statuses::iter().skip(1)))
+                    .col(ColumnDef::new(RequestStatusLog::Status).enumeration(Statuses::Table, Statuses::iter().skip(1)).not_null())
                     .col(ColumnDef::new(RequestStatusLog::EventTime).date_time().not_null())
                     .foreign_key(
                         ForeignKey::create()

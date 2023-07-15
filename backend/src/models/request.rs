@@ -12,7 +12,7 @@ pub struct CreateRequest {
     pub description: String,
     pub tags: Vec<i32>,
     pub is_clusterable: bool,
-    pub status: Option<Statuses>,
+    pub status: Statuses,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -23,7 +23,7 @@ pub struct EditRequestBody {
     pub description: String,
     pub tags: Vec<i32>,
     pub is_clusterable: bool,
-    pub status: Option<Statuses>,
+    pub status: Statuses,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -52,7 +52,7 @@ pub struct QueueRequest {
     pub title: String,
     pub description: String,
     pub is_clusterable: bool,
-    pub status: Option<Statuses>,
+    pub status: Statuses,
     pub tags: Vec<Tag>,
     pub course_offering_id: i32,
 }

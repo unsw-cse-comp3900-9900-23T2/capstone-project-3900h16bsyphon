@@ -31,6 +31,7 @@ pub async fn get_request_count(
     let res = entities::requests::Entity::find()
         .left_join(entities::queues::Entity)
         .filter(entities::requests::Column::Zid.eq(body.zid))
+        .filter(entities::requests::Column::Status.is_in(["unseen"]))
         .filter(entities::queues::Column::CourseOfferingId.eq(course_offering_id))
         .count(db)
         .await

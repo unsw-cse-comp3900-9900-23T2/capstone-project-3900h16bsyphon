@@ -300,7 +300,7 @@ pub async fn set_request_status(
 
     // Update Request
     entities::requests::ActiveModel {
-        status: ActiveValue::Set(Some(body.status.clone())),
+        status: ActiveValue::Set(body.status.clone()),
         ..request.into()
     }
     .update(db)
