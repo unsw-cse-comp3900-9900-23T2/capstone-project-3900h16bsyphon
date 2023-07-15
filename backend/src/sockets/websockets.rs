@@ -4,10 +4,13 @@ use actix::{AsyncContext, Handler};
 use actix_web_actors::ws;
 use actix_web_actors::ws::Message::Text;
 use log;
+use serde_json::json;
+use std::os::macos::raw;
 use std::time::{Duration, Instant};
 use uuid::Uuid;
 
 use crate::sockets;
+use crate::utils::auth::validate_raw_token;
 use sockets::{
     lobby::Lobby,
     messages::{ClientActorMessage, Connect, Disconnect},
@@ -24,7 +27,7 @@ const CLIENT_TIMEOUT: Duration = Duration::from_secs(30);
 #[derive(Debug)]
 pub struct WsConn {
     /// zid of the user who created this connection
-    zid: i32,
+    zid: Option<i32>,
     /// ID assigned to us by the socket
     id: Uuid,
     /// Each socket exists in a `room` (map from Uuid to socket id)
@@ -36,9 +39,9 @@ pub struct WsConn {
 }
 
 impl WsConn {
-    pub fn new(zid: i32, channels: Vec<SocketChannels>, lobby_addr: Addr<Lobby>) -> Self {
+    pub fn new(channels: Vec<SocketChannels>, lobby_addr: Addr<Lobby>) -> Self {
         Self {
-            zid,
+            zid: None,
             id: Uuid::new_v4(),
             channels,
             lobby_addr,
@@ -50,7 +53,11 @@ impl WsConn {
         let Self { zid, id, .. } = *self;
         ctx.run_interval(HEARTBEAT_INTERVAL, move |act, ctx| {
             if Instant::now().duration_since(act.hb) > CLIENT_TIMEOUT {
-                log::info!("Disconnecting failed heartbeat on {}; Socket: {}", zid, id);
+                log::info!(
+                    "Disconnecting failed heartbeat on {:?}; Socket: {}",
+                    zid,
+                    id
+                );
                 act.lobby_addr.do_send(Disconnect { id: act.id });
                 ctx.stop();
                 return;
@@ -59,21 +66,45 @@ impl WsConn {
             ctx.ping(b"PING");
         });
     }
-}
 
-impl Actor for WsConn {
-    type Context = ws::WebsocketContext<Self>;
+    fn is_authed(&self) -> bool {
+        self.zid.is_some()
+    }
 
-    fn started(&mut self, ctx: &mut Self::Context) {
-        self.hb(ctx);
-        log::info!("Starting connection: {}", self.id);
+    fn try_auth(
+        &mut self,
+        raw_tok: &str,
+        ctx: &mut <Self as Actor>::Context,
+    ) -> Result<i32, String> {
+        validate_raw_token(raw_tok)
+            .into_actor(self)
+            .then(|res, conn, ctx| match res {
+                Ok(tok) => {
+                    ctx.text(json!({"type": "auth", "success": true}).to_string());
+                    conn.zid = Some(tok.username);
+                    fut::ready(())
+                }
+                Err(e) => {
+                    log::info!("Conn failed to auth: {}", self.id);
+                    ctx.text(json!({"type": "auth", "success": false}).to_string());
+                    ctx.stop();
+                    fut::ready(())
+                }
+            })
+            .wait(ctx);
+        self.zid.ok_or(String::from("Auth Fail"))
+    }
 
+    /// Tries to connect to lobby
+    /// # Safety
+    /// You MUST ensure that the actor has been authed before calling this.
+    fn connect_to_lobby(&self, ctx: &mut <Self as Actor>::Context) {
         self.lobby_addr
             .send(Connect {
                 addr: ctx.address().recipient(),
                 channels: self.channels.clone(),
                 self_id: self.id,
-                zid: self.zid,
+                zid: self.zid.expect("Must be authed to start connection"),
             })
             .into_actor(self)
             .then(|res, _, ctx| {
@@ -84,6 +115,17 @@ impl Actor for WsConn {
                 fut::ready(())
             })
             .wait(ctx);
+    }
+}
+
+impl Actor for WsConn {
+    type Context = ws::WebsocketContext<Self>;
+
+    fn started(&mut self, ctx: &mut Self::Context) {
+        // Only do heartbeat. Do not actually send a Connect
+        // to the lobby just yet. Do that on auth
+        self.hb(ctx);
+        log::info!("Starting connection: {}", self.id);
     }
 
     fn stopping(&mut self, _: &mut Self::Context) -> Running {
@@ -97,7 +139,7 @@ impl Actor for WsConn {
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
         log::info!(
-            "WsConn Recieved {:?};\n\tHandler zid: {}; Connection: {:?}",
+            "WsConn Recieved {:?};\n\tHandler zid: {:?}; Connection: {:?}",
             msg,
             self.zid,
             self.id
@@ -123,11 +165,22 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
             // Let the lobby deal w/ text messages and figure out where to
             // redirect
             Ok(Text(s)) => {
-                // ctx.binary("data");
-                ctx.text("{\"type\": \"text\", \"data\": \"data\"}");
-                log::debug!("Is a message of the text type");
-                let s1 = String::from(s);
-                log::debug!("As String: {}", s1);
+                let raw_text = String::from(s);
+                // Should NOT be left in prod as it will capture BearerTokens
+                log::debug!("Recieved message as String: {}", raw_text);
+
+                // On connection, first message must be auth, or this actor
+                // will Robin Williams itself
+                if !self.is_authed() {
+                    return match self.try_auth(&raw_text, ctx) {
+                        Err(_) => (),
+                        // # Safety:
+                        // Calling when auth is successfull
+                        Ok(zid) => self.connect_to_lobby(ctx),
+                    };
+                }
+
+                // x.do_send()
                 // to a json object
                 // read the "TYPE" matching ont
                 // send that struct to the lobby
