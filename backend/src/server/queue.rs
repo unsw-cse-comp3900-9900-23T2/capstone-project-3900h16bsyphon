@@ -147,45 +147,11 @@ pub async fn update_tag_priority(
         Some(item) => item,
         None => return Ok(HttpResponse::NotFound().json("No tag of that id!")),
     };
-    let has_tag = entities::requests::Entity::find()
-        .left_join(entities::tags::Entity)
-        .filter(entities::request_tags::Column::TagId.eq(body.tag_id))
-        .filter(entities::requests::Column::QueueId.eq(body.queue_id))
-        .all(db)
-        .await?;
     let model = entities::queue_tags::ActiveModel {
         is_priority: ActiveValue::Set(body.is_priority),
         ..item.into()
     };
     model.update(db).await?;
-    let priority_tags = entities::queue_tags::Entity::find()
-        .left_join(entities::tags::Entity)
-        .filter(entities::queue_tags::Column::IsPriority.eq(true))
-        .filter(entities::queue_tags::Column::QueueId.eq(body.queue_id))
-        .all(db)
-        .await?
-        .iter()
-        .map(|item| item.tag_id)
-        .collect::<Vec<_>>();
-
-    let is_priority = has_tag.clone().into_iter().map(|item| {
-        entities::request_tags::Entity::find()
-            .filter(entities::request_tags::Column::RequestId.eq(item.request_id))
-            .filter(entities::request_tags::Column::TagId.is_in(priority_tags.clone()))
-            .one(db)
-    });
-    let is_priority = join_all(is_priority).await;
-
-    let models = is_priority.into_iter().zip(has_tag).map(|(item, request)| {
-        let checked = item.unwrap();
-        entities::requests::ActiveModel {
-            request_id: ActiveValue::Unchanged(request.request_id),
-            order: ActiveValue::Set(if checked.is_some() { 0 } else { 1 }),
-            ..Default::default()
-        }
-        .update(db)
-    });
-    join_all(models).await;
     Ok(HttpResponse::Ok().json("Success!"))
 }
 

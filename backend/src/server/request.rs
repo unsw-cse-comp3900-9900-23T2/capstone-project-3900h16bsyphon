@@ -53,22 +53,6 @@ pub async fn create_request(
         .insert(db)
     });
     join_all(tag_insertion).await;
-    let is_priority = entities::tags::Entity::find()
-        .left_join(entities::queues::Entity)
-        .right_join(entities::requests::Entity)
-        .filter(entities::request_tags::Column::RequestId.eq(insertion.request_id))
-        .filter(entities::queue_tags::Column::IsPriority.eq(true))
-        .filter(entities::queue_tags::Column::QueueId.eq(insertion.queue_id))
-        .one(db)
-        .await?;
-    if is_priority.is_some() {
-        entities::requests::ActiveModel {
-            order: ActiveValue::Set(0),
-            ..entities::requests::ActiveModel::from(insertion.clone())
-        }
-        .update(db)
-        .await?;
-    }
 
     Ok(HttpResponse::Ok().json(CreateRequestResponse {
         request_id: insertion.request_id,
@@ -80,8 +64,6 @@ pub async fn edit_request(
     edit_request_body: web::Json<EditRequestBody>,
 ) -> SyphonResult<HttpResponse> {
     let db = db();
-
-    log::info!("Edit student request: {:?}", edit_request_body);
     let edit_request_body = edit_request_body.into_inner();
 
     let existing_request = entities::requests::Entity::find_by_id(edit_request_body.request_id)
@@ -93,7 +75,7 @@ pub async fn edit_request(
         ))?;
 
     // update request
-    let update_result = entities::requests::ActiveModel {
+    entities::requests::ActiveModel {
         title: ActiveValue::Set(edit_request_body.title),
         description: ActiveValue::Set(edit_request_body.description),
         is_clusterable: ActiveValue::Set(edit_request_body.is_clusterable),
@@ -117,24 +99,7 @@ pub async fn edit_request(
         .insert(db)
     });
 
-    // handle priority tag logic
     join_all(tag_insertion).await;
-    let is_priority = entities::tags::Entity::find()
-        .left_join(entities::queues::Entity)
-        .right_join(entities::requests::Entity)
-        .filter(entities::request_tags::Column::RequestId.eq(edit_request_body.request_id))
-        .filter(entities::queue_tags::Column::IsPriority.eq(true))
-        .filter(entities::queue_tags::Column::QueueId.eq(edit_request_body.queue_id))
-        .one(db)
-        .await?;
-    if is_priority.is_some() {
-        entities::requests::ActiveModel {
-            order: ActiveValue::Set(0),
-            ..entities::requests::ActiveModel::from(update_result.clone())
-        }
-        .update(db)
-        .await?;
-    }
 
     Ok(HttpResponse::Ok().json("OK"))
 }
@@ -170,7 +135,21 @@ pub async fn all_requests_for_queue(
         .filter_map(Result::ok)
         .collect::<Vec<_>>();
     requests.sort_by(|a, b| a.order.cmp(&b.order));
-    Ok(HttpResponse::Ok().json(requests))
+
+    // sort by checking which requests are prio
+    let is_priority = requests.iter().map(|request| {
+        entities::queue_tags::Entity::find()
+            .filter(entities::queue_tags::Column::IsPriority.eq(true))
+            .filter(entities::queue_tags::Column::QueueId.eq(body.queue_id))
+            .filter(entities::queue_tags::Column::TagId.is_in(request.tags.iter().map(|t| t.tag_id)))
+            .count(db)
+    });
+    let is_priority: Vec<_> = join_all(is_priority).await.into_iter().map(|r| r.expect("db broke")).collect();
+
+    let mut priority_request_zip: Vec<_> = requests.iter().zip(is_priority).collect();
+    priority_request_zip.sort_by(|a, b| b.1.cmp(&a.1));
+
+    Ok(HttpResponse::Ok().json(priority_request_zip.iter().map(|v| v.0).collect::<Vec<_>>()))
 }
 
 /// TODO: This is really cringe, don't do whatever this is
