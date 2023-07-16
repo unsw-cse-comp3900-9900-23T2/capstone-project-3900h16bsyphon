@@ -19,6 +19,7 @@ use uuid::Uuid;
 use super::messages::Connect;
 use super::messages::Disconnect;
 use super::messages::DisconnectAll;
+use super::messages::WsAction;
 use super::SocketChannels;
 
 type Socket = Recipient<WsMessage>;
@@ -173,5 +174,13 @@ impl Handler<Connect> for Lobby {
                 fut::ready(())
             })
             .wait(ctx);
+    }
+}
+
+impl Handler<WsAction> for Lobby {
+    type Result = ();
+
+    fn handle(&mut self, msg: WsAction, _ctx: &mut Self::Context) -> Self::Result {
+        log::info!("Lobby Handling WsAction: {:?}", msg);
     }
 }
