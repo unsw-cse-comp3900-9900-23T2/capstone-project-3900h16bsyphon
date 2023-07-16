@@ -1,6 +1,7 @@
 use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
+use chrono::{Local};
 use serde_json::json;
 
 use crate::entities::sea_orm_active_enums::Statuses;
@@ -315,6 +316,18 @@ pub async fn set_request_status(
     }
     .update(db)
     .await?;
+
+    // Add log entry for updating request status
+    entities::request_status_log::ActiveModel {
+        log_id: ActiveValue::NotSet,
+        request_id: ActiveValue::Set(body.request_id),
+        tutor_id: ActiveValue::Set(token.username),
+        status: ActiveValue::Set(body.status.clone()),
+        event_time: ActiveValue::Set(Local::now().naive_local()),
+    }
+    .insert(db)
+    .await?;
+
 
     Ok(HttpResponse::Ok().json(body))
 }

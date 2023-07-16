@@ -100,6 +100,12 @@ pub struct UpdateQueueRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CloseQueueRequest {
+    pub queue_id: i32,
+    pub end_time: NaiveDateTime,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UpdateQueuePreviousRequestCount {
     pub queue_id: i32,
     pub is_sorted_by_previous_request_count: bool,

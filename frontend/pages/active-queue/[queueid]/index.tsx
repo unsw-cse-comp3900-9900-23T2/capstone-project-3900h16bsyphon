@@ -7,6 +7,7 @@ import Header from '../../../components/Header';
 import { useEffect, useState } from 'react';
 import { authenticatedGetFetch, authenticatedPutFetch, toCamelCase } from '../../../utils';
 import { Tag, UserRequest } from '../../../types/requests';
+import dayjs from 'dayjs';
 
 const ActiveQueue = () => {
   const router = useRouter();
@@ -80,6 +81,18 @@ const ActiveQueue = () => {
     navigator.clipboard.writeText(window.location.href.replace('active-queue', 'create-request'));
   };
 
+  const handleCloseQueue = async () => {
+    const res = await authenticatedPutFetch('/queue/close', { 
+      queue_id: Number.parseInt(`${router.query.queueid}`), 
+      end_time: dayjs(new Date()).format('YYYY-MM-DDTHH:mm:ss')
+    });
+    if (!res.ok) {
+      console.log(res.body);
+      return;
+    }
+    router.push(`/course/${requestData.courseOfferingId}`);
+  };
+
   return <>
     <MetaData />
     <Header />
@@ -106,7 +119,7 @@ const ActiveQueue = () => {
               <MenuItem key={'key'} value='prevRequestCount'>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} by number of previous requests</MenuItem>
             </Select>
           </FormControl>
-          <Button className={styles.closeQueueButton} variant='contained' onClick={() => router.push(`/course/${requestData.courseOfferingId}`)}>Close Queue</Button>
+          <Button className={styles.closeQueueButton} variant='contained' onClick={handleCloseQueue}>Close Queue</Button>
         </div>
         <Box className={styles.cardBox}>
           <div className={styles.requestCardContainer}>

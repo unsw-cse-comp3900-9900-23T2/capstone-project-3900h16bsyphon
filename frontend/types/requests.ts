@@ -34,7 +34,7 @@ export type RequestData = {
   order: number,
   queueId: number,
   requestId: number,
-  status: string,
+  status: Status,
   tags: Tag[],
   title: string,
   zid: number,
