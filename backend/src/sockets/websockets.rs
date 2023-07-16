@@ -76,16 +76,16 @@ impl WsConn {
         raw_tok: &str,
         ctx: &mut <Self as Actor>::Context,
     ) -> Result<i32, String> {
-        validate_raw_token(raw_tok)
+        validate_raw_token(raw_tok.into())
             .into_actor(self)
-            .then(|res, conn, ctx| match res {
+            .then(move |res, conn, ctx| match res {
                 Ok(tok) => {
                     ctx.text(json!({"type": "auth", "success": true}).to_string());
                     conn.zid = Some(tok.username);
                     fut::ready(())
                 }
                 Err(e) => {
-                    log::info!("Conn failed to auth: {}", self.id);
+                    log::info!("Conn failed to auth: {}", conn.id);
                     ctx.text(json!({"type": "auth", "success": false}).to_string());
                     ctx.stop();
                     fut::ready(())
