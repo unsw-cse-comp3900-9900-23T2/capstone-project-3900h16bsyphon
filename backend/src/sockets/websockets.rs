@@ -83,7 +83,7 @@ impl WsConn {
                     conn.zid = Some(tok.username);
                     fut::ready(())
                 }
-                Err(e) => {
+                Err(_) => {
                     log::info!("Conn failed to auth: {}", conn.id);
                     ctx.text(json!({"type": "auth", "success": false}).to_string());
                     ctx.stop();
@@ -175,7 +175,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
                         Err(_) => (),
                         // # Safety:
                         // Calling when auth is successfull
-                        Ok(zid) => self.connect_to_lobby(ctx),
+                        Ok(_) => self.connect_to_lobby(ctx),
                     };
                 }
 
