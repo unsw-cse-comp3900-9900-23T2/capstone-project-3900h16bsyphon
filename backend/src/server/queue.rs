@@ -2,15 +2,16 @@ use crate::{
     entities,
     models::{
         CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery, GetQueueByIdQuery,
-        GetQueueTagsQuery, GetQueuesByCourseQuery, QueueReturnModel, SyphonResult, Tag,
-        TokenClaims, SyphonError, UpdateQueueRequest, UpdateQueuePreviousRequestCount,
+        GetQueueTagsQuery, GetQueuesByCourseQuery, QueueReturnModel, SyphonError, SyphonResult,
+        Tag, TokenClaims, UpdateQueuePreviousRequestCount, UpdateQueueRequest,
     },
     test_is_user,
     utils::{db::db, user::validate_user},
 };
 use actix_web::{
+    http::StatusCode,
     web::{self, Query, ReqData},
-    HttpResponse, http::StatusCode,
+    HttpResponse,
 };
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter,
@@ -199,10 +200,7 @@ pub async fn get_is_open(
     }
 }
 
-
-pub async fn update_queue(
-    body: web::Json<UpdateQueueRequest>,
-) -> SyphonResult<HttpResponse> {
+pub async fn update_queue(body: web::Json<UpdateQueueRequest>) -> SyphonResult<HttpResponse> {
     let db = db();
     log::info!("update queue");
     log::info!("{:?}", body);
@@ -225,7 +223,9 @@ pub async fn update_queue(
         is_visible: ActiveValue::Set(body.is_visible),
         title: ActiveValue::Set(body.title.clone()),
         ..queue.clone().into()
-    }.update(db).await?;
+    }
+    .update(db)
+    .await?;
 
     /////////////////   TAGS    ///////////////////////
     let tag_creation_futures = body
@@ -256,19 +256,24 @@ pub async fn update_queue(
     });
     join_all(tag_queue_addition).await;
 
-
     Ok(HttpResponse::Ok().json("Success!"))
 }
 
-pub async fn set_is_sorted_by_previous_request_count(body: web::Json<UpdateQueuePreviousRequestCount>)
-    -> SyphonResult<HttpResponse> {
+pub async fn set_is_sorted_by_previous_request_count(
+    body: web::Json<UpdateQueuePreviousRequestCount>,
+) -> SyphonResult<HttpResponse> {
     let db = db();
     let queue = entities::queues::Entity::find_by_id(body.queue_id)
         .one(db)
-        .await?.ok_or(SyphonError::QueueNotExist(body.queue_id))?;
+        .await?
+        .ok_or(SyphonError::QueueNotExist(body.queue_id))?;
     entities::queues::ActiveModel {
-        is_sorted_by_previous_request_count: sea_orm::ActiveValue::Set(body.is_sorted_by_previous_request_count),
+        is_sorted_by_previous_request_count: sea_orm::ActiveValue::Set(
+            body.is_sorted_by_previous_request_count,
+        ),
         ..queue.into()
-    }.update(db).await?;
+    }
+    .update(db)
+    .await?;
     Ok(HttpResponse::Ok().json("Success!"))
 }

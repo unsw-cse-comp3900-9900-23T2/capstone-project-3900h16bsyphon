@@ -69,7 +69,7 @@ pub struct QueueReturnModel {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetQueueByIdQuery {
-    pub queue_id: i32
+    pub queue_id: i32,
 }
 
 impl From<i32> for GetQueueByIdQuery {
@@ -85,7 +85,6 @@ pub struct FlipTagPriority {
     pub tag_id: i32,
 }
 
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UpdateQueueRequest {
     pub queue_id: i32,
@@ -99,7 +98,6 @@ pub struct UpdateQueueRequest {
     pub announcement: String,
     pub course_id: i32,
 }
-
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UpdateQueuePreviousRequestCount {

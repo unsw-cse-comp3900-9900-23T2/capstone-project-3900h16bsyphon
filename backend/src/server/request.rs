@@ -119,7 +119,8 @@ pub async fn all_requests_for_queue(
     let body = body.into_inner();
     // Find all related requests
     let queue = entities::queues::Entity::find_by_id(body.queue_id)
-        .one(db).await?
+        .one(db)
+        .await?
         .ok_or(SyphonError::QueueNotExist(body.queue_id))?;
 
     let requests_future = entities::requests::Entity::find()
@@ -144,10 +145,16 @@ pub async fn all_requests_for_queue(
         entities::queue_tags::Entity::find()
             .filter(entities::queue_tags::Column::IsPriority.eq(true))
             .filter(entities::queue_tags::Column::QueueId.eq(body.queue_id))
-            .filter(entities::queue_tags::Column::TagId.is_in(request.tags.iter().map(|t| t.tag_id)))
+            .filter(
+                entities::queue_tags::Column::TagId.is_in(request.tags.iter().map(|t| t.tag_id)),
+            )
             .count(db)
     });
-    let is_priority: Vec<_> = join_all(is_priority).await.into_iter().map(|r| r.expect("db broke")).collect();
+    let is_priority: Vec<_> = join_all(is_priority)
+        .await
+        .into_iter()
+        .map(|r| r.expect("db broke"))
+        .collect();
 
     let mut priority_request_zip: Vec<_> = requests.iter().zip(is_priority).collect();
     priority_request_zip.sort_by(|a, b| b.1.cmp(&a.1));
@@ -207,12 +214,12 @@ pub async fn request_info_not_web(
         .left_join(entities::queues::Entity)
         .filter(entities::requests::Column::Zid.eq(request.zid))
         .filter(
-            entities::requests::Column::Status.eq(Statuses::Seen)
-            .and(
-                 // it needs to be an older queue or older request
-                entities::queues::Column::QueueId.lt(request.queue_id)
-                .or(entities::requests::Column::Order.lt(request.order))
-            )
+            entities::requests::Column::Status.eq(Statuses::Seen).and(
+                // it needs to be an older queue or older request
+                entities::queues::Column::QueueId
+                    .lt(request.queue_id)
+                    .or(entities::requests::Column::Order.lt(request.order)),
+            ),
         )
         .filter(entities::queues::Column::CourseOfferingId.eq(course_offering_id))
         .count(db)
@@ -230,7 +237,7 @@ pub async fn request_info_not_web(
         is_clusterable: request.is_clusterable,
         status: request.status,
         order: request.order,
-        course_offering_id: course_offering_id,
+        course_offering_id,
         previous_requests,
         tags,
     };
@@ -274,7 +281,6 @@ pub async fn set_request_status(
     token: ReqData<TokenClaims>,
     body: web::Json<PutRequestStatusBody>,
 ) -> SyphonResult<HttpResponse> {
-
     let body = body.into_inner();
 
     let db = db();

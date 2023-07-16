@@ -89,10 +89,7 @@ async fn main() -> std::io::Result<()> {
                 scope("/request")
                     .wrap(amw.clone())
                     .route("/create", web::post().to(server::request::create_request))
-                    .route(
-                        "/edit",
-                        web::put().to(server::request::edit_request),
-                    )
+                    .route("/edit", web::put().to(server::request::edit_request))
                     .route(
                         "/get_info",
                         web::get().to(server::request::request_info_wrapper),
@@ -115,7 +112,7 @@ async fn main() -> std::io::Result<()> {
                     .wrap(amw.clone())
                     .route(
                         "/set_is_sorted_by_previous_request_count",
-                        web::put().to(server::queue::set_is_sorted_by_previous_request_count)
+                        web::put().to(server::queue::set_is_sorted_by_previous_request_count),
                     )
                     .route("/create", web::post().to(server::queue::create_queue))
                     .route("/get", web::get().to(server::queue::get_queue_by_id))
@@ -131,14 +128,10 @@ async fn main() -> std::io::Result<()> {
                     )
                     .route("/update", web::put().to(server::queue::update_queue)),
             )
-            .service(
-                scope("/history")
-                    .wrap(amw.clone())
-                    .route(
-                        "/previous_tags",
-                        web::get().to(server::history::get_previous_tag_details),
-                    )
-            )
+            .service(scope("/history").wrap(amw.clone()).route(
+                "/previous_tags",
+                web::get().to(server::history::get_previous_tag_details),
+            ))
             .service(
                 scope("/faqs")
                     .wrap(amw.clone())

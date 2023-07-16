@@ -1,21 +1,21 @@
 pub mod auth;
 pub mod course;
+pub mod faqs;
 pub mod history;
 pub mod queue;
 pub mod request;
 pub mod user;
-pub mod faqs;
 
 use actix_web::HttpResponseBuilder;
 pub use auth::*;
 pub use course::*;
+pub use faqs::*;
 pub use history::*;
 pub use queue::*;
 pub use queue::*;
 pub use request::*;
 use serde_json::Value;
 pub use user::*;
-pub use faqs::*;
 
 pub type SyphonResult<T> = Result<T, SyphonError>;
 
@@ -60,7 +60,8 @@ impl actix_web::ResponseError for SyphonError {
     }
 
     fn error_response(&self) -> actix_web::HttpResponse<actix_web::body::BoxBody> {
-        let json_body: Value = serde_json::from_str(self.serialise_body().unwrap().as_str()).unwrap();
+        let json_body: Value =
+            serde_json::from_str(self.serialise_body().unwrap().as_str()).unwrap();
 
         HttpResponseBuilder::new(self.status_code()).json(json_body)
     }

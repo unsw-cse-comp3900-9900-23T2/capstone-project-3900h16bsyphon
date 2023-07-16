@@ -53,13 +53,13 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, tags, reques
       <CardActionArea className={styles.cardContent} onClick={() => router.push(`/request/${requestId}`)}>
         <div className={styles.cardHeader}>
           <div className={styles.zidNameContainer}>
-            <TagBox text={formatZid(zid)} backgroundColor='#D5CFFF' color='#3E368F' />
+            <TagBox text={formatZid(zid)} backgroundColor='var(--colour-main-purple-400)' color='var(--colour-main-purple-900)' />
             <Typography className={styles.textHeading} variant='h6'>
               {firstName + ' ' + lastName}
             </Typography>
           </div>
           <div className={styles.previousRequestsContainer}>
-            <TagBox text={`PREVIOUS TOTAL REQUESTS: ${previousRequests}`} backgroundColor='#D5CFFF' color='#3E368F' />
+            <TagBox text={`PREVIOUS TOTAL REQUESTS: ${previousRequests}`} backgroundColor='var(--colour-main-purple-400)' color='var(--colour-main-purple-900)' />
           </div>
         </div>
         <div className={styles.titleContainer}>
@@ -69,7 +69,7 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, tags, reques
         </div>
         <div className={styles.tagContainer}>
           {tags?.map((tag, i) => {
-            return <TagBox text={tag.name} key={i} isPriority={tag.isPriority} backgroundColor='#EDB549' color='white' />;
+            return <TagBox text={tag.name} key={i} isPriority={tag.isPriority} backgroundColor='var(--colour-main-yellow-500)' color='white' />;
           })}
         </div>
         <CardActions className={styles.cardActions}>
