@@ -39,12 +39,20 @@ pub struct Lobby {
 }
 
 impl Lobby {
+    /// Send message to a singular socket
     fn _send_message(&self, message: WsMessage, target_id: &Uuid) {
         match self.sessions.get(target_id) {
             Some(session) => session.socket.do_send(message),
             None => {
                 log::warn!("Cannot send message. No session for {}", target_id);
             }
+        }
+    }
+
+    /// Broadcast a message to all sockets in a room
+    fn broadcast_message(&self, message: WsMessage, targets: &BTreeSet<Uuid>) {
+        for target in targets {
+            self._send_message(message.clone(), target);
         }
     }
 }
@@ -154,7 +162,7 @@ impl Handler<Connect> for Lobby {
             .then(move |res, act, _ctx| {
                 // Any false => not allowed
                 if res.iter().any(|v| !v) {
-                    act._send_message("FORBIDDEN: DIE", &uuid);
+                    act._send_message(WsMessage::Text("FORBIDDEN: DIE".into()), &uuid);
                     return fut::ready(());
                 }
                 act.sessions.insert(uuid, SessionData::from(msg));
@@ -189,11 +197,12 @@ impl Handler<WsAction> for Lobby {
                 content,
                 sender,
             } => self.handle_send_msg(request_id, content, sender),
-            WsAction::Announcement { content, sender } => todo!(),
         }
     }
 }
 
+// Implementation of lobby actions that send messages
+// back to WsConn
 impl Lobby {
     fn handle_send_msg(&self, request_id: i32, content: String, sender: i32) {
         let targets = match self.chat_rooms.get(&request_id) {
@@ -205,8 +214,6 @@ impl Lobby {
             content,
             request_id,
         };
-        for target in targets {
-            self._send_message(message.clone(), target);
-        }
+        self.broadcast_message(message, targets);
     }
 }

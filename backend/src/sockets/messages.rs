@@ -1,12 +1,13 @@
 use actix::{prelude::Message, Recipient};
-use serde_json::{json, map};
+use serde_json::json;
 use uuid::Uuid;
 
 use super::SocketChannels;
 
 #[derive(Clone, Debug, Message)]
 #[rtype(result = "()")]
-/// WsConn actually responds to this to pipe to actual client
+/// These are the messages that a WsConn receives from the lobby.
+/// WsConn actually responds to these by piping them to the client.
 pub enum WsMessage {
     /// Send raw text - should deprecate this
     Text(String),
@@ -15,6 +16,31 @@ pub enum WsMessage {
         content: String,
         request_id: i32,
     },
+}
+
+/// Actions from the client, that have been parsed by the WsConn
+/// and are ready to be sent to the lobby.
+/// The lobby will deal w/ these actions and redirect
+/// them to further clients as needed
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Message)]
+#[rtype(result = "()")]
+pub enum WsAction {
+    /// This doesn't do anything, i just use it as a stub
+    /// for when i need to return smth and dont want `todo!()`
+    Def,
+    /// Client asking to send a message to a given request
+    SendMsg {
+        request_id: i32,
+        content: String,
+        sender: i32,
+    },
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum WsActionParseError {
+    NoTypeGiven,
+    NotJson,
+    InvalidType,
 }
 
 #[derive(Message, Debug, Clone)]
@@ -51,29 +77,6 @@ pub struct ClientActorMessage {
     pub id: Uuid,
     pub msg: String,
     pub room_id: Uuid,
-}
-
-/// Actions that the Websocket can read and send to the lobby
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Message)]
-#[rtype(result = "()")]
-pub enum WsAction {
-    Def,
-    SendMsg {
-        request_id: i32,
-        content: String,
-        sender: i32,
-    },
-    Announcement {
-        content: String,
-        sender: i32,
-    },
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum WsActionParseError {
-    NoTypeGiven,
-    NotJson,
-    InvalidType,
 }
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -113,8 +116,8 @@ impl WsMessage {
         }
     }
 
-    fn inject_type(&self, base: serde_json::Value) -> serde_json::Value {
-        base.as_object().unwrap().insert(
+    fn inject_type(&self, mut base: serde_json::Value) -> serde_json::Value {
+        base.as_object_mut().as_mut().unwrap().insert(
             String::from("type"),
             serde_json::Value::String(self.get_type()),
         );
@@ -126,26 +129,18 @@ pub fn try_parse_ws_action(raw: &str, zid: i32) -> Result<WsAction, WsActionPars
     let as_json =
         serde_json::from_str::<serde_json::Value>(raw).map_err(|_| WsActionParseError::NotJson)?;
 
-    let action_type = as_json
-        .get("type")
-        .ok_or(WsActionParseError::NoTypeGiven)?
-        .as_str()
-        .ok_or(WsActionParseError::InvalidType)?;
+    let action_type = get_str("type", &as_json)?;
 
-    match action_type {
+    let msg = match action_type {
         "send_msg" => WsAction::SendMsg {
             request_id: get_int("request_id", &as_json)?,
             content: get_str("content", &as_json)?.into(),
             sender: zid,
         },
-        "announcement" => WsAction::Announcement {
-            content: get_str("content", &as_json)?.into(),
-            sender: zid,
-        },
-        _ => Err(WsActionParseError::InvalidType)?,
+        _ => return Err(WsActionParseError::InvalidType),
     };
 
-    Ok(WsAction::Def)
+    Ok(msg)
 }
 
 fn get_str<'k, 'json>(
