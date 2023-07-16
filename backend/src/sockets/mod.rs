@@ -1,4 +1,4 @@
-use sea_orm::{EntityTrait, ModelTrait};
+use sea_orm::EntityTrait;
 
 use crate::{
     entities,

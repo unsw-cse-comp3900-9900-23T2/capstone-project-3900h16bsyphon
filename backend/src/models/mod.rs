@@ -50,7 +50,7 @@ impl SyphonError {
             SyphonError::NotTutor => Ok(String::from("Not Tutor")),
             SyphonError::RequestNotExist(id) => Ok(format!("Request does not exist: {}", id)),
             SyphonError::QueueNotExist(id) => Ok(format!("Queue does not exist: {}", id)),
-            SyphonError::ActixError(e) => Ok(format!("{}", e.as_response_error().to_string())),
+            SyphonError::ActixError(e) => Ok(e.as_response_error().to_string()),
         }
     }
 }

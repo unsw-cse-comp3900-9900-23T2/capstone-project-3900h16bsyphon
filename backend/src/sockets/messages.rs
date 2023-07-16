@@ -143,23 +143,22 @@ pub fn try_parse_ws_action(raw: &str, zid: i32) -> Result<WsAction, WsActionPars
     Ok(msg)
 }
 
-fn get_str<'k, 'json>(
-    key: &'k str,
+fn get_str<'json>(
+    key: &str,
     json: &'json serde_json::Value,
 ) -> Result<&'json str, WsActionParseError> {
-    Ok(json
-        .get(key)
+    json.get(key)
         .ok_or(WsActionParseError::InvalidType)?
         .as_str()
-        .ok_or(WsActionParseError::InvalidType)?)
+        .ok_or(WsActionParseError::InvalidType)
 }
 
 fn get_int(key: &str, json: &serde_json::Value) -> Result<i32, WsActionParseError> {
-    return Ok(TryFrom::<i64>::try_from(
+    TryFrom::<i64>::try_from(
         json.get(key)
             .ok_or(WsActionParseError::InvalidType)?
             .as_i64()
             .ok_or(WsActionParseError::InvalidType)?,
     )
-    .map_err(|_| WsActionParseError::InvalidType)?);
+    .map_err(|_| WsActionParseError::InvalidType)
 }

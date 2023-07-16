@@ -1,5 +1,5 @@
 use actix::{fut, ActorContext, ActorFutureExt};
-use actix::{Actor, ActorFuture, Addr, ContextFutureSpawner, Running, StreamHandler, WrapFuture};
+use actix::{Actor, Addr, ContextFutureSpawner, Running, StreamHandler, WrapFuture};
 use actix::{AsyncContext, Handler};
 use actix_web_actors::ws;
 use actix_web_actors::ws::Message::Text;
@@ -9,11 +9,11 @@ use std::time::{Duration, Instant};
 use uuid::Uuid;
 
 use crate::sockets;
-use crate::sockets::messages::{try_parse_ws_action, WsAction};
+use crate::sockets::messages::try_parse_ws_action;
 use crate::utils::auth::validate_raw_token;
 use sockets::{
     lobby::Lobby,
-    messages::{ClientActorMessage, Connect, Disconnect},
+    messages::{Connect, Disconnect},
 };
 
 use super::messages::WsMessage;

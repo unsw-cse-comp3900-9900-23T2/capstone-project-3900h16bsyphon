@@ -1,5 +1,4 @@
 use actix::fut;
-use actix::spawn;
 use actix::Actor;
 use actix::ActorFutureExt;
 use actix::Context;
@@ -7,11 +6,10 @@ use actix::ContextFutureSpawner;
 use actix::Handler;
 use actix::Recipient;
 use actix::WrapFuture;
-use actix_web::web;
+
 use futures::future::join_all;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
-use std::convert::identity;
 
 use crate::sockets::messages::WsMessage;
 use uuid::Uuid;
@@ -24,6 +22,7 @@ use super::SocketChannels;
 
 type Socket = Recipient<WsMessage>;
 
+#[derive(Default)]
 pub struct Lobby {
     sessions: HashMap<Uuid, SessionData>,
     /// Map zid to all connections for this person
@@ -53,19 +52,6 @@ impl Lobby {
     fn broadcast_message(&self, message: WsMessage, targets: &BTreeSet<Uuid>) {
         for target in targets {
             self._send_message(message.clone(), target);
-        }
-    }
-}
-
-impl Default for Lobby {
-    fn default() -> Self {
-        Self {
-            connections: HashMap::new(),
-            sessions: HashMap::new(),
-            chat_rooms: HashMap::new(),
-            requests: HashMap::new(),
-            annoucements: HashMap::new(),
-            queues: HashMap::new(),
         }
     }
 }
@@ -157,7 +143,7 @@ impl Handler<Connect> for Lobby {
         // from sessions and proceed
         // web::block
         let channels2 = channels.clone();
-        join_all(channels.into_iter().map(move |c| c.is_allowed(zid.clone())))
+        join_all(channels.into_iter().map(move |c| c.is_allowed(zid)))
             .into_actor(self)
             .then(move |res, act, _ctx| {
                 // Any false => not allowed

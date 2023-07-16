@@ -1,18 +1,10 @@
 use actix::Addr;
-use actix_web::{
-    http::StatusCode,
-    web::{self, ReqData},
-    HttpRequest, HttpResponse,
-};
-use sea_orm::{EntityTrait, ModelTrait};
+use actix_web::{web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 
 use crate::{
-    entities,
-    models::{SyphonError, SyphonResult, TokenClaims},
+    models::SyphonResult,
     sockets::{lobby::Lobby, websockets::WsConn, SocketChannels},
-    utils::db::db,
 };
 
 pub async fn start_socket_conn(
