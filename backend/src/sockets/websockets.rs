@@ -5,7 +5,6 @@ use actix_web_actors::ws;
 use actix_web_actors::ws::Message::Text;
 use log;
 use serde_json::json;
-use std::os::macos::raw;
 use std::time::{Duration, Instant};
 use uuid::Uuid;
 
