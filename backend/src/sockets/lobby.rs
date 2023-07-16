@@ -7,6 +7,7 @@ use actix::ContextFutureSpawner;
 use actix::Handler;
 use actix::Recipient;
 use actix::WrapFuture;
+use actix_web::web;
 use futures::future::join_all;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
@@ -142,39 +143,35 @@ impl Handler<Connect> for Lobby {
             ..
         } = msg.clone();
 
-        self.sessions.insert(uuid, SessionData::from(msg));
         // Validate that the user is allowed to join all channels
         // they claimed. If anything invalid, remove them
         // from sessions and proceed
-        join_all(channels.iter().map(|c| c.is_allowed(zid)))
+        // web::block
+        let channels2 = channels.clone();
+        join_all(channels.into_iter().map(move |c| c.is_allowed(zid.clone())))
             .into_actor(self)
-            .then(|res, act, _ctx| {
+            .then(move |res, act, _ctx| {
                 // Any false => not allowed
                 if res.iter().any(|v| !v) {
                     act._send_message("FORBIDDEN: DIE", &uuid);
-                    self.sessions.remove(&uuid);
+                    return fut::ready(());
+                }
+                act.sessions.insert(uuid, SessionData::from(msg));
+                act.connections.entry(zid).or_default().insert(uuid);
+                // Insert into corresponding channels if not there
+                for channel in &channels2 {
+                    match channel {
+                        SocketChannels::Notifications(_queue_id) => todo!(),
+                        SocketChannels::QueueData(q_id) => act.annoucements.entry(*q_id),
+                        SocketChannels::Announcements(q_id) => act.annoucements.entry(*q_id),
+                        SocketChannels::Chat(req_id) => act.chat_rooms.entry(*req_id),
+                        SocketChannels::Request(req_id) => act.chat_rooms.entry(*req_id),
+                    }
+                    .or_default()
+                    .insert(uuid);
                 }
                 fut::ready(())
             })
             .wait(ctx);
-
-        // Has been removed (invalid channels) => we don't care to continue
-        if !self.sessions.contains_key(&uuid) {
-            return;
-        }
-
-        self.connections.entry(zid).or_default().insert(uuid);
-        // Insert into corresponding channels if not there
-        for channel in channels {
-            match channel {
-                SocketChannels::Notifications(_queue_id) => todo!(),
-                SocketChannels::QueueData(q_id) => self.annoucements.entry(q_id),
-                SocketChannels::Announcements(q_id) => self.annoucements.entry(q_id),
-                SocketChannels::Chat(req_id) => self.chat_rooms.entry(req_id),
-                SocketChannels::Request(req_id) => self.chat_rooms.entry(req_id),
-            }
-            .or_default()
-            .insert(uuid);
-        }
     }
 }

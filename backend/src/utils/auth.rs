@@ -27,7 +27,7 @@ pub async fn validator(
     req: ServiceRequest,
     credentials: BearerAuth,
 ) -> Result<ServiceRequest, (actix_web::Error, ServiceRequest)> {
-    match validate_raw_token(credentials.token()).await {
+    match validate_raw_token(credentials.token().into()).await {
         Ok(value) => {
             req.extensions_mut().insert(value);
             Ok(req)
@@ -43,7 +43,7 @@ pub async fn validator(
     }
 }
 
-pub async fn validate_raw_token(raw_token: &str) -> Result<TokenClaims, &str> {
+pub async fn validate_raw_token(raw_token: String) -> Result<TokenClaims, &'static str> {
     let key: hmac::Hmac<Sha256> = Hmac::new_from_slice(SECRET.as_bytes()).unwrap();
 
     raw_token.verify_with_key(&key).map_err(|_| "invalid token")
