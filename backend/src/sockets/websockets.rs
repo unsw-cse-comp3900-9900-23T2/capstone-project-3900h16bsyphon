@@ -203,6 +203,7 @@ impl Handler<WsMessage> for WsConn {
     type Result = ();
 
     fn handle(&mut self, msg: WsMessage, ctx: &mut Self::Context) -> Self::Result {
-        ctx.text(msg.0)
+        let m = format!("{:?}", msg);
+        ctx.text(m);
     }
 }

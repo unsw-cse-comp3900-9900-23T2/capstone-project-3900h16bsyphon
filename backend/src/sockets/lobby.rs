@@ -39,9 +39,9 @@ pub struct Lobby {
 }
 
 impl Lobby {
-    fn _send_message(&self, message: &str, target_id: &Uuid) {
+    fn _send_message(&self, message: WsMessage, target_id: &Uuid) {
         match self.sessions.get(target_id) {
-            Some(session) => session.socket.do_send(WsMessage(message.to_string())),
+            Some(session) => session.socket.do_send(message),
             None => {
                 log::warn!("Cannot send message. No session for {}", target_id);
             }
@@ -97,7 +97,7 @@ impl Handler<Disconnect> for Lobby {
             .remove(&id);
         }
 
-        socket.do_send(WsMessage("Disconnected".to_string()));
+        socket.do_send(WsMessage::Text("Disconnected".to_string()));
     }
 }
 
@@ -182,5 +182,31 @@ impl Handler<WsAction> for Lobby {
 
     fn handle(&mut self, msg: WsAction, _ctx: &mut Self::Context) -> Self::Result {
         log::info!("Lobby Handling WsAction: {:?}", msg);
+        match msg {
+            WsAction::Def => todo!(),
+            WsAction::SendMsg {
+                request_id,
+                content,
+                sender,
+            } => self.handle_send_msg(request_id, content, sender),
+            WsAction::Announcement { content, sender } => todo!(),
+        }
+    }
+}
+
+impl Lobby {
+    fn handle_send_msg(&self, request_id: i32, content: String, sender: i32) {
+        let targets = match self.chat_rooms.get(&request_id) {
+            Some(sockets) => sockets,
+            None => return,
+        };
+        let message = WsMessage::MessageOut {
+            sender,
+            content,
+            request_id,
+        };
+        for target in targets {
+            self._send_message(message.clone(), target);
+        }
     }
 }

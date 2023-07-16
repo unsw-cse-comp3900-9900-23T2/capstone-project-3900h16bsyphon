@@ -3,10 +3,18 @@ use uuid::Uuid;
 
 use super::SocketChannels;
 
-#[derive(Message)]
+#[derive(Clone, Debug, Message)]
 #[rtype(result = "()")]
 /// WsConn actually responds to this to pipe to actual client
-pub struct WsMessage(pub String);
+pub enum WsMessage {
+    /// Send raw text - should deprecate this
+    Text(String),
+    MessageOut {
+        sender: i32,
+        content: String,
+        request_id: i32,
+    },
+}
 
 #[derive(Message, Debug, Clone)]
 #[rtype(result = "()")]
