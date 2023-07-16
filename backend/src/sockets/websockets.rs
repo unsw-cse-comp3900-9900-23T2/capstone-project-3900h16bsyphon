@@ -104,7 +104,7 @@ impl WsConn {
                 addr: ctx.address().recipient(),
                 channels: self.channels.clone(),
                 self_id: self.id,
-                zid: self.zid.expect("Must be authed to start connection"),
+                zid: self.zid.expect("CTX would be dead if not authed"),
             })
             .into_actor(self)
             .then(|res, _, ctx| {

@@ -1,9 +1,16 @@
+use actix::fut;
+use actix::spawn;
 use actix::Actor;
+use actix::ActorFutureExt;
 use actix::Context;
+use actix::ContextFutureSpawner;
 use actix::Handler;
 use actix::Recipient;
+use actix::WrapFuture;
+use futures::future::join_all;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
+use std::convert::identity;
 
 use crate::sockets::messages::WsMessage;
 use uuid::Uuid;
@@ -127,32 +134,47 @@ impl From<Connect> for SessionData {
 impl Handler<Connect> for Lobby {
     type Result = ();
 
-    fn handle(&mut self, msg: Connect, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: Connect, ctx: &mut Self::Context) -> Self::Result {
         let Connect {
             channels,
             self_id: uuid,
             zid,
             ..
         } = msg.clone();
+
         self.sessions.insert(uuid, SessionData::from(msg));
+        // Validate that the user is allowed to join all channels
+        // they claimed. If anything invalid, remove them
+        // from sessions and proceed
+        join_all(channels.iter().map(|c| c.is_allowed(zid)))
+            .into_actor(self)
+            .then(|res, act, _ctx| {
+                // Any false => not allowed
+                if res.iter().any(|v| !v) {
+                    act._send_message("FORBIDDEN: DIE", &uuid);
+                    self.sessions.remove(&uuid);
+                }
+                fut::ready(())
+            })
+            .wait(ctx);
+
+        // Has been removed (invalid channels) => we don't care to continue
+        if !self.sessions.contains_key(&uuid) {
+            return;
+        }
+
         self.connections.entry(zid).or_default().insert(uuid);
         // Insert into corresponding channels if not there
         for channel in channels {
             match channel {
                 SocketChannels::Notifications(_queue_id) => todo!(),
-                SocketChannels::QueueData(q_id) => {
-                    self.annoucements.entry(q_id).or_default().insert(uuid);
-                }
-                SocketChannels::Announcements(q_id) => {
-                    self.annoucements.entry(q_id).or_default().insert(uuid);
-                }
-                SocketChannels::Chat(req_id) => {
-                    self.chat_rooms.entry(req_id).or_default().insert(uuid);
-                }
-                SocketChannels::Request(req_id) => {
-                    self.chat_rooms.entry(req_id).or_default().insert(uuid);
-                }
+                SocketChannels::QueueData(q_id) => self.annoucements.entry(q_id),
+                SocketChannels::Announcements(q_id) => self.annoucements.entry(q_id),
+                SocketChannels::Chat(req_id) => self.chat_rooms.entry(req_id),
+                SocketChannels::Request(req_id) => self.chat_rooms.entry(req_id),
             }
+            .or_default()
+            .insert(uuid);
         }
     }
 }

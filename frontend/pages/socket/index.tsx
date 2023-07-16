@@ -26,6 +26,10 @@ const Socket = () => {
     [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
   }[readyState];
 
+  useEffect(() => {
+      messageHistory.push(lastMessage);
+  }, [lastMessage]);
+
 
   return (
     <div>
