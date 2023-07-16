@@ -227,7 +227,7 @@ pub async fn request_info_not_web(
         is_clusterable: request.is_clusterable,
         status: request.status,
         order: request.order,
-        course_offering_id: course_offering_id,
+        course_offering_id,
         tags,
     };
 
@@ -265,14 +265,11 @@ pub async fn disable_cluster(
 
 /// # Returns
 /// - Err(400) => request does not exist
-/// ...
 pub async fn set_request_status(
     token: ReqData<TokenClaims>,
     body: web::Json<PutRequestStatusBody>,
 ) -> SyphonResult<HttpResponse> {
-
     let body = body.into_inner();
-
     let db = db();
 
     // Get Request

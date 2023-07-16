@@ -1,7 +1,8 @@
+use actix::Actor;
 use actix_cors::Cors;
 use actix_web::{
     http, middleware,
-    web::{self, scope},
+    web::{self, scope, Data},
     App, HttpServer,
 };
 use actix_web_httpauth::middleware::HttpAuthentication;
@@ -10,9 +11,10 @@ pub mod entities;
 pub mod models;
 pub mod prelude;
 pub mod server;
+pub mod sockets;
 pub mod utils;
 
-use crate::prelude::*;
+use crate::{prelude::*, sockets::lobby::Lobby};
 
 use utils::auth::validator;
 #[macro_use]
@@ -26,6 +28,7 @@ async fn main() -> std::io::Result<()> {
     std::env::var("SECRET").expect("SECRET must be set");
 
     register_org_admins().await;
+    let lobby = Data::new(Lobby::default().start());
 
     // Auth middleware
     let amw = HttpAuthentication::bearer(validator);
@@ -44,8 +47,21 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(middleware::Logger::default())
             .wrap(cors)
+            .app_data(lobby.clone())
             .service(server::echo)
             .route("/", web::get().to(server::hello))
+            .service(
+                scope("/ws")
+                    .wrap(amw.clone())
+                    .route("/dumb", web::get().to(server::sockets::start_socket_conn))
+                    .route(
+                        "/announcements",
+                        web::get().to(server::sockets::conn_announcements),
+                    )
+                    .route("/request", web::get().to(server::sockets::conn_request))
+                    .route("/queue", web::get().to(server::sockets::conn_queue))
+                    .route("/chat", web::get().to(server::sockets::conn_chat)),
+            )
             .service(
                 scope("/auth")
                     .route("/signup", web::post().to(server::auth::create_user))
@@ -89,10 +105,7 @@ async fn main() -> std::io::Result<()> {
                 scope("/request")
                     .wrap(amw.clone())
                     .route("/create", web::post().to(server::request::create_request))
-                    .route(
-                        "/edit",
-                        web::put().to(server::request::edit_request),
-                    )
+                    .route("/edit", web::put().to(server::request::edit_request))
                     .route(
                         "/get_info",
                         web::get().to(server::request::request_info_wrapper),
@@ -137,7 +150,7 @@ async fn main() -> std::io::Result<()> {
                     .route(
                         "/previous_tags",
                         web::get().to(server::history::get_previous_tag_details),
-                    )
+                    ),
             )
             .service(
                 scope("/faqs")
