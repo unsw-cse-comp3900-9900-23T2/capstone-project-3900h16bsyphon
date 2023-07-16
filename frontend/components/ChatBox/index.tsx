@@ -4,30 +4,25 @@ import styles from './Chat.module.css';
 import useWebSocket from 'react-use-websocket';
 
 
-type Message = {
-  senderZid: number;
-  text: string;
-}
 
 type ChatBoxProps = {
   requestId: number;
-  zid: number;
 };
 
 
-const ChatBox = ({requestId, zid} : ChatBoxProps) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+const ChatBox = ({requestId} : ChatBoxProps) => {
+  const [messages, setMessages] = useState<string[]>([]);
   const [newMessage, setNewMessage] = useState('');
 
-  const socketUrl = 'ws://localhost:8080';
+  const socketUrl = 'ws://localhost:8000/sock/sock';
   const {
     sendMessage,
-    lastJsonMessage,
+    lastMessage,
     readyState,
   } = useWebSocket(socketUrl, {
     onOpen: () => console.log('opened'),
     //Will attempt to reconnect on all close events, such as server shutting down
-    shouldReconnect: () => false,
+    shouldReconnect: () => true,
     onMessage: (e) =>  {
       //setMessages([...messages, e.data]);
       console.log(e.data);
@@ -39,30 +34,24 @@ const ChatBox = ({requestId, zid} : ChatBoxProps) => {
     if (newMessage.trim() === '') {
       return;
     }
-    const newMessageObj: Message = {
-      senderZid: zid,
-      text: newMessage,
-    };
     //sendJsonMessage(newMessageObj);
-    console.log(newMessageObj);
-    sendMessage(JSON.stringify(newMessageObj));
-    setMessages([...messages, newMessageObj]);
+    sendMessage(newMessage);
+    setMessages([...messages, newMessage]);
     setNewMessage('');
   };
 
   useEffect(() => {
-    console.log('spam?');
-    if (lastJsonMessage && (lastJsonMessage as Message).senderZid !== zid) {
-      setMessages([...messages, lastJsonMessage as Message]);
+    if (lastMessage !== null) {
+      setMessages([...messages, lastMessage.data]);
     }
-  }, [lastJsonMessage, zid]);
+  }, [lastMessage, messages]);
 
   return (
     <Grid container spacing={1} className={styles.container}>
       <Grid item xs={12} className={styles.messageContainer}>
         {messages.map((message, index) => (
           <div key={index} className={styles.message}>
-            {message.text}
+            {message}
           </div>
         ))}
       </Grid>

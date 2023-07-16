@@ -71,7 +71,7 @@ const Request = () => {
           />
         </Box>
         <div className={styles.chatContainer}>
-          <ChatBox />
+          <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} /> 
         </div>
       </div>
     </div>
@@ -79,3 +79,4 @@ const Request = () => {
 };
 
 export default Request;
+
