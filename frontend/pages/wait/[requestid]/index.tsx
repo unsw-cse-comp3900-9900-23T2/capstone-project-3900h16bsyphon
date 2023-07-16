@@ -12,7 +12,7 @@ import Header from '../../../components/Header';
 import TagBox from '../../../components/TagBox';
 import InformationCard from '../../../components/InformationCard';
 import { QueueData } from '../../../types/queues';
-import ChatBox from '../../../components/Chat';
+import ChatBox from '../../../components/ChatBox';
 import { Status } from '../../../types/requests';
 import FAQs from '../../../components/FAQs';
 
@@ -161,7 +161,7 @@ const WaitingScreen = () => {
             <FAQs courseOfferingId={queueData?.courseOfferingId} tutor={false} />
           </Box>
           <div className={styles.chatContainer}>
-            <ChatBox />
+            <ChatBox zid={requestData.zid} requestId={Number.parseInt(`${router.query.requestid}`)}/>
           </div>
         </div>
       </div>

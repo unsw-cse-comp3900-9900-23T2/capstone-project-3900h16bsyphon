@@ -10,6 +10,8 @@ import StudentRequestCard from '../../../components/StudentRequestCard';
 import Header from '../../../components/Header';
 import MetaData from '../../../components/MetaData';
 import { authenticatedGetFetch, toCamelCase } from '../../../utils';
+import ChatBox from '../../../components/ChatBox';
+import { Status } from '../../../types/requests';
 
 const Request = () => {
   const router = useRouter();
@@ -59,7 +61,7 @@ const Request = () => {
         <Box className={styles.cardBox}>
           <StudentRequestCard
             zid={data.zid}
-            status={data.status}
+            status={data.status as Status}
             firstName={data.firstName}
             lastName={data.lastName}
             tags={data.tags}
@@ -69,7 +71,7 @@ const Request = () => {
           />
         </Box>
         <div className={styles.chatContainer}>
-          {/* please place the chat component inside this div! */}
+          <ChatBox />
         </div>
       </div>
     </div>

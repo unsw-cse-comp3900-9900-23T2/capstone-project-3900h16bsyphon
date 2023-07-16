@@ -1,0 +1,29 @@
+.container {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding-bottom: 2%;
+    padding-right: 2%;
+    border: 1px solid var(--colour-main-grey-400);
+}
+
+.inputContainer {
+    width: 100%;
+}
+
+.message {
+    display: flex;
+    align-self: flex-end;
+    justify-self: flex-end;
+}
+
+.messageContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+    height: 68vh;
+    overflow-y: scroll;
+}
