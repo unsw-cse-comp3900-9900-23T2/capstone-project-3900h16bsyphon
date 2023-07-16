@@ -12,7 +12,7 @@ import Header from '../../../components/Header';
 import TagBox from '../../../components/TagBox';
 import InformationCard from '../../../components/InformationCard';
 import { QueueData } from '../../../types/queues';
-import { RequestData, Status } from '../../../types/requests';
+import { Status } from '../../../types/requests';
 
 const WaitingScreen = () => {
   const router = useRouter();
@@ -68,7 +68,7 @@ const WaitingScreen = () => {
     }
     getRequest();
 
-  }, [router.query.requestid]);
+  }, [router.query.requestid, router]);
 
   useEffect(() => {
     let getQueueData = async () => {
@@ -153,7 +153,7 @@ const WaitingScreen = () => {
               lastName={requestData.lastName}
               tags={requestData.tags}
               title={requestData.title}
-              queueId={requestData.queueId}
+              previousRequests={requestData.previousRequests}
               description={requestData.description}
             />
           </Box>

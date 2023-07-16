@@ -17,6 +17,7 @@ export type UserRequest = {
   queueId: number,
   firstName: string,
   lastName: string,
+  previousRequests: number,
   title: string,
   tags: Tag[],
   status: Status,

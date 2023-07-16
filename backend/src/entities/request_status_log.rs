@@ -10,7 +10,7 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub log_id: i32,
     pub request_id: i32,
-    pub status: Option<Statuses>,
+    pub status: Statuses,
     pub event_time: DateTime,
 }
 
