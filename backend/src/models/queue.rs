@@ -39,6 +39,7 @@ impl From<CreateQueueRequest> for entities::queues::ActiveModel {
             is_visible: ActiveValue::Set(value.is_visible),
             is_available: ActiveValue::Set(value.is_available),
             time_limit: ActiveValue::Set(value.time_limit),
+            is_sorted_by_previous_request_count: ActiveValue::Set(false),
             course_offering_id: ActiveValue::Set(value.course_id),
             announcement: ActiveValue::Set(value.announcement),
         }
@@ -68,7 +69,7 @@ pub struct QueueReturnModel {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetQueueByIdQuery {
-    pub queue_id: i32
+    pub queue_id: i32,
 }
 
 impl From<i32> for GetQueueByIdQuery {
@@ -83,7 +84,6 @@ pub struct FlipTagPriority {
     pub is_priority: bool,
     pub tag_id: i32,
 }
-
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UpdateQueueRequest {
@@ -103,4 +103,10 @@ pub struct UpdateQueueRequest {
 pub struct CloseQueueRequest {
     pub queue_id: i32,
     pub end_time: NaiveDateTime,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UpdateQueuePreviousRequestCount {
+    pub queue_id: i32,
+    pub is_sorted_by_previous_request_count: bool,
 }

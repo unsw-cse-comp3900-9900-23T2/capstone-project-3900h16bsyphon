@@ -111,6 +111,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Queues::EndTime).date_time().not_null())
                     .col(ColumnDef::new(Queues::IsVisible).boolean().not_null())
                     .col(ColumnDef::new(Queues::IsAvailable).boolean().not_null())
+                    .col(ColumnDef::new(Queues::IsSortedByPreviousRequestCount).boolean().not_null())
                     .col(ColumnDef::new(Queues::TimeLimit).integer())
                     .col(ColumnDef::new(Queues::Title).string().not_null())
                     .col(ColumnDef::new(Queues::Announcement).string().not_null())
@@ -207,7 +208,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Requests::Description).string().not_null())
                     .col(ColumnDef::new(Requests::Order).integer().not_null())
                     .col(ColumnDef::new(Requests::IsClusterable).boolean().not_null())
-                    .col(ColumnDef::new(Requests::Status).enumeration(Statuses::Table, Statuses::iter().skip(1)))
+                    .col(ColumnDef::new(Requests::Status).enumeration(Statuses::Table, Statuses::iter().skip(1)).not_null())
                     .to_owned(),
             )
             .await?;
@@ -226,7 +227,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(RequestStatusLog::RequestId).integer().not_null())
                     .col(ColumnDef::new(RequestStatusLog::TutorId).integer().not_null())
-                    .col(ColumnDef::new(RequestStatusLog::Status).enumeration(Statuses::Table, Statuses::iter().skip(1)))
+                    .col(ColumnDef::new(RequestStatusLog::Status).enumeration(Statuses::Table, Statuses::iter().skip(1)).not_null())
                     .col(ColumnDef::new(RequestStatusLog::EventTime).date_time().not_null())
                     .foreign_key(
                         ForeignKey::create()
@@ -473,6 +474,7 @@ enum Tutors {
 pub enum Queues {
     Table,
     QueueId,
+    IsSortedByPreviousRequestCount,
     StartTime,
     EndTime,
     IsVisible,

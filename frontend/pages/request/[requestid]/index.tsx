@@ -10,6 +10,7 @@ import StudentRequestCard from '../../../components/StudentRequestCard';
 import Header from '../../../components/Header';
 import MetaData from '../../../components/MetaData';
 import { authenticatedGetFetch, toCamelCase } from '../../../utils';
+import { Status } from '../../../types/requests';
 
 const Request = () => {
   const router = useRouter();
@@ -19,7 +20,8 @@ const Request = () => {
     queueTitle: 'COMP1521 Thursday Week 5 Help Session',
     firstName: 'Jane',
     lastName: 'Doe',
-    status: 'In Progress',
+    status: Status.Seeing,
+    previousRequests: 1,
     title: 'Pls help me with printing this array - im so stuck!',
     tags: [{ name: 'Assignment 1', tagId: 1, isPriority: false }],
     isClusterable: false,
@@ -64,7 +66,7 @@ const Request = () => {
             lastName={data.lastName}
             tags={data.tags}
             title={data.title}
-            queueId={data.queueId}
+            previousRequests={data.previousRequests}
             description={data.description}
           />
         </Box>
