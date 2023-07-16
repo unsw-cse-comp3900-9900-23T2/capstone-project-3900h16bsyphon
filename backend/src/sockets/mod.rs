@@ -13,6 +13,11 @@ pub enum SocketChannels {
     Chat(i32),
 }
 
+// useMutation POST [keys] -> Request(i32)
+
+// HTPP ->
+// /=
+
 impl SocketChannels {
     fn inner_id(&self) -> i32 {
         match self {
@@ -42,12 +47,12 @@ impl SocketChannels {
     /// Checks if the user is allowed to listen to queue data for the given queue
     /// Only true if they are a tutor for the course
     async fn is_allowed_queue_data(q_id: i32, zid: i32) -> bool {
-        todo!()
+        true
     }
     /// Checks if the user is allowed to listen to request data for the given queue
     /// Only true if they are a tutor for the course OR they are the requester
     async fn is_allowed_request(q_id: i32, zid: i32) -> bool {
-        todo!()
+        true
     }
     /// Checks if the user is allowed to listen to announcements for the given queue
     /// This is always true
@@ -57,6 +62,6 @@ impl SocketChannels {
     /// Checks if the user is allowed to listen to chat for the given queue
     /// Only true if they are a tutor for the course OR they are the requester
     async fn is_allowed_chat(q_id: i32, zid: i32) -> bool {
-        todo!()
+        true
     }
 }
