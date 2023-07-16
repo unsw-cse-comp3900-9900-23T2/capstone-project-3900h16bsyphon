@@ -203,7 +203,13 @@ impl Handler<WsMessage> for WsConn {
     type Result = ();
 
     fn handle(&mut self, msg: WsMessage, ctx: &mut Self::Context) -> Self::Result {
-        let m = format!("{:?}", msg);
-        ctx.text(m);
+        let as_json = msg.as_json();
+        log::info!(
+            "Conn z{} Socket {} handling {:?}",
+            self.get_zid(),
+            self.id,
+            as_json
+        );
+        ctx.text(as_json.to_string());
     }
 }

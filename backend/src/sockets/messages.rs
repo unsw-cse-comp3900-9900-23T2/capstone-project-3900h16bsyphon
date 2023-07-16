@@ -1,4 +1,5 @@
 use actix::{prelude::Message, Recipient};
+use serde_json::{json, map};
 use uuid::Uuid;
 
 use super::SocketChannels;
@@ -73,6 +74,52 @@ pub enum WsActionParseError {
     NoTypeGiven,
     NotJson,
     InvalidType,
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////
+// End of Struct Definitions
+// /////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////
+
+impl WsMessage {
+    pub fn as_json(&self) -> serde_json::Value {
+        let base = self.as_json_inner();
+        self.inject_type(base)
+    }
+
+    fn get_type(&self) -> String {
+        match self {
+            WsMessage::Text(_) => "text",
+            WsMessage::MessageOut { .. } => "message",
+        }
+        .into()
+    }
+
+    pub fn as_json_inner(&self) -> serde_json::Value {
+        match self {
+            WsMessage::Text(text) => json!({
+                "content": text,
+            }),
+            WsMessage::MessageOut {
+                sender,
+                content,
+                request_id,
+            } => json!({
+                "sender": sender,
+                "content": content,
+                "request_id": request_id,
+            }),
+        }
+    }
+
+    fn inject_type(&self, base: serde_json::Value) -> serde_json::Value {
+        base.as_object().unwrap().insert(
+            String::from("type"),
+            serde_json::Value::String(self.get_type()),
+        );
+        base
+    }
 }
 
 pub fn try_parse_ws_action(raw: &str, zid: i32) -> Result<WsAction, WsActionParseError> {
