@@ -132,7 +132,7 @@ pub fn try_parse_ws_action(raw: &str, zid: i32) -> Result<WsAction, WsActionPars
     let action_type = get_str("type", &as_json)?;
 
     let msg = match action_type {
-        "send_msg" => WsAction::SendMsg {
+        "message" => WsAction::SendMsg {
             request_id: get_int("request_id", &as_json)?,
             content: get_str("content", &as_json)?.into(),
             sender: zid,

@@ -29,15 +29,15 @@ enum ListenEvents {
 ```rust
 
 struct SendMsg {
-    type: "SEND_MSG",
-    requeust_id: i32,
+    type: Literal<"message">,
+    request_id: i32,
     content: String,
 }
 // -> .... 
 
 struct RecieveMsg {
-    type: "RECV_MSG",
-    requeust_id: i32,
+    type: Literal<"message">,
+    request_id: i32,
     content: String,
     sender: i32,
 }
