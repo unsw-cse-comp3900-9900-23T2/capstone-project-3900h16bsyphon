@@ -18,21 +18,28 @@ Caveats:
 
 Make sure the ports **8000, 5432, and 3000** are currently unused on your computer. These are exposed to allow
 for the project to be exposed. If they are in use, one of a few things are going to happen:
-8000 is used:
+
+
+1. 8000 is used:
+
 backend will say something like
 ```
 ADDR already in use
 ```
 then crash.
 
-3000 is used:
+2. 3000 is used:
+
 frontend will say something that is **not**
 ```
 running on localhost:3000
 ```
 this will likely lead to cors errors.
 
-5432 is used:
+3. 5432 is used:
+
+
+This often occurs if you installed postgres before and forgot to delete it after you stopped using it. 
 the database you connect to will NOT have syphon data in it, and instead be the one connected on that port. 
 it may say something like "cannot find database 'syphon'" or "user 'syphon' does not exist"
 Requests to the database will not cause logging to your docker container.
