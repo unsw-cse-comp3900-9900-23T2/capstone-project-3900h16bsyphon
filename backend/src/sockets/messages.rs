@@ -118,6 +118,7 @@ impl WsMessage {
             WsMessage::Text(_) => "text",
             WsMessage::MessageOut { .. } => "message",
             WsMessage::RequestData { .. } => "request_data",
+            WsMessage::QueueData { .. } => "queue_data",
         }
         .into()
     }
@@ -142,6 +143,11 @@ impl WsMessage {
             } => json!({
                 "request_id": request_id,
                 "content": content,
+            }),
+            WsMessage::QueueData { queue_id, content } => json!({
+                "queue_id": queue_id,
+                "queue": content.0,
+                "requests": content.1,
             }),
         }
     }
