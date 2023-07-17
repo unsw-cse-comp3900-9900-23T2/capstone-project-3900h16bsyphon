@@ -1,0 +1,10 @@
+.textHeading {
+  font-weight: bold;
+}
+
+.timeContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 20px;
+}
