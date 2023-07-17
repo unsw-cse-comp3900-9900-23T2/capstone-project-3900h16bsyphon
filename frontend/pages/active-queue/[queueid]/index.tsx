@@ -11,7 +11,6 @@ import dayjs from 'dayjs';
 
 const ActiveQueue = () => {
   const router = useRouter();
-  
   const [requests, setRequests] = useState<UserRequest[]>([]);
   const [requestData, setRequestData] = useState({
     title: 'COMP1521 Thursday Week 5 Help Session',

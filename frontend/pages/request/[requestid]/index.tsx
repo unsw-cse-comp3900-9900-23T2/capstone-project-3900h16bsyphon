@@ -66,7 +66,7 @@ const Request = () => {
         <div className={styles.body}>
           {/* TODO: fix the colours */}
           <div className={styles.buttonContainer}>
-            {status === Status.Seeing && (
+            {data.status === Status.Seeing && (
               <Button
                 className={styles.greenButton}
                 variant="contained"
@@ -75,31 +75,50 @@ const Request = () => {
                 Resolve
               </Button>
             )}
-            {status === Status.Unseen && (
-              <Button
-                className={styles.greenButton}
-                variant="contained"
-                onClick={() => updateStatus(Status.Seeing)}
-              >
+            {data.status === Status.Unseen && (
+              <>
+                <Button
+                  className={styles.greenButton}
+                  variant="contained"
+                  onClick={() => updateStatus(Status.Seeing)}
+                >
                   Claim
-              </Button>
-            ) && (
-              <Button
-                className={styles.redButton}
-                variant="contained"
-                onClick={() => updateStatus(Status.NotFound)}
-              >
+                </Button>
+                <Button
+                  className={styles.redButton}
+                  variant="contained"
+                  onClick={() => updateStatus(Status.NotFound)}
+                >
                   Not Found
-              </Button>
+                </Button>
+              </>
             )}
-            {status === Status.Seen && (
+            {data.status === Status.Seen && (
               <Button
                 className={styles.greenButton}
                 variant="contained"
                 onClick={() => updateStatus(Status.Unseen)}
               >
-                UnResolve
+                Unresolve
               </Button>
+            )}
+            {data.status === Status.NotFound && (
+              <>
+                <Button
+                  className={styles.greenButton}
+                  variant="contained"
+                  onClick={() => updateStatus(Status.Seeing)}
+                >
+                  Claim
+                </Button>
+                <Button
+                  className={styles.greenButton}
+                  variant="contained"
+                  onClick={() => updateStatus(Status.Seen)}
+                >
+                  Resolve
+                </Button>
+              </>
             )}
           </div>
           <Box className={styles.cardBox}>
