@@ -1,22 +1,18 @@
 'use client';
 /* eslint-disable */
 import React, { useState, useCallback,  useEffect } from 'react';
-import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { getToken } from '../../utils';
+import { ReadyState } from 'react-use-websocket';
+import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
 
 const Socket = () => {
-
-  const token = getToken();
-  const [socketUrl, setSocketUrl] = React.useState('');
-  // const [socketUrl, setSocketUrl] = React.useState(`ws:127.0.0.1:8000/ws/dumb?access_token=${token}`);
-
-  const socket = new WebSocket('');
-  const wsReturn = useWebSocket(socketUrl);
-  const { sendMessage, lastMessage, readyState, getWebSocket } = wsReturn;
-  console.log('wsReturn', wsReturn);
-  const handleClickSendMessage = useCallback(() => sendMessage('Hello'), []);
-  const [messageHistory, setMessageHistory] = useState([]);
+  const { sendJsonMessage, lastMessage, readyState, getWebSocket } = useAuthenticatedWebSocket("ws:127.0.0.1:8000/ws/dumb");
+  const handleClickSendMessage = useCallback(() => sendJsonMessage({
+    type: "message",
+    request_id: 1,
+    content: "Hello"
+  }), []);
+  const [messageHistory, setMessageHistory] = useState<MessageEvent<any>[]>([]);
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
@@ -27,6 +23,7 @@ const Socket = () => {
   }[readyState];
 
   useEffect(() => {
+      if (lastMessage === null) return;
       messageHistory.push(lastMessage);
   }, [lastMessage]);
 
@@ -45,7 +42,7 @@ const Socket = () => {
       {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
       <ul>
         {messageHistory.map((message, idx) => (
-          <span key={idx}>{message ? `${message}` : null}</span>
+          <span key={idx}>{JSON.stringify(message)}</span>
         ))}
       </ul>
     </div>

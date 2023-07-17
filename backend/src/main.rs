@@ -52,7 +52,6 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(server::hello))
             .service(
                 scope("/ws")
-                    .wrap(amw.clone())
                     .route("/dumb", web::get().to(server::sockets::start_socket_conn))
                     .route(
                         "/announcements",

@@ -1,4 +1,5 @@
 use actix::{prelude::Message, Recipient};
+use log::debug;
 use serde_json::json;
 use uuid::Uuid;
 
@@ -130,7 +131,7 @@ pub fn try_parse_ws_action(raw: &str, zid: i32) -> Result<WsAction, WsActionPars
         serde_json::from_str::<serde_json::Value>(raw).map_err(|_| WsActionParseError::NotJson)?;
 
     let action_type = get_str("type", &as_json)?;
-
+    debug!("action_type: {}", action_type);
     let msg = match action_type {
         "message" => WsAction::SendMsg {
             request_id: get_int("request_id", &as_json)?,
