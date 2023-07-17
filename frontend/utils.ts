@@ -1,3 +1,5 @@
+import { Status } from './types/requests';
+
 const setCookie = (cookieName: string, cookieValue: string) => {
   document.cookie = `${cookieName}=${cookieValue};path=/`;
 };
@@ -86,3 +88,18 @@ export const toCamelCase = (obj: any) : any => {
 };
 
 export const formatZid = (id: number) =>`z${id}`.padEnd(8, '0');
+
+export const determineBackgroundColour = (status: Status) => {
+  switch (status) {
+  case Status.Seen:
+    return '#EDFFEE';
+  case Status.Unseen:
+    return 'white';
+  case Status.Seeing:
+    return '#E3F0FC';
+  case Status.NotFound:
+    return '#F8E9E9';
+  default:
+    return 'white';
+  }
+};

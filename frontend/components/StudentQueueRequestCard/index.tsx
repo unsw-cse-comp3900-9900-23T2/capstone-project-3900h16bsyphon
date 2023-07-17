@@ -3,7 +3,7 @@ import styles from './StudentQueueRequestCard.module.css';
 import { useRouter } from 'next/router';
 import TagBox from '../TagBox';
 import { useState } from 'react';
-import { formatZid } from '../../utils';
+import { authenticatedPutFetch, formatZid, determineBackgroundColour } from '../../utils';
 import { Status, Tag } from '../../types/requests';
 import { ArrowDownward, ArrowUpward } from '@mui/icons-material';
 
@@ -20,32 +20,28 @@ type StudentQueueRequestCardProps = {
 
 const StudentQueueRequestCard = ({ zid, firstName, lastName, title, tags, requestId, status, previousRequests }: StudentQueueRequestCardProps) => {
   const router = useRouter();
+  const [backgroundColor, setBackgroundColor] = useState(determineBackgroundColour(status));
 
-  const determineBackgroundColor = (status: Status) => {
-    switch (status) {
-    case Status.Seen:
-      return '#EDFFEE';
-    case Status.Unseen:
-      return 'white';
-    case Status.Seeing:
-      return '#E3F0FC';
-    case Status.NotFound:
-      return '#F8E9E9';
-    default:
-      return 'white';
+  const updateStatus = async (status: Status) => {
+    const res = await authenticatedPutFetch('/request/set_status', {
+      request_id: Number.parseInt(`${router.query.requestid}`),
+      status: status,
+    });
+
+    if (!res.ok) {
+      console.log('error: something went wrong with resolve request; check network tab');
+      return;
     }
-  };
 
-
-  const [backgroundColor, setBackgroundColor] = useState(determineBackgroundColor(status));
-  const handleNotFound = () => {
-    // TODO: implement properly in the next sprint
-    setBackgroundColor(determineBackgroundColor(Status.NotFound));
-  };
-
-  const handleResolve = () => {
-    // TODO: implement properly in the next sprint
-    setBackgroundColor(determineBackgroundColor(Status.Seen));
+    // set background colour and redirect
+    if (status === Status.NotFound) {
+      setBackgroundColor(determineBackgroundColour(Status.NotFound));
+    } else if (status === Status.Seen) {
+      setBackgroundColor(determineBackgroundColour(Status.Seen));
+    } else if (status === Status.Seeing) {
+      setBackgroundColor(determineBackgroundColour(Status.Seeing));
+      router.push(`/wait/${requestId}`);
+    }
   };
 
   return <>
@@ -77,14 +73,13 @@ const StudentQueueRequestCard = ({ zid, firstName, lastName, title, tags, reques
             <IconButton aria-label="move up button"><ArrowUpward /></IconButton>
             <IconButton aria-label="move down button"><ArrowDownward /></IconButton>
           </div>
-          {/* TODO: unhardcode */}
-          {(status === Status.Unseen) && <Button className={styles.claimButton} variant='contained' onClick={() => router.push('/wait/1')}>
+          {(status === Status.Unseen) && <Button className={styles.claimButton} variant='contained' onClick={() => updateStatus(Status.Seeing)}>
           Claim
           </Button>}
-          {(status === Status.Seeing) && <Button className={styles.claimButton} variant='contained' onClick={handleResolve}>
+          {(status === Status.Seeing) && <Button className={styles.claimButton} variant='contained' onClick={() => updateStatus(Status.Seen)}>
           Resolve
           </Button>}
-          {(status === Status.Unseen) && <Button className={styles.notFoundButton} variant='contained' onClick={handleNotFound} >
+          {(status === Status.Unseen) && <Button className={styles.notFoundButton} variant='contained' onClick={() => updateStatus(Status.NotFound)} >
           Not Found
           </Button>}
         </CardActions>
