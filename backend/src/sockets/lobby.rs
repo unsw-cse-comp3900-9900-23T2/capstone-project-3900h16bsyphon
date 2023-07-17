@@ -24,26 +24,27 @@ type Socket = Recipient<WsMessage>;
 
 #[derive(Default)]
 pub struct Lobby {
-    sessions: HashMap<Uuid, SessionData>,
+    pub(super) sessions: HashMap<Uuid, SessionData>,
     /// Map zid to all connections for this person
-    connections: HashMap<i32, BTreeSet<Uuid>>,
+    pub(super) connections: HashMap<i32, BTreeSet<Uuid>>,
     /// Map request_id to all sockets listeninig to that chat
-    chat_rooms: HashMap<i32, BTreeSet<Uuid>>,
+    pub(super) chat_rooms: HashMap<i32, BTreeSet<Uuid>>,
     /// Stores all messages that have been sent to a chat
     /// for a given request_id
     /// Value: (sender_id: i32, content: String)
-    chat_playback: HashMap<i32, Vec<(i32, String)>>,
+    /// TODO: Should probably be bounded buffer not vec
+    pub(super) chat_playback: HashMap<i32, Vec<(i32, String)>>,
     /// Map request_id to all sockets listening to that req
-    requests: HashMap<i32, BTreeSet<Uuid>>,
+    pub(super) requests: HashMap<i32, BTreeSet<Uuid>>,
     /// Map queue_id to all sockets listening to annoucements
-    annoucements: HashMap<i32, BTreeSet<Uuid>>,
+    pub(super) annoucements: HashMap<i32, BTreeSet<Uuid>>,
     // TODO: queue data - more complex
-    queues: HashMap<i32, BTreeSet<Uuid>>,
+    pub(super) queues: HashMap<i32, BTreeSet<Uuid>>,
 }
 
 impl Lobby {
     /// Send message to a singular socket
-    fn _send_message(&self, message: WsMessage, target_id: &Uuid) {
+    pub(super) fn _send_message(&self, message: WsMessage, target_id: &Uuid) {
         match self.sessions.get(target_id) {
             Some(session) => session.socket.do_send(message),
             None => {
@@ -53,7 +54,7 @@ impl Lobby {
     }
 
     /// Broadcast a message to all sockets in a room
-    fn broadcast_message(&self, message: WsMessage, targets: &BTreeSet<Uuid>) {
+    pub(super) fn broadcast_message(&self, message: WsMessage, targets: &BTreeSet<Uuid>) {
         for target in targets {
             self._send_message(message.clone(), target);
         }
@@ -113,7 +114,7 @@ impl Handler<DisconnectAll> for Lobby {
     }
 }
 
-struct SessionData {
+pub struct SessionData {
     zid: i32,
     id: Uuid,
     socket: Socket,

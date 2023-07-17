@@ -107,9 +107,9 @@ pub async fn edit_request(
 
 pub async fn request_info_wrapper(
     token: ReqData<TokenClaims>,
-    body: web::Query<RequestInfoBody>,
+    web::Query(body): web::Query<RequestInfoBody>,
 ) -> SyphonResult<HttpResponse> {
-    Ok(HttpResponse::Ok().json(request_info_not_web(token, body).await?))
+    Ok(HttpResponse::Ok().json(request_info_not_web(token.into_inner(), body).await?))
 }
 
 pub async fn all_requests_for_queue(
@@ -131,7 +131,7 @@ pub async fn all_requests_for_queue(
         .into_iter()
         .map(|req| req.request_id)
         .map(|request_id| {
-            request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
+            request_info_not_web(token.clone().into_inner(), RequestInfoBody { request_id })
         });
     // Ignores DbErrors - No Panic. Also no 500 Return
     let mut requests = join_all(requests_future)
@@ -170,11 +170,10 @@ pub async fn all_requests_for_queue(
 /// TODO: This is really cringe, don't do whatever this is
 /// There should be a way to move this into the models
 pub async fn request_info_not_web(
-    _token: ReqData<TokenClaims>,
-    body: web::Query<RequestInfoBody>,
+    _token: TokenClaims,
+    body: RequestInfoBody,
 ) -> SyphonResult<QueueRequest> {
     let db = db();
-    let body = body.into_inner();
     // Get the request from the database
     let db_request = entities::requests::Entity::find_by_id(body.request_id)
         .one(db)

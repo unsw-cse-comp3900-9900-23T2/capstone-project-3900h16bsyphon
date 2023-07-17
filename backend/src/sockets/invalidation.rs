@@ -1,10 +1,12 @@
-use actix::{Actor, Handler};
+use actix::{fut, Actor, ActorFutureExt, ContextFutureSpawner, Handler, WrapFuture};
 
-use super::{
-    lobby::Lobby,
-    messages::{HttpServerAction, InvalidateKeys},
-    SocketChannels,
+use crate::{
+    models::{QueueRequest, RequestInfoBody, TokenClaims},
+    server::request::request_info_not_web,
+    sockets::messages::WsMessage,
 };
+
+use super::{lobby::Lobby, messages::HttpServerAction, SocketChannels};
 
 impl Handler<HttpServerAction> for Lobby {
     type Result = ();
@@ -33,8 +35,32 @@ impl Lobby {
         unimplemented!("Queue data not handled yet")
     }
 
-    fn invalidate_request(&mut self, _request_id: i32, _ctx: &mut <Self as Actor>::Context) {
-        unimplemented!("Requests not handled yet")
+    fn invalidate_request(&mut self, request_id: i32, ctx: &mut <Self as Actor>::Context) {
+        request_info_not_web(TokenClaims::master(), RequestInfoBody { request_id })
+            .into_actor(self)
+            .then(move |req_info, lobby, _ctx| {
+                // Unpack the request info
+                let req_info: QueueRequest = match req_info {
+                    Ok(res) => {
+                        log::info!("Invalidating request {}", request_id);
+                        res
+                    }
+                    Err(e) => {
+                        log::error!("Failed to invalidate request {}: {}", request_id, e);
+                        return fut::ready(());
+                    }
+                };
+
+                let targets = lobby.requests.entry(request_id).or_default().clone();
+                let ws_msg = WsMessage::RequestData {
+                    request_id,
+                    content: req_info,
+                };
+                lobby.broadcast_message(ws_msg, &targets);
+
+                fut::ready(())
+            })
+            .wait(ctx);
     }
 
     fn invalidate_announcements(&mut self, _key: i32, _ctx: &mut <Self as Actor>::Context) {

@@ -3,6 +3,8 @@ use log::debug;
 use serde_json::json;
 use uuid::Uuid;
 
+use crate::models::QueueRequest;
+
 use super::SocketChannels;
 
 #[derive(Clone, Debug, Message)]
@@ -16,6 +18,10 @@ pub enum WsMessage {
         sender: i32,
         content: String,
         request_id: i32,
+    },
+    RequestData {
+        request_id: i32,
+        content: QueueRequest,
     },
 }
 
@@ -40,6 +46,10 @@ pub enum WsAction {
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Message)]
 #[rtype(result = "()")]
 pub enum HttpServerAction {
+    /// A message to invalidate a set of keys (channels) in the lobby.
+    /// For each key, the lobby with send out updated messages
+    /// to all clients that are subscribed to a channel with
+    /// an affected key.
     InvalidateKeys(Vec<SocketChannels>),
 }
 
@@ -86,16 +96,6 @@ pub struct ClientActorMessage {
     pub room_id: Uuid,
 }
 
-/// A message to invalidate a set of keys (channels) in the lobby.
-/// For each key, the lobby with send out updated messages
-/// to all clients that are subscribed to a channel with
-/// an affected key.
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct InvalidateKeys {
-    pub channels: Vec<SocketChannels>,
-}
-
 // /////////////////////////////////////////////////////////////////////////////
 // /////////////////////////////////////////////////////////////////////////////
 // End of Struct Definitions
@@ -112,6 +112,7 @@ impl WsMessage {
         match self {
             WsMessage::Text(_) => "text",
             WsMessage::MessageOut { .. } => "message",
+            WsMessage::RequestData { .. } => "request_data",
         }
         .into()
     }
@@ -129,6 +130,13 @@ impl WsMessage {
                 "sender": sender,
                 "content": content,
                 "request_id": request_id,
+            }),
+            WsMessage::RequestData {
+                request_id,
+                content,
+            } => json!({
+                "request_id": request_id,
+                "content": content,
             }),
         }
     }
