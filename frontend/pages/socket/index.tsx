@@ -1,19 +1,12 @@
-'use client';
-/* eslint-disable */
 import React, { useState, useCallback,  useEffect } from 'react';
 import { ReadyState } from 'react-use-websocket';
 import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
 
 const Socket = () => {
-  const { sendJsonMessage, lastMessage, readyState, getWebSocket } = useAuthenticatedWebSocket("ws:127.0.0.1:8000/ws/dumb");
-  const handleClickSendMessage = useCallback(() => sendJsonMessage({
-    type: "message",
-    request_id: 1,
-    content: "Hello"
-  }), []);
+  const { sendJsonMessage, lastMessage, readyState } = useAuthenticatedWebSocket('ws:127.0.0.1:8000/ws/dumb');
   const [messageHistory, setMessageHistory] = useState<MessageEvent<any>[]>([]);
-
+  
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
     [ReadyState.OPEN]: 'Open',
@@ -23,10 +16,15 @@ const Socket = () => {
   }[readyState];
 
   useEffect(() => {
-      if (lastMessage === null) return;
-      messageHistory.push(lastMessage);
+    if (lastMessage === null) return;
+    setMessageHistory((prev) => { let curr = [...prev]; curr.push(lastMessage); return curr; });
   }, [lastMessage]);
-
+  
+  const handleClickSendMessage = useCallback(() => sendJsonMessage({
+    type: 'message',
+    request_id: 1,
+    content: 'Hello'
+  }), [sendJsonMessage]);
 
   return (
     <div>
@@ -35,7 +33,7 @@ const Socket = () => {
         onClick={handleClickSendMessage}
         disabled={readyState !== ReadyState.OPEN}
       >
-        Click Me to send 'Hello'
+        Click Me to send &apos;Hello&apos;
       </button>
       <div>The WebSocket is currently {connectionStatus}.</div>
       <h2>Messages (Total {messageHistory.length}):</h2>
@@ -50,5 +48,3 @@ const Socket = () => {
 };
 
 export default Socket;
-
-

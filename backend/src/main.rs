@@ -142,16 +142,12 @@ async fn main() -> std::io::Result<()> {
                         web::put().to(server::queue::update_tag_priority),
                     )
                     .route("/update", web::put().to(server::queue::update_queue))
-                    .route("/close", web::put().to(server::queue::close_queue))
+                    .route("/close", web::put().to(server::queue::close_queue)),
             )
-            .service(
-                scope("/history")
-                    .wrap(amw.clone())
-                    .route(
-                        "/previous_tags",
-                        web::get().to(server::history::get_previous_tag_details),
-                    ),
-            )
+            .service(scope("/history").wrap(amw.clone()).route(
+                "/previous_tags",
+                web::get().to(server::history::get_previous_tag_details),
+            ))
             .service(scope("/history").wrap(amw.clone()).route(
                 "/previous_tags",
                 web::get().to(server::history::get_previous_tag_details),

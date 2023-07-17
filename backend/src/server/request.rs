@@ -326,6 +326,5 @@ pub async fn set_request_status(
     .insert(db)
     .await?;
 
-
     Ok(HttpResponse::Ok().json(body))
 }
