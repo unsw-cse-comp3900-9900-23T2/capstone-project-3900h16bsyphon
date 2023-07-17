@@ -1,15 +1,15 @@
 import styles from './Request.module.css';
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Typography,
-  Button,
-} from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
 import { useRouter } from 'next/router';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import Header from '../../../components/Header';
 import MetaData from '../../../components/MetaData';
-import { authenticatedGetFetch, toCamelCase } from '../../../utils';
+import {
+  authenticatedGetFetch,
+  authenticatedPutFetch,
+  toCamelCase,
+} from '../../../utils';
 import { Status } from '../../../types/requests';
 
 const Request = () => {
@@ -41,41 +41,105 @@ const Request = () => {
     getRequest();
   }, [router.query.requestid]);
 
-  return <>
-    <MetaData />
-    <Header />
-    <div className={styles.pageContainer}>
-      <div className={styles.queueTitle}>
-        <Typography variant='h2'>
-          {data.queueTitle}
-        </Typography>
-      </div>
-      <div className={styles.body}>
-        {/* TODO: Only show the actions we need + fix the colours */}
-        <div className={styles.buttonContainer}>
-          <Button className={styles.greenButton} variant='contained' onClick={() => router.push(`/active-queue/${data.queueId}`)}>Resolve</Button>
-          <Button className={styles.greenButton} variant='contained' onClick={() => router.push(`/active-queue/${data.queueId}`)}>Claim</Button>
-          <Button className={styles.greenButton} variant='contained' onClick={() => router.push(`/active-queue/${data.queueId}`)}>UnResolve</Button>
-          <Button className={styles.redButton} variant='contained' onClick={() => router.push(`/active-queue/${data.queueId}`)}>Not Found</Button>
+  const updateStatus = async (status: Status) => {
+    const res = await authenticatedPutFetch('/request/set_status', {
+      request_id: Number.parseInt(`${router.query.requestid}`),
+      status: status,
+    });
+    if (!res.ok) {
+      console.log(
+        'error: something went wrong with resolve request; check network tab'
+      );
+      return;
+    }
+    router.push(`/active-queue/${data.queueId}`);
+  };
+
+  return (
+    <>
+      <MetaData />
+      <Header />
+      <div className={styles.pageContainer}>
+        <div className={styles.queueTitle}>
+          <Typography variant="h2">{data.queueTitle}</Typography>
         </div>
-        <Box className={styles.cardBox}>
-          <StudentRequestCard
-            zid={data.zid}
-            status={data.status}
-            firstName={data.firstName}
-            lastName={data.lastName}
-            tags={data.tags}
-            title={data.title}
-            previousRequests={data.previousRequests}
-            description={data.description}
-          />
-        </Box>
-        <div className={styles.chatContainer}>
-          {/* please place the chat component inside this div! */}
+        <div className={styles.body}>
+          {/* TODO: fix the colours */}
+          <div className={styles.buttonContainer}>
+            {data.status === Status.Seeing && (
+              <Button
+                className={styles.greenButton}
+                variant="contained"
+                onClick={() => updateStatus(Status.Seen)}
+              >
+                Resolve
+              </Button>
+            )}
+            {data.status === Status.Unseen && (
+              <>
+                <Button
+                  className={styles.greenButton}
+                  variant="contained"
+                  onClick={() => updateStatus(Status.Seeing)}
+                >
+                  Claim
+                </Button>
+                <Button
+                  className={styles.redButton}
+                  variant="contained"
+                  onClick={() => updateStatus(Status.NotFound)}
+                >
+                  Not Found
+                </Button>
+              </>
+            )}
+            {data.status === Status.Seen && (
+              <Button
+                className={styles.greenButton}
+                variant="contained"
+                onClick={() => updateStatus(Status.Unseen)}
+              >
+                Unresolve
+              </Button>
+            )}
+            {data.status === Status.NotFound && (
+              <>
+                <Button
+                  className={styles.greenButton}
+                  variant="contained"
+                  onClick={() => updateStatus(Status.Seeing)}
+                >
+                  Claim
+                </Button>
+                <Button
+                  className={styles.greenButton}
+                  variant="contained"
+                  onClick={() => updateStatus(Status.Seen)}
+                >
+                  Resolve
+                </Button>
+              </>
+            )}
+          </div>
+          <Box className={styles.cardBox}>
+            <StudentRequestCard
+              zid={data.zid}
+              status={data.status}
+              firstName={data.firstName}
+              lastName={data.lastName}
+              tags={data.tags}
+              title={data.title}
+              previousRequests={data.previousRequests}
+              description={data.description}
+            />
+          </Box>
+          <div className={styles.chatContainer}>
+            {/* please place the chat component inside this div! */}
+          </div>
         </div>
       </div>
-    </div>
-  </>;
+    </>
+  );
 };
 
 export default Request;

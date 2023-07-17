@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-} from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
 import styles from './WaitingScreen.module.css';
 import { useRouter } from 'next/router';
 import StudentRequestCard from '../../../components/StudentRequestCard';
-import { authenticatedGetFetch, toCamelCase, authenticatedPutFetch } from '../../../utils';
+import {
+  authenticatedGetFetch,
+  toCamelCase,
+  authenticatedPutFetch,
+} from '../../../utils';
 import Header from '../../../components/Header';
 import TagBox from '../../../components/TagBox';
 import InformationCard from '../../../components/InformationCard';
@@ -25,14 +25,16 @@ const WaitingScreen = () => {
     title: 'Pls help me with printing this array - im so stuck!',
     queueId: 1,
     courseOfferingId: 1,
-    tags: [{
-      name: 'tag',
-      isPriority: false,
-      tagId: 1,
-    }],
+    tags: [
+      {
+        name: 'tag',
+        isPriority: false,
+        tagId: 1,
+      },
+    ],
     isClusterable: false,
     previousRequests: 5,
-    description: ''
+    description: '',
   });
   const [isClusterable, setIsClusterable] = useState(requestData.isClusterable);
   const [queueData, setQueueData] = useState<QueueData>();
@@ -41,7 +43,7 @@ const WaitingScreen = () => {
 
   const disableCluster = async () => {
     const res = await authenticatedPutFetch('/request/disable_cluster', {
-      request_id: Number.parseInt(`${router.query.requestid}`)
+      request_id: Number.parseInt(`${router.query.requestid}`),
     });
     if (!res.ok) {
       console.log('error');
@@ -53,7 +55,9 @@ const WaitingScreen = () => {
 
   useEffect(() => {
     let getRequest = async () => {
-      let res = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.requestid}`});
+      let res = await authenticatedGetFetch('/request/get_info', {
+        request_id: `${router.query.requestid}`,
+      });
       if (res.status === 404) {
         router.push('/404');
       } else if (res.status === 403) {
@@ -67,12 +71,13 @@ const WaitingScreen = () => {
       return;
     }
     getRequest();
-
   }, [router.query.requestid, router]);
 
   useEffect(() => {
     let getQueueData = async () => {
-      let res = await authenticatedGetFetch('/queue/get', {queue_id: `${requestData.queueId}`});
+      let res = await authenticatedGetFetch('/queue/get', {
+        queue_id: `${requestData.queueId}`,
+      });
       let d = await res.json();
       setQueueData(toCamelCase(d));
     };
@@ -82,19 +87,23 @@ const WaitingScreen = () => {
   useEffect(() => {
     let getNumberOfRequests = async () => {
       if (!queueData) return;
-      let res = await authenticatedGetFetch('/request/all_requests_for_queue', {queue_id: `${requestData.queueId}`});
+      let res = await authenticatedGetFetch('/request/all_requests_for_queue', {
+        queue_id: `${requestData.queueId}`,
+      });
       let d = toCamelCase(await res.json());
       if (!d) return;
 
       let unresolvedRequests = 0;
       for (const request of d) {
-        if (request.requestId === Number.parseInt(`${router.query.requestid}`)) {
+        if (
+          request.requestId === Number.parseInt(`${router.query.requestid}`)
+        ) {
           setPositionInQueue(unresolvedRequests + 1);
           break;
         }
         if (request.status === Status.Unseen) {
           unresolvedRequests++;
-        } 
+        }
       }
       if (queueData.timeLimit) {
         setWaitingTime(queueData.timeLimit * (positionInQueue - 1));
@@ -106,17 +115,18 @@ const WaitingScreen = () => {
     getNumberOfRequests();
   }, [queueData, requestData.queueId, router.query.requestid, positionInQueue]);
 
-  const handleResolve = () => {
-
-    const resolveRequest = async () => {
-      const res = await authenticatedPutFetch('/request/set_status', {request_id: Number.parseInt(`${router.query.requestid}`), status: Status.Seen});
-      if (!res.ok) {
-        console.log('error: something went wrong with resolve request; check network tab');
-        return;
-      }
-      router.push(`/request-summary/${router.query.requestid}`);
-    };
-    resolveRequest();
+  const resolveRequest = async () => {
+    const res = await authenticatedPutFetch('/request/set_status', {
+      request_id: Number.parseInt(`${router.query.requestid}`),
+      status: Status.Seen,
+    });
+    if (!res.ok) {
+      console.log(
+        'error: something went wrong with resolve request; check network tab'
+      );
+      return;
+    }
+    router.push(`/request-summary/${router.query.requestid}`);
   };
 
   return (
@@ -124,27 +134,49 @@ const WaitingScreen = () => {
       <Header />
       <div className={styles.pageContainer}>
         <div className={styles.queueTitle}>
-          <Typography variant='h3'>
-            {queueData?.title}
-          </Typography>
+          <Typography variant="h3">{queueData?.title}</Typography>
         </div>
         {/* make state variable for isclusterable  */}
-        {isClusterable ? ( 
+        {isClusterable ? (
           <div className={styles.clusterContainer}>
             <TagBox
               text="You have been added to a cluster by the tutor! You question will be answered as a group. Click the button to remove yourself"
               backgroundColor="var(--colour-main-orange-200)"
               color="var(--colour-main-orange-900)"
             />
-            <Button className={styles.removeBtn} onClick={disableCluster}>Remove</Button>
+            <Button className={styles.removeBtn} onClick={disableCluster}>
+              Remove
+            </Button>
           </div>
         ) : null}
         <div className={styles.body}>
           <div className={styles.buttonContainer}>
-            <Button className={styles.greenButton} variant='contained' onClick={handleResolve}>Resolve</Button>
-            <Button className={styles.greyButton} variant='contained' onClick={() => router.push(`/edit-request/${router.query.requestid}`)}>Edit Request</Button>
-            <InformationCard content={[`Current Position: ${positionInQueue}`, `Estimated Waiting Time: ${waitingTime} mins`]} />
-            <InformationCard title="Announcement" content={[queueData?.announcement as string]} />
+            <Button
+              className={styles.greenButton}
+              variant="contained"
+              onClick={resolveRequest}
+            >
+              Resolve
+            </Button>
+            <Button
+              className={styles.greyButton}
+              variant="contained"
+              onClick={() =>
+                router.push(`/edit-request/${router.query.requestid}`)
+              }
+            >
+              Edit Request
+            </Button>
+            <InformationCard
+              content={[
+                `Current Position: ${positionInQueue}`,
+                `Estimated Waiting Time: ${waitingTime} mins`,
+              ]}
+            />
+            <InformationCard
+              title="Announcement"
+              content={[queueData?.announcement as string]}
+            />
           </div>
           <Box className={styles.cardBox}>
             <StudentRequestCard
