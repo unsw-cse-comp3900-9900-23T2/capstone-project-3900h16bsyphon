@@ -2,7 +2,7 @@ use actix::{fut, Actor, ActorFutureExt, ContextFutureSpawner, Handler, WrapFutur
 
 use crate::{
     models::{QueueRequest, RequestInfoBody, TokenClaims},
-    server::request::request_info_not_web,
+    server::{queue::get_queue_by_id_not_web, request::request_info_not_web},
     sockets::messages::WsMessage,
 };
 
@@ -31,7 +31,20 @@ impl Lobby {
         })(self, key.inner_id(), ctx);
     }
 
-    fn invalidate_queue_data(&mut self, _queue_id: i32, _ctx: &mut <Self as Actor>::Context) {
+    fn invalidate_queue_data(&mut self, queue_id: i32, _ctx: &mut <Self as Actor>::Context) {
+        let queue_fut = get_queue_by_id_not_web(queue_id);
+        // queue_fut.into_actor(self).then(|res, lobby, _ctx| {
+        //     let queue = match res {
+        //         Ok(queue) => queue,
+        //         Err(e) => {
+        //             log::error!("Failed to invalidate queue {}: {}", queue_id, e);
+        //             return fut::ready(());
+        //         }
+        //     };
+
+            fut::ready(())
+        });
+
         unimplemented!("Queue data not handled yet")
     }
 

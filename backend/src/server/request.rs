@@ -114,8 +114,15 @@ pub async fn request_info_wrapper(
 
 pub async fn all_requests_for_queue(
     token: ReqData<TokenClaims>,
-    body: web::Query<AllRequestsForQueueBody>,
+    web::Query(body): web::Query<AllRequestsForQueueBody>,
 ) -> SyphonResult<HttpResponse> {
+    Ok(HttpResponse::Ok().json(all_requests_for_queue(token, body).await?))
+}
+
+pub async fn all_requests_for_queue_not_web(
+    token: ReqData<TokenClaims>,
+    body: AllRequestsForQueueBody,
+) -> SyphonResult<Vec<QueueRequest>> {
     let db = db();
     let body = body.into_inner();
     // Find all related requests
@@ -133,6 +140,7 @@ pub async fn all_requests_for_queue(
         .map(|request_id| {
             request_info_not_web(token.clone().into_inner(), RequestInfoBody { request_id })
         });
+
     // Ignores DbErrors - No Panic. Also no 500 Return
     let mut requests = join_all(requests_future)
         .await
@@ -164,7 +172,7 @@ pub async fn all_requests_for_queue(
     if queue.is_sorted_by_previous_request_count {
         requests.sort_by(|a, b| a.previous_requests.cmp(&b.previous_requests));
     }
-    Ok(HttpResponse::Ok().json(requests))
+    requests
 }
 
 /// TODO: This is really cringe, don't do whatever this is
