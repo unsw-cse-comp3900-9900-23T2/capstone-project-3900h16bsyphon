@@ -2,11 +2,16 @@
 
 ## how to run
 ### Docker
-you have the option of using docker to run the project. This is recommended. 
+you have the option of using docker to run the project. This is recommended. Follow these instructions: https://docs.docker.com/desktop/ to install docker if you don't have it already.
+Then:
+
 run `docker compose up` for a dev environment,
+
+
 or `docker compose -f docker-compose-prod.yaml up` for a prod environment.
 
 Developers, please use `docker compose up`.
+
 Dear marker, please use `docker compose -f docker-compose-prod.yaml up`. This command should take about 20-30 minutes to complete depending on your internet connection and what images you may already have cached.
 
 Caveats:
