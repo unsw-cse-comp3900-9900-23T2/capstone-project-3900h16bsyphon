@@ -92,13 +92,13 @@ export const formatZid = (id: number) =>`z${id}`.padEnd(8, '0');
 export const determineBackgroundColour = (status: Status) => {
   switch (status) {
   case Status.Seen:
-    return '#EDFFEE';
+    return 'var(--colour-seen)';
   case Status.Unseen:
     return 'white';
   case Status.Seeing:
-    return '#E3F0FC';
+    return 'var(--colour-seeing)';
   case Status.NotFound:
-    return '#F8E9E9';
+    return 'var(--colour-notfound)';
   default:
     return 'white';
   }
