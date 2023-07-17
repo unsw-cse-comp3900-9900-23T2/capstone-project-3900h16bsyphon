@@ -20,6 +20,7 @@ const ActiveQueue = () => {
     requests,
   });
   const [tags, setTags] = useState<Tag[]>([]);
+  const [studentCount, setStudentCount] = useState(0);
 
   useEffect(() => {
     let getRequests = async () => {
@@ -38,10 +39,18 @@ const ActiveQueue = () => {
       let d = await res.json();
       setTags(toCamelCase(d));
     };
+    let getStudentCount = async () => {
+      let res = await authenticatedGetFetch('/queue/get_student_count', {
+        queue_id: `${router.query.queueid}`,
+      });
+      let d = await res.json();
+      setStudentCount(toCamelCase(d));
+    };
     if (!router.query.queueid) return;
     getRequests();
     getQueueData();
     getQueueTags();
+    getStudentCount();
   }, [router.query.queueid]);
 
   const flipTagPriority = async (tagId: number) => {
@@ -101,6 +110,10 @@ const ActiveQueue = () => {
           {requestData.title}
         </Typography>
       </div>
+      <p>
+        There {studentCount === 1 ? 'is' : 'are'} {studentCount}
+        {studentCount === 1 ? ' student' : ' students'} remaining in the queue.
+      </p>
       <div className={styles.body}>
         <div className={styles.buttonContainer}>
           <FormControl size='small' >

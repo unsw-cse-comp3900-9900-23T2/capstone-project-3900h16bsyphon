@@ -4,7 +4,7 @@ use crate::{
         CloseQueueRequest, CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery,
         GetQueueByIdQuery, GetQueueTagsQuery, GetQueuesByCourseQuery, QueueReturnModel,
         SyphonError, SyphonResult, Tag, TokenClaims, UpdateQueuePreviousRequestCount,
-        UpdateQueueRequest,
+        UpdateQueueRequest, GetQueueRequestCount,
     },
     test_is_user,
     utils::{db::db, user::validate_user},
@@ -16,7 +16,7 @@ use actix_web::{
 };
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter,
-    QuerySelect,
+    QuerySelect, PaginatorTrait,
 };
 
 use futures::future::join_all;
@@ -312,4 +312,26 @@ pub async fn set_is_sorted_by_previous_request_count(
     .update(db)
     .await?;
     Ok(HttpResponse::Ok().json("Success!"))
+}
+
+pub async fn get_student_count(
+    query: Query<GetQueueRequestCount>,
+) -> SyphonResult<HttpResponse> {
+    let db = db();
+
+    let requests = entities::requests::Entity::find()
+        .left_join(entities::queues::Entity)
+        .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+        .filter(entities::requests::Column::Status.eq("unseen"))
+        .filter(entities::queues::Column::IsAvailable.eq(true))
+        .filter(entities::queues::Column::IsVisible.eq(true))
+        .select_only()
+        .column(entities::requests::Column::Zid)
+        .distinct()
+        .count(db)
+        .await?;
+
+    let req: i32 = requests.try_into().unwrap();
+
+    Ok(HttpResponse::Ok().json(req))
 }

@@ -142,6 +142,7 @@ async fn main() -> std::io::Result<()> {
                         web::put().to(server::queue::update_tag_priority),
                     )
                     .route("/update", web::put().to(server::queue::update_queue))
+                    .route("/get_student_count", web::get().to(server::queue::get_student_count))
                     .route("/close", web::put().to(server::queue::close_queue)),
             )
             .service(scope("/history").wrap(amw.clone()).route(
