@@ -1,3 +1,4 @@
+use actix::Addr;
 use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
@@ -5,6 +6,9 @@ use chrono::Local;
 use serde_json::json;
 
 use crate::entities::sea_orm_active_enums::Statuses;
+use crate::sockets::lobby::Lobby;
+use crate::sockets::messages::HttpServerAction;
+use crate::sockets::SocketChannels;
 use crate::{entities, models, utils::db::db};
 use futures::future::join_all;
 use models::{
@@ -286,6 +290,7 @@ pub async fn disable_cluster(
 pub async fn set_request_status(
     token: ReqData<TokenClaims>,
     body: web::Json<PutRequestStatusBody>,
+    lobby: web::Data<Addr<Lobby>>,
 ) -> SyphonResult<HttpResponse> {
     let body = body.into_inner();
     let db = db();
@@ -316,7 +321,7 @@ pub async fn set_request_status(
     // Update Request
     entities::requests::ActiveModel {
         status: ActiveValue::Set(body.status.clone()),
-        ..request.into()
+        ..request.clone().into()
     }
     .update(db)
     .await?;
@@ -331,6 +336,13 @@ pub async fn set_request_status(
     }
     .insert(db)
     .await?;
+
+    // Invalidate the cache for the request and its queue
+    let action = HttpServerAction::InvalidateKeys(vec![
+        SocketChannels::Request(body.request_id),
+        SocketChannels::QueueData(request.queue_id),
+    ]);
+    lobby.do_send(action);
 
     Ok(HttpResponse::Ok().json(body))
 }
