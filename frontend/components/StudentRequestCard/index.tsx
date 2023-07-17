@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {  
   Card, 
   CardContent, 
@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import styles from './StudentRequestCard.module.css';
 import TagBox from '../TagBox';
-import { authenticatedGetFetch, formatZid } from '../../utils';
+import { formatZid } from '../../utils';
 import { Status, Tag } from '../../types/requests';
 
 type StudentRequestCardProps = {
@@ -17,22 +17,10 @@ type StudentRequestCardProps = {
   tags: Tag[],
   status: Status,
   description: string,
-  queueId: number,
+  previousRequests: number,
 }
 
-const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags, status, queueId }: StudentRequestCardProps) => {
-  const [previousRequests, setPreviousRequests] = useState(0);
-  useEffect(() => {
-    const findRequests = async () => {
-      const res = await authenticatedGetFetch('/history/request_count', {
-        zid: zid.toString(),
-        queue_id: queueId.toString()
-      });
-      const value = await res.json();
-      setPreviousRequests(value.count);
-    };
-    findRequests();
-  }, [queueId, zid]);
+const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags, status, previousRequests }: StudentRequestCardProps) => {
 
   const determineBackgroundColour = (status: Status) => {
     // TOOD: standardize these request status 
@@ -58,7 +46,7 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags
       <div className={styles.cardHeader}>
         <div className={styles.zidNameContainer}>
           <div>
-            <TagBox text={formatZid(zid)} backgroundColor='#D5CFFF' color='#3E368F' />
+            <TagBox text={formatZid(zid)} backgroundColor='var(--colour-main-purple-400)' color='var(--colour-main-purple-900)' />
           </div>
           <div>
             <Typography className={styles.textHeading} variant='h6'>
@@ -67,7 +55,7 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags
           </div>
         </div>
         <div className={styles.previousRequestsContainer}>
-          <TagBox text={`PREVIOUS TOTAL REQUESTS: ${previousRequests - 1}`} backgroundColor='#D5CFFF' color='#3E368F' />
+          <TagBox text={`PREVIOUS TOTAL REQUESTS: ${previousRequests}`} backgroundColor='var(--colour-main-purple-400)' color='var(--colour-main-purple-900)' />
         </div>
       </div>
       <div>
@@ -77,7 +65,7 @@ const StudentRequestCard = ({ zid, firstName, lastName, title, description, tags
       </div>
       <div className={styles.tagContainer}>
         {tags?.map((tag, i) => {
-          return <TagBox text={tag.name} key={i} isPriority={tag.isPriority} backgroundColor='#EDB549' color='white' />;
+          return <TagBox text={tag.name} key={i} isPriority={tag.isPriority} backgroundColor='var(--colour-main-yellow-500)' color='white' />;
         })}
       </div>
       <div>

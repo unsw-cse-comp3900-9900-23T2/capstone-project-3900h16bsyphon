@@ -12,7 +12,7 @@ import Header from '../../../components/Header';
 import TagBox from '../../../components/TagBox';
 import InformationCard from '../../../components/InformationCard';
 import { QueueData } from '../../../types/queues';
-import { RequestData, Status } from '../../../types/requests';
+import { Status } from '../../../types/requests';
 
 const WaitingScreen = () => {
   const router = useRouter();
@@ -32,9 +32,9 @@ const WaitingScreen = () => {
     }],
     isClusterable: false,
     previousRequests: 5,
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    description: ''
   });
+  const [isClusterable, setIsClusterable] = useState(requestData.isClusterable);
   const [queueData, setQueueData] = useState<QueueData>();
   const [waitingTime, setWaitingTime] = useState(0);
   const [positionInQueue, setPositionInQueue] = useState(0);
@@ -47,7 +47,7 @@ const WaitingScreen = () => {
       console.log('error');
       return;
     }
-    router.reload();
+    setIsClusterable(false);
     return;
   };
 
@@ -68,7 +68,7 @@ const WaitingScreen = () => {
     }
     getRequest();
 
-  }, [router.query.requestid]);
+  }, [router.query.requestid, router]);
 
   useEffect(() => {
     let getQueueData = async () => {
@@ -114,7 +114,7 @@ const WaitingScreen = () => {
         console.log('error: something went wrong with resolve request; check network tab');
         return;
       }
-      router.push('/dashboard');
+      router.push(`/request-summary/${router.query.requestid}`);
     };
     resolveRequest();
   };
@@ -125,10 +125,11 @@ const WaitingScreen = () => {
       <div className={styles.pageContainer}>
         <div className={styles.queueTitle}>
           <Typography variant='h3'>
-            {requestData.queueTitle}
+            {queueData?.title}
           </Typography>
         </div>
-        {requestData.isClusterable ? (
+        {/* make state variable for isclusterable  */}
+        {isClusterable ? ( 
           <div className={styles.clusterContainer}>
             <TagBox
               text="You have been added to a cluster by the tutor! You question will be answered as a group. Click the button to remove yourself"
@@ -153,7 +154,7 @@ const WaitingScreen = () => {
               lastName={requestData.lastName}
               tags={requestData.tags}
               title={requestData.title}
-              queueId={requestData.queueId}
+              previousRequests={requestData.previousRequests}
               description={requestData.description}
             />
           </Box>

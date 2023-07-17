@@ -37,14 +37,24 @@ const AddCoursePermissionsModal = ({
     setCurrentSelected(coursesTutored);
   }, [coursesTutored]);
 
-  const [courseOfferings, setCourseOfferings] = useState<CourseOfferingData[]>([]);
+  const [courseOfferings, setCourseOfferings] = useState<CoursePermission[]>([]);
 
   const [currentSelected, setCurrentSelected] = useState<CoursePermission[]>([]);
 
   useEffect(() => {
     const getCourseOfferings = async () => {
       const res = await authenticatedGetFetch('/course/get_courses_admined', {});
-      setCourseOfferings(toCamelCase(await res.json()));
+      if (!res.ok) {
+        console.error('authentication failed, or something broke with adding course permissions, check network tab');
+        return;
+      }
+      setCourseOfferings(toCamelCase(await res.json()).map((co: CourseOfferingData) => {
+        const item: CoursePermission = {
+          courseCode: co.courseCode, 
+          courseOfferingId: co.courseOfferingId, 
+          title: co.title};
+        return item;
+      }));
     };
     getCourseOfferings();
   }, []);
@@ -99,13 +109,7 @@ const AddCoursePermissionsModal = ({
             fullWidth
             multiple
             id="tags-standard"
-            options={courseOfferings.map(co => {
-              const item: CoursePermission = {
-                courseCode: co.courseCode, 
-                courseOfferingId: co.courseOfferingId, 
-                title: co.title};
-              return item;
-            })}
+            options={courseOfferings}
             isOptionEqualToValue={(option, value) => option.courseOfferingId === value.courseOfferingId}
             value={currentSelected}
             getOptionLabel={(option) => option.courseCode}
