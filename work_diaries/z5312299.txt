@@ -16,4 +16,14 @@ Week 4:
 - Started working on creating the dashboard UI
 
 Week 5:
-- Finished dashboard and queues UI
+- Finished dashboard and queues UI (with frontend integration for course permissions)
+- Finish request creation feature (frontend + backend) with the help of pair programming from Mae :D
+- COMP3900 demo :DD
+
+Week 6/7:
+- Frontend refactoring for the next sprint
+- Small quality of life improvements e.g. removing hardcoded request order values
+
+Week 8:
+- Connect set status endpoint to frontend
+- Finish waiting screen timer ticket (SYP-58)
