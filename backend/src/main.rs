@@ -148,10 +148,6 @@ async fn main() -> std::io::Result<()> {
                 "/previous_tags",
                 web::get().to(server::history::get_previous_tag_details),
             ))
-            .service(scope("/history").wrap(amw.clone()).route(
-                "/previous_tags",
-                web::get().to(server::history::get_previous_tag_details),
-            ))
             .service(
                 scope("/faqs")
                     .wrap(amw.clone())
