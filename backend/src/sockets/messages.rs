@@ -3,6 +3,7 @@ use log::debug;
 use serde_json::json;
 use uuid::Uuid;
 
+use crate::entities::queues::Model as QueueModel;
 use crate::models::QueueRequest;
 
 use super::SocketChannels;
@@ -22,6 +23,10 @@ pub enum WsMessage {
     RequestData {
         request_id: i32,
         content: QueueRequest,
+    },
+    QueueData {
+        queue_id: i32,
+        content: (QueueModel, Vec<QueueRequest>),
     },
 }
 

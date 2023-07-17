@@ -1,8 +1,12 @@
 use actix::{fut, Actor, ActorFutureExt, ContextFutureSpawner, Handler, WrapFuture};
+use futures::{future::join, FutureExt};
 
 use crate::{
     models::{QueueRequest, RequestInfoBody, TokenClaims},
-    server::{queue::get_queue_by_id_not_web, request::request_info_not_web},
+    server::{
+        queue::get_queue_by_id_not_web,
+        request::{all_requests_for_queue_not_web, request_info_not_web},
+    },
     sockets::messages::WsMessage,
 };
 
@@ -31,21 +35,36 @@ impl Lobby {
         })(self, key.inner_id(), ctx);
     }
 
-    fn invalidate_queue_data(&mut self, queue_id: i32, _ctx: &mut <Self as Actor>::Context) {
+    fn invalidate_queue_data(&mut self, queue_id: i32, ctx: &mut <Self as Actor>::Context) {
         let queue_fut = get_queue_by_id_not_web(queue_id);
-        // queue_fut.into_actor(self).then(|res, lobby, _ctx| {
-        //     let queue = match res {
-        //         Ok(queue) => queue,
-        //         Err(e) => {
-        //             log::error!("Failed to invalidate queue {}: {}", queue_id, e);
-        //             return fut::ready(());
-        //         }
-        //     };
-
-            fut::ready(())
+        let requests_fut = all_requests_for_queue_not_web(TokenClaims::master(), queue_id);
+        let queue_and_req_fut = join(queue_fut, requests_fut).then(|(q_res, reqs_res)| async {
+            match (q_res, reqs_res) {
+                (Ok(q), Ok(r)) => Ok((q, r)),
+                _ => Err(()),
+            }
         });
 
-        unimplemented!("Queue data not handled yet")
+        queue_and_req_fut
+            .into_actor(self)
+            .then(move |res, lobby, _ctx| {
+                let (queue, requests) = match res {
+                    Ok((q, rs)) => (q, rs),
+                    Err(_) => {
+                        log::error!("Failed to invalidate queue {}", queue_id);
+                        return fut::ready(());
+                    }
+                };
+
+                let targets = lobby.queues.entry(queue_id).or_default().clone();
+                let ws_msg = WsMessage::QueueData {
+                    queue_id,
+                    content: (queue, requests),
+                };
+                lobby.broadcast_message(ws_msg, &targets);
+                fut::ready(())
+            })
+            .wait(ctx);
     }
 
     fn invalidate_request(&mut self, request_id: i32, ctx: &mut <Self as Actor>::Context) {

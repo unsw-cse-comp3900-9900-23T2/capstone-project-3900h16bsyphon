@@ -116,30 +116,28 @@ pub async fn all_requests_for_queue(
     token: ReqData<TokenClaims>,
     web::Query(body): web::Query<AllRequestsForQueueBody>,
 ) -> SyphonResult<HttpResponse> {
-    Ok(HttpResponse::Ok().json(all_requests_for_queue(token, body).await?))
+    Ok(HttpResponse::Ok()
+        .json(all_requests_for_queue_not_web(token.into_inner(), body.queue_id).await?))
 }
 
 pub async fn all_requests_for_queue_not_web(
-    token: ReqData<TokenClaims>,
-    body: AllRequestsForQueueBody,
+    token: TokenClaims,
+    queue_id: i32,
 ) -> SyphonResult<Vec<QueueRequest>> {
     let db = db();
-    let body = body.into_inner();
     // Find all related requests
-    let queue = entities::queues::Entity::find_by_id(body.queue_id)
+    let queue = entities::queues::Entity::find_by_id(queue_id)
         .one(db)
         .await?
-        .ok_or(SyphonError::QueueNotExist(body.queue_id))?;
+        .ok_or(SyphonError::QueueNotExist(queue_id))?;
 
     let requests_future = entities::requests::Entity::find()
-        .filter(entities::requests::Column::QueueId.eq(body.queue_id))
+        .filter(entities::requests::Column::QueueId.eq(queue_id))
         .all(db)
         .await?
         .into_iter()
         .map(|req| req.request_id)
-        .map(|request_id| {
-            request_info_not_web(token.clone().into_inner(), RequestInfoBody { request_id })
-        });
+        .map(|request_id| request_info_not_web(token.clone(), RequestInfoBody { request_id }));
 
     // Ignores DbErrors - No Panic. Also no 500 Return
     let mut requests = join_all(requests_future)
@@ -153,7 +151,7 @@ pub async fn all_requests_for_queue_not_web(
     let is_priority = requests.iter().map(|request| {
         entities::queue_tags::Entity::find()
             .filter(entities::queue_tags::Column::IsPriority.eq(true))
-            .filter(entities::queue_tags::Column::QueueId.eq(body.queue_id))
+            .filter(entities::queue_tags::Column::QueueId.eq(queue_id))
             .filter(
                 entities::queue_tags::Column::TagId.is_in(request.tags.iter().map(|t| t.tag_id)),
             )
@@ -172,7 +170,8 @@ pub async fn all_requests_for_queue_not_web(
     if queue.is_sorted_by_previous_request_count {
         requests.sort_by(|a, b| a.previous_requests.cmp(&b.previous_requests));
     }
-    requests
+
+    Ok(requests.into_iter().cloned().collect())
 }
 
 /// TODO: This is really cringe, don't do whatever this is
