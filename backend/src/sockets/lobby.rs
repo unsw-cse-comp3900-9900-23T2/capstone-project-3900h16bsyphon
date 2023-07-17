@@ -29,6 +29,10 @@ pub struct Lobby {
     connections: HashMap<i32, BTreeSet<Uuid>>,
     /// Map request_id to all sockets listeninig to that chat
     chat_rooms: HashMap<i32, BTreeSet<Uuid>>,
+    /// Stores all messages that have been sent to a chat
+    /// for a given request_id
+    /// Value: (sender_id: i32, content: String)
+    chat_playback: HashMap<i32, Vec<(i32, String)>>,
     /// Map request_id to all sockets listening to that req
     requests: HashMap<i32, BTreeSet<Uuid>>,
     /// Map queue_id to all sockets listening to annoucements
@@ -141,29 +145,33 @@ impl Handler<Connect> for Lobby {
         // Validate that the user is allowed to join all channels
         // they claimed. If anything invalid, remove them
         // from sessions and proceed
-        // web::block
         let channels2 = channels.clone();
         join_all(channels.into_iter().map(move |c| c.is_allowed(zid)))
             .into_actor(self)
-            .then(move |res, act, _ctx| {
-                // Any false => not allowed
-                if res.iter().any(|v| !v) {
-                    act._send_message(WsMessage::Text("FORBIDDEN: DIE".into()), &uuid);
+            .then(move |allowed_res, lobby, _ctx| {
+                if allowed_res.iter().any(|allowed| *allowed == false) {
+                    lobby._send_message(WsMessage::Text("FORBIDDEN: DIE".into()), &uuid);
                     return fut::ready(());
                 }
-                act.sessions.insert(uuid, SessionData::from(msg));
-                act.connections.entry(zid).or_default().insert(uuid);
+
+                lobby.sessions.insert(uuid, SessionData::from(msg));
+                lobby.connections.entry(zid).or_default().insert(uuid);
+
                 // Insert into corresponding channels if not there
                 for channel in &channels2 {
                     match channel {
                         SocketChannels::Notifications(_queue_id) => todo!(),
-                        SocketChannels::QueueData(q_id) => act.annoucements.entry(*q_id),
-                        SocketChannels::Announcements(q_id) => act.annoucements.entry(*q_id),
-                        SocketChannels::Chat(req_id) => act.chat_rooms.entry(*req_id),
-                        SocketChannels::Request(req_id) => act.chat_rooms.entry(*req_id),
+                        SocketChannels::QueueData(q_id) => lobby.annoucements.entry(*q_id),
+                        SocketChannels::Announcements(q_id) => lobby.annoucements.entry(*q_id),
+                        SocketChannels::Chat(req_id) => lobby.chat_rooms.entry(*req_id),
+                        SocketChannels::Request(req_id) => lobby.chat_rooms.entry(*req_id),
                     }
                     .or_default()
                     .insert(uuid);
+
+                    if let SocketChannels::Chat(req_id) = channel {
+                        lobby.send_chat_playback(*req_id, uuid);
+                    }
                 }
                 fut::ready(())
             })
@@ -190,7 +198,28 @@ impl Handler<WsAction> for Lobby {
 // Implementation of lobby actions that send messages
 // back to WsConn
 impl Lobby {
-    fn handle_send_msg(&self, request_id: i32, content: String, sender: i32) {
+    /// For a given chat request, send all messages in the backlog
+    /// to the target socket. Helpful for when a new socket
+    /// just joins
+    fn send_chat_playback(&mut self, request_id: i32, target: Uuid) {
+        match self.chat_playback.get(&request_id) {
+            Some(backlog) => backlog,
+            None => return,
+        }
+        .iter()
+        .map(|(sender, content)| WsMessage::MessageOut {
+            request_id,
+            content: content.clone(),
+            sender: *sender,
+        })
+        .for_each(|msg| self._send_message(msg, &target));
+    }
+
+    fn handle_send_msg(&mut self, request_id: i32, content: String, sender: i32) {
+        self.chat_playback
+            .entry(request_id)
+            .or_default()
+            .push((sender, content.clone()));
         let targets = match self.chat_rooms.get(&request_id) {
             Some(sockets) => sockets,
             None => return,

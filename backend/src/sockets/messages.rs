@@ -37,6 +37,12 @@ pub enum WsAction {
     },
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Message)]
+#[rtype(result = "()")]
+pub enum HttpServerAction {
+    InvalidateKeys(Vec<SocketChannels>),
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum WsActionParseError {
     NoTypeGiven,
@@ -78,6 +84,16 @@ pub struct ClientActorMessage {
     pub id: Uuid,
     pub msg: String,
     pub room_id: Uuid,
+}
+
+/// A message to invalidate a set of keys (channels) in the lobby.
+/// For each key, the lobby with send out updated messages
+/// to all clients that are subscribed to a channel with
+/// an affected key.
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct InvalidateKeys {
+    pub channels: Vec<SocketChannels>,
 }
 
 // /////////////////////////////////////////////////////////////////////////////
