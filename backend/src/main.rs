@@ -145,6 +145,11 @@ async fn main() -> std::io::Result<()> {
                     .route("/get_student_count", web::get().to(server::queue::get_student_count))
                     .route("/close", web::put().to(server::queue::close_queue)),
             )
+            .service(
+                scope("/logs")
+                .wrap(amw.clone())
+                .route("/get_start_time", web::get().to(server::logs::get_start_time))
+            )
             .service(scope("/history").wrap(amw.clone()).route(
                 "/previous_tags",
                 web::get().to(server::history::get_previous_tag_details),
