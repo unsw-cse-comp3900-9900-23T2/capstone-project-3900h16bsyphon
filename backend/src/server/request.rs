@@ -371,6 +371,7 @@ pub async fn request_summary(
     .select_only()
     .column(entities::request_status_log::Column::EventTime)
     .left_join(entities::users::Entity)
+    .filter(entities::request_status_log::Column::RequestId.eq(request_summary.request_id))
     .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
     .into_model::<TimeStampModel>()
     .one(db)
@@ -381,6 +382,7 @@ pub async fn request_summary(
     .select_only()
     .column(entities::request_status_log::Column::EventTime)
     .left_join(entities::users::Entity)
+    .filter(entities::request_status_log::Column::RequestId.eq(request_summary.request_id))
     .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
     .into_model::<TimeStampModel>()
     .one(db)
@@ -398,6 +400,7 @@ pub async fn request_summary(
         entities::users::Column::LastName,
         entities::users::Column::Zid,
         ])
+    .distinct_on([entities::users::Column::Zid])
     .left_join(entities::users::Entity)
     .filter(entities::request_status_log::Column::RequestId.eq(request_summary.request_id))
     .into_model::<TutorSummaryDetails>()

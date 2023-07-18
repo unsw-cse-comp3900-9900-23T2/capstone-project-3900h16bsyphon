@@ -54,13 +54,14 @@ const RequestSummary = () => {
       } 
       const d = await res.json();
       setRequestSummary(toCamelCase(d));
+      console.log('the d summary data is: ', d);
       console.log('the request summary data is: ', requestSummary);
       
     };
     if (!router.query.requestid) return;
     getRequest();
     getRequestSummary();
-  }, [router.query.requestid, router]);
+  }, [router.query.requestid]);
 
   return (
     <>
