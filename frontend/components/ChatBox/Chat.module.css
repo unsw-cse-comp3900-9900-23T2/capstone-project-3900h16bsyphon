@@ -12,11 +12,6 @@
     width: 100%;
 }
 
-.message {
-    display: flex;
-    align-self: flex-end;
-    justify-self: flex-end;
-}
 
 .messageContainer {
     flex: 1;
@@ -26,4 +21,27 @@
     justify-content: flex-end;
     height: 68vh;
     overflow-y: scroll;
+}
+
+
+.myMessage {
+    background-color: var(--colour-main-purple-200);
+    color: var(--colour-main-purple-900);
+    border-radius: 10px;
+    padding: 10px;
+    margin: 5px;
+    max-width: 60%;
+    word-wrap: break-word;
+}
+
+.otherMessage {
+    background-color: white;
+    color: black;
+    border-radius: 10px;
+    border: var(--colour-main-purple-400) 1px solid;
+    padding: 10px;
+    margin: 5px;
+    max-width: 60%;
+    word-wrap: break-word;
+    align-self: baseline;
 }

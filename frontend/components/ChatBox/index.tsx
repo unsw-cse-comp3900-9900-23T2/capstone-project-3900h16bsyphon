@@ -7,17 +7,20 @@ import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
 type ChatBoxProps = {
   requestId: number;
+  zid?: number;
 };
 
 type Message = {
-  type: 'message' | 'join' | 'leave' | 'auth';
+  type: 'message';
   request_id: number;
   content: string;
+  sender: number;
+
 };
 
 
-const ChatBox = ({requestId} : ChatBoxProps) => {
-  const [messages, setMessages] = useState<string[]>([]);
+const ChatBox = ({requestId, zid = 0} : ChatBoxProps) => {
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
 
   const { sendJsonMessage, lastJsonMessage, readyState } = useAuthenticatedWebSocket('ws:localhost:8000/ws/chat', {
@@ -34,26 +37,30 @@ const ChatBox = ({requestId} : ChatBoxProps) => {
       request_id: requestId,
       content: newMessage,
     });
-    setMessages([...messages, newMessage]);
     setNewMessage('');
   };
 
   useEffect(() => {
     if (lastJsonMessage) {
       console.log('chat: ', lastJsonMessage);
-      setMessages([...messages, '']);
+      if ((lastJsonMessage as any)?.type === 'message') {
+        setMessages(messages => [...messages, lastJsonMessage as Message]);
+      }
     }
   }, [lastJsonMessage]);
-
-
 
   return (
     <Grid container spacing={1} className={styles.container}>
       <Grid item xs={12} className={styles.messageContainer}>
         {messages.map((message, index) => (
-          <div key={index} className={styles.message}>
-            {message}
-          </div>
+          message.sender === zid ?
+            <div key={index} className={styles.myMessage}>
+              {message.content}
+            </div>
+            :
+            <div key={index} className={styles.otherMessage}>
+              {message.content}
+            </div>
         ))}
       </Grid>
       <Grid item xs={12} className={styles.inputContainer}>

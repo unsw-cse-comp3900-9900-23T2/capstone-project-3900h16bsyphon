@@ -210,7 +210,7 @@ const WaitingScreen = () => {
             <FAQs courseOfferingId={queueData?.courseOfferingId} tutor={false} />
           </Box>
           <div className={styles.chatContainer}>
-            <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)}/>
+            <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} zid={requestData.zid}/>
           </div>
         </div>
       </div>
