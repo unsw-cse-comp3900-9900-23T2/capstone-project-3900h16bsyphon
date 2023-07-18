@@ -7,8 +7,9 @@ use crate::{
         UpdateQueueRequest,
     },
     test_is_user,
-    utils::{db::db, user::validate_user},
+    utils::{db::db, user::validate_user}, sockets::{lobby::Lobby, messages::HttpServerAction, SocketChannels},
 };
+use actix::Addr;
 use actix_web::{
     http::StatusCode,
     web::{self, Query, ReqData},
@@ -203,7 +204,10 @@ pub async fn get_is_open(
     }
 }
 
-pub async fn update_queue(body: web::Json<UpdateQueueRequest>) -> SyphonResult<HttpResponse> {
+pub async fn update_queue(
+    body: web::Json<UpdateQueueRequest>,
+    lobby: web::Data<Addr<Lobby>>,
+) -> SyphonResult<HttpResponse> {
     let db = db();
     log::info!("update queue");
     log::info!("{:?}", body);
@@ -229,6 +233,11 @@ pub async fn update_queue(body: web::Json<UpdateQueueRequest>) -> SyphonResult<H
     }
     .update(db)
     .await?;
+
+    let action = HttpServerAction::InvalidateKeys(vec![
+        SocketChannels::QueueData(body.queue_id),
+    ]);
+    lobby.do_send(action);
 
     /////////////////   TAGS    ///////////////////////
     let tag_creation_futures = body
