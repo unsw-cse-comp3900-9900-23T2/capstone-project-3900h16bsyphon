@@ -20,7 +20,7 @@ type Message = {
 };
 
 
-const ChatBox = ({requestId, studentZid = -1, isStudent} : ChatBoxProps) => {
+const ChatBox = ({requestId, studentZid, isStudent} : ChatBoxProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
 
