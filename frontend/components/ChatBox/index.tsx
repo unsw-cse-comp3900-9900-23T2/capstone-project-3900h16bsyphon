@@ -7,7 +7,8 @@ import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
 type ChatBoxProps = {
   requestId: number;
-  zid?: number;
+  studentZid?: number;
+  isStudent: boolean;
 };
 
 type Message = {
@@ -19,7 +20,7 @@ type Message = {
 };
 
 
-const ChatBox = ({requestId, zid} : ChatBoxProps) => {
+const ChatBox = ({requestId, studentZid = -1, isStudent} : ChatBoxProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
 
@@ -41,11 +42,9 @@ const ChatBox = ({requestId, zid} : ChatBoxProps) => {
   };
 
   useEffect(() => {
-    if (lastJsonMessage) {
-      console.log('chat: ', lastJsonMessage);
-      if ((lastJsonMessage as any)?.type === 'message') {
-        setMessages(messages => [...messages, lastJsonMessage as Message]);
-      }
+    if (!lastJsonMessage) return;
+    if ((lastJsonMessage as any)?.type === 'message') {
+      setMessages(messages => [...messages, lastJsonMessage as Message]);
     }
   }, [lastJsonMessage]);
 
@@ -53,7 +52,7 @@ const ChatBox = ({requestId, zid} : ChatBoxProps) => {
     <Grid container spacing={1} className={styles.container}>
       <Grid item xs={12} className={styles.messageContainer}>
         {messages.map((message, index) => (
-          message.sender === zid ?
+          (isStudent && message.sender === studentZid) || (!isStudent && message.sender !== studentZid) ?
             <div key={index} className={styles.myMessage}>
               {message.content}
             </div>

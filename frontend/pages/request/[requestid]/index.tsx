@@ -136,7 +136,7 @@ const Request = () => {
             />
           </Box>
           <div className={styles.chatContainer}>
-            <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} zid={0}/> 
+            <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} isStudent={false} studentZid={data.zid}/> 
           </div>
         </div>
       </div>
