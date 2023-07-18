@@ -101,6 +101,9 @@ const RequestSummary = () => {
             <Card className={styles.infoCard}>
               <Typography className={styles.summaryHeadings} variant='h6'>Tutors involved</Typography>
               <div className={styles.tutorIdNameContainer}>
+                {requestSummary.startTime &&
+                  <Typography className={styles.summaryHeadings} variant='body1'>Request was resolved by student</Typography>
+                }
                 {requestSummary.tutors.map((tutor) => {
                   return <div className={styles.tutorIdName} key={tutor.zid}>
                     <TagBox
@@ -117,8 +120,12 @@ const RequestSummary = () => {
               <Typography className={styles.summaryHeadings}  variant='h6'>Time Summary</Typography>
               <div className={styles.tutorIdNameContainer}>
                 <div className={styles.tutorIdName} >
-                  <Typography className={styles.summaryHeadings} variant='body1'>Start Time:</Typography>
-                  <Typography variant='body1'>{convertTime(requestSummary.startTime?.eventTime)}</Typography>
+                  {requestSummary.startTime &&
+                    <>
+                      <Typography className={styles.summaryHeadings} variant='body1'>Start Time:</Typography>
+                      <Typography variant='body1'>{convertTime(requestSummary.startTime?.eventTime)}</Typography>
+                    </>
+                  }
                 </div>
                 <div className={styles.tutorIdName} >
                   <Typography className={styles.summaryHeadings} variant='body1'>End Time:</Typography>
