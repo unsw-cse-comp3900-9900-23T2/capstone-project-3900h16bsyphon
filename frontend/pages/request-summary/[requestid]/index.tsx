@@ -32,8 +32,8 @@ const RequestSummary = () => {
 
   const [requestSummary, setRequestSummary] = useState<UserRequestSummary>({
     tutors: [],
-    startTime: { eventTime: new Date()},
-    endTime: { eventTime: new Date()},
+    startTime: { eventTime: '' as unknown as Date},
+    endTime: { eventTime: '' as unknown as Date},
     duration: { hours: 0, minutes: 0, seconds: 0 }
   });
 
@@ -99,10 +99,13 @@ const RequestSummary = () => {
           </Box>
           <div className={styles.summaryContainer}>
             <Card className={styles.infoCard}>
-              <Typography className={styles.summaryHeadings} variant='h6'>Tutors involved</Typography>
+              <Typography className={styles.summaryHeadings} variant='h6'>Tutors Involved</Typography>
               <div className={styles.tutorIdNameContainer}>
-                {requestSummary.startTime &&
-                  <Typography className={styles.summaryHeadings} variant='body1'>Request was resolved by student</Typography>
+                {/* if there is no start time, request was resolved by student */}
+                {!requestSummary.startTime &&
+                  <div className={styles.tutorIdNameContainer}>
+                    <Typography className={styles.summaryHeadings} variant='body1'>Request was resolved by student</Typography>
+                  </div>
                 }
                 {requestSummary.tutors.map((tutor) => {
                   return <div className={styles.tutorIdName} key={tutor.zid}>
@@ -132,11 +135,14 @@ const RequestSummary = () => {
                   <Typography variant='body1'>{convertTime(requestSummary.endTime.eventTime)}</Typography>
                 </div>
                 <div className={styles.durationTagBoxContainer}>
-                  <TagBox
-                    text={getDurationString()}
-                    backgroundColor={changeBackgroundColour(requestSummary.duration)}
-                    color={changeTextColour(requestSummary.duration)}
-                  />
+                  {/* dont display duration if request was resolved by student */}
+                  {requestSummary.startTime &&
+                    <TagBox
+                      text={getDurationString()}
+                      backgroundColor={changeBackgroundColour(requestSummary.duration)}
+                      color={changeTextColour(requestSummary.duration)}
+                    />
+                  }
                 </div>
               </div>
             </Card>
