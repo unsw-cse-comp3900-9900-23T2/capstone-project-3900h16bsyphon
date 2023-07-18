@@ -65,22 +65,24 @@ pub async fn create_queue(
 }
 
 pub async fn get_queue_by_id(
-    token: ReqData<TokenClaims>,
-    query: Query<GetQueueByIdQuery>,
-) -> HttpResponse {
+    _token: ReqData<TokenClaims>,
+    Query(query): Query<GetQueueByIdQuery>,
+) -> SyphonResult<HttpResponse> {
+    // match queue {
+    //     Some(q) => HttpResponse::Ok().json(web::Json(q)),
+    //     None => HttpResponse::NotFound().json("No queue of that id!"),
+    // }
+    Ok(HttpResponse::Ok().json(get_queue_by_id_not_web(query.queue_id).await?))
+}
+
+pub async fn get_queue_by_id_not_web(
+    queue_id: i32,
+) -> Result<entities::queues::Model, SyphonError> {
     let db = db();
-    if let Err(e) = validate_user(&token, db).await {
-        log::debug!("failed to verify user:{:?}", e);
-        return e;
-    }
-    let queue = entities::queues::Entity::find_by_id(query.queue_id)
+    entities::queues::Entity::find_by_id(queue_id)
         .one(db)
-        .await
-        .expect("Db broke");
-    match queue {
-        Some(q) => HttpResponse::Ok().json(web::Json(q)),
-        None => HttpResponse::NotFound().json("No queue of that id!"),
-    }
+        .await?
+        .ok_or(SyphonError::QueueNotExist(queue_id))
 }
 
 pub async fn get_queues_by_course(

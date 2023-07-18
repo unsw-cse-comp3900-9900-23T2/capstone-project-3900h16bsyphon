@@ -18,6 +18,10 @@ impl TokenClaims {
             password: password.into(),
         }
     }
+
+    pub fn master() -> Self {
+        Self::new(0, "thisdoesntmatter")
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
