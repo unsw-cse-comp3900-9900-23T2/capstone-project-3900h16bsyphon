@@ -1,7 +1,7 @@
 import {Button, Grid, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import styles from './Chat.module.css';
-import useWebSocket from 'react-use-websocket';
+import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
 
 
@@ -9,45 +9,43 @@ type ChatBoxProps = {
   requestId: number;
 };
 
+type Message = {
+  type: 'message' | 'join' | 'leave' | 'auth';
+  request_id: number;
+  content: string;
+};
+
+
 const ChatBox = ({requestId} : ChatBoxProps) => {
   const [messages, setMessages] = useState<string[]>([]);
   const [newMessage, setNewMessage] = useState('');
 
-  const socketUrl = 'ws://localhost:8000/ws/chat';
-  const {
-    sendMessage,
-    lastMessage,
-    readyState,
-  } = useWebSocket(socketUrl, {
+  const { sendJsonMessage, lastJsonMessage, readyState } = useAuthenticatedWebSocket('ws:localhost:8000/ws/chat', {
     queryParams: {request_id: requestId},
-    onOpen: () => {
-      console.log('connected');
-    },
-    //Will attempt to reconnect on all close events, such as server shutting down
     shouldReconnect: () => true,
-    onMessage: (e) =>  {
-      //setMessages([...messages, e.data]);
-      console.log(e.data);
-    },
-  },
-  !!requestId
-  );
+  }, !!requestId);
 
   const handleMessageSend = () => {
     if (newMessage.trim() === '') {
       return;
     }
-    //sendJsonMessage(newMessageObj);
-    sendMessage(newMessage);
+    sendJsonMessage({
+      type: 'message',
+      request_id: requestId,
+      content: newMessage,
+    });
     setMessages([...messages, newMessage]);
     setNewMessage('');
   };
 
   useEffect(() => {
-    if (lastMessage !== null) {
-      setMessages([...messages, lastMessage.data]);
+    if (lastJsonMessage) {
+      console.log(lastJsonMessage);
+      setMessages([...messages, '']);
     }
-  }, [lastMessage, messages]);
+  }, [lastJsonMessage]);
+
+
 
   return (
     <Grid container spacing={1} className={styles.container}>

@@ -11,6 +11,7 @@ import {
   toCamelCase,
 } from '../../../utils';
 import { Status } from '../../../types/requests';
+import ChatBox from '../../../components/ChatBox';
 
 const Request = () => {
   const router = useRouter();
@@ -134,7 +135,7 @@ const Request = () => {
             />
           </Box>
           <div className={styles.chatContainer}>
-            {/* please place the chat component inside this div! */}
+            <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)}/>
           </div>
         </div>
       </div>

@@ -143,10 +143,6 @@ async fn main() -> std::io::Result<()> {
                 scope("/history")
                     .wrap(amw.clone())
                     .route(
-                        "/request_count",
-                        web::get().to(server::history::get_request_count),
-                    )
-                    .route(
                         "/previous_tags",
                         web::get().to(server::history::get_previous_tag_details),
                     ),

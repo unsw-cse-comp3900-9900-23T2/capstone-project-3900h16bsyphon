@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { authenticatedGetFetch, authenticatedPutFetch, toCamelCase } from '../../../utils';
 import { Tag, UserRequest } from '../../../types/requests';
 import dayjs from 'dayjs';
+import ChatBox from '../../../components/ChatBox';
 
 const ActiveQueue = () => {
   const router = useRouter();
