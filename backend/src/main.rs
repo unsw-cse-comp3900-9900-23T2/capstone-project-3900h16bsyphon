@@ -143,6 +143,7 @@ async fn main() -> std::io::Result<()> {
                     )
                     .route("/update", web::put().to(server::queue::update_queue))
                     .route("/get_student_count", web::get().to(server::queue::get_student_count))
+                    .route("/get_num_requests_until_close", web::get().to(server::queue::num_requests_until_close))
                     .route("/close", web::put().to(server::queue::close_queue)),
             )
             .service(

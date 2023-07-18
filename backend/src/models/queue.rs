@@ -120,3 +120,8 @@ pub struct GetQueueRequestCount {
 pub struct GetQueueRequestCountResponse {
     pub count: u64,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetRemainingStudents {
+    pub queue_id: i32,
+}
