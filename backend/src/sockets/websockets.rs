@@ -71,11 +71,7 @@ impl WsConn {
         self.zid.is_some()
     }
 
-    fn try_auth(
-        &mut self,
-        raw_tok: &str,
-        ctx: &mut <Self as Actor>::Context,
-    ) {
+    fn try_auth(&mut self, raw_tok: &str, ctx: &mut <Self as Actor>::Context) {
         validate_raw_token(raw_tok.into())
             .into_actor(self)
             .then(move |res, conn, ctx| match res {
@@ -83,7 +79,6 @@ impl WsConn {
                     ctx.text(json!({"type": "auth", "success": true}).to_string());
                     conn.zid = Some(tok.username);
                     conn.connect_to_lobby(ctx);
-                    log::info!("Conn authed: {:?}", conn.zid);
                     fut::ready(())
                 }
                 Err(_) => {

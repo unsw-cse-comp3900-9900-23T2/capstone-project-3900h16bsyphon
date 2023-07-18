@@ -7,7 +7,8 @@ import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
 type ChatBoxProps = {
   requestId: number;
-  zid?: number;
+  studentZid: number;
+  isStudent: boolean;
 };
 
 type Message = {
@@ -19,11 +20,11 @@ type Message = {
 };
 
 
-const ChatBox = ({requestId, zid = 0} : ChatBoxProps) => {
+const ChatBox = ({requestId, studentZid, isStudent} : ChatBoxProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
 
-  const { sendJsonMessage, lastJsonMessage, readyState } = useAuthenticatedWebSocket('ws:localhost:8000/ws/chat', {
+  const { sendJsonMessage, lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/chat', {
     queryParams: {request_id: requestId},
     shouldReconnect: () => true,
   }, !!requestId);
@@ -41,11 +42,9 @@ const ChatBox = ({requestId, zid = 0} : ChatBoxProps) => {
   };
 
   useEffect(() => {
-    if (lastJsonMessage) {
-      console.log('chat: ', lastJsonMessage);
-      if ((lastJsonMessage as any)?.type === 'message') {
-        setMessages(messages => [...messages, lastJsonMessage as Message]);
-      }
+    if (!lastJsonMessage) return;
+    if ((lastJsonMessage as any)?.type === 'message') {
+      setMessages(messages => [...messages, lastJsonMessage as Message]);
     }
   }, [lastJsonMessage]);
 
@@ -53,7 +52,7 @@ const ChatBox = ({requestId, zid = 0} : ChatBoxProps) => {
     <Grid container spacing={1} className={styles.container}>
       <Grid item xs={12} className={styles.messageContainer}>
         {messages.map((message, index) => (
-          message.sender === zid ?
+          (isStudent && message.sender === studentZid) || (!isStudent && message.sender !== studentZid) ?
             <div key={index} className={styles.myMessage}>
               {message.content}
             </div>
@@ -71,7 +70,7 @@ const ChatBox = ({requestId, zid = 0} : ChatBoxProps) => {
           onChange={(e) => setNewMessage(e.target.value)}
           InputProps={{
             endAdornment: (
-              <Button variant='contained' color='primary' onClick={handleMessageSend}>
+              <Button variant='contained' color='inherit' onClick={handleMessageSend}>
                   Send
               </Button>
             ),

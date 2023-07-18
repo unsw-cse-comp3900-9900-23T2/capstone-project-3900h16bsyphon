@@ -134,6 +134,7 @@ const WaitingScreen = () => {
     router.push(`/request-summary/${router.query.requestid}`);
   };
 
+  // websocket for queue data:
   let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
     queryParams: {queue_id: requestData.queueId},
     onOpen: () => {
@@ -141,11 +142,13 @@ const WaitingScreen = () => {
     }
   });
 
+  // update queue data:
   useEffect(() => {
     if (!lastJsonMessage) return;
     setQueueData(queueData => ({...queueData, ...((lastJsonMessage as any)?.queue)}));
   }, [lastJsonMessage]);
 
+  // toast for announcement
   useEffect(() => {
     if (!queueData?.announcement) return;
     toast.info(queueData.announcement,  {
@@ -235,7 +238,7 @@ const WaitingScreen = () => {
             <FAQs courseOfferingId={queueData?.courseOfferingId} tutor={false} />
           </Box>
           <div className={styles.chatContainer}>
-            <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} zid={requestData.zid}/>
+            <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} studentZid={requestData.zid} isStudent={true}/>
           </div>
         </div>
       </div>
