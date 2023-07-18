@@ -135,6 +135,8 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
     router.push(`/active-queue/${queueId}`);
   };
 
+
+
   return (
     <>
       <Header/>

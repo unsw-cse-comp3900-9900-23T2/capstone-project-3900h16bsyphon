@@ -33,4 +33,7 @@ a {
   --colour-main-orange-200: #FAC4A6;
   --colour-main-orange-400: #EDB392;
   --colour-main-orange-900: #B9490A;
+  --colour-seen: #EDFFEE;
+  --colour-seeing: #E3F0FC;
+  --colour-notfound: #F8E9E9;
 }

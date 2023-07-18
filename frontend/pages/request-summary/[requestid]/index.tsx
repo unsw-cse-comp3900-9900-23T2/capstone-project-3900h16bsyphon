@@ -42,7 +42,7 @@ const RequestSummary = () => {
     };
     if (!router.query.requestid) return;
     getRequest();
-  }, [router.query.requestid]);
+  }, [router.query.requestid, router]);
 
   return (
     <>
@@ -65,7 +65,7 @@ const RequestSummary = () => {
               lastName={requestData.lastName}
               tags={requestData.tags}
               title={requestData.title}
-              queueId={requestData.queueId}
+              previousRequests={requestData.previousRequests}
               description={requestData.description}
             />
           </Box>

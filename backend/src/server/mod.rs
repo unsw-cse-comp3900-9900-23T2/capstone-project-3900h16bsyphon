@@ -10,6 +10,7 @@ pub mod faqs;
 pub mod history;
 pub mod queue;
 pub mod request;
+pub mod sockets;
 pub mod user;
 
 #[post("/echo")]

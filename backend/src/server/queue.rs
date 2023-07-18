@@ -1,9 +1,10 @@
 use crate::{
     entities,
     models::{
-        CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery, GetQueueByIdQuery,
-        GetQueueTagsQuery, TokenClaims, CloseQueueRequest, GetQueuesByCourseQuery, QueueReturnModel, 
-        SyphonError, SyphonResult, Tag, UpdateQueuePreviousRequestCount, UpdateQueueRequest,
+        CloseQueueRequest, CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery,
+        GetQueueByIdQuery, GetQueueTagsQuery, GetQueuesByCourseQuery, QueueReturnModel,
+        SyphonError, SyphonResult, Tag, TokenClaims, UpdateQueuePreviousRequestCount,
+        UpdateQueueRequest,
     },
     test_is_user,
     utils::{db::db, user::validate_user},
@@ -64,22 +65,24 @@ pub async fn create_queue(
 }
 
 pub async fn get_queue_by_id(
-    token: ReqData<TokenClaims>,
-    query: Query<GetQueueByIdQuery>,
-) -> HttpResponse {
+    _token: ReqData<TokenClaims>,
+    Query(query): Query<GetQueueByIdQuery>,
+) -> SyphonResult<HttpResponse> {
+    // match queue {
+    //     Some(q) => HttpResponse::Ok().json(web::Json(q)),
+    //     None => HttpResponse::NotFound().json("No queue of that id!"),
+    // }
+    Ok(HttpResponse::Ok().json(get_queue_by_id_not_web(query.queue_id).await?))
+}
+
+pub async fn get_queue_by_id_not_web(
+    queue_id: i32,
+) -> Result<entities::queues::Model, SyphonError> {
     let db = db();
-    if let Err(e) = validate_user(&token, db).await {
-        log::debug!("failed to verify user:{:?}", e);
-        return e;
-    }
-    let queue = entities::queues::Entity::find_by_id(query.queue_id)
+    entities::queues::Entity::find_by_id(queue_id)
         .one(db)
-        .await
-        .expect("Db broke");
-    match queue {
-        Some(q) => HttpResponse::Ok().json(web::Json(q)),
-        None => HttpResponse::NotFound().json("No queue of that id!"),
-    }
+        .await?
+        .ok_or(SyphonError::QueueNotExist(queue_id))
 }
 
 pub async fn get_queues_by_course(
@@ -259,9 +262,7 @@ pub async fn update_queue(body: web::Json<UpdateQueueRequest>) -> SyphonResult<H
     Ok(HttpResponse::Ok().json("Success!"))
 }
 
-pub async fn close_queue(
-    body: web::Json<CloseQueueRequest>,
-) -> SyphonResult<HttpResponse> {
+pub async fn close_queue(body: web::Json<CloseQueueRequest>) -> SyphonResult<HttpResponse> {
     let db = db();
     log::info!("close queue");
     log::info!("{:?}", body);
@@ -274,7 +275,7 @@ pub async fn close_queue(
             StatusCode::NOT_FOUND,
         ))?;
 
-    // if the queue is already unavailable then we cant close it again so return error 
+    // if the queue is already unavailable then we cant close it again so return error
     if !queue.is_available && !queue.is_visible {
         return Err(SyphonError::Json(
             json!({"error": "queue has already been closed"}),
@@ -289,8 +290,10 @@ pub async fn close_queue(
         end_time: ActiveValue::Set(body.end_time),
         is_visible: ActiveValue::Set(false),
         ..queue.clone().into()
-    }.update(db).await?;
-    
+    }
+    .update(db)
+    .await?;
+
     Ok(HttpResponse::Ok().json("Success!"))
 }
 
