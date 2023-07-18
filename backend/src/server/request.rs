@@ -6,6 +6,7 @@ use chrono::Local;
 use serde_json::json;
 
 use crate::entities::sea_orm_active_enums::Statuses;
+use crate::models::{RequestSummaryBody, TutorSummaryDetails, RequestSummaryReturnModel, TimeStampModel};
 use crate::sockets::lobby::Lobby;
 use crate::sockets::messages::HttpServerAction;
 use crate::sockets::SocketChannels;
@@ -346,3 +347,70 @@ pub async fn set_request_status(
 
     Ok(HttpResponse::Ok().json(body))
 }
+
+pub async fn request_summary(
+    _token: ReqData<TokenClaims>,
+    request_summary_body: web::Json<RequestSummaryBody>,
+) -> SyphonResult<HttpResponse> {
+    let db = db();
+    let request_summary = request_summary_body.into_inner();
+
+    let _existing_request = entities::requests::Entity::find_by_id(request_summary.request_id)
+        .one(db)
+        .await?
+        .ok_or(SyphonError::Json(
+            json!("request to edit cannot be found"),
+            StatusCode::NOT_FOUND,
+        ))?;
+    
+    // get log for the first start_time 
+    let start_log = entities::request_status_log::Entity::find()
+    .select_only()
+    .column(entities::request_status_log::Column::EventTime)
+    .left_join(entities::users::Entity)
+    .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+    .into_model::<TimeStampModel>()
+    .one(db)
+    .await?
+    .ok_or(SyphonError::Json(
+        json!("request was never transitioned to 'Seeing' status"),
+        StatusCode::NOT_FOUND,
+    ))?;
+
+    // get log for end_time
+    let end_log = entities::request_status_log::Entity::find()
+    .select_only()
+    .column(entities::request_status_log::Column::EventTime)
+    .left_join(entities::users::Entity)
+    .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
+    .into_model::<TimeStampModel>()
+    .one(db)
+    .await?
+    .ok_or(SyphonError::Json(
+        json!("request was never transitioned to 'Seen' status"),
+        StatusCode::NOT_FOUND,
+    ))?;
+
+    // get search for logs, matching request id, get all tutor id joined with user table for their names
+    let tutor_logs = entities::request_status_log::Entity::find()
+    .select_only()
+    .columns([
+        entities::users::Column::FirstName,
+        entities::users::Column::LastName,
+        entities::users::Column::Zid,
+        ])
+    .left_join(entities::users::Entity)
+    .filter(entities::request_status_log::Column::RequestId.eq(request_summary.request_id))
+    .into_model::<TutorSummaryDetails>()
+    .all(db)
+    .await?;
+
+    let request_summary = RequestSummaryReturnModel {
+        tutors: tutor_logs,
+        start_time: start_log.time,
+        end_time: end_log.time
+    };
+
+    Ok(HttpResponse::Ok().json(request_summary))
+}
+

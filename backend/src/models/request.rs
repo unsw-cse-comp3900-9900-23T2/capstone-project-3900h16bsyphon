@@ -1,4 +1,6 @@
+use sea_orm::FromQueryResult;
 use serde::{Deserialize, Serialize};
+use chrono::NaiveDateTime;
 
 use crate::entities;
 use entities::sea_orm_active_enums::Statuses;
@@ -37,6 +39,11 @@ pub struct RequestInfoBody {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct RequestSummaryBody {
+    pub request_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AllRequestsForQueueBody {
     pub queue_id: i32,
 }
@@ -62,4 +69,23 @@ pub struct QueueRequest {
 pub struct PutRequestStatusBody {
     pub request_id: i32,
     pub status: Statuses,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct TutorSummaryDetails {
+    pub zid: i32,
+    pub first_name: String,
+    pub last_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct TimeStampModel {
+    pub time: NaiveDateTime,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct RequestSummaryReturnModel {
+    pub tutors: Vec<TutorSummaryDetails>,
+    pub start_time: NaiveDateTime,
+    pub end_time: NaiveDateTime,
 }
