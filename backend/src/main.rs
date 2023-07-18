@@ -125,6 +125,10 @@ async fn main() -> std::io::Result<()> {
             .service(
                 scope("/queue")
                     .wrap(amw.clone())
+                    .route(
+                        "/set_is_sorted_by_previous_request_count",
+                        web::put().to(server::queue::set_is_sorted_by_previous_request_count),
+                    )
                     .route("/create", web::post().to(server::queue::create_queue))
                     .route("/get", web::get().to(server::queue::get_queue_by_id))
                     .route(
