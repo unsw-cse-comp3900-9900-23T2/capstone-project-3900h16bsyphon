@@ -4,7 +4,7 @@ import styles from './RequestSummary.module.css';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { authenticatedGetFetch, formatZid, toCamelCase } from '../../../utils';
+import { authenticatedGetFetch, formatZid, toCamelCase, changeBackgroundColour, changeTextColour } from '../../../utils';
 import { Status, UserRequestSummary } from '../../../types/requests';
 import TagBox from '../../../components/TagBox';
 import dayjs from 'dayjs';
@@ -134,8 +134,8 @@ const RequestSummary = () => {
                 <div className={styles.durationTagBoxContainer}>
                   <TagBox
                     text={getDurationString()}
-                    backgroundColor="var(--colour-main-purple-400)"
-                    color="var(--colour-main-purple-900)"
+                    backgroundColor={changeBackgroundColour(requestSummary.duration)}
+                    color={changeTextColour(requestSummary.duration)}
                   />
                 </div>
               </div>

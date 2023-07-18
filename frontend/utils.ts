@@ -1,4 +1,4 @@
-import { Status } from './types/requests';
+import { Status, Duration } from './types/requests';
 
 const setCookie = (cookieName: string, cookieValue: string) => {
   document.cookie = `${cookieName}=${cookieValue};path=/`;
@@ -101,5 +101,33 @@ export const determineBackgroundColour = (status: Status) => {
     return 'var(--colour-notfound)';
   default:
     return 'white';
+  }
+};
+
+export const changeBackgroundColour = (timeElapsed?: Duration) => {
+  if (!timeElapsed) return 'var(--colour-main-red-200)';
+
+  if (timeElapsed.minutes < 10) {
+    return 'var(--colour-main-green-200)';
+  } else if (timeElapsed.minutes < 15) {
+    return 'var(--colour-main-yellow-200)';
+  } else if (timeElapsed.minutes < 20) {
+    return 'var(--colour-main-orange-200)';
+  } else {
+    return 'var(--colour-main-red-200)';
+  }
+};
+
+export const changeTextColour = (timeElapsed?: Duration) => {
+  if (!timeElapsed) return 'var(--colour-main-red-200)';
+
+  if (timeElapsed.minutes < 10) {
+    return 'var(--colour-main-green-900)';
+  } else if (timeElapsed.minutes < 15) {
+    return 'var(--colour-main-yellow-900)';
+  } else if (timeElapsed.minutes < 20) {
+    return 'var(--colour-main-orange-900)';
+  } else {
+    return 'var(--colour-main-red-900)';
   }
 };
