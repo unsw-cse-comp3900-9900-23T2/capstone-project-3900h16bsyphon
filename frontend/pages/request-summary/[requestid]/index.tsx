@@ -7,12 +7,6 @@ import { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 import { Status, UserRequestSummary } from '../../../types/requests';
 
-const initialRequestSummaryData: UserRequestSummary = {
-  tutors: [],
-  startTime: '',
-  endTime: ''
-};
-
 const RequestSummary = () => {
   const router = useRouter();
   const [requestData, setData] = useState({
@@ -34,7 +28,11 @@ const RequestSummary = () => {
     description:''  
   });
 
-  const [requestSummary, setRequestSummary] = useState<UserRequestSummary>(initialRequestSummaryData);
+  const [requestSummary, setRequestSummary] = useState<UserRequestSummary>({
+    tutors: [],
+    startTime: { eventTime: ''},
+    endTime: { eventTime: ''},
+  });
   
   useEffect(() => {
     const getRequest = async () => {
