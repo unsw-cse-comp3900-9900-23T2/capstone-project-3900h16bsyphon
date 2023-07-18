@@ -9,26 +9,29 @@ type ChatBoxProps = {
   requestId: number;
 };
 
-
 const ChatBox = ({requestId} : ChatBoxProps) => {
   const [messages, setMessages] = useState<string[]>([]);
   const [newMessage, setNewMessage] = useState('');
 
-  const socketUrl = 'ws://localhost:8000/sock/sock';
+  const socketUrl = 'ws://localhost:8000/ws/chat';
   const {
     sendMessage,
     lastMessage,
     readyState,
   } = useWebSocket(socketUrl, {
-    onOpen: () => console.log('opened'),
+    queryParams: {request_id: requestId},
+    onOpen: () => {
+      console.log('connected');
+    },
     //Will attempt to reconnect on all close events, such as server shutting down
     shouldReconnect: () => true,
     onMessage: (e) =>  {
       //setMessages([...messages, e.data]);
       console.log(e.data);
-    }
-
-  });
+    },
+  },
+  !!requestId
+  );
 
   const handleMessageSend = () => {
     if (newMessage.trim() === '') {
