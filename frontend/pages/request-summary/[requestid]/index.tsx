@@ -134,16 +134,15 @@ const RequestSummary = () => {
                   <Typography className={styles.summaryHeadings} variant='body1'>End Time:</Typography>
                   <Typography variant='body1'>{convertTime(requestSummary.endTime.eventTime)}</Typography>
                 </div>
-                <div className={styles.durationTagBoxContainer}>
-                  {/* dont display duration if request was resolved by student */}
-                  {requestSummary.startTime &&
+                {/* dont display duration if request was resolved by student */}
+                {requestSummary.startTime &&
+                  <div className={styles.durationTagBoxContainer}>
                     <TagBox
                       text={getDurationString()}
                       backgroundColor={changeBackgroundColour(requestSummary.duration)}
                       color={changeTextColour(requestSummary.duration)}
                     />
-                  }
-                </div>
+                  </div>}
               </div>
             </Card>
           </div>
