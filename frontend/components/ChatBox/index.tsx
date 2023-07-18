@@ -7,7 +7,7 @@ import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
 type ChatBoxProps = {
   requestId: number;
-  studentZid?: number;
+  studentZid: number;
   isStudent: boolean;
 };
 
