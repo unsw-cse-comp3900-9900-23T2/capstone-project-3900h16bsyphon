@@ -58,12 +58,8 @@ const StudentQueueRequestCard = ({
     }
 
     // set background colour and redirect
-    if (status === Status.NotFound) {
-      setBackgroundColor(determineBackgroundColour(Status.NotFound));
-    } else if (status === Status.Seen) {
-      setBackgroundColor(determineBackgroundColour(Status.Seen));
-    } else if (status === Status.Seeing) {
-      setBackgroundColor(determineBackgroundColour(Status.Seeing));
+    setBackgroundColor(determineBackgroundColour(status));
+    if (status === Status.Seeing) {
       router.push(`/wait/${requestId}`);
     }
   };
