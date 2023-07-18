@@ -32,13 +32,20 @@ export type UserInfo = {
 }
 
 export type TimeStamp = {
-  eventTime: string
+  eventTime: Date
+}
+
+export type Duration = {
+  hours: number,
+  minutes: number,
+  seconds: number,
 }
 
 export type UserRequestSummary = {
   tutors: UserInfo[],
   startTime?: TimeStamp,
   endTime: TimeStamp,
+  duration?: Duration
 }
 
 export type RequestData = {

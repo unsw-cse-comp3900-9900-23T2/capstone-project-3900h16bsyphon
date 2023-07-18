@@ -4,8 +4,10 @@ import styles from './RequestSummary.module.css';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { authenticatedGetFetch, toCamelCase } from '../../../utils';
+import { authenticatedGetFetch, formatZid, toCamelCase } from '../../../utils';
 import { Status, UserRequestSummary } from '../../../types/requests';
+import TagBox from '../../../components/TagBox';
+import dayjs from 'dayjs';
 
 const RequestSummary = () => {
   const router = useRouter();
@@ -30,13 +32,19 @@ const RequestSummary = () => {
 
   const [requestSummary, setRequestSummary] = useState<UserRequestSummary>({
     tutors: [],
-    startTime: { eventTime: ''},
-    endTime: { eventTime: ''},
+    startTime: { eventTime: new Date()},
+    endTime: { eventTime: new Date()},
+    duration: { hours: 0, minutes: 0, seconds: 0 }
   });
-  
+
+  const convertTime = (time?: Date) => {
+    if (!time) return '';
+    return dayjs(time).format('h:mm A');
+  };
+
   useEffect(() => {
     const getRequest = async () => {
-      const res = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.requestid}`});
+      const res: Response = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.requestid}`});
       if (res.status === 404) {
         router.push('/404');
       } else if (res.status === 403) {
@@ -47,21 +55,22 @@ const RequestSummary = () => {
       }
     };
     const getRequestSummary = async () => {
-      const res = await authenticatedGetFetch('/request/summary', {request_id: `${router.query.requestid}`});
+      const res: Response = await authenticatedGetFetch('/request/summary', {request_id: `${router.query.requestid}`});
       if (!res.ok) {
         console.log('something failed with getting request summary, check network tab');
         return;
       } 
       const d = await res.json();
       setRequestSummary(toCamelCase(d));
-      console.log('the d summary data is: ', d);
-      console.log('the request summary data is: ', requestSummary);
-      
     };
     if (!router.query.requestid) return;
     getRequest();
     getRequestSummary();
   }, [router.query.requestid]);
+
+  const getDurationString = () => {
+    return 'Duration: ' + requestSummary.duration?.hours.toString() + ' hours ' + requestSummary.duration?.minutes.toString() + ' mins ' + requestSummary.duration?.seconds.toString() + ' seconds'
+  };
 
   return (
     <>
@@ -89,12 +98,40 @@ const RequestSummary = () => {
             />
           </Box>
           <div className={styles.summaryContainer}>
-            {/* time summary in this div */}
-            <Card>
-
+            <Card className={styles.infoCard}>
+              <Typography className={styles.summaryHeadings} variant='h6'>Tutors involved</Typography>
+              <div className={styles.tutorIdNameContainer}>
+                {requestSummary.tutors.map((tutor) => {
+                  return <div className={styles.tutorIdName} key={tutor.zid}>
+                    <TagBox
+                      text={formatZid(tutor.zid)}
+                      backgroundColor="var(--colour-main-purple-400)"
+                      color="var(--colour-main-purple-900)"
+                    />
+                    <Typography variant='body1'>{tutor.firstName + ' ' + tutor.lastName}</Typography>
+                  </div>;
+                })}
+              </div>
             </Card>
-            <Card>
-
+            <Card className={styles.infoCard}>
+              <Typography className={styles.summaryHeadings}  variant='h6'>Time Summary</Typography>
+              <div className={styles.tutorIdNameContainer}>
+                <div className={styles.tutorIdName} >
+                  <Typography className={styles.summaryHeadings} variant='body1'>Start Time:</Typography>
+                  <Typography variant='body1'>{convertTime(requestSummary.startTime?.eventTime)}</Typography>
+                </div>
+                <div className={styles.tutorIdName} >
+                  <Typography className={styles.summaryHeadings} variant='body1'>End Time:</Typography>
+                  <Typography variant='body1'>{convertTime(requestSummary.endTime.eventTime)}</Typography>
+                </div>
+                <div className={styles.durationTagBoxContainer}>
+                  <TagBox
+                    text={getDurationString()}
+                    backgroundColor="var(--colour-main-purple-400)"
+                    color="var(--colour-main-purple-900)"
+                  />
+                </div>
+              </div>
             </Card>
           </div>
         </div>

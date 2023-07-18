@@ -41,12 +41,36 @@
     flex: 1;
 }
 
-.summaryContainer {
-    flex: 2;
-}
-
 .body {
     display: flex;
     width: 95%;
     column-gap: 5%;
+}
+
+.summaryContainer {
+    flex: 2;
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.infoCard {
+    padding: 15px;
+}
+
+.tutorIdNameContainer {
+    padding: 10px 0px;
+}
+.tutorIdName {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.durationTagBoxContainer {
+    padding-top: 20px;
+}
+
+.summaryHeadings {
+    font-weight: bold;
 }

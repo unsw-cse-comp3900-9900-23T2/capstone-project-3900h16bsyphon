@@ -7,7 +7,7 @@ use chrono_tz::Australia::Sydney;
 use serde_json::json;
 
 use crate::entities::sea_orm_active_enums::Statuses;
-use crate::models::{RequestSummaryBody, TutorSummaryDetails, RequestSummaryReturnModel, TimeStampModel};
+use crate::models::{RequestSummaryBody, TutorSummaryDetails, RequestSummaryReturnModel, TimeStampModel, RequestDuration};
 use crate::sockets::lobby::Lobby;
 use crate::sockets::messages::HttpServerAction;
 use crate::sockets::SocketChannels;
@@ -407,10 +407,21 @@ pub async fn request_summary(
     .all(db)
     .await?;
 
+
+    let duration = start_log.as_ref().map(|time| { 
+        let diff = end_log.event_time.signed_duration_since(time.event_time);
+        RequestDuration {
+            hours: diff.num_hours(),
+            minutes: diff.num_minutes(),
+            seconds: diff.num_seconds(),
+        }
+    });
+    
     let summary = RequestSummaryReturnModel {
         tutors: tutor_logs,
         start_time: start_log,
-        end_time: end_log
+        end_time: end_log,
+        duration: duration,
     };
 
     Ok(HttpResponse::Ok().json(summary))
