@@ -80,12 +80,12 @@ pub struct TutorSummaryDetails {
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
 pub struct TimeStampModel {
-    pub time: NaiveDateTime,
+    pub event_time: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RequestSummaryReturnModel {
     pub tutors: Vec<TutorSummaryDetails>,
-    pub start_time: NaiveDateTime,
-    pub end_time: NaiveDateTime,
+    pub start_time: Option<TimeStampModel>,
+    pub end_time: TimeStampModel,
 }

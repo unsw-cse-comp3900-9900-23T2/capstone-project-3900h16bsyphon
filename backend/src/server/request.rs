@@ -350,10 +350,12 @@ pub async fn set_request_status(
 
 pub async fn request_summary(
     _token: ReqData<TokenClaims>,
-    request_summary_body: web::Json<RequestSummaryBody>,
+    request_summary_body: web::Query<RequestSummaryBody>,
 ) -> SyphonResult<HttpResponse> {
     let db = db();
     let request_summary = request_summary_body.into_inner();
+
+    log::info!("inside request summary {:?}", request_summary.request_id);
 
     let _existing_request = entities::requests::Entity::find_by_id(request_summary.request_id)
         .one(db)
@@ -363,7 +365,7 @@ pub async fn request_summary(
             StatusCode::NOT_FOUND,
         ))?;
     
-    // get log for the first start_time 
+    // get log for the first start_time (will not exist if student resolved themselves)
     let start_log = entities::request_status_log::Entity::find()
     .select_only()
     .column(entities::request_status_log::Column::EventTime)
@@ -371,11 +373,7 @@ pub async fn request_summary(
     .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
     .into_model::<TimeStampModel>()
     .one(db)
-    .await?
-    .ok_or(SyphonError::Json(
-        json!("request was never transitioned to 'Seeing' status"),
-        StatusCode::NOT_FOUND,
-    ))?;
+    .await?;
 
     // get log for end_time
     let end_log = entities::request_status_log::Entity::find()
@@ -405,12 +403,12 @@ pub async fn request_summary(
     .all(db)
     .await?;
 
-    let request_summary = RequestSummaryReturnModel {
+    let summary = RequestSummaryReturnModel {
         tutors: tutor_logs,
-        start_time: start_log.time,
-        end_time: end_log.time
+        start_time: start_log,
+        end_time: end_log
     };
 
-    Ok(HttpResponse::Ok().json(request_summary))
+    Ok(HttpResponse::Ok().json(summary))
 }
 

@@ -1,11 +1,17 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Card, Typography } from '@mui/material';
 import Header from '../../../components/Header';
 import styles from './RequestSummary.module.css';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../../utils';
-import { Status } from '../../../types/requests';
+import { Status, UserRequestSummary } from '../../../types/requests';
+
+const initialRequestSummaryData: UserRequestSummary = {
+  tutors: [],
+  startTime: '',
+  endTime: ''
+};
 
 const RequestSummary = () => {
   const router = useRouter();
@@ -27,21 +33,35 @@ const RequestSummary = () => {
     previousRequests: 5,
     description:''  
   });
+
+  const [requestSummary, setRequestSummary] = useState<UserRequestSummary>(initialRequestSummaryData);
   
   useEffect(() => {
-    let getRequest = async () => {
-      let res = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.requestid}`});
+    const getRequest = async () => {
+      const res = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.requestid}`});
       if (res.status === 404) {
         router.push('/404');
       } else if (res.status === 403) {
         router.push('/403');
       } else if (res.status === 200) {
-        let d = await res.json();
+        const d = await res.json();
         setData(toCamelCase(d));
       }
     };
+    const getRequestSummary = async () => {
+      const res = await authenticatedGetFetch('/request/summary', {request_id: `${router.query.requestid}`});
+      if (!res.ok) {
+        console.log('something failed with getting request summary, check network tab');
+        return;
+      } 
+      const d = await res.json();
+      setRequestSummary(toCamelCase(d));
+      console.log('the request summary data is: ', requestSummary);
+      
+    };
     if (!router.query.requestid) return;
     getRequest();
+    getRequestSummary();
   }, [router.query.requestid, router]);
 
   return (
@@ -71,6 +91,12 @@ const RequestSummary = () => {
           </Box>
           <div className={styles.summaryContainer}>
             {/* time summary in this div */}
+            <Card>
+
+            </Card>
+            <Card>
+
+            </Card>
           </div>
         </div>
       </div>
