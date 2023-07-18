@@ -126,7 +126,7 @@ const ActiveQueue = () => {
           There {studentCount === 1 ? 'is' : 'are'} {studentCount}
           {studentCount === 1 ? ' student' : ' students'} remaining in the queue.
         </Typography>
-        <Typography>Based on the remaining time of the queue, we estimate {numReqsUntilClose} request{numReqsUntilClose > 1 ? 's' : ''} can be resolved.</Typography>
+        <Typography>Based on the remaining time of the queue, we estimate {numReqsUntilClose} request{numReqsUntilClose === 1 ? '' : 's'} can be resolved.</Typography>
       </Card>
       <div className={styles.body}>
         <div className={styles.buttonContainer}>

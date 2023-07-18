@@ -3,6 +3,9 @@ use log::debug;
 use serde_json::json;
 use uuid::Uuid;
 
+use crate::entities::queues::Model as QueueModel;
+use crate::models::QueueRequest;
+
 use super::SocketChannels;
 
 #[derive(Clone, Debug, Message)]
@@ -16,6 +19,14 @@ pub enum WsMessage {
         sender: i32,
         content: String,
         request_id: i32,
+    },
+    RequestData {
+        request_id: i32,
+        content: QueueRequest,
+    },
+    QueueData {
+        queue_id: i32,
+        content: (QueueModel, Vec<QueueRequest>),
     },
 }
 
@@ -35,6 +46,16 @@ pub enum WsAction {
         content: String,
         sender: i32,
     },
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Message)]
+#[rtype(result = "()")]
+pub enum HttpServerAction {
+    /// A message to invalidate a set of keys (channels) in the lobby.
+    /// For each key, the lobby with send out updated messages
+    /// to all clients that are subscribed to a channel with
+    /// an affected key.
+    InvalidateKeys(Vec<SocketChannels>),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -96,6 +117,8 @@ impl WsMessage {
         match self {
             WsMessage::Text(_) => "text",
             WsMessage::MessageOut { .. } => "message",
+            WsMessage::RequestData { .. } => "request_data",
+            WsMessage::QueueData { .. } => "queue_data",
         }
         .into()
     }
@@ -113,6 +136,18 @@ impl WsMessage {
                 "sender": sender,
                 "content": content,
                 "request_id": request_id,
+            }),
+            WsMessage::RequestData {
+                request_id,
+                content,
+            } => json!({
+                "request_id": request_id,
+                "content": content,
+            }),
+            WsMessage::QueueData { queue_id, content } => json!({
+                "queue_id": queue_id,
+                "queue": content.0,
+                "requests": content.1,
             }),
         }
     }

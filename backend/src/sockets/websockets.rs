@@ -71,17 +71,14 @@ impl WsConn {
         self.zid.is_some()
     }
 
-    fn try_auth(
-        &mut self,
-        raw_tok: &str,
-        ctx: &mut <Self as Actor>::Context,
-    ) -> Result<i32, String> {
+    fn try_auth(&mut self, raw_tok: &str, ctx: &mut <Self as Actor>::Context) {
         validate_raw_token(raw_tok.into())
             .into_actor(self)
             .then(move |res, conn, ctx| match res {
                 Ok(tok) => {
                     ctx.text(json!({"type": "auth", "success": true}).to_string());
                     conn.zid = Some(tok.username);
+                    conn.connect_to_lobby(ctx);
                     fut::ready(())
                 }
                 Err(_) => {
@@ -92,13 +89,13 @@ impl WsConn {
                 }
             })
             .wait(ctx);
-        self.zid.ok_or(String::from("Auth Fail"))
     }
 
     /// Tries to connect to lobby
     /// # Safety
     /// You MUST ensure that the actor has been authed before calling this.
     fn connect_to_lobby(&self, ctx: &mut <Self as Actor>::Context) {
+        log::debug!("Connecting to lobby: {}", self.id);
         self.lobby_addr
             .send(Connect {
                 addr: ctx.address().recipient(),
@@ -176,12 +173,8 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
                 // On connection, first message must be auth, or this actor
                 // will Robin Williams itself
                 if !self.is_authed() {
-                    return match self.try_auth(&raw_text, ctx) {
-                        Err(_) => (),
-                        // # Safety:
-                        // Calling when auth is successfull
-                        Ok(_) => self.connect_to_lobby(ctx),
-                    };
+                    self.try_auth(&raw_text, ctx);
+                    return;
                 }
 
                 let action = match try_parse_ws_action(&raw_text, self.get_zid()) {

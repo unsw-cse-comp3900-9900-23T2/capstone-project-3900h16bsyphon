@@ -24,6 +24,7 @@ export default function TimeSummaryCard({ startTime, status } : TimeSummaryCardP
           <Typography variant="subtitle2">
             Start time: { status === Status.Seeing ? `${convertTime(startTime)}` : 'N/A'}
           </Typography>
+          {/* TODO: add polling */}
           <Timer startTime={startTime} />
         </div>
       </CardContent>

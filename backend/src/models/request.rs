@@ -41,7 +41,7 @@ pub struct AllRequestsForQueueBody {
     pub queue_id: i32,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct QueueRequest {
     pub request_id: i32,
     pub first_name: String,

@@ -7,8 +7,9 @@ use crate::{
         UpdateQueuePreviousRequestCount, UpdateQueueRequest,
     },
     test_is_user,
-    utils::{db::db, user::validate_user},
+    utils::{db::db, user::validate_user}, sockets::{lobby::Lobby, messages::{HttpServerAction, WsMessage}, SocketChannels},
 };
+use actix::Addr;
 use actix_web::{
     http::StatusCode,
     web::{self, Query, ReqData},
@@ -16,11 +17,13 @@ use actix_web::{
 };
 use chrono::{DateTime, Duration, Utc};
 use chrono_tz::Australia::Sydney;
-use futures::future::join_all;
+use jwt::token;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, PaginatorTrait,
-    QueryFilter, QuerySelect,
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter,
+    QuerySelect, PaginatorTrait
 };
+
+use futures::future::join_all;
 use serde_json::json;
 
 pub async fn create_queue(
@@ -66,22 +69,24 @@ pub async fn create_queue(
 }
 
 pub async fn get_queue_by_id(
-    token: ReqData<TokenClaims>,
-    query: Query<GetQueueByIdQuery>,
-) -> HttpResponse {
+    _token: ReqData<TokenClaims>,
+    Query(query): Query<GetQueueByIdQuery>,
+) -> SyphonResult<HttpResponse> {
+    // match queue {
+    //     Some(q) => HttpResponse::Ok().json(web::Json(q)),
+    //     None => HttpResponse::NotFound().json("No queue of that id!"),
+    // }
+    Ok(HttpResponse::Ok().json(get_queue_by_id_not_web(query.queue_id).await?))
+}
+
+pub async fn get_queue_by_id_not_web(
+    queue_id: i32,
+) -> Result<entities::queues::Model, SyphonError> {
     let db = db();
-    if let Err(e) = validate_user(&token, db).await {
-        log::debug!("failed to verify user:{:?}", e);
-        return e;
-    }
-    let queue = entities::queues::Entity::find_by_id(query.queue_id)
+    entities::queues::Entity::find_by_id(queue_id)
         .one(db)
-        .await
-        .expect("Db broke");
-    match queue {
-        Some(q) => HttpResponse::Ok().json(web::Json(q)),
-        None => HttpResponse::NotFound().json("No queue of that id!"),
-    }
+        .await?
+        .ok_or(SyphonError::QueueNotExist(queue_id))
 }
 
 pub async fn get_queues_by_course(
@@ -202,10 +207,13 @@ pub async fn get_is_open(
     }
 }
 
-pub async fn update_queue(body: web::Json<UpdateQueueRequest>) -> SyphonResult<HttpResponse> {
+pub async fn update_queue(
+    _token: ReqData<TokenClaims>,
+    body: web::Json<UpdateQueueRequest>,
+    lobby: web::Data<Addr<Lobby>>,
+) -> SyphonResult<HttpResponse> {
     let db = db();
-    log::info!("update queue");
-    log::info!("{:?}", body);
+    log::debug!("update queue: {:?}", body);
 
     let queue = entities::queues::Entity::find_by_id(body.queue_id)
         .one(db)
@@ -229,7 +237,13 @@ pub async fn update_queue(body: web::Json<UpdateQueueRequest>) -> SyphonResult<H
     .update(db)
     .await?;
 
+    let action = HttpServerAction::InvalidateKeys(vec![
+        SocketChannels::QueueData(body.queue_id),
+    ]);
+    lobby.do_send(action);
+    
     /////////////////   TAGS    ///////////////////////
+    /* 
     let tag_creation_futures = body
         .tags
         .iter()
@@ -257,7 +271,7 @@ pub async fn update_queue(body: web::Json<UpdateQueueRequest>) -> SyphonResult<H
         .insert(db)
     });
     join_all(tag_queue_addition).await;
-
+*/
     Ok(HttpResponse::Ok().json("Success!"))
 }
 
@@ -353,11 +367,7 @@ pub async fn num_requests_until_close(
     let curr_time = Utc::now().with_timezone(&Sydney);
 
     // calculate time remaining
-    let difference = end_time - curr_time;
-    let diff = difference.num_minutes();
-    log::info!("end_time: {:?}", end_time);
-    log::info!("now: {:?}", curr_time);
-    log::info!("asdf {:?}", diff);
+    let difference = (end_time - curr_time).num_minutes();
 
     // get the number of remaining requests in the queue
     let requests = entities::requests::Entity::find()
@@ -374,7 +384,7 @@ pub async fn num_requests_until_close(
     let req: i64 = requests.try_into().unwrap();
 
     // calculate the number of requests that can be made until the queue closes
-    let res = diff / (10 * req);
+    let res = difference / (10 * req);
 
     Ok(HttpResponse::Ok().json(res))
 }

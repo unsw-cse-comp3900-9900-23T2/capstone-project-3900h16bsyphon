@@ -128,12 +128,12 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
       course_id: Number.parseInt(courseOfferingId as string),
     };
     let res = await authenticatedPutFetch('/queue/update', body);
-    console.log(body);
     if (!res.ok) {
       console.log(res);
     }
     router.push(`/active-queue/${queueId}`);
   };
+
 
   return (
     <>

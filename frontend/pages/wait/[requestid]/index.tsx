@@ -12,7 +12,12 @@ import Header from '../../../components/Header';
 import TagBox from '../../../components/TagBox';
 import InformationCard from '../../../components/InformationCard';
 import { QueueData } from '../../../types/queues';
+import ChatBox from '../../../components/ChatBox';
 import { Status } from '../../../types/requests';
+import FAQs from '../../../components/FAQs';
+import useAuthenticatedWebSocket from '../../../hooks/useAuthenticatedWebSocket';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const WaitingScreen = () => {
   const router = useRouter();
@@ -129,8 +134,49 @@ const WaitingScreen = () => {
     router.push(`/request-summary/${router.query.requestid}`);
   };
 
+  // websocket for queue data:
+  let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
+    queryParams: {queue_id: requestData.queueId},
+    onOpen: () => {
+      console.log('connected [queue data]');
+    }
+  });
+
+  // update queue data:
+  useEffect(() => {
+    if (!lastJsonMessage) return;
+    setQueueData(queueData => ({...queueData, ...((lastJsonMessage as any)?.queue)}));
+  }, [lastJsonMessage]);
+
+  // toast for announcement
+  useEffect(() => {
+    if (!queueData?.announcement) return;
+    toast.info(queueData.announcement,  {
+      position: 'top-center',
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: 'light',
+    });
+  }, [queueData?.announcement]);
+
   return (
     <>
+      <ToastContainer
+        position="top-left"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <Header />
       <div className={styles.pageContainer}>
         <div className={styles.queueTitle}>
@@ -189,9 +235,10 @@ const WaitingScreen = () => {
               previousRequests={requestData.previousRequests}
               description={requestData.description}
             />
+            <FAQs courseOfferingId={queueData?.courseOfferingId} tutor={false} />
           </Box>
           <div className={styles.chatContainer}>
-            {/* please place the chat component inside this div! */}
+            <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} studentZid={requestData.zid} isStudent={true}/>
           </div>
         </div>
       </div>

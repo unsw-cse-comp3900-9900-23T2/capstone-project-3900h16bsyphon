@@ -6,6 +6,7 @@ use crate::{
     utils::db::db,
 };
 
+pub mod invalidation;
 pub mod lobby;
 pub mod messages;
 pub mod start_connect;
@@ -56,6 +57,16 @@ impl SocketChannels {
     /// Only true if they are a tutor for the course OR they are the requester
     async fn is_allowed_chat(r_id: i32, zid: i32) -> bool {
         is_tutor_or_owns_request(r_id, zid).await.unwrap_or(false)
+    }
+
+    fn inner_id(&self) -> i32 {
+        match self {
+            SocketChannels::Notifications(id) => *id,
+            SocketChannels::QueueData(id) => *id,
+            SocketChannels::Request(id) => *id,
+            SocketChannels::Announcements(id) => *id,
+            SocketChannels::Chat(id) => *id,
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import TagBox from '../TagBox';
+import { Status } from '../../types/requests';
 
 const calculateTimeElapsed = (startDate: Date) => {
   const difference = +new Date() - +new Date(startDate);

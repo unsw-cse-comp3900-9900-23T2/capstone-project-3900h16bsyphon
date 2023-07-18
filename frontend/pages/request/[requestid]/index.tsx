@@ -12,6 +12,7 @@ import {
 } from '../../../utils';
 import { Status } from '../../../types/requests';
 import TimeSummaryCard from '../../../components/TimeSummaryCard';
+import ChatBox from '../../../components/ChatBox';
 
 const Request = () => {
   const router = useRouter();
@@ -64,6 +65,7 @@ const Request = () => {
     }
     router.push(`/active-queue/${data.queueId}`);
   };
+
 
   return (
     <>
@@ -144,8 +146,9 @@ const Request = () => {
             />
           </Box>
           <div className={styles.chatContainer}>
-            {/* TODO: please place the chat component inside this div! */}
             <TimeSummaryCard startTime={startTime} status={data.status}/>
+            {/* TODO: please place the chat component inside this div! */}
+            <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} isStudent={false} studentZid={data.zid}/> 
           </div>
         </div>
       </div>
@@ -154,3 +157,4 @@ const Request = () => {
 };
 
 export default Request;
+

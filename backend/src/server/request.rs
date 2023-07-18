@@ -1,9 +1,13 @@
+use actix::Addr;
 use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
 use serde_json::json;
 
 use crate::entities::sea_orm_active_enums::Statuses;
+use crate::sockets::lobby::Lobby;
+use crate::sockets::messages::HttpServerAction;
+use crate::sockets::SocketChannels;
 use crate::{entities, models, utils::db::db};
 use futures::future::join_all;
 use models::{
@@ -108,32 +112,38 @@ pub async fn edit_request(
 
 pub async fn request_info_wrapper(
     token: ReqData<TokenClaims>,
-    body: web::Query<RequestInfoBody>,
+    web::Query(body): web::Query<RequestInfoBody>,
 ) -> SyphonResult<HttpResponse> {
-    Ok(HttpResponse::Ok().json(request_info_not_web(token, body).await?))
+    Ok(HttpResponse::Ok().json(request_info_not_web(token.into_inner(), body).await?))
 }
 
 pub async fn all_requests_for_queue(
     token: ReqData<TokenClaims>,
-    body: web::Query<AllRequestsForQueueBody>,
+    web::Query(body): web::Query<AllRequestsForQueueBody>,
 ) -> SyphonResult<HttpResponse> {
+    Ok(HttpResponse::Ok()
+        .json(all_requests_for_queue_not_web(token.into_inner(), body.queue_id).await?))
+}
+
+pub async fn all_requests_for_queue_not_web(
+    token: TokenClaims,
+    queue_id: i32,
+) -> SyphonResult<Vec<QueueRequest>> {
     let db = db();
-    let body = body.into_inner();
     // Find all related requests
-    let queue = entities::queues::Entity::find_by_id(body.queue_id)
+    let queue = entities::queues::Entity::find_by_id(queue_id)
         .one(db)
         .await?
-        .ok_or(SyphonError::QueueNotExist(body.queue_id))?;
+        .ok_or(SyphonError::QueueNotExist(queue_id))?;
 
     let requests_future = entities::requests::Entity::find()
-        .filter(entities::requests::Column::QueueId.eq(body.queue_id))
+        .filter(entities::requests::Column::QueueId.eq(queue_id))
         .all(db)
         .await?
         .into_iter()
         .map(|req| req.request_id)
-        .map(|request_id| {
-            request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
-        });
+        .map(|request_id| request_info_not_web(token.clone(), RequestInfoBody { request_id }));
+
     // Ignores DbErrors - No Panic. Also no 500 Return
     let mut requests = join_all(requests_future)
         .await
@@ -146,7 +156,7 @@ pub async fn all_requests_for_queue(
     let is_priority = requests.iter().map(|request| {
         entities::queue_tags::Entity::find()
             .filter(entities::queue_tags::Column::IsPriority.eq(true))
-            .filter(entities::queue_tags::Column::QueueId.eq(body.queue_id))
+            .filter(entities::queue_tags::Column::QueueId.eq(queue_id))
             .filter(
                 entities::queue_tags::Column::TagId.is_in(request.tags.iter().map(|t| t.tag_id)),
             )
@@ -165,17 +175,17 @@ pub async fn all_requests_for_queue(
     if queue.is_sorted_by_previous_request_count {
         requests.sort_by(|a, b| a.previous_requests.cmp(&b.previous_requests));
     }
-    Ok(HttpResponse::Ok().json(requests))
+
+    Ok(requests.into_iter().cloned().collect())
 }
 
 /// TODO: This is really cringe, don't do whatever this is
 /// There should be a way to move this into the models
 pub async fn request_info_not_web(
-    _token: ReqData<TokenClaims>,
-    body: web::Query<RequestInfoBody>,
+    _token: TokenClaims,
+    body: RequestInfoBody,
 ) -> SyphonResult<QueueRequest> {
     let db = db();
-    let body = body.into_inner();
     // Get the request from the database
     let db_request = entities::requests::Entity::find_by_id(body.request_id)
         .one(db)
@@ -281,6 +291,7 @@ pub async fn disable_cluster(
 pub async fn set_request_status(
     token: ReqData<TokenClaims>,
     body: web::Json<PutRequestStatusBody>,
+    lobby: web::Data<Addr<Lobby>>,
 ) -> SyphonResult<HttpResponse> {
     let body = body.into_inner();
     let db = db();
@@ -311,7 +322,7 @@ pub async fn set_request_status(
     // Update Request
     entities::requests::ActiveModel {
         status: ActiveValue::Set(body.status.clone()),
-        ..request.into()
+        ..request.clone().into()
     }
     .update(db)
     .await?;
@@ -326,6 +337,13 @@ pub async fn set_request_status(
     }
     .insert(db)
     .await?;
+
+    // Invalidate the cache for the request and its queue
+    let action = HttpServerAction::InvalidateKeys(vec![
+        SocketChannels::Request(body.request_id),
+        SocketChannels::QueueData(request.queue_id),
+    ]);
+    lobby.do_send(action);
 
     Ok(HttpResponse::Ok().json(body))
 }
