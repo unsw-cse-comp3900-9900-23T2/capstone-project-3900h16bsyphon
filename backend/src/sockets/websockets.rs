@@ -174,7 +174,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
                 // will Robin Williams itself
                 if !self.is_authed() {
                     self.try_auth(&raw_text, ctx);
-                    return; 
+                    return;
                 }
 
                 let action = match try_parse_ws_action(&raw_text, self.get_zid()) {
