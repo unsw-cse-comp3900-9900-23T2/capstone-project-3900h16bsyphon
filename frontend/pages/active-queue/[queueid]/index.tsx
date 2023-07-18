@@ -1,4 +1,4 @@
-import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import { Box, Button, Card, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import styles from './ActiveQueue.module.css';
 import { useRouter } from 'next/router';
 import StudentQueueRequestCard from '../../../components/StudentQueueRequestCard';
@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { authenticatedGetFetch, authenticatedPutFetch, toCamelCase } from '../../../utils';
 import { Tag, UserRequest } from '../../../types/requests';
 import dayjs from 'dayjs';
+import InfoIcon from '@mui/icons-material/Info';
 
 const ActiveQueue = () => {
   const router = useRouter();
@@ -20,6 +21,8 @@ const ActiveQueue = () => {
     requests,
   });
   const [tags, setTags] = useState<Tag[]>([]);
+  const [studentCount, setStudentCount] = useState(0);
+  const [numReqsUntilClose, setNumReqsUntilClose] = useState(0);
 
   useEffect(() => {
     let getRequests = async () => {
@@ -38,10 +41,26 @@ const ActiveQueue = () => {
       let d = await res.json();
       setTags(toCamelCase(d));
     };
+    let getStudentCount = async () => {
+      let res = await authenticatedGetFetch('/queue/get_student_count', {
+        queue_id: `${router.query.queueid}`,
+      });
+      let d = await res.json();
+      setStudentCount(toCamelCase(d));
+    };
+    let getNumRequestsUntilClose = async () => {
+      let res = await authenticatedGetFetch('/queue/get_num_requests_until_close', {
+        queue_id: `${router.query.queueid}`,
+      });
+      let d = await res.json();
+      setNumReqsUntilClose(toCamelCase(d));
+    };
     if (!router.query.queueid) return;
     getRequests();
     getQueueData();
     getQueueTags();
+    getStudentCount();
+    getNumRequestsUntilClose();
   }, [router.query.queueid]);
 
   const flipTagPriority = async (tagId: number) => {
@@ -101,6 +120,14 @@ const ActiveQueue = () => {
           {requestData.title}
         </Typography>
       </div>
+      <Card className={styles.infoCard}>
+        <InfoIcon />
+        <Typography>
+          There {studentCount === 1 ? 'is' : 'are'} {studentCount}
+          {studentCount === 1 ? ' student' : ' students'} remaining in the queue.
+        </Typography>
+        <Typography>Based on the remaining time of the queue, we estimate {numReqsUntilClose} request{numReqsUntilClose === 1 ? '' : 's'} can be resolved.</Typography>
+      </Card>
       <div className={styles.body}>
         <div className={styles.buttonContainer}>
           <FormControl size='small' >

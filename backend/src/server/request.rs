@@ -2,7 +2,6 @@ use actix::Addr;
 use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
-use chrono::Local;
 use serde_json::json;
 
 use crate::entities::sea_orm_active_enums::Statuses;
@@ -20,6 +19,8 @@ use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter,
     QuerySelect,
 };
+use chrono::Utc;
+use chrono_tz::Australia::Sydney;
 
 pub async fn create_request(
     token: ReqData<TokenClaims>,
@@ -332,7 +333,7 @@ pub async fn set_request_status(
         request_id: ActiveValue::Set(body.request_id),
         tutor_id: ActiveValue::Set(token.username),
         status: ActiveValue::Set(body.status.clone()),
-        event_time: ActiveValue::Set(Local::now().naive_local()),
+        event_time: ActiveValue::Set(Utc::now().with_timezone(&Sydney).naive_local()),
     }
     .insert(db)
     .await?;

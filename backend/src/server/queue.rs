@@ -2,9 +2,9 @@ use crate::{
     entities,
     models::{
         CloseQueueRequest, CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery,
-        GetQueueByIdQuery, GetQueueTagsQuery, GetQueuesByCourseQuery, QueueReturnModel,
-        SyphonError, SyphonResult, Tag, TokenClaims, UpdateQueuePreviousRequestCount,
-        UpdateQueueRequest,
+        GetQueueByIdQuery, GetQueueRequestCount, GetQueueTagsQuery, GetQueuesByCourseQuery,
+        GetRemainingStudents, QueueReturnModel, SyphonError, SyphonResult, Tag, TokenClaims,
+        UpdateQueuePreviousRequestCount, UpdateQueueRequest,
     },
     test_is_user,
     utils::{db::db, user::validate_user}, sockets::{lobby::Lobby, messages::{HttpServerAction, WsMessage}, SocketChannels},
@@ -15,10 +15,12 @@ use actix_web::{
     web::{self, Query, ReqData},
     HttpResponse,
 };
+use chrono::{DateTime, Duration, Utc};
+use chrono_tz::Australia::Sydney;
 use jwt::token;
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter,
-    QuerySelect,
+    QuerySelect, PaginatorTrait
 };
 
 use futures::future::join_all;
@@ -326,3 +328,64 @@ pub async fn set_is_sorted_by_previous_request_count(
     .await?;
     Ok(HttpResponse::Ok().json("Success!"))
 }
+
+pub async fn get_student_count(query: Query<GetQueueRequestCount>) -> SyphonResult<HttpResponse> {
+    let db = db();
+
+    let requests = entities::requests::Entity::find()
+        .left_join(entities::queues::Entity)
+        .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+        .filter(entities::requests::Column::Status.eq("unseen"))
+        .filter(entities::queues::Column::IsAvailable.eq(true))
+        .filter(entities::queues::Column::IsVisible.eq(true))
+        .select_only()
+        .column(entities::requests::Column::Zid)
+        .distinct()
+        .count(db)
+        .await?;
+
+    let req: i32 = requests.try_into().unwrap();
+
+    Ok(HttpResponse::Ok().json(req))
+}
+
+pub async fn num_requests_until_close(
+    query: Query<GetRemainingStudents>,
+) -> SyphonResult<HttpResponse> {
+    let db = db();
+
+    // get the end time of the queue
+    let queue = entities::queues::Entity::find_by_id(query.queue_id)
+        .one(db)
+        .await?
+        .ok_or(SyphonError::QueueNotExist(query.queue_id))?;
+
+    // https://www.youtube.com/watch?v=rksaoaqt3JA
+    // FIXME: find a better way to convert end time
+    let end_time =
+        DateTime::<Utc>::from_utc(queue.end_time, Utc).with_timezone(&Sydney) - Duration::hours(10);
+    let curr_time = Utc::now().with_timezone(&Sydney);
+
+    // calculate time remaining
+    let difference = (end_time - curr_time).num_minutes();
+
+    // get the number of remaining requests in the queue
+    let requests = entities::requests::Entity::find()
+        .left_join(entities::queues::Entity)
+        .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+        .filter(entities::requests::Column::Status.eq("unseen"))
+        .filter(entities::queues::Column::IsAvailable.eq(true))
+        .filter(entities::queues::Column::IsVisible.eq(true))
+        .select_only()
+        .column(entities::requests::Column::Zid)
+        .distinct()
+        .count(db)
+        .await?;
+    let req: i64 = requests.try_into().unwrap();
+
+    // calculate the number of requests that can be made until the queue closes
+    let res = difference / (10 * req);
+
+    Ok(HttpResponse::Ok().json(res))
+}
+

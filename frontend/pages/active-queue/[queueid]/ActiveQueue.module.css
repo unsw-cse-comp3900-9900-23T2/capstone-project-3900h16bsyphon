@@ -86,3 +86,12 @@
     gap: 10px;
     min-width: 20%;
 }
+
+.infoCard {
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 35px;
+    margin-bottom: 50px;
+}

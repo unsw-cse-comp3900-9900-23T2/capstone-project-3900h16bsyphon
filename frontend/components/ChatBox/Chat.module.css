@@ -6,6 +6,7 @@
     padding-bottom: 2%;
     padding-right: 2%;
     border: 1px solid var(--colour-main-grey-400);
+    margin-top: 20px;
 }
 
 .inputContainer {
