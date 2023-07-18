@@ -56,6 +56,7 @@ const Request = () => {
     router.push(`/active-queue/${data.queueId}`);
   };
 
+
   return (
     <>
       <MetaData />
@@ -135,7 +136,7 @@ const Request = () => {
             />
           </Box>
           <div className={styles.chatContainer}>
-            <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)}/>
+            <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} zid={0}/> 
           </div>
         </div>
       </div>

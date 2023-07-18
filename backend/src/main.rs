@@ -125,6 +125,10 @@ async fn main() -> std::io::Result<()> {
             .service(
                 scope("/queue")
                     .wrap(amw.clone())
+                    .route(
+                        "/set_is_sorted_by_previous_request_count",
+                        web::put().to(server::queue::set_is_sorted_by_previous_request_count),
+                    )
                     .route("/create", web::post().to(server::queue::create_queue))
                     .route("/get", web::get().to(server::queue::get_queue_by_id))
                     .route(
@@ -137,16 +141,13 @@ async fn main() -> std::io::Result<()> {
                         "/tags/set_priority",
                         web::put().to(server::queue::update_tag_priority),
                     )
-                    .route("/update", web::put().to(server::queue::update_queue)),
+                    .route("/update", web::put().to(server::queue::update_queue))
+                    .route("/close", web::put().to(server::queue::close_queue)),
             )
-            .service(
-                scope("/history")
-                    .wrap(amw.clone())
-                    .route(
-                        "/previous_tags",
-                        web::get().to(server::history::get_previous_tag_details),
-                    ),
-            )
+            .service(scope("/history").wrap(amw.clone()).route(
+                "/previous_tags",
+                web::get().to(server::history::get_previous_tag_details),
+            ))
             .service(
                 scope("/faqs")
                     .wrap(amw.clone())

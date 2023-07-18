@@ -71,11 +71,7 @@ impl WsConn {
         self.zid.is_some()
     }
 
-    fn try_auth(
-        &mut self,
-        raw_tok: &str,
-        ctx: &mut <Self as Actor>::Context,
-    ) {
+    fn try_auth(&mut self, raw_tok: &str, ctx: &mut <Self as Actor>::Context) {
         validate_raw_token(raw_tok.into())
             .into_actor(self)
             .then(move |res, conn, ctx| match res {
@@ -178,7 +174,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
                 // will Robin Williams itself
                 if !self.is_authed() {
                     self.try_auth(&raw_text, ctx);
-                    return; 
+                    return;
                 }
 
                 let action = match try_parse_ws_action(&raw_text, self.get_zid()) {

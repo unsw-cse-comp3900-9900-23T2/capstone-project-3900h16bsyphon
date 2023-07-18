@@ -19,11 +19,11 @@ type Message = {
 };
 
 
-const ChatBox = ({requestId, zid = 0} : ChatBoxProps) => {
+const ChatBox = ({requestId, zid} : ChatBoxProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
 
-  const { sendJsonMessage, lastJsonMessage, readyState } = useAuthenticatedWebSocket('ws:localhost:8000/ws/chat', {
+  const { sendJsonMessage, lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/chat', {
     queryParams: {request_id: requestId},
     shouldReconnect: () => true,
   }, !!requestId);
@@ -71,7 +71,7 @@ const ChatBox = ({requestId, zid = 0} : ChatBoxProps) => {
           onChange={(e) => setNewMessage(e.target.value)}
           InputProps={{
             endAdornment: (
-              <Button variant='contained' color='primary' onClick={handleMessageSend}>
+              <Button variant='contained' color='inherit' onClick={handleMessageSend}>
                   Send
               </Button>
             ),
