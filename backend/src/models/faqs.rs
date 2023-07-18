@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::entities;
 
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AddFaqRequest {
     pub course_offering_id: i32,
@@ -26,7 +25,6 @@ impl From<AddFaqRequest> for entities::faqs::ActiveModel {
 pub struct GetFaqsQuery {
     pub course_offering_id: i32,
 }
-
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DeleteFaqQuery {

@@ -15,7 +15,7 @@ pub struct Model {
     pub description: String,
     pub order: i32,
     pub is_clusterable: bool,
-    pub status: Option<Statuses>,
+    pub status: Statuses,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

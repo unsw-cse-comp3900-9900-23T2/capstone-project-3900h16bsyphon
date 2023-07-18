@@ -1,23 +1,12 @@
-'use client';
-/* eslint-disable */
 import React, { useState, useCallback,  useEffect } from 'react';
-import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { getToken } from '../../utils';
+import { ReadyState } from 'react-use-websocket';
+import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
 
 const Socket = () => {
-
-  const token = getToken();
-  const [socketUrl, setSocketUrl] = React.useState('');
-  // const [socketUrl, setSocketUrl] = React.useState(`ws:127.0.0.1:8000/ws/dumb?access_token=${token}`);
-
-  const socket = new WebSocket('');
-  const wsReturn = useWebSocket(socketUrl);
-  const { sendMessage, lastMessage, readyState, getWebSocket } = wsReturn;
-  console.log('wsReturn', wsReturn);
-  const handleClickSendMessage = useCallback(() => sendMessage('Hello'), []);
-  const [messageHistory, setMessageHistory] = useState([]);
-
+  const { sendJsonMessage, lastMessage, readyState } = useAuthenticatedWebSocket('ws:127.0.0.1:8000/ws/dumb');
+  const [messageHistory, setMessageHistory] = useState<MessageEvent<any>[]>([]);
+  
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
     [ReadyState.OPEN]: 'Open',
@@ -27,9 +16,15 @@ const Socket = () => {
   }[readyState];
 
   useEffect(() => {
-      messageHistory.push(lastMessage);
+    if (lastMessage === null) return;
+    setMessageHistory((prev) => { let curr = [...prev]; curr.push(lastMessage); return curr; });
   }, [lastMessage]);
-
+  
+  const handleClickSendMessage = useCallback(() => sendJsonMessage({
+    type: 'message',
+    request_id: 1,
+    content: 'Hello'
+  }), [sendJsonMessage]);
 
   return (
     <div>
@@ -38,14 +33,14 @@ const Socket = () => {
         onClick={handleClickSendMessage}
         disabled={readyState !== ReadyState.OPEN}
       >
-        Click Me to send 'Hello'
+        Click Me to send &apos;Hello&apos;
       </button>
       <div>The WebSocket is currently {connectionStatus}.</div>
       <h2>Messages (Total {messageHistory.length}):</h2>
       {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
       <ul>
         {messageHistory.map((message, idx) => (
-          <span key={idx}>{message ? `${message}` : null}</span>
+          <span key={idx}>{JSON.stringify(message)}</span>
         ))}
       </ul>
     </div>
@@ -53,5 +48,3 @@ const Socket = () => {
 };
 
 export default Socket;
-
-

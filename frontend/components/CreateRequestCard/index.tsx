@@ -18,7 +18,7 @@ import TagBox from '../TagBox';
 import { QuestionMark } from '@mui/icons-material';
 
 type CreateRequestCardProps = {
-  isEditMode: boolean;
+  isEditMode?: boolean;
   queueId?: number;
   requestId?: number;
 };
@@ -36,7 +36,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
   const [tagSelection, setTagSelection] = useState<Tag[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [tagHistory, setTagHistory] = useState<Record<string, number>>({});
-  const [currentQueueId, setCurrentQueueId] = useState(queueId);
+  const [currentQueueId, setCurrentQueueId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const getRequestData = async () => {
@@ -55,6 +55,10 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
     // only want to fetch the request information if card is in edit mode
     if (isEditMode) getRequestData();
   }, [requestId, isEditMode]);
+
+  useEffect(() => {
+    setCurrentQueueId(queueId);
+  }, [queueId]);
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -186,7 +190,12 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
               id="outlined-input"
               fullWidth />
           </div>
-          <TagsSelection tagSelection={tagSelection} tags={tags} setTagSelection={setTagSelection} color='black' backgroundColor='#e3e3e3' />
+          <div>
+            <Typography variant="subtitle1">
+              Tags
+            </Typography>
+            <TagsSelection tagSelection={tagSelection} tags={tags} setTagSelection={setTagSelection} color='black' backgroundColor='#e3e3e3' />
+          </div>
           <FormControlLabel
             control={<Checkbox checked={isClusterable} onChange={() => setIsClusterable(!isClusterable)} />}
             label="Allow for clustering similar requests?"

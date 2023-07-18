@@ -16,7 +16,7 @@ export default function CreateRequest() {
     <>
       <Header/>
       <div className={styles.pageContainer}>
-        <CreateRequestCard requestId={undefined} isEditMode={false} queueId={queueId} />
+        <CreateRequestCard queueId={queueId} />
       </div>
     </>
   );

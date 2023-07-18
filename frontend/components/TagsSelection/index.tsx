@@ -1,6 +1,6 @@
 import React from 'react';
 import style from './TagsSelection.module.css';
-import { Autocomplete, TextField, Typography } from '@mui/material';
+import { Autocomplete, TextField } from '@mui/material';
 import TagBox from '../TagBox';
 import { Tag } from '../../types/requests';
 

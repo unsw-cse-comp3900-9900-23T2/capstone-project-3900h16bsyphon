@@ -1,8 +1,14 @@
+use actix::Addr;
 use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
+use chrono::Local;
 use serde_json::json;
 
+use crate::entities::sea_orm_active_enums::Statuses;
+use crate::sockets::lobby::Lobby;
+use crate::sockets::messages::HttpServerAction;
+use crate::sockets::SocketChannels;
 use crate::{entities, models, utils::db::db};
 use futures::future::join_all;
 use models::{
@@ -52,22 +58,6 @@ pub async fn create_request(
         .insert(db)
     });
     join_all(tag_insertion).await;
-    let is_priority = entities::tags::Entity::find()
-        .left_join(entities::queues::Entity)
-        .right_join(entities::requests::Entity)
-        .filter(entities::request_tags::Column::RequestId.eq(insertion.request_id))
-        .filter(entities::queue_tags::Column::IsPriority.eq(true))
-        .filter(entities::queue_tags::Column::QueueId.eq(insertion.queue_id))
-        .one(db)
-        .await?;
-    if is_priority.is_some() {
-        entities::requests::ActiveModel {
-            order: ActiveValue::Set(0),
-            ..entities::requests::ActiveModel::from(insertion.clone())
-        }
-        .update(db)
-        .await?;
-    }
 
     Ok(HttpResponse::Ok().json(CreateRequestResponse {
         request_id: insertion.request_id,
@@ -79,8 +69,6 @@ pub async fn edit_request(
     edit_request_body: web::Json<EditRequestBody>,
 ) -> SyphonResult<HttpResponse> {
     let db = db();
-
-    log::info!("Edit student request: {:?}", edit_request_body);
     let edit_request_body = edit_request_body.into_inner();
 
     let existing_request = entities::requests::Entity::find_by_id(edit_request_body.request_id)
@@ -92,7 +80,7 @@ pub async fn edit_request(
         ))?;
 
     // update request
-    let update_result = entities::requests::ActiveModel {
+    entities::requests::ActiveModel {
         title: ActiveValue::Set(edit_request_body.title),
         description: ActiveValue::Set(edit_request_body.description),
         is_clusterable: ActiveValue::Set(edit_request_body.is_clusterable),
@@ -116,52 +104,45 @@ pub async fn edit_request(
         .insert(db)
     });
 
-    // handle priority tag logic
     join_all(tag_insertion).await;
-    let is_priority = entities::tags::Entity::find()
-        .left_join(entities::queues::Entity)
-        .right_join(entities::requests::Entity)
-        .filter(entities::request_tags::Column::RequestId.eq(edit_request_body.request_id))
-        .filter(entities::queue_tags::Column::IsPriority.eq(true))
-        .filter(entities::queue_tags::Column::QueueId.eq(edit_request_body.queue_id))
-        .one(db)
-        .await?;
-    if is_priority.is_some() {
-        entities::requests::ActiveModel {
-            order: ActiveValue::Set(0),
-            ..entities::requests::ActiveModel::from(update_result.clone())
-        }
-        .update(db)
-        .await?;
-    }
 
     Ok(HttpResponse::Ok().json("OK"))
 }
 
 pub async fn request_info_wrapper(
     token: ReqData<TokenClaims>,
-    body: web::Query<RequestInfoBody>,
+    web::Query(body): web::Query<RequestInfoBody>,
 ) -> SyphonResult<HttpResponse> {
-    Ok(HttpResponse::Ok().json(request_info_not_web(token, body).await?))
+    Ok(HttpResponse::Ok().json(request_info_not_web(token.into_inner(), body).await?))
 }
 
 pub async fn all_requests_for_queue(
     token: ReqData<TokenClaims>,
-    body: web::Query<AllRequestsForQueueBody>,
+    web::Query(body): web::Query<AllRequestsForQueueBody>,
 ) -> SyphonResult<HttpResponse> {
+    Ok(HttpResponse::Ok()
+        .json(all_requests_for_queue_not_web(token.into_inner(), body.queue_id).await?))
+}
+
+pub async fn all_requests_for_queue_not_web(
+    token: TokenClaims,
+    queue_id: i32,
+) -> SyphonResult<Vec<QueueRequest>> {
     let db = db();
-    let body = body.into_inner();
     // Find all related requests
-    // TODO: dont do cringe loop of all
+    let queue = entities::queues::Entity::find_by_id(queue_id)
+        .one(db)
+        .await?
+        .ok_or(SyphonError::QueueNotExist(queue_id))?;
+
     let requests_future = entities::requests::Entity::find()
-        .filter(entities::requests::Column::QueueId.eq(body.queue_id))
+        .filter(entities::requests::Column::QueueId.eq(queue_id))
         .all(db)
         .await?
         .into_iter()
         .map(|req| req.request_id)
-        .map(|request_id| {
-            request_info_not_web(token.clone(), web::Query(RequestInfoBody { request_id }))
-        });
+        .map(|request_id| request_info_not_web(token.clone(), RequestInfoBody { request_id }));
+
     // Ignores DbErrors - No Panic. Also no 500 Return
     let mut requests = join_all(requests_future)
         .await
@@ -169,17 +150,41 @@ pub async fn all_requests_for_queue(
         .filter_map(Result::ok)
         .collect::<Vec<_>>();
     requests.sort_by(|a, b| a.order.cmp(&b.order));
-    Ok(HttpResponse::Ok().json(requests))
+
+    // sort by checking which requests are prio
+    let is_priority = requests.iter().map(|request| {
+        entities::queue_tags::Entity::find()
+            .filter(entities::queue_tags::Column::IsPriority.eq(true))
+            .filter(entities::queue_tags::Column::QueueId.eq(queue_id))
+            .filter(
+                entities::queue_tags::Column::TagId.is_in(request.tags.iter().map(|t| t.tag_id)),
+            )
+            .count(db)
+    });
+    let is_priority: Vec<_> = join_all(is_priority)
+        .await
+        .into_iter()
+        .map(|r| r.expect("db broke"))
+        .collect();
+
+    let mut priority_request_zip: Vec<_> = requests.iter().zip(is_priority).collect();
+    priority_request_zip.sort_by(|a, b| b.1.cmp(&a.1));
+    let mut requests = priority_request_zip.iter().map(|v| v.0).collect::<Vec<_>>();
+    // sort by the number of requests a user has made if this is set
+    if queue.is_sorted_by_previous_request_count {
+        requests.sort_by(|a, b| a.previous_requests.cmp(&b.previous_requests));
+    }
+
+    Ok(requests.into_iter().cloned().collect())
 }
 
 /// TODO: This is really cringe, don't do whatever this is
 /// There should be a way to move this into the models
 pub async fn request_info_not_web(
-    _token: ReqData<TokenClaims>,
-    body: web::Query<RequestInfoBody>,
+    _token: TokenClaims,
+    body: RequestInfoBody,
 ) -> SyphonResult<QueueRequest> {
     let db = db();
-    let body = body.into_inner();
     // Get the request from the database
     let db_request = entities::requests::Entity::find_by_id(body.request_id)
         .one(db)
@@ -216,6 +221,22 @@ pub async fn request_info_not_web(
         .expect("queue doesn't exist")
         .course_offering_id;
 
+    let previous_requests = entities::requests::Entity::find()
+        .left_join(entities::queues::Entity)
+        .filter(entities::requests::Column::Zid.eq(request.zid))
+        .filter(
+            entities::requests::Column::Status.eq(Statuses::Seen).and(
+                // it needs to be an older queue or older request
+                entities::queues::Column::QueueId
+                    .lt(request.queue_id)
+                    .or(entities::requests::Column::Order.lt(request.order)),
+            ),
+        )
+        .filter(entities::queues::Column::CourseOfferingId.eq(course_offering_id))
+        .count(db)
+        .await
+        .expect("db broke?");
+
     let request_value = QueueRequest {
         request_id: request.request_id,
         first_name: user.first_name,
@@ -228,6 +249,7 @@ pub async fn request_info_not_web(
         status: request.status,
         order: request.order,
         course_offering_id,
+        previous_requests,
         tags,
     };
 
@@ -268,6 +290,7 @@ pub async fn disable_cluster(
 pub async fn set_request_status(
     token: ReqData<TokenClaims>,
     body: web::Json<PutRequestStatusBody>,
+    lobby: web::Data<Addr<Lobby>>,
 ) -> SyphonResult<HttpResponse> {
     let body = body.into_inner();
     let db = db();
@@ -297,11 +320,29 @@ pub async fn set_request_status(
 
     // Update Request
     entities::requests::ActiveModel {
-        status: ActiveValue::Set(Some(body.status.clone())),
-        ..request.into()
+        status: ActiveValue::Set(body.status.clone()),
+        ..request.clone().into()
     }
     .update(db)
     .await?;
+
+    // Add log entry for updating request status
+    entities::request_status_log::ActiveModel {
+        log_id: ActiveValue::NotSet,
+        request_id: ActiveValue::Set(body.request_id),
+        tutor_id: ActiveValue::Set(token.username),
+        status: ActiveValue::Set(body.status.clone()),
+        event_time: ActiveValue::Set(Local::now().naive_local()),
+    }
+    .insert(db)
+    .await?;
+
+    // Invalidate the cache for the request and its queue
+    let action = HttpServerAction::InvalidateKeys(vec![
+        SocketChannels::Request(body.request_id),
+        SocketChannels::QueueData(request.queue_id),
+    ]);
+    lobby.do_send(action);
 
     Ok(HttpResponse::Ok().json(body))
 }

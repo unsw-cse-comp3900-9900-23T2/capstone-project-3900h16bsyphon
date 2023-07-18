@@ -1,5 +1,5 @@
 use actix::{fut, ActorContext, ActorFutureExt};
-use actix::{Actor, ActorFuture, Addr, ContextFutureSpawner, Running, StreamHandler, WrapFuture};
+use actix::{Actor, Addr, ContextFutureSpawner, Running, StreamHandler, WrapFuture};
 use actix::{AsyncContext, Handler};
 use actix_web_actors::ws;
 use actix_web_actors::ws::Message::Text;
@@ -9,10 +9,11 @@ use std::time::{Duration, Instant};
 use uuid::Uuid;
 
 use crate::sockets;
+use crate::sockets::messages::try_parse_ws_action;
 use crate::utils::auth::validate_raw_token;
 use sockets::{
     lobby::Lobby,
-    messages::{ClientActorMessage, Connect, Disconnect},
+    messages::{Connect, Disconnect},
 };
 
 use super::messages::WsMessage;
@@ -83,7 +84,7 @@ impl WsConn {
                     conn.zid = Some(tok.username);
                     fut::ready(())
                 }
-                Err(e) => {
+                Err(_) => {
                     log::info!("Conn failed to auth: {}", conn.id);
                     ctx.text(json!({"type": "auth", "success": false}).to_string());
                     ctx.stop();
@@ -103,7 +104,7 @@ impl WsConn {
                 addr: ctx.address().recipient(),
                 channels: self.channels.clone(),
                 self_id: self.id,
-                zid: self.zid.expect("CTX would be dead if not authed"),
+                zid: self.get_zid(),
             })
             .into_actor(self)
             .then(|res, _, ctx| {
@@ -114,6 +115,10 @@ impl WsConn {
                 fut::ready(())
             })
             .wait(ctx);
+    }
+
+    fn get_zid(&self) -> i32 {
+        self.zid.expect("Not Called Before Auth")
     }
 }
 
@@ -175,21 +180,19 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
                         Err(_) => (),
                         // # Safety:
                         // Calling when auth is successfull
-                        Ok(zid) => self.connect_to_lobby(ctx),
+                        Ok(_) => self.connect_to_lobby(ctx),
                     };
                 }
 
-                // x.do_send()
-                // to a json object
-                // read the "TYPE" matching ont
-                // send that struct to the lobby
-                // Current not actually taking in any messages from the client
-                // For chat, will probably do this through clients only
-                // Other stuff will just be done through HTTP actions
-                // self.lobby_addr.do_send(ClientActorMessage {
-                //     id: self.id,
-                //     msg: s.into(),
-                // })
+                let action = match try_parse_ws_action(&raw_text, self.get_zid()) {
+                    Ok(action) => action,
+                    Err(e) => {
+                        log::info!("Failed to parse action: {:?} for z{}", e, self.get_zid());
+                        return;
+                    }
+                };
+
+                self.lobby_addr.do_send(action);
             }
             Err(_) => todo!("handle this or die ig?"),
         }
@@ -200,6 +203,13 @@ impl Handler<WsMessage> for WsConn {
     type Result = ();
 
     fn handle(&mut self, msg: WsMessage, ctx: &mut Self::Context) -> Self::Result {
-        ctx.text(msg.0)
+        let as_json = msg.as_json();
+        log::info!(
+            "Conn z{} Socket {} handling {:?}",
+            self.get_zid(),
+            self.id,
+            as_json
+        );
+        ctx.text(as_json.to_string());
     }
 }

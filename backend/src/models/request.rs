@@ -12,7 +12,7 @@ pub struct CreateRequest {
     pub description: String,
     pub tags: Vec<i32>,
     pub is_clusterable: bool,
-    pub status: Option<Statuses>,
+    pub status: Statuses,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -23,7 +23,7 @@ pub struct EditRequestBody {
     pub description: String,
     pub tags: Vec<i32>,
     pub is_clusterable: bool,
-    pub status: Option<Statuses>,
+    pub status: Statuses,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -41,7 +41,7 @@ pub struct AllRequestsForQueueBody {
     pub queue_id: i32,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct QueueRequest {
     pub request_id: i32,
     pub first_name: String,
@@ -52,8 +52,9 @@ pub struct QueueRequest {
     pub title: String,
     pub description: String,
     pub is_clusterable: bool,
-    pub status: Option<Statuses>,
+    pub status: Statuses,
     pub tags: Vec<Tag>,
+    pub previous_requests: u64,
     pub course_offering_id: i32,
 }
 

@@ -1,16 +1,18 @@
 use crate::{
     entities,
     models::{
-        CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery, GetQueueByIdQuery,
-        GetQueueTagsQuery, GetQueuesByCourseQuery, QueueReturnModel, SyphonResult, Tag,
-        TokenClaims, SyphonError, UpdateQueueRequest,
+        CloseQueueRequest, CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery,
+        GetQueueByIdQuery, GetQueueTagsQuery, GetQueuesByCourseQuery, QueueReturnModel,
+        SyphonError, SyphonResult, Tag, TokenClaims, UpdateQueuePreviousRequestCount,
+        UpdateQueueRequest,
     },
     test_is_user,
     utils::{db::db, user::validate_user},
 };
 use actix_web::{
+    http::StatusCode,
     web::{self, Query, ReqData},
-    HttpResponse, http::StatusCode,
+    HttpResponse,
 };
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter,
@@ -63,22 +65,24 @@ pub async fn create_queue(
 }
 
 pub async fn get_queue_by_id(
-    token: ReqData<TokenClaims>,
-    query: Query<GetQueueByIdQuery>,
-) -> HttpResponse {
+    _token: ReqData<TokenClaims>,
+    Query(query): Query<GetQueueByIdQuery>,
+) -> SyphonResult<HttpResponse> {
+    // match queue {
+    //     Some(q) => HttpResponse::Ok().json(web::Json(q)),
+    //     None => HttpResponse::NotFound().json("No queue of that id!"),
+    // }
+    Ok(HttpResponse::Ok().json(get_queue_by_id_not_web(query.queue_id).await?))
+}
+
+pub async fn get_queue_by_id_not_web(
+    queue_id: i32,
+) -> Result<entities::queues::Model, SyphonError> {
     let db = db();
-    if let Err(e) = validate_user(&token, db).await {
-        log::debug!("failed to verify user:{:?}", e);
-        return e;
-    }
-    let queue = entities::queues::Entity::find_by_id(query.queue_id)
+    entities::queues::Entity::find_by_id(queue_id)
         .one(db)
-        .await
-        .expect("Db broke");
-    match queue {
-        Some(q) => HttpResponse::Ok().json(web::Json(q)),
-        None => HttpResponse::NotFound().json("No queue of that id!"),
-    }
+        .await?
+        .ok_or(SyphonError::QueueNotExist(queue_id))
 }
 
 pub async fn get_queues_by_course(
@@ -147,54 +151,19 @@ pub async fn update_tag_priority(
         Some(item) => item,
         None => return Ok(HttpResponse::NotFound().json("No tag of that id!")),
     };
-    let has_tag = entities::requests::Entity::find()
-        .left_join(entities::tags::Entity)
-        .filter(entities::request_tags::Column::TagId.eq(body.tag_id))
-        .filter(entities::requests::Column::QueueId.eq(body.queue_id))
-        .all(db)
-        .await?;
     let model = entities::queue_tags::ActiveModel {
         is_priority: ActiveValue::Set(body.is_priority),
         ..item.into()
     };
     model.update(db).await?;
-    let priority_tags = entities::queue_tags::Entity::find()
-        .left_join(entities::tags::Entity)
-        .filter(entities::queue_tags::Column::IsPriority.eq(true))
-        .filter(entities::queue_tags::Column::QueueId.eq(body.queue_id))
-        .all(db)
-        .await?
-        .iter()
-        .map(|item| item.tag_id)
-        .collect::<Vec<_>>();
-
-    let is_priority = has_tag.clone().into_iter().map(|item| {
-        entities::request_tags::Entity::find()
-            .filter(entities::request_tags::Column::RequestId.eq(item.request_id))
-            .filter(entities::request_tags::Column::TagId.is_in(priority_tags.clone()))
-            .one(db)
-    });
-    let is_priority = join_all(is_priority).await;
-
-    let models = is_priority.into_iter().zip(has_tag).map(|(item, request)| {
-        let checked = item.unwrap();
-        entities::requests::ActiveModel {
-            request_id: ActiveValue::Unchanged(request.request_id),
-            order: ActiveValue::Set(if checked.is_some() { 0 } else { 1 }),
-            ..Default::default()
-        }
-        .update(db)
-    });
-    join_all(models).await;
     Ok(HttpResponse::Ok().json("Success!"))
 }
 
 pub async fn fetch_queue_tags(
-    token: ReqData<TokenClaims>,
+    _token: ReqData<TokenClaims>,
     query: web::Query<GetQueueTagsQuery>,
-) -> HttpResponse {
+) -> SyphonResult<HttpResponse> {
     let db = db();
-    test_is_user!(token, db);
     let tags = entities::queue_tags::Entity::find()
         .left_join(entities::tags::Entity)
         .filter(entities::queue_tags::Column::QueueId.eq(query.queue_id))
@@ -204,9 +173,8 @@ pub async fn fetch_queue_tags(
         .column(entities::tags::Column::Name)
         .into_model::<Tag>()
         .all(db)
-        .await
-        .expect("Db broke");
-    HttpResponse::Ok().json(web::Json(tags))
+        .await?;
+    Ok(HttpResponse::Ok().json(web::Json(tags)))
 }
 
 pub async fn get_is_open(
@@ -235,10 +203,7 @@ pub async fn get_is_open(
     }
 }
 
-
-pub async fn update_queue(
-    body: web::Json<UpdateQueueRequest>,
-) -> SyphonResult<HttpResponse> {
+pub async fn update_queue(body: web::Json<UpdateQueueRequest>) -> SyphonResult<HttpResponse> {
     let db = db();
     log::info!("update queue");
     log::info!("{:?}", body);
@@ -261,7 +226,9 @@ pub async fn update_queue(
         is_visible: ActiveValue::Set(body.is_visible),
         title: ActiveValue::Set(body.title.clone()),
         ..queue.clone().into()
-    }.update(db).await?;
+    }
+    .update(db)
+    .await?;
 
     /////////////////   TAGS    ///////////////////////
     let tag_creation_futures = body
@@ -292,7 +259,59 @@ pub async fn update_queue(
     });
     join_all(tag_queue_addition).await;
 
+    Ok(HttpResponse::Ok().json("Success!"))
+}
+
+pub async fn close_queue(body: web::Json<CloseQueueRequest>) -> SyphonResult<HttpResponse> {
+    let db = db();
+    log::info!("close queue");
+    log::info!("{:?}", body);
+
+    let queue = entities::queues::Entity::find_by_id(body.queue_id)
+        .one(db)
+        .await?
+        .ok_or(SyphonError::Json(
+            json!({"error" : "queue not found"}),
+            StatusCode::NOT_FOUND,
+        ))?;
+
+    // if the queue is already unavailable then we cant close it again so return error
+    if !queue.is_available && !queue.is_visible {
+        return Err(SyphonError::Json(
+            json!({"error": "queue has already been closed"}),
+            StatusCode::METHOD_NOT_ALLOWED,
+        ));
+    }
+
+    // update the end time and set is_visible and is_available to false
+    entities::queues::ActiveModel {
+        queue_id: ActiveValue::Unchanged(body.queue_id),
+        is_available: ActiveValue::Set(false),
+        end_time: ActiveValue::Set(body.end_time),
+        is_visible: ActiveValue::Set(false),
+        ..queue.clone().into()
+    }
+    .update(db)
+    .await?;
 
     Ok(HttpResponse::Ok().json("Success!"))
 }
 
+pub async fn set_is_sorted_by_previous_request_count(
+    body: web::Json<UpdateQueuePreviousRequestCount>,
+) -> SyphonResult<HttpResponse> {
+    let db = db();
+    let queue = entities::queues::Entity::find_by_id(body.queue_id)
+        .one(db)
+        .await?
+        .ok_or(SyphonError::QueueNotExist(body.queue_id))?;
+    entities::queues::ActiveModel {
+        is_sorted_by_previous_request_count: sea_orm::ActiveValue::Set(
+            body.is_sorted_by_previous_request_count,
+        ),
+        ..queue.into()
+    }
+    .update(db)
+    .await?;
+    Ok(HttpResponse::Ok().json("Success!"))
+}
