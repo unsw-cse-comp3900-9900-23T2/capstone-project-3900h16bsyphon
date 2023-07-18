@@ -1,76 +1,76 @@
 .pageContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 90vh;
-    padding-top: 1%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 90vh;
+  padding-top: 1%;
 }
 
 .cardBox {
-    flex: 4;
+  flex: 4;
 }
 
 .queueTitle {
-    padding-top: 2%;
-    padding-bottom: 3%;
+  padding-top: 2%;
+  padding-bottom: 3%;
 }
 
 .greenButton {
-    font-weight: bold;
-    padding: 5px 25px;
-    background-color: var(--colour-main-green-200);
-    color: var(--colour-main-green-900);
+  font-weight: bold;
+  padding: 5px 25px;
+  background-color: var(--colour-main-green-200);
+  color: var(--colour-main-green-900);
 }
 
 .greenButton:hover {
-    background-color:var(--colour-main-green-400);
+  background-color: var(--colour-main-green-400);
 }
 
 .greyButton {
-    font-weight: bold;
-    padding: 5px 25px;
-    background-color: var(--colour-main-grey-400);
-    color: var(--colour-main-grey-600);
+  font-weight: bold;
+  padding: 5px 25px;
+  background-color: var(--colour-main-grey-400);
+  color: var(--colour-main-grey-600);
 }
 
 .buttonContainer {
-    min-width: 15%;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    flex: 1;
+  min-width: 15%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
 }
 
 .body {
-    display: flex;
-    width: 95%;
-    column-gap: 5%;
+  display: flex;
+  width: 95%;
+  column-gap: 5%;
 }
 
 .summaryContainer {
-    flex: 2;
-    gap: 10px;
-    display: flex;
-    flex-direction: column;
+  flex: 2;
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 .infoCard {
-    padding: 15px;
+  padding: 15px;
 }
 
 .tutorIdNameContainer {
-    padding: 10px 0px;
+  padding: 10px 0px;
 }
 .tutorIdName {
-    display: flex;
-    gap: 6px;
-    align-items: center;
+  display: flex;
+  gap: 6px;
+  align-items: center;
 }
 
 .durationTagBoxContainer {
-    padding-top: 20px;
+  padding-top: 20px;
 }
 
 .summaryHeadings {
-    font-weight: bold;
+  font-weight: bold;
 }
