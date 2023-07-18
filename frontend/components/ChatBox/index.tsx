@@ -3,8 +3,6 @@ import React, { useEffect, useState } from 'react';
 import styles from './Chat.module.css';
 import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
-
-
 type ChatBoxProps = {
   requestId: number;
   studentZid: number;

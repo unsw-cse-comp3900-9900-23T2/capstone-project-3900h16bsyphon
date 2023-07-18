@@ -11,6 +11,7 @@ import {
   toCamelCase,
 } from '../../../utils';
 import { Status } from '../../../types/requests';
+import TimeSummaryCard from '../../../components/TimeSummaryCard';
 import ChatBox from '../../../components/ChatBox';
 
 const Request = () => {
@@ -29,6 +30,7 @@ const Request = () => {
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
   });
+  const [startTime, setStartTime] = useState(new Date());
 
   useEffect(() => {
     let getRequest = async () => {
@@ -39,7 +41,15 @@ const Request = () => {
       let d = await res.json();
       setData(toCamelCase(d));
     };
+    let getStartTime = async () => {
+      const res = await authenticatedGetFetch('/logs/get_start_time', {
+        request_id: `${router.query.requestid}`,
+      });
+      let d = await res.json();
+      setStartTime(toCamelCase(d.event_time));
+    };
     getRequest();
+    getStartTime();
   }, [router.query.requestid]);
 
   const updateStatus = async (status: Status) => {
@@ -136,6 +146,8 @@ const Request = () => {
             />
           </Box>
           <div className={styles.chatContainer}>
+            <TimeSummaryCard startTime={startTime} status={data.status}/>
+            {/* TODO: please place the chat component inside this div! */}
             <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} isStudent={false} studentZid={data.zid}/> 
           </div>
         </div>

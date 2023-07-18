@@ -110,3 +110,18 @@ pub struct UpdateQueuePreviousRequestCount {
     pub queue_id: i32,
     pub is_sorted_by_previous_request_count: bool,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetQueueRequestCount {
+    pub queue_id: i32
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetQueueRequestCountResponse {
+    pub count: u64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetRemainingStudents {
+    pub queue_id: i32,
+}
