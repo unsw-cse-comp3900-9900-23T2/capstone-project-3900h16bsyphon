@@ -49,6 +49,7 @@ impl Lobby {
             Some(session) => session.socket.do_send(message),
             None => {
                 log::warn!("Cannot send message. No session for {}", target_id);
+                log::warn!("Trying to send: {:?}", message);
             }
         }
     }
@@ -136,6 +137,7 @@ impl Handler<Connect> for Lobby {
     type Result = ();
 
     fn handle(&mut self, msg: Connect, ctx: &mut Self::Context) -> Self::Result {
+        log::info!("New lobby connection: {:?}", msg);
         let Connect {
             channels,
             self_id: uuid,
@@ -150,10 +152,12 @@ impl Handler<Connect> for Lobby {
         join_all(channels.into_iter().map(move |c| c.is_allowed(zid)))
             .into_actor(self)
             .then(move |allowed_res, lobby, _ctx| {
+                /*
                 if allowed_res.iter().any(|allowed| *allowed == false) {
                     lobby._send_message(WsMessage::Text("FORBIDDEN: DIE".into()), &uuid);
                     return fut::ready(());
                 }
+                */
 
                 lobby.sessions.insert(uuid, SessionData::from(msg));
                 lobby.connections.entry(zid).or_default().insert(uuid);
@@ -163,7 +167,7 @@ impl Handler<Connect> for Lobby {
                     log::debug!("Inserting into channel {:?}", channel);
                     match channel {
                         SocketChannels::Notifications(_queue_id) => todo!(),
-                        SocketChannels::QueueData(q_id) => lobby.annoucements.entry(*q_id),
+                        SocketChannels::QueueData(q_id) => lobby.queues.entry(*q_id),
                         SocketChannels::Announcements(q_id) => lobby.annoucements.entry(*q_id),
                         SocketChannels::Chat(req_id) => lobby.chat_rooms.entry(*req_id),
                         SocketChannels::Request(req_id) => lobby.chat_rooms.entry(*req_id),

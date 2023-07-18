@@ -83,6 +83,7 @@ impl WsConn {
                     ctx.text(json!({"type": "auth", "success": true}).to_string());
                     conn.zid = Some(tok.username);
                     conn.connect_to_lobby(ctx);
+                    log::info!("Conn authed: {:?}", conn.zid);
                     fut::ready(())
                 }
                 Err(_) => {

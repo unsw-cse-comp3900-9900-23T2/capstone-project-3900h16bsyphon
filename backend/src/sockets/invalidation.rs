@@ -16,6 +16,7 @@ impl Handler<HttpServerAction> for Lobby {
     type Result = ();
 
     fn handle(&mut self, msg: HttpServerAction, ctx: &mut Self::Context) -> Self::Result {
+        log::debug!("Lobby Handling HttpServerAction: {:?}", msg);
         match msg {
             HttpServerAction::InvalidateKeys(keys) => {
                 keys.into_iter().for_each(|k| self.invalidate_key(k, ctx))
@@ -36,6 +37,7 @@ impl Lobby {
     }
 
     fn invalidate_queue_data(&mut self, queue_id: i32, ctx: &mut <Self as Actor>::Context) {
+        log::debug!("Invalidating queue {}", queue_id);
         let queue_fut = get_queue_by_id_not_web(queue_id);
         let requests_fut = all_requests_for_queue_not_web(TokenClaims::master(), queue_id);
         let queue_and_req_fut = join(queue_fut, requests_fut).then(|(q_res, reqs_res)| async {
@@ -61,6 +63,7 @@ impl Lobby {
                     queue_id,
                     content: (queue, requests),
                 };
+                log::debug!("Broadcasting queue data: {:?} , targets {:?}", ws_msg, targets);
                 lobby.broadcast_message(ws_msg, &targets);
                 fut::ready(())
             })

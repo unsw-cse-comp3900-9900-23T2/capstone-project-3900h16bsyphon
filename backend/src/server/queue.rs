@@ -7,7 +7,7 @@ use crate::{
         UpdateQueueRequest,
     },
     test_is_user,
-    utils::{db::db, user::validate_user}, sockets::{lobby::Lobby, messages::HttpServerAction, SocketChannels},
+    utils::{db::db, user::validate_user}, sockets::{lobby::Lobby, messages::{HttpServerAction, WsMessage}, SocketChannels},
 };
 use actix::Addr;
 use actix_web::{
@@ -15,6 +15,7 @@ use actix_web::{
     web::{self, Query, ReqData},
     HttpResponse,
 };
+use jwt::token;
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter,
     QuerySelect,
@@ -205,12 +206,12 @@ pub async fn get_is_open(
 }
 
 pub async fn update_queue(
+    _token: ReqData<TokenClaims>,
     body: web::Json<UpdateQueueRequest>,
     lobby: web::Data<Addr<Lobby>>,
 ) -> SyphonResult<HttpResponse> {
     let db = db();
-    log::info!("update queue");
-    log::info!("{:?}", body);
+    log::debug!("update queue: {:?}", body);
 
     let queue = entities::queues::Entity::find_by_id(body.queue_id)
         .one(db)
@@ -238,8 +239,9 @@ pub async fn update_queue(
         SocketChannels::QueueData(body.queue_id),
     ]);
     lobby.do_send(action);
-
+    
     /////////////////   TAGS    ///////////////////////
+    /* 
     let tag_creation_futures = body
         .tags
         .iter()
@@ -267,7 +269,7 @@ pub async fn update_queue(
         .insert(db)
     });
     join_all(tag_queue_addition).await;
-
+*/
     Ok(HttpResponse::Ok().json("Success!"))
 }
 
