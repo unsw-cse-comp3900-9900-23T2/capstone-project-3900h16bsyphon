@@ -12,6 +12,7 @@ import TagsSelection from '../TagsSelection';
 import Header from '../Header';
 import { Tag } from '../../types/requests';
 import { useRouter } from 'next/router';
+import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
 
 type QueueSettingsProps = {
@@ -134,6 +135,8 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
     }
     router.push(`/active-queue/${queueId}`);
   };
+
+
 
   return (
     <>

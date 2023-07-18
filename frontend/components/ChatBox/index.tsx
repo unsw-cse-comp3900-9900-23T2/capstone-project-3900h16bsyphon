@@ -40,7 +40,7 @@ const ChatBox = ({requestId} : ChatBoxProps) => {
 
   useEffect(() => {
     if (lastJsonMessage) {
-      console.log(lastJsonMessage);
+      console.log('chat: ', lastJsonMessage);
       setMessages([...messages, '']);
     }
   }, [lastJsonMessage]);

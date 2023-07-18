@@ -15,6 +15,7 @@ import { QueueData } from '../../../types/queues';
 import ChatBox from '../../../components/ChatBox';
 import { Status } from '../../../types/requests';
 import FAQs from '../../../components/FAQs';
+import useAuthenticatedWebSocket from '../../../hooks/useAuthenticatedWebSocket';
 
 const WaitingScreen = () => {
   const router = useRouter();
@@ -130,6 +131,21 @@ const WaitingScreen = () => {
     }
     router.push(`/request-summary/${router.query.requestid}`);
   };
+
+  const {sendJsonMessage, lastJsonMessage, readyState} = useAuthenticatedWebSocket('ws:localhost:8000/ws/announcements', {
+    queryParams: {
+      queue_id: requestData.queueId, 
+    },
+    shouldReconnect: () => true,
+    onOpen: () => {
+      console.log('connected (announcement)');
+    }
+  }, !!requestData.queueId
+  );
+
+  useEffect(() => {
+    console.log('announcement:', lastJsonMessage);
+  }, [lastJsonMessage]);
 
   return (
     <>
