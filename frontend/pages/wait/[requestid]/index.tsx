@@ -12,7 +12,9 @@ import Header from '../../../components/Header';
 import TagBox from '../../../components/TagBox';
 import InformationCard from '../../../components/InformationCard';
 import { QueueData } from '../../../types/queues';
+import ChatBox from '../../../components/ChatBox';
 import { Status } from '../../../types/requests';
+import FAQs from '../../../components/FAQs';
 
 const WaitingScreen = () => {
   const router = useRouter();
@@ -189,9 +191,10 @@ const WaitingScreen = () => {
               previousRequests={requestData.previousRequests}
               description={requestData.description}
             />
+            <FAQs courseOfferingId={queueData?.courseOfferingId} tutor={false} />
           </Box>
           <div className={styles.chatContainer}>
-            {/* please place the chat component inside this div! */}
+            <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} studentZid={requestData.zid} isStudent={true}/>
           </div>
         </div>
       </div>

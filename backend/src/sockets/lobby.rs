@@ -160,6 +160,7 @@ impl Handler<Connect> for Lobby {
 
                 // Insert into corresponding channels if not there
                 for channel in &channels2 {
+                    log::debug!("Inserting into channel {:?}", channel);
                     match channel {
                         SocketChannels::Notifications(_queue_id) => todo!(),
                         SocketChannels::QueueData(q_id) => lobby.annoucements.entry(*q_id),

@@ -13,4 +13,6 @@
 .content {
     text-align: left;
     padding-bottom: 0em;
+    overflow-wrap: normal;
+    overflow-x: scroll;
 }
