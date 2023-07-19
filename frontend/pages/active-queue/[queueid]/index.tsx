@@ -39,10 +39,10 @@ const ActiveQueue = () => {
   // update the queue data
   useEffect(() => {
     if (!lastJsonMessage) return;
-    console.log('new_msg: ', lastJsonMessage);
+    console.debug('new_msg: ', lastJsonMessage);
     if ((lastJsonMessage as any)?.type === 'queue_data') {
       let newRequestsData = (lastJsonMessage as any).requests;
-      console.log('newRequsetData', newRequestsData);
+      console.debug('newRequestsData', newRequestsData);
       if (newRequestsData.length > requests.length) {
         play();
         toast(`${newRequestsData[newRequestsData.length - 1].first_name} ${newRequestsData[newRequestsData.length - 1].last_name} has joined the queue!`, {
