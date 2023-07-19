@@ -95,3 +95,9 @@
     padding: 10px 35px;
     margin-bottom: 50px;
 }
+
+.toast {
+    font-size: large;
+    font-weight: bold;
+    min-width: 20%;
+}
