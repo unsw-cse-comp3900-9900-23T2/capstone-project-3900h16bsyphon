@@ -1,16 +1,10 @@
-use sea_orm::EntityTrait;
-
-use crate::{
-    entities,
-    models::{SyphonError, SyphonResult},
-    utils::db::db,
-};
-
 pub mod invalidation;
 pub mod lobby;
 pub mod messages;
 pub mod start_connect;
 pub mod websockets;
+
+use crate::utils::user::{is_tutor_or_owns_request, is_tutor_queue};
 
 #[derive(Copy, Clone, Hash, PartialEq, Eq, Debug)]
 /// Enum of channels that sockets can choose to listen on
@@ -68,27 +62,4 @@ impl SocketChannels {
             SocketChannels::Chat(id) => *id,
         }
     }
-}
-
-async fn is_tutor_queue(queue_id: i32, zid: i32) -> SyphonResult<bool> {
-    let db = db();
-    let course_id = entities::queues::Entity::find_by_id(queue_id)
-        .one(db)
-        .await?
-        .ok_or(SyphonError::QueueNotExist(queue_id))?
-        .course_offering_id;
-
-    Ok(entities::tutors::Entity::find_by_id((zid, course_id))
-        .one(db)
-        .await?
-        .is_some())
-}
-
-async fn is_tutor_or_owns_request(request_id: i32, zid: i32) -> SyphonResult<bool> {
-    let request = entities::requests::Entity::find_by_id(request_id)
-        .one(db())
-        .await?
-        .ok_or(SyphonError::RequestNotExist(request_id))?;
-
-    Ok(zid == request.zid || is_tutor_queue(request.queue_id, zid).await?)
 }
