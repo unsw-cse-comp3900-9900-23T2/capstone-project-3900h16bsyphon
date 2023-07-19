@@ -19,7 +19,7 @@ use chrono::{DateTime, Duration, Utc};
 use chrono_tz::{Australia::Sydney, America::North_Dakota::New_Salem};
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter,
-    QuerySelect, PaginatorTrait, DatabaseConnection, DbErr, JoinType
+    QuerySelect, PaginatorTrait, DatabaseConnection, DbErr, JoinType, RelationTrait
 };
 
 use futures::future::{join_all, try_join_all};
@@ -526,17 +526,11 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         .column(entities::queue_tags::Column::IsPriority)
         .join_rev(
             JoinType::InnerJoin,
-            entities::request_tags::Entity::belongs_to(entities::requests::Entity)
-            .from(entities::request_tags::Column::RequestId)
-            .to(entities::requests::Column::RequestId)
-            .into()
+            entities::request_tags::Relation::Requests.def()
         )
         .join_rev(
             JoinType::InnerJoin,
-            entities::request_tags::Entity::belongs_to(entities::tags::Entity)
-            .from(entities::request_tags::Column::TagId)
-            .to(entities::tags::Column::TagId)
-            .into()
+            entities::request_tags::Relation::Tags.def()
         )
         .join_rev(
             JoinType::InnerJoin,
@@ -554,8 +548,9 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
     }).collect::<Vec<_>>();
     let tutors_tags_worked_on = try_join_all(tutors_tags_worked_on).await?;
 
-
-    ////////////////////////////// Join Tutor Summaries Together ////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////// Join Tutor Summaries Together ///////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     let tutor_zipped_summaries = izip!(
         tutor_info_list, 
         total_seeing_count, 
@@ -575,7 +570,9 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         }
     });
 
-    ////////////////////////////// Begin Creating Tag Summaries /////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////// Tag Summaries /////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     // get list of tags for the queue
     let tag_list = entities::queue_tags::Entity::find()
         .select_only()
@@ -589,6 +586,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         .await?;
 
     // for every tag, get list of request ids for that tag 
+
 
     // for every tag, for every request id, find start and end time, and sum them
     let time_difference = queue.end_time.signed_duration_since(queue.start_time);

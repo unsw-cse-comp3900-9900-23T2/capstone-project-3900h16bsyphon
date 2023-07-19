@@ -163,6 +163,11 @@ pub struct RequestStatusTimeInfo {
     pub event_time: NaiveDateTime,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct RequestId {
+    pub request_id: i32,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct QueueTutorSummaryData {
     pub zid: i32,
