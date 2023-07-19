@@ -63,7 +63,7 @@ const Request = () => {
       );
       return;
     }
-    if (status === Status.Seeing) {
+    if (status !== Status.Seeing) {
       router.push(`/active-queue/${data.queueId}`);
     }
   };
