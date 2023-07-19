@@ -1,6 +1,6 @@
-use chrono::NaiveDateTime;
 use sea_orm::FromQueryResult;
 use serde::{Deserialize, Serialize};
+use chrono::NaiveDateTime;
 
 use crate::entities;
 use entities::sea_orm_active_enums::Statuses;
@@ -95,15 +95,4 @@ pub struct RequestSummaryReturnModel {
     pub start_time: Option<TimeStampModel>,
     pub end_time: TimeStampModel,
     pub duration: Option<RequestDuration>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct MoveRequestOrderingBody {
-    pub request_id: i32,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum MoveDirection {
-    Up,
-    Down,
 }
