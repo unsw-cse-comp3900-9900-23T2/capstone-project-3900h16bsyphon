@@ -4,7 +4,7 @@ use crate::{
         CloseQueueRequest, CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery,
         GetQueueByIdQuery, GetQueueRequestCount, GetQueueTagsQuery, GetQueuesByCourseQuery,
         GetRemainingStudents, QueueReturnModel, SyphonError, SyphonResult, Tag, TokenClaims,
-        UpdateQueuePreviousRequestCount, UpdateQueueRequest, GetQueueSummaryQuery, QueueSummaryData, QueueInformationModel, RequestDuration, TimeStampModel, TutorInformationModel, QueueTutorSummaryData, RequestStatusTimeInfo, RequestTutorInformationModel,
+        UpdateQueuePreviousRequestCount, UpdateQueueRequest, GetQueueSummaryQuery, QueueSummaryData, QueueInformationModel, RequestDuration, TimeStampModel, TutorInformationModel, QueueTutorSummaryData, RequestStatusTimeInfo, RequestTutorInformationModel, RequestId,
     },
     test_is_user,
     utils::{db::db, user::validate_user}, sockets::{lobby::Lobby, messages::{HttpServerAction, WsMessage}, SocketChannels},
@@ -586,9 +586,23 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         .await?;
 
     // for every tag, get list of request ids for that tag 
+    let tag_request_ids = tag_list.iter().map(|tag| {
+        entities::request_tags::Entity::find()
+            .select_only()
+            .column(entities::request_tags::Column::RequestId)
+            .distinct_on([entities::request_tags::Column::RequestId])
+            .filter(entities::request_tags::Column::TagId.eq(tag.tag_id))
+            .into_model::<RequestId>()
+            .all(db)
+    }).collect::<Vec<_>>();
+    let tag_request_ids = try_join_all(tag_request_ids).await?;
 
 
     // for every tag, for every request id, find start and end time, and sum them
+
+
+
+    //////////////////////////////////// Queue Timestamps /////////////////////////////////////////
     let time_difference = queue.end_time.signed_duration_since(queue.start_time);
     let duration = RequestDuration {
         hours: time_difference.num_hours(),
