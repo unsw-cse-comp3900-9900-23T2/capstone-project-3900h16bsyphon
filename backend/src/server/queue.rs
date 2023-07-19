@@ -26,12 +26,40 @@ use futures::future::{join_all, try_join_all};
 use serde_json::json;
 
 // TODO: change this to izip from itertools in next iteration
-macro_rules! zip {
-    ($x: expr) => ($x);
-    ($x: expr, $($y: expr), +) => (
-        $x.iter().zip(
-            zip!($($y), +))
-    )
+macro_rules! izip {
+    // @closure creates a tuple-flattening closure for .map() call. usage:
+    // @closure partial_pattern => partial_tuple , rest , of , iterators
+    // eg. izip!( @closure ((a, b), c) => (a, b, c) , dd , ee )
+    ( @closure $p:pat => $tup:expr ) => {
+        |$p| $tup
+    };
+
+    // The "b" identifier is a different identifier on each recursion level thanks to hygiene.
+    ( @closure $p:pat => ( $($tup:tt)* ) , $_iter:expr $( , $tail:expr )* ) => {
+        $crate::izip!(@closure ($p, b) => ( $($tup)*, b ) $( , $tail )*)
+    };
+
+    // unary
+    ($first:expr $(,)*) => {
+        $crate::__std_iter::IntoIterator::into_iter($first)
+    };
+
+    // binary
+    ($first:expr, $second:expr $(,)*) => {
+        $crate::izip!($first)
+            .zip($second)
+    };
+
+    // n-ary where n > 2
+    ( $first:expr $( , $rest:expr )* $(,)* ) => {
+        $crate::izip!($first)
+            $(
+                .zip($rest)
+            )*
+            .map(
+                $crate::izip!(@closure a => (a) $( , $rest )*)
+            )
+    };
 }
 
 pub async fn create_queue(
@@ -518,23 +546,24 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
 
 
     ////////////////////////////// Join Tutor Summaries Together ////////////////////////////////////
-    let tutor_zipped_summaries = zip!(tutor_info_list, total_seeing_count, total_seen_count, average_times, tutors_tags_worked_on);
+    let tutor_zipped_summaries = izip!(
+        tutor_info_list, 
+        total_seeing_count, 
+        total_seen_count, 
+        average_times, 
+        tutors_tags_worked_on);
 
-    let tutor_summaries = Vec::new();
-    for (a, (b, (c, d))) in tutor_zipped_summaries {
-        println!("{} {} {} {}", a, b, c, d);
-
-        tutor_summaries.push(QueueTutorSummaryData {
+    let tutor_summaries = tutor_zipped_summaries.iter().map(|(a, b, c, d, e)| {
+        QueueTutorSummaryData {
             zid: a.zid,
             first_name: a.first_name.clone(),
             last_name: a.last_name.clone(),
-            total_seen: *c,
-            total_seeing: *b,
-            average_time: *c,
-            tags_worked_on: d,
-        })
-    }
-
+            total_seen: c,
+            total_seeing: b,
+            average_time: d,
+            tags_worked_on: e,
+        }
+    });
 
     ////////////////////////////// Begin Creating Tag Summaries /////////////////////////////////////
     // get list of tags for the queue
