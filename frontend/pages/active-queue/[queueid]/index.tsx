@@ -9,6 +9,7 @@ import { authenticatedGetFetch, authenticatedPutFetch, toCamelCase } from '../..
 import { Tag, UserRequest } from '../../../types/requests';
 import dayjs from 'dayjs';
 import InfoIcon from '@mui/icons-material/Info';
+import useAuthenticatedWebSocket from '../../../hooks/useAuthenticatedWebSocket';
 
 const ActiveQueue = () => {
   const router = useRouter();
@@ -23,6 +24,24 @@ const ActiveQueue = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [studentCount, setStudentCount] = useState(0);
   const [numReqsUntilClose, setNumReqsUntilClose] = useState(0);
+
+  let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
+    queryParams: {queue_id: requestData.queueId},
+    onOpen: () => {
+      console.log('connected [queue data]');
+    }
+  });
+
+  // update the queue data
+  useEffect(() => {
+    if (!lastJsonMessage) return;
+    console.debug('new_msg: ', lastJsonMessage);
+    if ((lastJsonMessage as any)?.type === 'queue_data') {
+      let newRequestsData = (lastJsonMessage as any).requests;
+      console.log('newRequstData', newRequestsData);
+      setRequests(toCamelCase(newRequestsData));
+    }
+  }, [lastJsonMessage]);
 
   useEffect(() => {
     let getRequests = async () => {

@@ -9,7 +9,7 @@ import {
 import styles from './StudentQueueRequestCard.module.css';
 import { useRouter } from 'next/router';
 import TagBox from '../TagBox';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   authenticatedPutFetch,
   formatZid,
@@ -44,6 +44,11 @@ const StudentQueueRequestCard = ({
     determineBackgroundColour(status)
   );
 
+
+  useEffect(() => {
+    setBackgroundColor(determineBackgroundColour(status));
+  }, [status]);
+
   const updateStatus = async (status: Status) => {
     const res = await authenticatedPutFetch('/request/set_status', {
       request_id: requestId,
@@ -60,7 +65,7 @@ const StudentQueueRequestCard = ({
     // set background colour and redirect
     setBackgroundColor(determineBackgroundColour(status));
     if (status === Status.Seeing) {
-      router.push(`/wait/${requestId}`);
+      router.push(`/request/${requestId}`);
     }
   };
 
@@ -122,6 +127,19 @@ const StudentQueueRequestCard = ({
                 <ArrowDownward />
               </IconButton>
             </div>
+            {
+              status === Status.NotFound && (
+                <>
+                  <Button
+                    className={styles.claimButton}
+                    variant="contained"
+                    onClick={() => updateStatus(Status.Unseen)}
+                  >
+                    Unresolve
+                  </Button>
+                </>
+              )
+            }
             {status === Status.Unseen && (
               <>
                 <Button
