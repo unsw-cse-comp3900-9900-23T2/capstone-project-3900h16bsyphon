@@ -12,6 +12,7 @@ import TagBox from '../TagBox';
 import { useEffect, useState } from 'react';
 import {
   authenticatedPostFetch,
+  authenticatedPutFetch,
   formatZid,
   determineBackgroundColour,
 } from '../../utils';

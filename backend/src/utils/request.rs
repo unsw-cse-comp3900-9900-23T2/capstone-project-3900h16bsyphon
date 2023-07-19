@@ -23,7 +23,7 @@ pub async fn move_request(
     token: ReqData<TokenClaims>,
     request_id: i32,
     direction: MoveDirection,
-    lobby: web::Data<Addr<Lobby>>
+    lobby: Addr<Lobby>
 ) -> SyphonResult<HttpResponse> {
     let db = db();
     let request = entities::requests::Entity::find_by_id(request_id)
