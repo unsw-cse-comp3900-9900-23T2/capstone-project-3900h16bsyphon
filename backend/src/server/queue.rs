@@ -4,7 +4,7 @@ use crate::{
         CloseQueueRequest, CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery,
         GetQueueByIdQuery, GetQueueRequestCount, GetQueueTagsQuery, GetQueuesByCourseQuery,
         GetRemainingStudents, QueueReturnModel, SyphonError, SyphonResult, Tag, TokenClaims,
-        UpdateQueuePreviousRequestCount, UpdateQueueRequest, GetQueueSummaryQuery, QueueSummaryData, QueueInformationModel, RequestDuration, TimeStampModel, TutorInformationModel, QueueTutorSummaryData,
+        UpdateQueuePreviousRequestCount, UpdateQueueRequest, GetQueueSummaryQuery, QueueSummaryData, QueueInformationModel, RequestDuration, TimeStampModel, TutorInformationModel, QueueTutorSummaryData, RequestStatusTimeInfo,
     },
     test_is_user,
     utils::{db::db, user::validate_user}, sockets::{lobby::Lobby, messages::{HttpServerAction, WsMessage}, SocketChannels},
@@ -419,29 +419,60 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
 
     let total_seeing = tutor_info_list.iter().map(|tutor_info| {
         entities::request_status_log::Entity::find()
-        .filter(entities::request_status_log::Column::TutorId.eq(tutor_info.zid))
-        .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
-        .count(db)
+        .select_only()
+        .column(entities::request_status_log::Column::RequestId)
+        .column(entities::request_status_log::Column::EventTime)
+        .filter(entities::request_status_log::Column::TutorId.eq(tutor_info.zid)
+            .and(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+        )
+        .into_model::<RequestStatusTimeInfo>()
+        .all(db)
     }).collect::<Vec<_>>();
     let total_seeing = try_join_all(total_seeing).await?;
 
-
     let total_seen = tutor_info_list.iter().map(|tutor_info| {
         entities::request_status_log::Entity::find()
-        .filter(entities::request_status_log::Column::TutorId.eq(tutor_info.zid))
-        .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
-        .count(db)
+        .select_only()
+        .column(entities::request_status_log::Column::RequestId)
+        .column(entities::request_status_log::Column::EventTime)
+        .filter(entities::request_status_log::Column::TutorId.eq(tutor_info.zid)
+            .and(entities::request_status_log::Column::Status.eq(Statuses::Seen))
+        )
+        .into_model::<RequestStatusTimeInfo>()
+        .all(db)
     }).collect::<Vec<_>>();
     let total_seen = try_join_all(total_seen).await?;
 
-    // get the request_ids, 
+    /////////////////////////////// Average Duration Per Tutor ///////////////////////////////
+    let mut average_times = Vec::new();
+    // for each of the total_seen
+    for (i, tutor_seen_times) in total_seen.iter().enumerate() {
+        let tutor_seeing_times = total_seeing[i];
+        // loop and get all the durations
+
+        let duration_sum = 0; // getting the number of minutes 
+        for (j, seen_times) in tutor_seen_times.iter().enumerate() {
+            let seeing_times = tutor_seeing_times[j];
+            if seeing_times.request_id != seen_times.request_id {
+                continue;
+            }
+            // get the duration here 
+            duration_sum += seen_times.event_time.signed_duration_since(seeing_times.event_time).num_minutes();
+        }
+
+        let average_duration = duration_sum / (tutor_seen_times.len() as i64);
+        average_times.push(average_duration);
+    }
+    
 
 
-    tutor_info_list.iter().zip(total_seeing.iter()).zip(total_seen.iter()).map(|((x, y), z)| {
+    ////////////////////////////// Join Tutor Summaries Together ////////////////////////////////////
+    let tutor_summaries = tutor_info_list.iter().zip(total_seeing.iter()).zip(total_seen.iter()).map(|((x, y), z)| {
        (x, y, z)
     });
 
 
+    ////////////////////////////// Begin Creating Tag Summaries /////////////////////////////////////
     // get list of tags for the queue
     let tag_list = entities::queue_tags::Entity::find()
         .select_only()

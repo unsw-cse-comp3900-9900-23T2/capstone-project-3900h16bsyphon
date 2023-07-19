@@ -149,15 +149,20 @@ pub struct TutorInformationModel {
     pub last_name: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct RequestStatusTimeInfo {
+    pub request_id: i32,
+    pub event_time: NaiveDateTime,
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct QueueTutorSummaryData {
     pub zid: i32,
     pub first_name: String,
     pub last_name: String,
-    pub total_seen: u64,
-    pub total_seeing: u64,
-    pub average_time: i32,
+    pub total_seen: i64,
+    pub total_seeing: i64,
+    pub average_time: i64,
     pub tags_worked_on: Vec<Tag>,
 }
 
