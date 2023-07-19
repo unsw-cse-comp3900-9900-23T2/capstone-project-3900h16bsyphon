@@ -634,7 +634,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         for (i, start_time) in start_times.iter().enumerate() {
             let end_time = end_times[i].clone();
             let duration = start_time.as_ref().map(|start_t| {
-                end_time.as_ref().map(|end_t| {
+                if let Some(end_t) = end_time {
                     tag_durations_mins += end_t
                         .event_time
                         .signed_duration_since(start_t.event_time)
@@ -647,7 +647,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
                         .event_time
                         .signed_duration_since(start_t.event_time)
                         .num_seconds();
-                });
+                }
             });
         }
 
