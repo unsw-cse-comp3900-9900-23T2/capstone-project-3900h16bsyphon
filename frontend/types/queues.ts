@@ -1,4 +1,4 @@
-import { Duration, Tag } from './requests';
+import { Duration, Tag, TimeStamp } from './requests';
 
 export type QueueData = {
     queueId: string;
@@ -12,7 +12,7 @@ export type QueueData = {
     courseOfferingId: string;
 }
 
-type QueueTutorSummaryData = {
+export type QueueTutorSummaryData = {
   zid: number,
   firstName: string,
   lastName: string,
@@ -22,16 +22,17 @@ type QueueTutorSummaryData = {
   tagsWorkedOn: Tag[],
 };
 
-type QueueTagSummaryData = {
+export type QueueTagSummaryData = {
   tag: Tag,
   duration: Duration,
 };
 
-type QueueSummaryData = {
+export type QueueSummaryData = {
   title: string,
-  startTime: Date,
-  endTime: Date,
+  courseCode: string,
+  startTime: TimeStamp,
+  endTime: TimeStamp,
   duration: Duration,
   tutorSummaries: QueueTutorSummaryData[],
-  timeSpentPerTag: QueueTagSummaryData[],
+  tagSummaries: QueueTagSummaryData[],
 };

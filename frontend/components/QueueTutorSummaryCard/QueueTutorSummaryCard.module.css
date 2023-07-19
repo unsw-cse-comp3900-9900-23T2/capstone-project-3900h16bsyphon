@@ -1,0 +1,32 @@
+.infoCard {
+  padding: 15px;
+}
+
+.infoCardTitleContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.allSummaryItemsContainer {
+  padding: 10px 0px;
+}
+
+.summaryItem {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.durationTagBoxContainer {
+  padding-top: 20px;
+}
+
+.summaryHeadings {
+  font-weight: bold;
+}
+
+.tagsContainer {
+  display: flex;
+  gap: 5px;
+}
+

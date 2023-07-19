@@ -6,13 +6,16 @@
   padding-top: 1%;
 }
 
-.cardBox {
-  flex: 4;
-}
-
 .queueTitle {
   padding-top: 2%;
   padding-bottom: 3%;
+}
+
+
+.body {
+  display: flex;
+  width: 95%;
+  column-gap: 5%;
 }
 
 .greenButton {
@@ -42,11 +45,5 @@
 }
 
 .summaryContainer {
-  flex: 2;
-}
-
-.body {
-  display: flex;
-  width: 95%;
-  column-gap: 5%;
+  flex: 4;
 }
