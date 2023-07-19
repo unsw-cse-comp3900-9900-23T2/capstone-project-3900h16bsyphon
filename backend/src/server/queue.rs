@@ -369,23 +369,13 @@ pub async fn num_requests_until_close(
     // calculate time remaining
     let difference = (end_time - curr_time).num_minutes();
 
-    // get the number of remaining requests in the queue
-    let requests = entities::requests::Entity::find()
-        .left_join(entities::queues::Entity)
-        .filter(entities::requests::Column::QueueId.eq(query.queue_id))
-        .filter(entities::requests::Column::Status.eq("unseen"))
-        .filter(entities::queues::Column::IsAvailable.eq(true))
-        .filter(entities::queues::Column::IsVisible.eq(true))
-        .select_only()
-        .column(entities::requests::Column::Zid)
-        .distinct()
-        .count(db)
-        .await?;
-    let req: i64 = requests.try_into().unwrap();
-
-    // calculate the number of requests that can be made until the queue closes
-    let res = difference / (10 * req);
-
+    // calculate the number of requests that can be resolved until the queue closes
+    let res = match queue.time_limit {
+        Some(0) => difference / 15,
+        Some(_) => difference / queue.time_limit.unwrap() as i64,
+        None => difference / 15,
+    };
+    log::debug!("res: {}", res);
     Ok(HttpResponse::Ok().json(res))
 }
 

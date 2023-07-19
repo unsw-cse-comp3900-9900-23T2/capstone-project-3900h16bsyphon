@@ -10,9 +10,13 @@ import { Tag, UserRequest } from '../../../types/requests';
 import dayjs from 'dayjs';
 import InfoIcon from '@mui/icons-material/Info';
 import useAuthenticatedWebSocket from '../../../hooks/useAuthenticatedWebSocket';
+import useSound from 'use-sound';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ActiveQueue = () => {
   const router = useRouter();
+  const [play] = useSound('/sounds/queueUpdate.mp3', { volume: 1 });
   const [requests, setRequests] = useState<UserRequest[]>([]);
   const [requestData, setRequestData] = useState({
     title: 'COMP1521 Thursday Week 5 Help Session',
@@ -30,7 +34,7 @@ const ActiveQueue = () => {
     onOpen: () => {
       console.log('connected [queue data]');
     }
-  });
+  }, !!requestData.queueId);
 
   // update the queue data
   useEffect(() => {
@@ -38,10 +42,25 @@ const ActiveQueue = () => {
     console.debug('new_msg: ', lastJsonMessage);
     if ((lastJsonMessage as any)?.type === 'queue_data') {
       let newRequestsData = (lastJsonMessage as any).requests;
-      console.log('newRequstData', newRequestsData);
+      console.debug('newRequestsData', newRequestsData);
+      if (newRequestsData.length > requests.length) {
+        play();
+        toast(`${newRequestsData[newRequestsData.length - 1].first_name} ${newRequestsData[newRequestsData.length - 1].last_name} has joined the queue!`, {
+          position: 'bottom-left',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'light',
+          className: styles.toast,
+        });
+      }
       setRequests(toCamelCase(newRequestsData));
     }
-  }, [lastJsonMessage]);
+  }, [lastJsonMessage, play]);
+
 
   useEffect(() => {
     let getRequests = async () => {
@@ -131,6 +150,18 @@ const ActiveQueue = () => {
   };
 
   return <>
+    <ToastContainer
+      position='bottom-left'
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme='light'
+    />
     <MetaData />
     <Header />
     <div className={styles.pageContainer}>
