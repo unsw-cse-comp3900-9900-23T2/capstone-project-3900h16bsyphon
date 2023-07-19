@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::entities;
 
+use super::{RequestDuration, TimeStampModel};
+
 #[derive(Serialize, Deserialize, Debug, Clone, FromQueryResult)]
 pub struct Tag {
     pub tag_id: i32,
@@ -117,6 +119,12 @@ pub struct GetQueueRequestCount {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetQueueSummaryQuery {
+    pub queue_id: i32
+}
+
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetQueueRequestCountResponse {
     pub count: u64,
 }
@@ -125,3 +133,41 @@ pub struct GetQueueRequestCountResponse {
 pub struct GetRemainingStudents {
     pub queue_id: i32,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct QueueInformationModel {
+    pub title: String,
+    pub course_code: String,
+    pub start_time: NaiveDateTime,
+    pub end_time: NaiveDateTime,
+}
+
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct QueueTutorSummaryData {
+    pub zid: i32,
+    pub first_name: String,
+    pub last_name: String,
+    pub total_seen: i32,
+    pub total_seeing: i32,
+    pub average_time: i32,
+    pub tags_worked_on: Vec<Tag>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct QueueTagSummaryData {
+    pub tag: Tag,
+    pub duration: RequestDuration
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct QueueSummaryData {
+    pub title: String,
+    pub course_code: String,
+    pub start_time: TimeStampModel,
+    pub end_time: TimeStampModel,
+    pub duration: RequestDuration,
+    pub tutorSummaries: Vec<QueueTutorSummaryData>,
+    pub tagSummaries: Vec<QueueTagSummaryData>,
+}
+

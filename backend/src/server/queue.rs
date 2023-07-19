@@ -4,7 +4,7 @@ use crate::{
         CloseQueueRequest, CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery,
         GetQueueByIdQuery, GetQueueRequestCount, GetQueueTagsQuery, GetQueuesByCourseQuery,
         GetRemainingStudents, QueueReturnModel, SyphonError, SyphonResult, Tag, TokenClaims,
-        UpdateQueuePreviousRequestCount, UpdateQueueRequest,
+        UpdateQueuePreviousRequestCount, UpdateQueueRequest, GetQueueSummaryQuery, QueueSummaryData, QueueInformationModel, RequestDuration, TimeStampModel,
     },
     test_is_user,
     utils::{db::db, user::validate_user}, sockets::{lobby::Lobby, messages::{HttpServerAction, WsMessage}, SocketChannels},
@@ -388,10 +388,26 @@ pub async fn num_requests_until_close(
     Ok(HttpResponse::Ok().json(res))
 }
 
-pub async fn get_queue_summary(query: Query<GetQueueRequestCount>) -> SyphonResult<HttpResponse> {
+pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResult<HttpResponse> {
     let db = db();
     // given queueid
 
+    // get queue information
+    let queue = entities::queues::Entity::find_by_id(query.queue_id)
+        .select_only()
+        .left_join(entities::course_offerings::Entity)
+        .column(entities::queues::Column::Title)
+        .column(entities::queues::Column::StartTime)
+        .column(entities::queues::Column::EndTime)
+        .column(entities::course_offerings::Column::CourseCode)
+        .into_model::<QueueInformationModel>()
+        .one(db)
+        .await?
+        .ok_or(SyphonError::QueueNotExist(query.queue_id))?;
+
+    // https://www.youtube.com/watch?v=rksaoaqt3JA
+    // FIXME: find a better way to convert end time
+    // let end_time = DateTime::<Utc>::from_utc(queue.end_time, Utc).with_timezone(&Sydney) - Duration::hours(10);
     // start time
     // end time 
 
@@ -404,19 +420,34 @@ pub async fn get_queue_summary(query: Query<GetQueueRequestCount>) -> SyphonResu
     // 1. find num of requests status --> 'seeing'
     // 2. find num of requests status --> 'seen'
 
-    let requests = entities::requests::Entity::find()
-        .left_join(entities::queues::Entity)
-        .filter(entities::requests::Column::QueueId.eq(query.queue_id))
-        .filter(entities::requests::Column::Status.eq("unseen"))
-        .filter(entities::queues::Column::IsAvailable.eq(true))
-        .filter(entities::queues::Column::IsVisible.eq(true))
-        .select_only()
-        .column(entities::requests::Column::Zid)
-        .distinct()
-        .count(db)
-        .await?;
+    // let requests = entities::requests::Entity::find()
+    //     .left_join(entities::queues::Entity)
+    //     .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+    //     .filter(entities::requests::Column::Status.eq("unseen"))
+    //     .filter(entities::queues::Column::IsAvailable.eq(true))
+    //     .filter(entities::queues::Column::IsVisible.eq(true))
+    //     .select_only()
+    //     .column(entities::requests::Column::Zid)
+    //     .distinct()
+    //     .count(db)
+    //     .await?;
 
-    let req: i32 = requests.try_into().unwrap();
+    let time_difference = queue.end_time.signed_duration_since(queue.start_time);
+    let duration = RequestDuration {
+        hours: time_difference.num_hours(),
+        minutes: time_difference.num_minutes(),
+        seconds: time_difference.num_seconds(),
+    };
 
-    Ok(HttpResponse::Ok().json(req))
+    let result = QueueSummaryData {
+        title: queue.title,
+        course_code: queue.course_code,
+        start_time: TimeStampModel {event_time: queue.start_time},
+        end_time: TimeStampModel {event_time: queue.end_time},
+        duration: duration,
+        tutorSummaries: todo!(),
+        tagSummaries: todo!(),
+    };
+
+    Ok(HttpResponse::Ok().json(result))
 }
