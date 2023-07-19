@@ -155,8 +155,8 @@ pub struct QueueTutorSummaryData {
     pub zid: i32,
     pub first_name: String,
     pub last_name: String,
-    pub total_seen: i32,
-    pub total_seeing: i32,
+    pub total_seen: u64,
+    pub total_seeing: u64,
     pub average_time: i32,
     pub tags_worked_on: Vec<Tag>,
 }
@@ -174,7 +174,7 @@ pub struct QueueSummaryData {
     pub start_time: TimeStampModel,
     pub end_time: TimeStampModel,
     pub duration: RequestDuration,
-    pub tutorSummaries: Vec<QueueTutorSummaryData>,
-    pub tagSummaries: Vec<QueueTagSummaryData>,
+    pub tutor_summaries: Vec<QueueTutorSummaryData>,
+    pub tag_summaries: Vec<QueueTagSummaryData>,
 }
 

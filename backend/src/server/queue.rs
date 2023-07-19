@@ -19,10 +19,10 @@ use chrono::{DateTime, Duration, Utc};
 use chrono_tz::Australia::Sydney;
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter,
-    QuerySelect, PaginatorTrait
+    QuerySelect, PaginatorTrait, DatabaseConnection, DbErr
 };
 
-use futures::future::join_all;
+use futures::future::{join_all, try_join_all};
 use serde_json::json;
 
 pub async fn create_queue(
@@ -417,18 +417,31 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         .all(db)
         .await?;
 
-    let tutor_summaries = tutor_info_list.iter().map(|tutor_info| {
-
-        QueueTutorSummaryData {
-            zid: todo!(),
-            first_name: todo!(),
-            last_name: todo!(),
-            total_seen: todo!(),
-            total_seeing: todo!(),
-            average_time: todo!(),
-            tags_worked_on: todo!(),
-        }
+    let total_seeing = tutor_info_list.iter().map(|tutor_info| {
+        entities::request_status_log::Entity::find()
+        .filter(entities::request_status_log::Column::TutorId.eq(tutor_info.zid))
+        .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+        .count(db)
     }).collect::<Vec<_>>();
+    let total_seeing = try_join_all(total_seeing).await?;
+
+
+    let total_seen = tutor_info_list.iter().map(|tutor_info| {
+        entities::request_status_log::Entity::find()
+        .filter(entities::request_status_log::Column::TutorId.eq(tutor_info.zid))
+        .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
+        .count(db)
+    }).collect::<Vec<_>>();
+    let total_seen = try_join_all(total_seen).await?;
+
+    // get the request_ids, 
+
+
+    tutor_info_list.iter().zip(total_seeing.iter()).zip(total_seen.iter()).map(|((x, y), z)| {
+       (x, y, z)
+    });
+
+
     // get list of tags for the queue
     let tag_list = entities::queue_tags::Entity::find()
         .select_only()
@@ -470,15 +483,15 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         seconds: time_difference.num_seconds(),
     };
 
-    let result = QueueSummaryData {
+    let queue_summary_result = QueueSummaryData {
         title: queue.title,
         course_code: queue.course_code,
         start_time: TimeStampModel {event_time: queue.start_time},
         end_time: TimeStampModel {event_time: queue.end_time},
         duration: duration,
-        tutorSummaries: todo!(),
-        tagSummaries: todo!(),
+        tutor_summaries: tutor_summaries,
+        tag_summaries: todo!()
     };
 
-    Ok(HttpResponse::Ok().json(result))
+    Ok(HttpResponse::Ok().json(queue_summary_result))
 }
