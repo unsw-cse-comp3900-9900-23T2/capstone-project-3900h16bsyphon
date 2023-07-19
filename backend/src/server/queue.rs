@@ -4,7 +4,7 @@ use crate::{
         CloseQueueRequest, CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery,
         GetQueueByIdQuery, GetQueueRequestCount, GetQueueTagsQuery, GetQueuesByCourseQuery,
         GetRemainingStudents, QueueReturnModel, SyphonError, SyphonResult, Tag, TokenClaims,
-        UpdateQueuePreviousRequestCount, UpdateQueueRequest, GetQueueSummaryQuery, QueueSummaryData, QueueInformationModel, RequestDuration, TimeStampModel,
+        UpdateQueuePreviousRequestCount, UpdateQueueRequest, GetQueueSummaryQuery, QueueSummaryData, QueueInformationModel, RequestDuration, TimeStampModel, TutorInformationModel, QueueTutorSummaryData,
     },
     test_is_user,
     utils::{db::db, user::validate_user}, sockets::{lobby::Lobby, messages::{HttpServerAction, WsMessage}, SocketChannels},
@@ -405,11 +405,42 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         .await?
         .ok_or(SyphonError::QueueNotExist(query.queue_id))?;
 
-    // https://www.youtube.com/watch?v=rksaoaqt3JA
-    // FIXME: find a better way to convert end time
-    // let end_time = DateTime::<Utc>::from_utc(queue.end_time, Utc).with_timezone(&Sydney) - Duration::hours(10);
-    // start time
-    // end time 
+    // get list of tutors for the queue
+    let tutor_info_list = entities::queue_tutors::Entity::find()
+        .select_only()
+        .left_join(entities::users::Entity)
+        .column(entities::users::Column::Zid)
+        .column(entities::users::Column::FirstName)
+        .column(entities::users::Column::LastName)
+        .filter(entities::queue_tutors::Column::QueueId.eq(query.queue_id))
+        .into_model::<TutorInformationModel>()
+        .all(db)
+        .await?;
+
+    let tutor_summaries = tutor_info_list.iter().map(|tutor_info| {
+
+        QueueTutorSummaryData {
+            zid: todo!(),
+            first_name: todo!(),
+            last_name: todo!(),
+            total_seen: todo!(),
+            total_seeing: todo!(),
+            average_time: todo!(),
+            tags_worked_on: todo!(),
+        }
+    }).collect::<Vec<_>>();
+    // get list of tags for the queue
+    let tag_list = entities::queue_tags::Entity::find()
+        .select_only()
+        .left_join(entities::tags::Entity)
+        .column(entities::tags::Column::TagId)
+        .column(entities::tags::Column::Name)
+        .column(entities::queue_tags::Column::IsPriority)
+        .filter(entities::queue_tags::Column::QueueId.eq(query.queue_id))
+        .into_model::<Tag>()
+        .all(db)
+        .await?;
+
 
     // find all tutors that worked on any request that was in that queue
     // logs.request_id join requests.request_id where requests.queue_id == body.queue_id

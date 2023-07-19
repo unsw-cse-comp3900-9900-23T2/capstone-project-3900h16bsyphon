@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use sea_orm::{ActiveValue, FromQueryResult};
+use sea_orm::{ActiveValue, FromQueryResult, EnumIter};
 use serde::{Deserialize, Serialize};
 
 use crate::entities;
@@ -140,6 +140,13 @@ pub struct QueueInformationModel {
     pub course_code: String,
     pub start_time: NaiveDateTime,
     pub end_time: NaiveDateTime,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct TutorInformationModel {
+    pub zid: i32,
+    pub first_name: String,
+    pub last_name: String,
 }
 
 
