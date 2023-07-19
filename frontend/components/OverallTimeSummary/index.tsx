@@ -19,7 +19,7 @@ const OverallTimeSummary = ({ startTime, endTime, duration, backgroundColor, tex
   
   return <>
     <Card className={styles.infoCard}>
-      <Typography className={styles.summaryHeadings}  variant='h6'>Time Summary</Typography>
+      <Typography className={styles.summaryHeadings}  variant='h5'>Time Summary</Typography>
       <div className={styles.tutorIdNameContainer}>
         <div className={styles.tutorIdName} >
           {startTime &&

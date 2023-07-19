@@ -15,7 +15,7 @@
 .body {
   display: flex;
   width: 95%;
-  column-gap: 5%;
+  column-gap: 2%;
 }
 
 .greenButton {

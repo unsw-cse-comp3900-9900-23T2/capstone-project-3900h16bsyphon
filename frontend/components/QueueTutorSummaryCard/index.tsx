@@ -9,7 +9,7 @@ const QueueTutorSummaryCard = ({ zid, firstName, lastName, totalSeen, totalSeein
   return <>
     <Card className={styles.infoCard}>
       <div className={styles.infoCardTitleContainer}>
-        <Typography className={styles.summaryHeadings}  variant='h6'>Tutor Summary: {firstName} {lastName}</Typography>
+        <Typography className={styles.summaryHeadings}  variant='h5'>Tutor Summary: {firstName} {lastName}</Typography>
         <TagBox
           text={formatZid(zid)}
           backgroundColor="var(--colour-main-purple-400)"

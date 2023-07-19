@@ -8,6 +8,7 @@ import { Status, Tag } from '../../../types/requests';
 import { QueueSummaryData } from '../../../types/queues';
 import OverallTimeSummary from '../../../components/OverallTimeSummary';
 import QueueTutorSummaryCard from '../../../components/QueueTutorSummaryCard';
+import QueueTagSummaryCard from '../../../components/QueueTagSummaryCard';
 
 const tags = [
   {
@@ -103,6 +104,7 @@ const QueueSummary = () => {
           </div>
           <div className={styles.summaryContainer}>
             {/* tag summaries in this div */}
+            <QueueTagSummaryCard tagSummaries={summaryData.tagSummaries} />
           </div>
         </div>
       </div>

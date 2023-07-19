@@ -8,7 +8,10 @@
 }
 
 .allSummaryItemsContainer {
-  padding: 10px 0px;
+  padding: 15px 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .summaryItem {
@@ -27,6 +30,6 @@
 
 .tagsContainer {
   display: flex;
-  gap: 5px;
+  gap: 3px;
 }
 
