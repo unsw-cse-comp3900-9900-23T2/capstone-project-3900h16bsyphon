@@ -2,7 +2,7 @@ use actix::Addr;
 use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
-use chrono::{Utc};
+use chrono::Utc;
 use chrono_tz::Australia::Sydney;
 use serde_json::json;
 

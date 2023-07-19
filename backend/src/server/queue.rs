@@ -1,5 +1,5 @@
 use crate::{
-    entities,
+    entities::{self, sea_orm_active_enums::Statuses},
     models::{
         CloseQueueRequest, CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery,
         GetQueueByIdQuery, GetQueueRequestCount, GetQueueTagsQuery, GetQueuesByCourseQuery,
@@ -17,7 +17,6 @@ use actix_web::{
 };
 use chrono::{DateTime, Duration, Utc};
 use chrono_tz::Australia::Sydney;
-use jwt::token;
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter,
     QuerySelect, PaginatorTrait
@@ -335,7 +334,7 @@ pub async fn get_student_count(query: Query<GetQueueRequestCount>) -> SyphonResu
     let requests = entities::requests::Entity::find()
         .left_join(entities::queues::Entity)
         .filter(entities::requests::Column::QueueId.eq(query.queue_id))
-        .filter(entities::requests::Column::Status.eq("unseen"))
+        .filter(entities::requests::Column::Status.eq(Statuses::Unseen))
         .filter(entities::queues::Column::IsAvailable.eq(true))
         .filter(entities::queues::Column::IsVisible.eq(true))
         .select_only()
@@ -373,7 +372,7 @@ pub async fn num_requests_until_close(
     let requests = entities::requests::Entity::find()
         .left_join(entities::queues::Entity)
         .filter(entities::requests::Column::QueueId.eq(query.queue_id))
-        .filter(entities::requests::Column::Status.eq("unseen"))
+        .filter(entities::requests::Column::Status.eq(Statuses::Unseen))
         .filter(entities::queues::Column::IsAvailable.eq(true))
         .filter(entities::queues::Column::IsVisible.eq(true))
         .select_only()
@@ -389,3 +388,35 @@ pub async fn num_requests_until_close(
     Ok(HttpResponse::Ok().json(res))
 }
 
+pub async fn get_queue_summary(query: Query<GetQueueRequestCount>) -> SyphonResult<HttpResponse> {
+    let db = db();
+    // given queueid
+
+    // start time
+    // end time 
+
+    // find all tutors that worked on any request that was in that queue
+    // logs.request_id join requests.request_id where requests.queue_id == body.queue_id
+    // get column for tutor id --> into Vec<i32>
+    
+    // for the tutors: Vec<i32> 
+    // logs.request_id join requests.request_id where requests.queue_id == body.queue_id
+    // 1. find num of requests status --> 'seeing'
+    // 2. find num of requests status --> 'seen'
+
+    let requests = entities::requests::Entity::find()
+        .left_join(entities::queues::Entity)
+        .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+        .filter(entities::requests::Column::Status.eq("unseen"))
+        .filter(entities::queues::Column::IsAvailable.eq(true))
+        .filter(entities::queues::Column::IsVisible.eq(true))
+        .select_only()
+        .column(entities::requests::Column::Zid)
+        .distinct()
+        .count(db)
+        .await?;
+
+    let req: i32 = requests.try_into().unwrap();
+
+    Ok(HttpResponse::Ok().json(req))
+}
