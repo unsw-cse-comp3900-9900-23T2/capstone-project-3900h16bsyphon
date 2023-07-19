@@ -654,7 +654,6 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
 
     }
 
-
     //////////////////////////////////// Queue Timestamps /////////////////////////////////////////
     let time_difference = queue.end_time.signed_duration_since(queue.start_time);
     let duration = RequestDuration {

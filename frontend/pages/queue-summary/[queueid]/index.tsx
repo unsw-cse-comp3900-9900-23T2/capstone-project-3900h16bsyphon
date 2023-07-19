@@ -61,12 +61,18 @@ const QueueSummary = () => {
   const [summaryData, setSummaryData] = useState<QueueSummaryData>(queueSummaryInitialValue);
   
   useEffect(() => {
-    let getRequest = async () => {
-      let res = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.requestid}`});
-
+    let getQueueSummary = async () => {
+      let res = await authenticatedGetFetch('/queue/summary', {queue_id: `${router.query.queueid}`});
+      if (!res.ok) {
+        console.log('something went wrong with queue summary, see network tab');
+        return;
+      }
+      const data = await res.json();
+      setSummaryData(toCamelCase(data));
+      console.log('the data inside queue summary is ', data);
     };
     if (!router.query.requestid) return;
-    getRequest();
+    getQueueSummary();
   }, [router.query.queueid]);
 
   return (
