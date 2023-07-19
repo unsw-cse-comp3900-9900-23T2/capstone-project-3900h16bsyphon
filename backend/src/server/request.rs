@@ -7,7 +7,10 @@ use chrono_tz::Australia::Sydney;
 use serde_json::json;
 
 use crate::entities::sea_orm_active_enums::Statuses;
-use crate::models::{RequestSummaryBody, TutorSummaryDetails, RequestSummaryReturnModel, TimeStampModel, RequestDuration};
+use crate::models::{
+    RequestDuration, RequestSummaryBody, RequestSummaryReturnModel, TimeStampModel,
+    TutorSummaryDetails,
+};
 use crate::sockets::lobby::Lobby;
 use crate::sockets::messages::HttpServerAction;
 use crate::sockets::SocketChannels;
@@ -71,7 +74,6 @@ pub async fn create_request(
     Ok(HttpResponse::Ok().json(CreateRequestResponse {
         request_id: insertion.request_id,
     }))
-
 }
 
 pub async fn edit_request(
@@ -373,50 +375,49 @@ pub async fn request_summary(
             json!("request to edit cannot be found"),
             StatusCode::NOT_FOUND,
         ))?;
-    
+
     // get log for the first start_time (will not exist if student resolved themselves)
     let start_log = entities::request_status_log::Entity::find()
-    .select_only()
-    .column(entities::request_status_log::Column::EventTime)
-    .left_join(entities::users::Entity)
-    .filter(entities::request_status_log::Column::RequestId.eq(request_summary.request_id))
-    .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
-    .into_model::<TimeStampModel>()
-    .one(db)
-    .await?;
+        .select_only()
+        .column(entities::request_status_log::Column::EventTime)
+        .left_join(entities::users::Entity)
+        .filter(entities::request_status_log::Column::RequestId.eq(request_summary.request_id))
+        .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+        .into_model::<TimeStampModel>()
+        .one(db)
+        .await?;
 
     // get log for end_time
     let end_log = entities::request_status_log::Entity::find()
-    .select_only()
-    .column(entities::request_status_log::Column::EventTime)
-    .left_join(entities::users::Entity)
-    .filter(entities::request_status_log::Column::RequestId.eq(request_summary.request_id))
-    .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
-    .into_model::<TimeStampModel>()
-    .one(db)
-    .await?
-    .ok_or(SyphonError::Json(
-        json!("request was never transitioned to 'Seen' status"),
-        StatusCode::NOT_FOUND,
-    ))?;
+        .select_only()
+        .column(entities::request_status_log::Column::EventTime)
+        .left_join(entities::users::Entity)
+        .filter(entities::request_status_log::Column::RequestId.eq(request_summary.request_id))
+        .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
+        .into_model::<TimeStampModel>()
+        .one(db)
+        .await?
+        .ok_or(SyphonError::Json(
+            json!("request was never transitioned to 'Seen' status"),
+            StatusCode::NOT_FOUND,
+        ))?;
 
     // get search for logs, matching request id, get all tutor id joined with user table for their names
     let tutor_logs = entities::request_status_log::Entity::find()
-    .select_only()
-    .columns([
-        entities::users::Column::FirstName,
-        entities::users::Column::LastName,
-        entities::users::Column::Zid,
+        .select_only()
+        .columns([
+            entities::users::Column::FirstName,
+            entities::users::Column::LastName,
+            entities::users::Column::Zid,
         ])
-    .distinct_on([entities::users::Column::Zid])
-    .left_join(entities::users::Entity)
-    .filter(entities::request_status_log::Column::RequestId.eq(request_summary.request_id))
-    .into_model::<TutorSummaryDetails>()
-    .all(db)
-    .await?;
+        .distinct_on([entities::users::Column::Zid])
+        .left_join(entities::users::Entity)
+        .filter(entities::request_status_log::Column::RequestId.eq(request_summary.request_id))
+        .into_model::<TutorSummaryDetails>()
+        .all(db)
+        .await?;
 
-
-    let duration = start_log.as_ref().map(|time| { 
+    let duration = start_log.as_ref().map(|time| {
         let diff = end_log.event_time.signed_duration_since(time.event_time);
         RequestDuration {
             hours: diff.num_hours(),
@@ -424,7 +425,7 @@ pub async fn request_summary(
             seconds: diff.num_seconds(),
         }
     });
-    
+
     let summary = RequestSummaryReturnModel {
         tutors: tutor_logs,
         start_time: start_log,
@@ -434,4 +435,3 @@ pub async fn request_summary(
 
     Ok(HttpResponse::Ok().json(summary))
 }
-

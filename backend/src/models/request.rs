@@ -1,6 +1,6 @@
+use chrono::NaiveDateTime;
 use sea_orm::FromQueryResult;
 use serde::{Deserialize, Serialize};
-use chrono::NaiveDateTime;
 
 use crate::entities;
 use entities::sea_orm_active_enums::Statuses;

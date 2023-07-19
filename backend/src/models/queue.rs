@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use sea_orm::{ActiveValue, FromQueryResult, EnumIter};
+use sea_orm::{ActiveValue, EnumIter, FromQueryResult};
 use serde::{Deserialize, Serialize};
 
 use crate::entities;
@@ -115,14 +115,13 @@ pub struct UpdateQueuePreviousRequestCount {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetQueueRequestCount {
-    pub queue_id: i32
+    pub queue_id: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetQueueSummaryQuery {
-    pub queue_id: i32
+    pub queue_id: i32,
 }
-
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetQueueRequestCountResponse {
@@ -182,7 +181,7 @@ pub struct QueueTutorSummaryData {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct QueueTagSummaryData {
     pub tag: Tag,
-    pub duration: RequestDuration
+    pub duration: RequestDuration,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

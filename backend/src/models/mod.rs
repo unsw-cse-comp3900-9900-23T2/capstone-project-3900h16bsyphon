@@ -2,22 +2,22 @@ pub mod auth;
 pub mod course;
 pub mod faqs;
 pub mod history;
+pub mod logs;
 pub mod queue;
 pub mod request;
 pub mod user;
-pub mod logs;
 
 use actix_web::HttpResponseBuilder;
 pub use auth::*;
 pub use course::*;
 pub use faqs::*;
 pub use history::*;
+pub use logs::*;
 pub use queue::*;
 pub use queue::*;
 pub use request::*;
 use serde_json::Value;
 pub use user::*;
-pub use logs::*;
 
 pub type SyphonResult<T> = Result<T, SyphonError>;
 

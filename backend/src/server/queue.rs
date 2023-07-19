@@ -681,9 +681,9 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         end_time: TimeStampModel {
             event_time: queue.end_time,
         },
-        duration: duration,
-        tutor_summaries: tutor_summaries,
-        tag_summaries: tag_summaries,
+        duration,
+        tutor_summaries,
+        tag_summaries,
     };
 
     Ok(HttpResponse::Ok().json(queue_summary_result))

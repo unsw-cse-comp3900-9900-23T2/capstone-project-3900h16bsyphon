@@ -63,7 +63,11 @@ impl Lobby {
                     queue_id,
                     content: (queue, requests),
                 };
-                log::debug!("Broadcasting queue data: {:?} , targets {:?}", ws_msg, targets);
+                log::debug!(
+                    "Broadcasting queue data: {:?} , targets {:?}",
+                    ws_msg,
+                    targets
+                );
                 lobby.broadcast_message(ws_msg, &targets);
                 fut::ready(())
             })
