@@ -406,6 +406,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         .column(entities::users::Column::FirstName)
         .column(entities::users::Column::LastName)
         .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+        .distinct_on([entities::request_status_log::Column::TutorId])
         .into_model::<RequestTutorInformationModel>()
         .all(db)
         .await?
