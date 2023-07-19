@@ -11,7 +11,7 @@ import { useRouter } from 'next/router';
 import TagBox from '../TagBox';
 import { useEffect, useState } from 'react';
 import {
-  authenticatedPutFetch,
+  authenticatedPostFetch,
   formatZid,
   determineBackgroundColour,
 } from '../../utils';
@@ -69,6 +69,21 @@ const StudentQueueRequestCard = ({
     }
   };
 
+  const handleMove = async (e: MouseEvent, direction: 'up' | 'down') => {
+    e.stopPropagation();
+    const requestUrl = (direction === 'up') ? '/request/move_up' : '/request/move_down';
+    console.log('requestUrl', requestUrl);
+    const res = await authenticatedPostFetch(requestUrl, {
+      request_id: requestId,
+    });
+    if (!res.ok) {
+      console.log(
+        'error: something went wrong with moving request up; check network tab'
+      );
+      return;
+    }
+  };
+
   const handleOpenCard = () => {
     if (status === Status.Seen) router.push(`/request-summary/${requestId}`);
     else router.push(`/request/${requestId}`);
@@ -120,10 +135,14 @@ const StudentQueueRequestCard = ({
           </div>
           <CardActions className={styles.cardActions}>
             <div className={styles.orderContainer}>
-              <IconButton aria-label="move up button">
+              <IconButton aria-label="move up button"
+                onClick={(e) => handleMove(e, 'up')}
+              >
                 <ArrowUpward />
               </IconButton>
-              <IconButton aria-label="move down button">
+              <IconButton aria-label="move down button"
+                onClick={(e) => handleMove(e, 'down')}
+              >
                 <ArrowDownward />
               </IconButton>
             </div>

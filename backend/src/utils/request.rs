@@ -1,3 +1,5 @@
+use actix::Addr;
+use actix_web::web;
 use actix_web::{web::ReqData, HttpResponse};
 use futures::future::try_join;
 use sea_orm::ActiveModelTrait;
@@ -8,6 +10,9 @@ use sea_orm::ModelTrait;
 
 use crate::entities;
 use crate::models;
+use crate::sockets::SocketChannels;
+use crate::sockets::lobby::Lobby;
+use crate::sockets::messages::HttpServerAction;
 use crate::utils;
 use models::{MoveDirection, SyphonError, SyphonResult, TokenClaims};
 use utils::db::db;
@@ -18,6 +23,7 @@ pub async fn move_request(
     token: ReqData<TokenClaims>,
     request_id: i32,
     direction: MoveDirection,
+    lobby: web::Data<Addr<Lobby>>
 ) -> SyphonResult<HttpResponse> {
     let db = db();
     let request = entities::requests::Entity::find_by_id(request_id)
@@ -43,17 +49,30 @@ pub async fn move_request(
         MoveDirection::Down => prev_order + 1,
     };
 
-    swap_order(&all_reqs, prev_order, new_order, db).await?;
+    if let Some((r1, r2)) = swap_order(&all_reqs, prev_order, new_order, db).await? {
+        let action = HttpServerAction::InvalidateKeys(vec![
+            SocketChannels::QueueData(request.queue_id),
+            SocketChannels::Request(r1),
+            SocketChannels::Request(r2),
+        ]);
+        lobby.do_send(action);
+    }
 
     Ok(HttpResponse::Ok().json(()))
 }
 
+/// Takes in two `order` values. Swaps the order of the two requests
+/// that match those order values.
+/// If two orders are swapped and the swap is successful, returns
+/// the request ids of the two requests that were swapped.
+/// Otherwise, Ok(None)
+/// Err(_) on database errors
 async fn swap_order(
     reqs: &Vec<entities::requests::Model>,
     order_a: i32,
     order_b: i32,
     db: &sea_orm::DatabaseConnection,
-) -> SyphonResult<()> {
+) -> SyphonResult<Option<(i32, i32)>> {
     let req_a = reqs.iter().find(|r| r.order == order_a);
     let req_b = reqs.iter().find(|r| r.order == order_b);
 
@@ -75,9 +94,9 @@ async fn swap_order(
             log::error!("Error while swapping order: {:#?}", e);
             e
         })?;
-
-        log::info!("swap order result: \n\t{:#?}\nTo:\n\t{:#?}", (a, b), res);
+        log::info!("swap order result: \n\t{:#?}\nTo:\n\t{:#?}", (&a, &b), res);
+        return Ok(Some((a.request_id, b.request_id)))
     }
 
-    Ok(())
+    Ok(None)
 }
