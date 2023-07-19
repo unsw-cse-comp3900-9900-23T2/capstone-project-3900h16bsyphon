@@ -77,7 +77,8 @@ const WaitingScreen = () => {
       return;
     }
     getRequest();
-  }, [router.query.requestid, router]);
+    setIsClusterable(requestData.isClusterable);
+  }, [router.query.requestid, router, requestData.isClusterable]);
 
   useEffect(() => {
     let getQueueData = async () => {
