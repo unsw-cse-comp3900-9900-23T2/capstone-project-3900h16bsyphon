@@ -430,7 +430,7 @@ pub async fn request_summary(
         tutors: tutor_logs,
         start_time: start_log,
         end_time: end_log,
-        duration: duration,
+        duration,
     };
 
     Ok(HttpResponse::Ok().json(summary))

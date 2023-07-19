@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use sea_orm::{ActiveValue, EnumIter, FromQueryResult};
+use sea_orm::{ActiveValue, FromQueryResult};
 use serde::{Deserialize, Serialize};
 
 use crate::entities;

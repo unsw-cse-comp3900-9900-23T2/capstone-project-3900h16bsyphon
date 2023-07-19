@@ -11,7 +11,7 @@ use crate::{
     },
     sockets::{
         lobby::Lobby,
-        messages::{HttpServerAction, WsMessage},
+        messages::{HttpServerAction},
         SocketChannels,
     },
     test_is_user,
@@ -550,7 +550,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         .map(|(a, b, c, d, e)| QueueTutorSummaryData {
             zid: a.zid,
             first_name: a.first_name.clone(),
-            last_name: a.last_name.clone(),
+            last_name: a.last_name,
             total_seen: c,
             total_seeing: b,
             average_time: d,
@@ -633,7 +633,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         let mut tag_durations_seconds = 0;
         for (i, start_time) in start_times.iter().enumerate() {
             let end_time = end_times[i].clone();
-            let duration = start_time.as_ref().map(|start_t| {
+            let _duration = start_time.as_ref().map(|start_t| {
                 if let Some(end_t) = end_time {
                     tag_durations_mins += end_t
                         .event_time

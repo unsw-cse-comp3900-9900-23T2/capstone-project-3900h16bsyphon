@@ -151,7 +151,7 @@ impl Handler<Connect> for Lobby {
         let channels2 = channels.clone();
         join_all(channels.into_iter().map(move |c| c.is_allowed(zid)))
             .into_actor(self)
-            .then(move |allowed_res, lobby, _ctx| {
+            .then(move |_allowed_res, lobby, _ctx| {
                 /*
                 if allowed_res.iter().any(|allowed| *allowed == false) {
                     lobby._send_message(WsMessage::Text("FORBIDDEN: DIE".into()), &uuid);
