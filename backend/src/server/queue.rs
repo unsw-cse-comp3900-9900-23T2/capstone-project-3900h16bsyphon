@@ -430,12 +430,17 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         .map(|tutor_info| {
             entities::request_status_log::Entity::find()
                 .select_only()
+                .left_join(entities::requests::Entity)
                 .column(entities::request_status_log::Column::RequestId)
                 .column(entities::request_status_log::Column::EventTime)
                 .filter(
                     entities::request_status_log::Column::TutorId
                         .eq(tutor_info.zid)
                         .and(entities::request_status_log::Column::Status.eq(Statuses::Seeing)),
+                )
+                .filter(
+                    entities::requests::Column::QueueId
+                        .eq(query.queue_id)
                 )
                 .distinct_on([entities::request_status_log::Column::RequestId])
                 .into_model::<RequestStatusTimeInfo>()
@@ -453,12 +458,17 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         .map(|tutor_info| {
             entities::request_status_log::Entity::find()
                 .select_only()
+                .left_join(entities::requests::Entity)
                 .column(entities::request_status_log::Column::RequestId)
                 .column(entities::request_status_log::Column::EventTime)
                 .filter(
                     entities::request_status_log::Column::TutorId
                         .eq(tutor_info.zid)
                         .and(entities::request_status_log::Column::Status.eq(Statuses::Seen)),
+                )
+                .filter(
+                    entities::requests::Column::QueueId
+                        .eq(query.queue_id)
                 )
                 .distinct_on([entities::request_status_log::Column::RequestId])
                 .into_model::<RequestStatusTimeInfo>()
@@ -527,6 +537,10 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
                     entities::request_status_log::Column::TutorId
                         .eq(tutor_info.zid)
                         .and(entities::request_status_log::Column::Status.eq(Statuses::Seen)),
+                )
+                .filter(
+                    entities::queue_tags::Column::QueueId
+                        .eq(query.queue_id)
                 )
                 .distinct_on([entities::request_tags::Column::TagId])
                 .into_model::<Tag>()
