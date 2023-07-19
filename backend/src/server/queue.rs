@@ -16,14 +16,23 @@ use actix_web::{
     HttpResponse,
 };
 use chrono::{DateTime, Duration, Utc};
-use chrono_tz::Australia::Sydney;
+use chrono_tz::{Australia::Sydney, America::North_Dakota::New_Salem};
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter,
-    QuerySelect, PaginatorTrait, DatabaseConnection, DbErr
+    QuerySelect, PaginatorTrait, DatabaseConnection, DbErr, JoinType
 };
 
 use futures::future::{join_all, try_join_all};
 use serde_json::json;
+
+// TODO: change this to izip from itertools in next iteration
+macro_rules! zip {
+    ($x: expr) => ($x);
+    ($x: expr, $($y: expr), +) => (
+        $x.iter().zip(
+            zip!($($y), +))
+    )
+}
 
 pub async fn create_queue(
     token: ReqData<TokenClaims>,
@@ -425,10 +434,12 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         .filter(entities::request_status_log::Column::TutorId.eq(tutor_info.zid)
             .and(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
         )
+        .distinct_on([entities::request_status_log::Column::RequestId])
         .into_model::<RequestStatusTimeInfo>()
         .all(db)
     }).collect::<Vec<_>>();
     let total_seeing = try_join_all(total_seeing).await?;
+    let total_seeing_count = total_seeing.iter().map(|x| x.len() as i64).collect::<Vec<_>>();
 
     let total_seen = tutor_info_list.iter().map(|tutor_info| {
         entities::request_status_log::Entity::find()
@@ -438,10 +449,13 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         .filter(entities::request_status_log::Column::TutorId.eq(tutor_info.zid)
             .and(entities::request_status_log::Column::Status.eq(Statuses::Seen))
         )
+        .distinct_on([entities::request_status_log::Column::RequestId])
         .into_model::<RequestStatusTimeInfo>()
         .all(db)
     }).collect::<Vec<_>>();
     let total_seen = try_join_all(total_seen).await?;
+    let total_seen_count = total_seen.iter().map(|x| x.len() as i64).collect::<Vec<_>>();
+
 
     /////////////////////////////// Average Duration Per Tutor ///////////////////////////////
     let mut average_times = Vec::new();
@@ -464,12 +478,62 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         average_times.push(average_duration);
     }
     
+    ///////////////////////////// Tags Each Tutor Worked On //////////////////////////////
+    let tutors_tags_worked_on = tutor_info_list.iter().map(|tutor_info| {
+        entities::request_status_log::Entity::find()
+        .select_only()
+        .left_join(entities::requests::Entity)
+        .column(entities::request_tags::Column::TagId)
+        .column(entities::tags::Column::Name)
+        .column(entities::queue_tags::Column::IsPriority)
+        .join_rev(
+            JoinType::InnerJoin,
+            entities::request_tags::Entity::belongs_to(entities::requests::Entity)
+            .from(entities::request_tags::Column::RequestId)
+            .to(entities::requests::Column::RequestId)
+            .into()
+        )
+        .join_rev(
+            JoinType::InnerJoin,
+            entities::request_tags::Entity::belongs_to(entities::tags::Entity)
+            .from(entities::request_tags::Column::TagId)
+            .to(entities::tags::Column::TagId)
+            .into()
+        )
+        .join_rev(
+            JoinType::InnerJoin,
+            entities::request_tags::Entity::belongs_to(entities::queue_tags::Entity)
+            .from(entities::request_tags::Column::TagId)
+            .to(entities::queue_tags::Column::TagId)
+            .into()
+        )
+        .filter(entities::request_status_log::Column::TutorId.eq(tutor_info.zid)
+            .and(entities::request_status_log::Column::Status.eq(Statuses::Seen))
+        )
+        .distinct_on([entities::request_tags::Column::TagId])
+        .into_model::<Tag>()
+        .all(db)
+    }).collect::<Vec<_>>();
+    let tutors_tags_worked_on = try_join_all(tutors_tags_worked_on).await?;
 
 
     ////////////////////////////// Join Tutor Summaries Together ////////////////////////////////////
-    let tutor_summaries = tutor_info_list.iter().zip(total_seeing.iter()).zip(total_seen.iter()).map(|((x, y), z)| {
-       (x, y, z)
-    });
+    let tutor_zipped_summaries = zip!(tutor_info_list, total_seeing_count, total_seen_count, average_times, tutors_tags_worked_on);
+
+    let tutor_summaries = Vec::new();
+    for (a, (b, (c, d))) in tutor_zipped_summaries {
+        println!("{} {} {} {}", a, b, c, d);
+
+        tutor_summaries.push(QueueTutorSummaryData {
+            zid: a.zid,
+            first_name: a.first_name.clone(),
+            last_name: a.last_name.clone(),
+            total_seen: *c,
+            total_seeing: *b,
+            average_time: *c,
+            tags_worked_on: d,
+        })
+    }
 
 
     ////////////////////////////// Begin Creating Tag Summaries /////////////////////////////////////
