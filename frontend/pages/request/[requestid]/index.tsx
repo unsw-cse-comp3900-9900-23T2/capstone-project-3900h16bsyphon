@@ -63,7 +63,8 @@ const Request = () => {
       );
       return;
     }
-    router.push(`/active-queue/${data.queueId}`);
+    if (status === Status.Seen) router.push(`/request-summary/${router.query.requestid}`);
+    else router.push(`/active-queue/${data.queueId}`);
   };
 
 
@@ -147,7 +148,6 @@ const Request = () => {
           </Box>
           <div className={styles.chatContainer}>
             <TimeSummaryCard startTime={startTime} status={data.status}/>
-            {/* TODO: please place the chat component inside this div! */}
             <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} isStudent={false} studentZid={data.zid}/> 
           </div>
         </div>

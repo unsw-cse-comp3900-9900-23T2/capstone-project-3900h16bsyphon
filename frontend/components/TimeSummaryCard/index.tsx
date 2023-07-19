@@ -2,7 +2,6 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import styles from './TimeSummaryCard.module.css';
-import dayjs from 'dayjs';
 import Timer from '../Timer';
 import { Status } from '../../types/requests';
 import { convertTime } from '../../utils';
@@ -13,7 +12,6 @@ type TimeSummaryCardProps = {
 }
 
 export default function TimeSummaryCard({ startTime, status } : TimeSummaryCardProps) {
-
   return (
     <Card>
       <CardContent>
