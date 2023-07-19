@@ -25,6 +25,29 @@ export type UserRequest = {
   order: number
 };
 
+export type UserInfo = {
+  zid: number,
+  firstName: string,
+  lastName: string,
+}
+
+export type TimeStamp = {
+  eventTime: Date
+}
+
+export type Duration = {
+  hours: number,
+  minutes: number,
+  seconds: number,
+}
+
+export type UserRequestSummary = {
+  tutors: UserInfo[],
+  startTime?: TimeStamp,
+  endTime: TimeStamp,
+  duration?: Duration
+}
+
 export type RequestData = {
   courseOfferingId: number,
   description: string,

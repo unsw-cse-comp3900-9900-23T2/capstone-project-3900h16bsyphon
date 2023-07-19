@@ -2,9 +2,12 @@ use actix::Addr;
 use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
+use chrono::{Utc};
+use chrono_tz::Australia::Sydney;
 use serde_json::json;
 
 use crate::entities::sea_orm_active_enums::Statuses;
+use crate::models::{RequestSummaryBody, TutorSummaryDetails, RequestSummaryReturnModel, TimeStampModel, RequestDuration};
 use crate::sockets::lobby::Lobby;
 use crate::sockets::messages::HttpServerAction;
 use crate::sockets::SocketChannels;
@@ -19,8 +22,6 @@ use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter,
     QuerySelect,
 };
-use chrono::Utc;
-use chrono_tz::Australia::Sydney;
 
 pub async fn create_request(
     token: ReqData<TokenClaims>,
@@ -347,3 +348,82 @@ pub async fn set_request_status(
 
     Ok(HttpResponse::Ok().json(body))
 }
+
+pub async fn request_summary(
+    _token: ReqData<TokenClaims>,
+    request_summary_body: web::Query<RequestSummaryBody>,
+) -> SyphonResult<HttpResponse> {
+    let db = db();
+    let request_summary = request_summary_body.into_inner();
+
+    log::info!("inside request summary {:?}", request_summary.request_id);
+
+    let _existing_request = entities::requests::Entity::find_by_id(request_summary.request_id)
+        .one(db)
+        .await?
+        .ok_or(SyphonError::Json(
+            json!("request to edit cannot be found"),
+            StatusCode::NOT_FOUND,
+        ))?;
+    
+    // get log for the first start_time (will not exist if student resolved themselves)
+    let start_log = entities::request_status_log::Entity::find()
+    .select_only()
+    .column(entities::request_status_log::Column::EventTime)
+    .left_join(entities::users::Entity)
+    .filter(entities::request_status_log::Column::RequestId.eq(request_summary.request_id))
+    .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+    .into_model::<TimeStampModel>()
+    .one(db)
+    .await?;
+
+    // get log for end_time
+    let end_log = entities::request_status_log::Entity::find()
+    .select_only()
+    .column(entities::request_status_log::Column::EventTime)
+    .left_join(entities::users::Entity)
+    .filter(entities::request_status_log::Column::RequestId.eq(request_summary.request_id))
+    .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
+    .into_model::<TimeStampModel>()
+    .one(db)
+    .await?
+    .ok_or(SyphonError::Json(
+        json!("request was never transitioned to 'Seen' status"),
+        StatusCode::NOT_FOUND,
+    ))?;
+
+    // get search for logs, matching request id, get all tutor id joined with user table for their names
+    let tutor_logs = entities::request_status_log::Entity::find()
+    .select_only()
+    .columns([
+        entities::users::Column::FirstName,
+        entities::users::Column::LastName,
+        entities::users::Column::Zid,
+        ])
+    .distinct_on([entities::users::Column::Zid])
+    .left_join(entities::users::Entity)
+    .filter(entities::request_status_log::Column::RequestId.eq(request_summary.request_id))
+    .into_model::<TutorSummaryDetails>()
+    .all(db)
+    .await?;
+
+
+    let duration = start_log.as_ref().map(|time| { 
+        let diff = end_log.event_time.signed_duration_since(time.event_time);
+        RequestDuration {
+            hours: diff.num_hours(),
+            minutes: diff.num_minutes(),
+            seconds: diff.num_seconds(),
+        }
+    });
+    
+    let summary = RequestSummaryReturnModel {
+        tutors: tutor_logs,
+        start_time: start_log,
+        end_time: end_log,
+        duration: duration,
+    };
+
+    Ok(HttpResponse::Ok().json(summary))
+}
+
