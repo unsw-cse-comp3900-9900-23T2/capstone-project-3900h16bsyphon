@@ -4,10 +4,9 @@ import styles from './RequestSummary.module.css';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { authenticatedGetFetch, formatZid, toCamelCase, changeBackgroundColour, changeTextColour } from '../../../utils';
+import { authenticatedGetFetch, formatZid, toCamelCase, changeBackgroundColour, changeTextColour, convertTime } from '../../../utils';
 import { Status, UserRequestSummary } from '../../../types/requests';
 import TagBox from '../../../components/TagBox';
-import dayjs from 'dayjs';
 
 const RequestSummary = () => {
   const router = useRouter();
@@ -36,11 +35,6 @@ const RequestSummary = () => {
     endTime: { eventTime: '' as unknown as Date},
     duration: { hours: 0, minutes: 0, seconds: 0 }
   });
-
-  const convertTime = (time?: Date) => {
-    if (!time) return '';
-    return dayjs(time).format('h:mm A');
-  };
 
   useEffect(() => {
     const getRequest = async () => {
@@ -83,7 +77,8 @@ const RequestSummary = () => {
         </div>
         <div className={styles.body}>
           <div className={styles.buttonContainer}>
-            <Button className={styles.greyButton} variant='contained' onClick={() => router.push('/dashboard')}>Exit</Button>
+            <Button className={styles.greyButton} variant='contained' onClick={() => router.back()}>Back</Button>
+            <Button className={styles.greyButton} variant='contained' onClick={() => router.push('/dashboard')}>Dashboard</Button>
           </div>
           <Box className={styles.cardBox}>
             <StudentRequestCard

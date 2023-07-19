@@ -64,12 +64,17 @@ const StudentQueueRequestCard = ({
     }
   };
 
+  const handleOpenCard = () => {
+    if (status === Status.Seen) router.push(`/request-summary/${requestId}`);
+    else router.push(`/request/${requestId}`);
+  };
+
   return (
     <>
       <Card className={styles.card} style={{ backgroundColor }}>
         <CardActionArea
           className={styles.cardContent}
-          onClick={() => router.push(`/request/${requestId}`)}
+          onClick={handleOpenCard}
         >
           <div className={styles.cardHeader}>
             <div className={styles.zidNameContainer}>

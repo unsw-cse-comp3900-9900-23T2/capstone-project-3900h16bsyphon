@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { Status, Duration } from './types/requests';
 
 const setCookie = (cookieName: string, cookieValue: string) => {
@@ -130,4 +131,9 @@ export const changeTextColour = (timeElapsed?: Duration) => {
   } else {
     return 'var(--colour-main-red-900)';
   }
+};
+
+export const convertTime = (time?: Date) => {
+  if (!time) return '';
+  return dayjs(time).format('h:mm A');
 };
