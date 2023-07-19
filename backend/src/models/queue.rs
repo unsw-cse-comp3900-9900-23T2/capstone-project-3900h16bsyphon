@@ -195,4 +195,3 @@ pub struct QueueSummaryData {
     pub tutor_summaries: Vec<QueueTutorSummaryData>,
     pub tag_summaries: Vec<QueueTagSummaryData>,
 }
-

@@ -1,38 +1,35 @@
 .infoCard {
-    padding: 15px;
-  }
-  
-  .infoCardTitleContainer {
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .allSummaryItemsContainer {
-    padding: 15px 0px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .summaryItem {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-  
-  .durationTagBoxContainer {
-    padding-top: 20px;
-  }
-  
-  .summaryHeadings {
-    font-weight: bold;
-  }
-  
-  .tagsContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  
-  
+  padding: 15px;
+}
+
+.infoCardTitleContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.allSummaryItemsContainer {
+  padding: 15px 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summaryItem {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.durationTagBoxContainer {
+  padding-top: 20px;
+}
+
+.summaryHeadings {
+  font-weight: bold;
+}
+
+.tagsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
