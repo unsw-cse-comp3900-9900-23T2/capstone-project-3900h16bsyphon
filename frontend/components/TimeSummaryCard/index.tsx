@@ -5,6 +5,7 @@ import styles from './TimeSummaryCard.module.css';
 import dayjs from 'dayjs';
 import Timer from '../Timer';
 import { Status } from '../../types/requests';
+import { convertTime } from '../../utils';
 
 type TimeSummaryCardProps = {
   startTime: Date;
@@ -12,7 +13,6 @@ type TimeSummaryCardProps = {
 }
 
 export default function TimeSummaryCard({ startTime, status } : TimeSummaryCardProps) {
-  const convertTime = (time: Date) => dayjs(time).format('hh:mmA');
 
   return (
     <Card>

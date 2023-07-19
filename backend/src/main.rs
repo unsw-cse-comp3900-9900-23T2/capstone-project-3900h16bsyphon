@@ -105,6 +105,7 @@ async fn main() -> std::io::Result<()> {
                     .wrap(amw.clone())
                     .route("/create", web::post().to(server::request::create_request))
                     .route("/edit", web::put().to(server::request::edit_request))
+                    .route("/summary", web::get().to(server::request::request_summary))
                     .route(
                         "/get_info",
                         web::get().to(server::request::request_info_wrapper),

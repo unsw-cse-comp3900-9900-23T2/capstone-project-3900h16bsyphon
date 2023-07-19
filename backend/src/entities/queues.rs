@@ -12,9 +12,9 @@ pub struct Model {
     pub end_time: DateTime,
     pub is_visible: bool,
     pub is_available: bool,
+    pub is_sorted_by_previous_request_count: bool,
     pub time_limit: Option<i32>,
     pub title: String,
-    pub is_sorted_by_previous_request_count: bool,
     pub announcement: String,
     pub course_offering_id: i32,
 }
