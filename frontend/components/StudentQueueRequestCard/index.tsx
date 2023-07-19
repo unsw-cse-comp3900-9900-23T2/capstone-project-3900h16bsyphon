@@ -9,7 +9,7 @@ import {
 import styles from './StudentQueueRequestCard.module.css';
 import { useRouter } from 'next/router';
 import TagBox from '../TagBox';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   authenticatedPostFetch,
   authenticatedPutFetch,
@@ -70,7 +70,7 @@ const StudentQueueRequestCard = ({
     }
   };
 
-  const handleMove = async (e: MouseEvent, direction: 'up' | 'down') => {
+  const handleMove = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, direction: 'up' | 'down') => {
     e.stopPropagation();
     const requestUrl = (direction === 'up') ? '/request/move_up' : '/request/move_down';
     console.log('requestUrl', requestUrl);

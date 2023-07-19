@@ -1,5 +1,4 @@
 use actix::Addr;
-use actix_web::web;
 use actix_web::{web::ReqData, HttpResponse};
 use futures::future::try_join;
 use sea_orm::ActiveModelTrait;
@@ -68,7 +67,7 @@ pub async fn move_request(
 /// Otherwise, Ok(None)
 /// Err(_) on database errors
 async fn swap_order(
-    reqs: &Vec<entities::requests::Model>,
+    reqs: &[entities::requests::Model],
     order_a: i32,
     order_b: i32,
     db: &sea_orm::DatabaseConnection,
