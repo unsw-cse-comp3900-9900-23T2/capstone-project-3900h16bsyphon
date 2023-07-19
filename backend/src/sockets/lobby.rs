@@ -1,13 +1,8 @@
-use actix::fut;
 use actix::Actor;
-use actix::ActorFutureExt;
 use actix::Context;
-use actix::ContextFutureSpawner;
 use actix::Handler;
 use actix::Recipient;
-use actix::WrapFuture;
 
-use futures::future::join_all;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
 
@@ -136,7 +131,7 @@ impl From<Connect> for SessionData {
 impl Handler<Connect> for Lobby {
     type Result = ();
 
-    fn handle(&mut self, msg: Connect, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: Connect, _ctx: &mut Self::Context) -> Self::Result {
         log::info!("New lobby connection: {:?}", msg);
         let Connect {
             channels,
@@ -145,43 +140,25 @@ impl Handler<Connect> for Lobby {
             ..
         } = msg.clone();
 
-        // Validate that the user is allowed to join all channels
-        // they claimed. If anything invalid, remove them
-        // from sessions and proceed
-        let channels2 = channels.clone();
-        join_all(channels.into_iter().map(move |c| c.is_allowed(zid)))
-            .into_actor(self)
-            .then(move |_allowed_res, lobby, _ctx| {
-                /*
-                if _allowed_res.iter().any(|allowed| *allowed == false) {
-                    lobby._send_message(WsMessage::Text("FORBIDDEN: DIE".into()), &uuid);
-                    return fut::ready(());
-                }
-                */
+        self.sessions.insert(uuid, SessionData::from(msg));
+        self.connections.entry(zid).or_default().insert(uuid);
 
-                lobby.sessions.insert(uuid, SessionData::from(msg));
-                lobby.connections.entry(zid).or_default().insert(uuid);
+        for channel in &channels {
+            log::debug!("Inserting into channel {:?}", channel);
+            match channel {
+                SocketChannels::Notifications(_queue_id) => todo!(),
+                SocketChannels::QueueData(q_id) => self.queues.entry(*q_id),
+                SocketChannels::Announcements(q_id) => self.annoucements.entry(*q_id),
+                SocketChannels::Chat(req_id) => self.chat_rooms.entry(*req_id),
+                SocketChannels::Request(req_id) => self.chat_rooms.entry(*req_id),
+            }
+            .or_default()
+            .insert(uuid);
 
-                // Insert into corresponding channels if not there
-                for channel in &channels2 {
-                    log::debug!("Inserting into channel {:?}", channel);
-                    match channel {
-                        SocketChannels::Notifications(_queue_id) => todo!(),
-                        SocketChannels::QueueData(q_id) => lobby.queues.entry(*q_id),
-                        SocketChannels::Announcements(q_id) => lobby.annoucements.entry(*q_id),
-                        SocketChannels::Chat(req_id) => lobby.chat_rooms.entry(*req_id),
-                        SocketChannels::Request(req_id) => lobby.chat_rooms.entry(*req_id),
-                    }
-                    .or_default()
-                    .insert(uuid);
-
-                    if let SocketChannels::Chat(req_id) = channel {
-                        lobby.send_chat_playback(*req_id, uuid);
-                    }
-                }
-                fut::ready(())
-            })
-            .wait(ctx);
+            if let SocketChannels::Chat(req_id) = channel {
+                self.send_chat_playback(*req_id, uuid);
+            }
+        }
     }
 }
 
