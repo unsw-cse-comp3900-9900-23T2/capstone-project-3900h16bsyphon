@@ -561,8 +561,10 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
             .select_only()
             .column(entities::request_status_log::Column::EventTime)
             .left_join(entities::users::Entity)
+            .left_join(entities::requests::Entity)
             .filter(entities::request_status_log::Column::RequestId.eq(x.request_id))
             .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+            .filter(entities::requests::Column::QueueId.eq(query.queue_id))
             .into_model::<TimeStampModel>()
             .one(db)
         }).collect::<Vec<_>>();
@@ -574,8 +576,10 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
             .select_only()
             .column(entities::request_status_log::Column::EventTime)
             .left_join(entities::users::Entity)
+            .left_join(entities::requests::Entity)
             .filter(entities::request_status_log::Column::RequestId.eq(x.request_id))
             .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
+            .filter(entities::requests::Column::QueueId.eq(query.queue_id))
             .into_model::<TimeStampModel>()
             .one(db)
         }).collect::<Vec<_>>();
