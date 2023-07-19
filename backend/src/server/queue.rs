@@ -16,51 +16,15 @@ use actix_web::{
     HttpResponse,
 };
 use chrono::{DateTime, Duration, Utc};
-use chrono_tz::{Australia::Sydney, America::North_Dakota::New_Salem};
+use chrono_tz::{Australia::Sydney};
+use itertools::{izip};
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter,
-    QuerySelect, PaginatorTrait, DatabaseConnection, DbErr, JoinType, RelationTrait
+    QuerySelect, PaginatorTrait, JoinType, RelationTrait
 };
 
 use futures::future::{join_all, try_join_all};
 use serde_json::json;
-
-// TODO: change this to izip from itertools in next iteration
-macro_rules! izip {
-    // @closure creates a tuple-flattening closure for .map() call. usage:
-    // @closure partial_pattern => partial_tuple , rest , of , iterators
-    // eg. izip!( @closure ((a, b), c) => (a, b, c) , dd , ee )
-    ( @closure $p:pat => $tup:expr ) => {
-        |$p| $tup
-    };
-
-    // The "b" identifier is a different identifier on each recursion level thanks to hygiene.
-    ( @closure $p:pat => ( $($tup:tt)* ) , $_iter:expr $( , $tail:expr )* ) => {
-        $crate::izip!(@closure ($p, b) => ( $($tup)*, b ) $( , $tail )*)
-    };
-
-    // unary
-    ($first:expr $(,)*) => {
-        $crate::__std_iter::IntoIterator::into_iter($first)
-    };
-
-    // binary
-    ($first:expr, $second:expr $(,)*) => {
-        $crate::izip!($first)
-            .zip($second)
-    };
-
-    // n-ary where n > 2
-    ( $first:expr $( , $rest:expr )* $(,)* ) => {
-        $crate::izip!($first)
-            $(
-                .zip($rest)
-            )*
-            .map(
-                $crate::izip!(@closure a => (a) $( , $rest )*)
-            )
-    };
-}
 
 pub async fn create_queue(
     token: ReqData<TokenClaims>,
@@ -499,12 +463,12 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
     let mut average_times = Vec::new();
     // for each of the total_seen
     for (i, tutor_seen_times) in total_seen.iter().enumerate() {
-        let tutor_seeing_times = total_seeing[i];
+        let tutor_seeing_times = total_seeing[i].clone();
         // loop and get all the durations
 
-        let duration_sum = 0; // getting the number of minutes 
+        let mut duration_sum = 0; // getting the number of minutes 
         for (j, seen_times) in tutor_seen_times.iter().enumerate() {
-            let seeing_times = tutor_seeing_times[j];
+            let seeing_times = tutor_seeing_times[j].clone();
             if seeing_times.request_id != seen_times.request_id {
                 continue;
             }
@@ -558,7 +522,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         average_times, 
         tutors_tags_worked_on);
 
-    let tutor_summaries = tutor_zipped_summaries.iter().map(|(a, b, c, d, e)| {
+    let tutor_summaries = tutor_zipped_summaries.map(|(a, b, c, d, e)| {
         QueueTutorSummaryData {
             zid: a.zid,
             first_name: a.first_name.clone(),
@@ -568,7 +532,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
             average_time: d,
             tags_worked_on: e,
         }
-    });
+    }).collect::<Vec<_>>();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////// Tag Summaries /////////////////////////////////////////
@@ -598,7 +562,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
     let tag_request_ids = try_join_all(tag_request_ids).await?;
 
 
-    let tag_summaries = Vec::new();
+    let mut tag_summaries = Vec::new();
     // for every tag, for every request id, find start and end time, and sum them
     for (i, request_ids) in tag_request_ids.iter().enumerate() {
         // get log for the first start_time (will not exist if student resolved themselves)
@@ -628,11 +592,11 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         let end_times = try_join_all(end_times).await?;
 
         // get all the durations 
-        let tag_durations_mins = 0;
-        let tag_durations_hours = 0;
-        let tag_durations_seconds = 0;
+        let mut tag_durations_mins = 0;
+        let mut tag_durations_hours = 0;
+        let mut tag_durations_seconds = 0;
         for (i, start_time) in start_times.iter().enumerate() {
-            let end_time = end_times[i];
+            let end_time = end_times[i].clone();
             let duration = start_time.as_ref().map(|start_t| { 
                 end_time.as_ref().map(|end_t| { 
                     tag_durations_mins += end_t.event_time.signed_duration_since(start_t.event_time).num_minutes();
@@ -644,7 +608,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
 
         // sum them together for total duration
         tag_summaries.push(QueueTagSummaryData {
-            tag: tag_list[i],
+            tag: tag_list[i].clone(),
             duration: RequestDuration {
                 hours: tag_durations_hours,
                 minutes: tag_durations_mins,
