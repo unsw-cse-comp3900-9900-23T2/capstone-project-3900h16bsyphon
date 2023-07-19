@@ -1,7 +1,9 @@
 use actix_web::{web::ReqData, HttpResponse};
 use sea_orm::{DatabaseConnection, EntityTrait};
 
-use crate::{entities, models::TokenClaims};
+use crate::entities;
+use crate::models::{SyphonError, SyphonResult, TokenClaims};
+use crate::utils::db::db;
 
 pub async fn validate_user(
     token: &ReqData<TokenClaims>,
@@ -45,4 +47,27 @@ pub async fn validate_admin(
         }
     }
     Ok(())
+}
+
+pub async fn is_tutor_queue(queue_id: i32, zid: i32) -> SyphonResult<bool> {
+    let db = db();
+    let course_id = entities::queues::Entity::find_by_id(queue_id)
+        .one(db)
+        .await?
+        .ok_or(SyphonError::QueueNotExist(queue_id))?
+        .course_offering_id;
+
+    Ok(entities::tutors::Entity::find_by_id((zid, course_id))
+        .one(db)
+        .await?
+        .is_some())
+}
+
+pub async fn is_tutor_or_owns_request(request_id: i32, zid: i32) -> SyphonResult<bool> {
+    let request = entities::requests::Entity::find_by_id(request_id)
+        .one(db())
+        .await?
+        .ok_or(SyphonError::RequestNotExist(request_id))?;
+
+    Ok(zid == request.zid || is_tutor_queue(request.queue_id, zid).await?)
 }

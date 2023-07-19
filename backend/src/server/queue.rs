@@ -6,8 +6,9 @@ use crate::{
         GetRemainingStudents, QueueReturnModel, SyphonError, SyphonResult, Tag, TokenClaims,
         UpdateQueuePreviousRequestCount, UpdateQueueRequest,
     },
+    sockets::{lobby::Lobby, messages::HttpServerAction, SocketChannels},
     test_is_user,
-    utils::{db::db, user::validate_user}, sockets::{lobby::Lobby, messages::{HttpServerAction, WsMessage}, SocketChannels},
+    utils::{db::db, user::validate_user},
 };
 use actix::Addr;
 use actix_web::{
@@ -17,10 +18,9 @@ use actix_web::{
 };
 use chrono::{DateTime, Duration, Utc};
 use chrono_tz::Australia::Sydney;
-use jwt::token;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter,
-    QuerySelect, PaginatorTrait
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, PaginatorTrait,
+    QueryFilter, QuerySelect,
 };
 
 use futures::future::join_all;
@@ -237,41 +237,39 @@ pub async fn update_queue(
     .update(db)
     .await?;
 
-    let action = HttpServerAction::InvalidateKeys(vec![
-        SocketChannels::QueueData(body.queue_id),
-    ]);
+    let action = HttpServerAction::InvalidateKeys(vec![SocketChannels::QueueData(body.queue_id)]);
     lobby.do_send(action);
-    
+
     /////////////////   TAGS    ///////////////////////
-    /* 
-    let tag_creation_futures = body
-        .tags
-        .iter()
-        .filter(|tag| tag.tag_id == -1) // check if tag already exists
-        .map(|tag| {
-            entities::tags::ActiveModel {
-                tag_id: ActiveValue::NotSet,
-                name: ActiveValue::Set(tag.name.clone()),
+    /*
+        let tag_creation_futures = body
+            .tags
+            .iter()
+            .filter(|tag| tag.tag_id == -1) // check if tag already exists
+            .map(|tag| {
+                entities::tags::ActiveModel {
+                    tag_id: ActiveValue::NotSet,
+                    name: ActiveValue::Set(tag.name.clone()),
+                }
+                .insert(db)
+            });
+        let new_tags = join_all(tag_creation_futures).await;
+        let mut new_tags_iter = new_tags.into_iter();
+        let tag_queue_addition = body.tags.iter().map(|tag| {
+            // crazy: we iterate over the tags again, but this time we get their id if they arent given
+            entities::queue_tags::ActiveModel {
+                tag_id: ActiveValue::Set(if tag.tag_id != -1 {
+                    tag.tag_id
+                } else {
+                    new_tags_iter.next().unwrap().unwrap().tag_id
+                }),
+                queue_id: ActiveValue::Set(queue.queue_id),
+                is_priority: ActiveValue::Set(tag.is_priority),
             }
             .insert(db)
         });
-    let new_tags = join_all(tag_creation_futures).await;
-    let mut new_tags_iter = new_tags.into_iter();
-    let tag_queue_addition = body.tags.iter().map(|tag| {
-        // crazy: we iterate over the tags again, but this time we get their id if they arent given
-        entities::queue_tags::ActiveModel {
-            tag_id: ActiveValue::Set(if tag.tag_id != -1 {
-                tag.tag_id
-            } else {
-                new_tags_iter.next().unwrap().unwrap().tag_id
-            }),
-            queue_id: ActiveValue::Set(queue.queue_id),
-            is_priority: ActiveValue::Set(tag.is_priority),
-        }
-        .insert(db)
-    });
-    join_all(tag_queue_addition).await;
-*/
+        join_all(tag_queue_addition).await;
+    */
     Ok(HttpResponse::Ok().json("Success!"))
 }
 
@@ -378,4 +376,3 @@ pub async fn num_requests_until_close(
     log::debug!("res: {}", res);
     Ok(HttpResponse::Ok().json(res))
 }
-
