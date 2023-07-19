@@ -78,7 +78,7 @@ const RequestSummary = () => {
         </div>
         <div className={styles.body}>
           <div className={styles.buttonContainer}>
-            <Button className={styles.greyButton} variant='contained' onClick={() => router.push(`/active-queue/${requestData.queueId}`)}>Back</Button>
+            <Button className={styles.greyButton} variant='contained' onClick={() => router.back()}>Back</Button>
             <Button className={styles.greyButton} variant='contained' onClick={() => router.push('/dashboard')}>Dashboard</Button>
           </div>
           <Box className={styles.cardBox}>
