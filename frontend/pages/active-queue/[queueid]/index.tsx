@@ -108,7 +108,7 @@ const ActiveQueue = () => {
       console.log(res.body);
       return;
     }
-    router.push(`/course/${requestData.courseOfferingId}`);
+    router.push(`/queue-summary/${router.query.queueid}`);
   };
 
   return <>
