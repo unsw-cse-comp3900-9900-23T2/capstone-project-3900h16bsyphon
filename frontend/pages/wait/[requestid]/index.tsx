@@ -58,6 +58,7 @@ const WaitingScreen = () => {
     return;
   };
 
+  // For initial request data
   useEffect(() => {
     let getRequest = async () => {
       let res = await authenticatedGetFetch('/request/get_info', {
@@ -135,7 +136,15 @@ const WaitingScreen = () => {
   };
 
   // websocket for queue data:
-  let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
+  let { lastJsonMessage: lastJsonMessageQueue } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
+    queryParams: {queue_id: requestData.queueId},
+    onOpen: () => {
+      console.log('connected [queue data]');
+    }
+  });
+
+  // websocket for this specific request's data:
+  let { lastJsonMessage: lastJsonMessageRequest } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
     queryParams: {queue_id: requestData.queueId},
     onOpen: () => {
       console.log('connected [queue data]');
@@ -144,9 +153,18 @@ const WaitingScreen = () => {
 
   // update queue data:
   useEffect(() => {
-    if (!lastJsonMessage) return;
-    setQueueData(queueData => ({...queueData, ...((lastJsonMessage as any)?.queue)}));
-  }, [lastJsonMessage]);
+    if (!lastJsonMessageQueue) return;
+    if ((lastJsonMessageQueue as any)?.type !== 'queue_data') return;
+    setQueueData(queueData => ({...queueData, ...((lastJsonMessageQueue as any)?.queue)}));
+  }, [lastJsonMessageQueue]);
+
+  // Update request data
+  useEffect(() => {
+    if (!lastJsonMessageRequest) return;
+    if ((lastJsonMessageRequest as any)?.type !== 'request_data') return;
+    const newRequestData = (lastJsonMessageRequest as any).request as any;
+    setData(newRequestData);
+  }, [lastJsonMessageRequest]);
 
   // toast for announcement
   useEffect(() => {
