@@ -484,13 +484,16 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         )
         .join_rev(
             JoinType::InnerJoin,
-            entities::request_tags::Relation::Tags.def()
+            entities::tags::Entity::belongs_to(entities::request_tags::Entity)
+            .from(entities::tags::Column::TagId)
+            .to(entities::request_tags::Column::TagId)
+            .into()
         )
         .join_rev(
             JoinType::InnerJoin,
-            entities::request_tags::Entity::belongs_to(entities::queue_tags::Entity)
-            .from(entities::request_tags::Column::TagId)
-            .to(entities::queue_tags::Column::TagId)
+            entities::queue_tags::Entity::belongs_to(entities::tags::Entity)
+            .from(entities::queue_tags::Column::TagId)
+            .to(entities::tags::Column::TagId)
             .into()
         )
         .filter(entities::request_status_log::Column::TutorId.eq(tutor_info.zid)

@@ -63,8 +63,8 @@ const Request = () => {
       );
       return;
     }
-    if (status === Status.Seen) router.push(`/request-summary/${router.query.requestid}`);
-    else router.push(`/active-queue/${data.queueId}`);
+    // if (status === Status.Seen) router.push(`/request-summary/${router.query.requestid}`);
+    router.push(`/active-queue/${data.queueId}`);
   };
 
 

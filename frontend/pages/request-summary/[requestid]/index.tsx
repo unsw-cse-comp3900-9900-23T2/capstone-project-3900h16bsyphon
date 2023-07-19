@@ -95,7 +95,7 @@ const RequestSummary = () => {
           </Box>
           <div className={styles.summaryContainer}>
             <Card className={styles.infoCard}>
-              <Typography className={styles.summaryHeadings} variant='h6'>Tutors Involved</Typography>
+              <Typography className={styles.summaryHeadings} variant='h5'>Tutors Involved</Typography>
               <div className={styles.tutorIdNameContainer}>
                 {/* if there is no start time, request was resolved by student */}
                 {!requestSummary.startTime &&
