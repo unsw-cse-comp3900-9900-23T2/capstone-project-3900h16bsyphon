@@ -121,6 +121,14 @@ async fn main() -> std::io::Result<()> {
                     .route(
                         "/set_status",
                         web::put().to(server::request::set_request_status),
+                    )
+                    .route(
+                        "/move_up",
+                        web::post().to(server::request::move_request_ordering_up),
+                    )
+                    .route(
+                        "/move_down",
+                        web::post().to(server::request::move_request_ordering_down),
                     ),
             )
             .service(

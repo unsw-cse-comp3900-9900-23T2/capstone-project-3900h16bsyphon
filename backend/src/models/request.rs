@@ -96,3 +96,14 @@ pub struct RequestSummaryReturnModel {
     pub end_time: TimeStampModel,
     pub duration: Option<RequestDuration>,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct MoveRequestOrderingBody {
+    pub request_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum MoveDirection {
+    Up,
+    Down,
+}

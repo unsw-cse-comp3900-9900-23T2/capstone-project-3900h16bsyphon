@@ -9,11 +9,13 @@ use serde_json::json;
 use crate::entities::sea_orm_active_enums::Statuses;
 use crate::models::{
     RequestDuration, RequestSummaryBody, RequestSummaryReturnModel, TimeStampModel,
-    TutorSummaryDetails,
+    TutorSummaryDetails, MoveDirection, MoveRequestOrderingBody, 
 };
 use crate::sockets::lobby::Lobby;
 use crate::sockets::messages::HttpServerAction;
 use crate::sockets::SocketChannels;
+use crate::utils::request::move_request;
+use crate::utils::unbox;
 use crate::{entities, models, utils::db::db};
 use futures::future::join_all;
 use models::{
@@ -434,4 +436,20 @@ pub async fn request_summary(
     };
 
     Ok(HttpResponse::Ok().json(summary))
+}
+
+pub async fn move_request_ordering_up(
+    token: ReqData<TokenClaims>,
+    web::Json(body): web::Json<MoveRequestOrderingBody>,
+    lobby: web::Data<Addr<Lobby>>
+) -> SyphonResult<HttpResponse> {
+    move_request(token, body.request_id, MoveDirection::Up, unbox(lobby)).await
+}
+
+pub async fn move_request_ordering_down(
+    token: ReqData<TokenClaims>,
+    web::Json(body): web::Json<MoveRequestOrderingBody>,
+    lobby: web::Data<Addr<Lobby>>
+) -> SyphonResult<HttpResponse> {
+    move_request(token, body.request_id, MoveDirection::Down, unbox(lobby)).await
 }

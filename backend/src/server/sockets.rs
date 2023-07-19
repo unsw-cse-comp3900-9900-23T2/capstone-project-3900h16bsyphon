@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     models::SyphonResult,
     sockets::{lobby::Lobby, websockets::WsConn, SocketChannels},
+    utils::unbox,
 };
 
 pub async fn start_socket_conn(
@@ -129,8 +130,4 @@ pub async fn conn_chat(
         unbox(lobby_addr),
     );
     actix_web_actors::ws::start(conn, &req, stream)
-}
-
-fn unbox(lobby: web::Data<Addr<Lobby>>) -> Addr<Lobby> {
-    lobby.into_inner().as_ref().to_owned()
 }
