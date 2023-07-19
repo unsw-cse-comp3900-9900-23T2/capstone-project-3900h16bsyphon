@@ -7,6 +7,7 @@ import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 import { Status, Tag } from '../../../types/requests';
 import { QueueSummaryData } from '../../../types/queues';
 import OverallTimeSummary from '../../../components/OverallTimeSummary';
+import QueueTutorSummaryCard from '../../../components/QueueTutorSummaryCard';
 
 const tags = [
   {
@@ -87,8 +88,18 @@ const QueueSummary = () => {
               backgroundColor='var(--colour-main-red-200)'
               textColor='var(--colour-main-red-900)'
             />
-            {/* tutor summaries in this div too */}
-
+            {summaryData.tutorSummaries.map((tutorSummary) => {
+              return <QueueTutorSummaryCard 
+                key={tutorSummary.zid}
+                zid={tutorSummary.zid} 
+                firstName={tutorSummary.firstName} 
+                lastName={tutorSummary.lastName} 
+                totalSeen={tutorSummary.totalSeen} 
+                totalSeeing={tutorSummary.totalSeeing} 
+                averageTime={tutorSummary.averageTime} 
+                tagsWorkedOn={tutorSummary.tagsWorkedOn} 
+              />;
+            })}
           </div>
           <div className={styles.summaryContainer}>
             {/* tag summaries in this div */}
