@@ -4,7 +4,7 @@ use crate::{
         CloseQueueRequest, CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery,
         GetQueueByIdQuery, GetQueueRequestCount, GetQueueTagsQuery, GetQueuesByCourseQuery,
         GetRemainingStudents, QueueReturnModel, SyphonError, SyphonResult, Tag, TokenClaims,
-        UpdateQueuePreviousRequestCount, UpdateQueueRequest, GetQueueSummaryQuery, QueueSummaryData, QueueInformationModel, RequestDuration, TimeStampModel, TutorInformationModel, QueueTutorSummaryData, RequestStatusTimeInfo, RequestTutorInformationModel, RequestId,
+        UpdateQueuePreviousRequestCount, UpdateQueueRequest, GetQueueSummaryQuery, QueueSummaryData, QueueInformationModel, RequestDuration, TimeStampModel, TutorInformationModel, QueueTutorSummaryData, RequestStatusTimeInfo, RequestTutorInformationModel, RequestId, QueueTagSummaryData,
     },
     test_is_user,
     utils::{db::db, user::validate_user}, sockets::{lobby::Lobby, messages::{HttpServerAction, WsMessage}, SocketChannels},
@@ -598,8 +598,61 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
     let tag_request_ids = try_join_all(tag_request_ids).await?;
 
 
+    let tag_summaries = Vec::new();
     // for every tag, for every request id, find start and end time, and sum them
+    for (i, request_ids) in tag_request_ids.iter().enumerate() {
+        // get log for the first start_time (will not exist if student resolved themselves)
+        let start_times = request_ids.iter().map(|x| {
+            entities::request_status_log::Entity::find()
+            .select_only()
+            .column(entities::request_status_log::Column::EventTime)
+            .left_join(entities::users::Entity)
+            .filter(entities::request_status_log::Column::RequestId.eq(x.request_id))
+            .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+            .into_model::<TimeStampModel>()
+            .one(db)
+        }).collect::<Vec<_>>();
+        let start_times = try_join_all(start_times).await?;
 
+        // get log for the end_time (will not exist if tutor did not get around to resolving them)
+        let end_times = request_ids.iter().map(|x| {
+            entities::request_status_log::Entity::find()
+            .select_only()
+            .column(entities::request_status_log::Column::EventTime)
+            .left_join(entities::users::Entity)
+            .filter(entities::request_status_log::Column::RequestId.eq(x.request_id))
+            .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
+            .into_model::<TimeStampModel>()
+            .one(db)
+        }).collect::<Vec<_>>();
+        let end_times = try_join_all(end_times).await?;
+
+        // get all the durations 
+        let tag_durations_mins = 0;
+        let tag_durations_hours = 0;
+        let tag_durations_seconds = 0;
+        for (i, start_time) in start_times.iter().enumerate() {
+            let end_time = end_times[i];
+            let duration = start_time.as_ref().map(|start_t| { 
+                end_time.as_ref().map(|end_t| { 
+                    tag_durations_mins += end_t.event_time.signed_duration_since(start_t.event_time).num_minutes();
+                    tag_durations_hours += end_t.event_time.signed_duration_since(start_t.event_time).num_hours();
+                    tag_durations_seconds += end_t.event_time.signed_duration_since(start_t.event_time).num_seconds();
+                });
+            });
+        }
+
+        // sum them together for total duration
+        tag_summaries.push(QueueTagSummaryData {
+            tag: tag_list[i],
+            duration: RequestDuration {
+                hours: tag_durations_hours,
+                minutes: tag_durations_mins,
+                seconds: tag_durations_seconds,
+            },
+        });
+
+    }
 
 
     //////////////////////////////////// Queue Timestamps /////////////////////////////////////////
@@ -610,6 +663,8 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         seconds: time_difference.num_seconds(),
     };
 
+    /////////////////////////////////////// Final Result //////////////////////////////////////
+
     let queue_summary_result = QueueSummaryData {
         title: queue.title,
         course_code: queue.course_code,
@@ -617,7 +672,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         end_time: TimeStampModel {event_time: queue.end_time},
         duration: duration,
         tutor_summaries: tutor_summaries,
-        tag_summaries: todo!()
+        tag_summaries: tag_summaries
     };
 
     Ok(HttpResponse::Ok().json(queue_summary_result))
