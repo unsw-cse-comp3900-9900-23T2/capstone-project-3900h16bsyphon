@@ -1,11 +1,35 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Duration, Typography } from '@mui/material';
 import Header from '../../../components/Header';
 import styles from './QueueSummary.module.css';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../../utils';
-import { Status } from '../../../types/requests';
+import { Status, Tag } from '../../../types/requests';
+
+type QueueTutorSummaryData = {
+  zid: number,
+  firstName: string,
+  lastName: string,
+  totalSeen: number,
+  totalSeeing: number,
+  averageTime: number,
+  tagsWorkedOn: Tag[],
+};
+
+type QueueTagSummaryData = {
+  tag: Tag,
+  duration: Duration,
+};
+
+type QueueSummaryData = {
+  title: string,
+  startTime: Date,
+  endTime: Date,
+  duration: Duration,
+  tutorSummaries: QueueTutorSummaryData[],
+  timeSpentPerTag: QueueTagSummaryData[],
+};
 
 const QueueSummary = () => {
   const router = useRouter();
