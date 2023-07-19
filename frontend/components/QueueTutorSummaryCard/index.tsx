@@ -1,6 +1,6 @@
 import { Card, Typography } from '@mui/material';
 import styles from './QueueTutorSummaryCard.module.css';
-import { formatZid } from '../../utils';
+import { changeBackgroundColour, changeTextColour, formatZid } from '../../utils';
 import TagBox from '../TagBox';
 import { QueueTutorSummaryData } from '../../types/queues';
 
@@ -27,7 +27,11 @@ const QueueTutorSummaryCard = ({ zid, firstName, lastName, totalSeen, totalSeein
         </div>
         <div className={styles.summaryItem} >
           <Typography className={styles.summaryHeadings} variant='body1'>Average Time Spent per Request: </Typography>
-          <Typography variant='body1'>{averageTime}</Typography>
+          <TagBox
+            text={averageTime.toString() + ' mins'}
+            backgroundColor={changeBackgroundColour({ hours: 0, minutes: averageTime, seconds: 0 })}
+            color={changeTextColour({ hours: 0, minutes: averageTime, seconds: 0 })}
+          />
         </div>
         <div className={styles.summaryItem} >
           <Typography className={styles.summaryHeadings} variant='body1'>Tags Worked On: </Typography>
@@ -43,7 +47,6 @@ const QueueTutorSummaryCard = ({ zid, firstName, lastName, totalSeen, totalSeein
             })}
           </div>
         </div>
-
       </div>
     </Card>
   </>;
