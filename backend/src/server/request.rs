@@ -8,8 +8,8 @@ use serde_json::json;
 
 use crate::entities::sea_orm_active_enums::Statuses;
 use crate::models::{
-    MoveDirection, MoveRequestOrderingBody, RequestDuration, RequestSummaryBody,
-    RequestSummaryReturnModel, TimeStampModel, TutorSummaryDetails,
+    RequestDuration, RequestSummaryBody, RequestSummaryReturnModel, TimeStampModel,
+    TutorSummaryDetails, MoveDirection, MoveRequestOrderingBody, 
 };
 use crate::sockets::lobby::Lobby;
 use crate::sockets::messages::HttpServerAction;
@@ -76,7 +76,6 @@ pub async fn create_request(
     Ok(HttpResponse::Ok().json(CreateRequestResponse {
         request_id: insertion.request_id,
     }))
-
 }
 
 pub async fn edit_request(

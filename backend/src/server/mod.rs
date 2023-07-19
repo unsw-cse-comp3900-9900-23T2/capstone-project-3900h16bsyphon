@@ -8,11 +8,11 @@ pub mod auth;
 pub mod course;
 pub mod faqs;
 pub mod history;
+pub mod logs;
 pub mod queue;
 pub mod request;
 pub mod sockets;
 pub mod user;
-pub mod logs;
 
 #[post("/echo")]
 pub async fn echo(req_body: String) -> impl Responder {

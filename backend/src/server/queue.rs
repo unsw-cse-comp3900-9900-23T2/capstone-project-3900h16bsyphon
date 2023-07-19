@@ -1,12 +1,19 @@
 use crate::{
-    entities,
+    entities::{self, sea_orm_active_enums::Statuses},
     models::{
         CloseQueueRequest, CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery,
-        GetQueueByIdQuery, GetQueueRequestCount, GetQueueTagsQuery, GetQueuesByCourseQuery,
-        GetRemainingStudents, QueueReturnModel, SyphonError, SyphonResult, Tag, TokenClaims,
-        UpdateQueuePreviousRequestCount, UpdateQueueRequest,
+        GetQueueByIdQuery, GetQueueRequestCount, GetQueueSummaryQuery, GetQueueTagsQuery,
+        GetQueuesByCourseQuery, GetRemainingStudents, QueueInformationModel, QueueReturnModel,
+        QueueSummaryData, QueueTagSummaryData, QueueTutorSummaryData, RequestDuration, RequestId,
+        RequestStatusTimeInfo, RequestTutorInformationModel, SyphonError, SyphonResult, Tag,
+        TimeStampModel, TokenClaims, TutorInformationModel, UpdateQueuePreviousRequestCount,
+        UpdateQueueRequest,
     },
-    sockets::{lobby::Lobby, messages::HttpServerAction, SocketChannels},
+    sockets::{
+        lobby::Lobby,
+        messages::{HttpServerAction},
+        SocketChannels,
+    },
     test_is_user,
     utils::{db::db, user::validate_user},
 };
@@ -18,12 +25,13 @@ use actix_web::{
 };
 use chrono::{DateTime, Duration, Utc};
 use chrono_tz::Australia::Sydney;
+use itertools::izip;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, PaginatorTrait,
-    QueryFilter, QuerySelect,
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, JoinType,
+    PaginatorTrait, QueryFilter, QuerySelect, RelationTrait,
 };
 
-use futures::future::join_all;
+use futures::future::{join_all, try_join_all};
 use serde_json::json;
 
 pub async fn create_queue(
@@ -333,7 +341,7 @@ pub async fn get_student_count(query: Query<GetQueueRequestCount>) -> SyphonResu
     let requests = entities::requests::Entity::find()
         .left_join(entities::queues::Entity)
         .filter(entities::requests::Column::QueueId.eq(query.queue_id))
-        .filter(entities::requests::Column::Status.eq("unseen"))
+        .filter(entities::requests::Column::Status.eq(Statuses::Unseen))
         .filter(entities::queues::Column::IsAvailable.eq(true))
         .filter(entities::queues::Column::IsVisible.eq(true))
         .select_only()
@@ -375,4 +383,308 @@ pub async fn num_requests_until_close(
     };
     log::debug!("res: {}", res);
     Ok(HttpResponse::Ok().json(res))
+}
+
+pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResult<HttpResponse> {
+    let db = db();
+    // given queueid
+
+    // get queue information
+    let queue = entities::queues::Entity::find_by_id(query.queue_id)
+        .select_only()
+        .left_join(entities::course_offerings::Entity)
+        .column(entities::queues::Column::Title)
+        .column(entities::queues::Column::StartTime)
+        .column(entities::queues::Column::EndTime)
+        .column(entities::course_offerings::Column::CourseCode)
+        .into_model::<QueueInformationModel>()
+        .one(db)
+        .await?
+        .ok_or(SyphonError::QueueNotExist(query.queue_id))?;
+
+    // get list of tutors for the queue
+    let tutor_info_list = entities::request_status_log::Entity::find()
+        .select_only()
+        .left_join(entities::users::Entity)
+        .left_join(entities::requests::Entity)
+        .column(entities::requests::Column::Zid)
+        .column(entities::request_status_log::Column::TutorId)
+        .column(entities::users::Column::FirstName)
+        .column(entities::users::Column::LastName)
+        .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+        .distinct_on([entities::request_status_log::Column::TutorId])
+        .into_model::<RequestTutorInformationModel>()
+        .all(db)
+        .await?
+        .into_iter()
+        .filter(|x| x.zid != x.tutor_id)
+        .map(|x| TutorInformationModel {
+            zid: x.tutor_id,
+            first_name: x.first_name,
+            last_name: x.last_name,
+        })
+        .collect::<Vec<_>>();
+
+    let total_seeing = tutor_info_list
+        .iter()
+        .map(|tutor_info| {
+            entities::request_status_log::Entity::find()
+                .select_only()
+                .column(entities::request_status_log::Column::RequestId)
+                .column(entities::request_status_log::Column::EventTime)
+                .filter(
+                    entities::request_status_log::Column::TutorId
+                        .eq(tutor_info.zid)
+                        .and(entities::request_status_log::Column::Status.eq(Statuses::Seeing)),
+                )
+                .distinct_on([entities::request_status_log::Column::RequestId])
+                .into_model::<RequestStatusTimeInfo>()
+                .all(db)
+        })
+        .collect::<Vec<_>>();
+    let total_seeing = try_join_all(total_seeing).await?;
+    let total_seeing_count = total_seeing
+        .iter()
+        .map(|x| x.len() as i64)
+        .collect::<Vec<_>>();
+
+    let total_seen = tutor_info_list
+        .iter()
+        .map(|tutor_info| {
+            entities::request_status_log::Entity::find()
+                .select_only()
+                .column(entities::request_status_log::Column::RequestId)
+                .column(entities::request_status_log::Column::EventTime)
+                .filter(
+                    entities::request_status_log::Column::TutorId
+                        .eq(tutor_info.zid)
+                        .and(entities::request_status_log::Column::Status.eq(Statuses::Seen)),
+                )
+                .distinct_on([entities::request_status_log::Column::RequestId])
+                .into_model::<RequestStatusTimeInfo>()
+                .all(db)
+        })
+        .collect::<Vec<_>>();
+    let total_seen = try_join_all(total_seen).await?;
+    let total_seen_count = total_seen
+        .iter()
+        .map(|x| x.len() as i64)
+        .collect::<Vec<_>>();
+
+    /////////////////////////////// Average Duration Per Tutor ///////////////////////////////
+    let mut average_times = Vec::new();
+    // for each of the total_seen
+    for (i, tutor_seen_times) in total_seen.iter().enumerate() {
+        let tutor_seeing_times = total_seeing[i].clone();
+        // loop and get all the durations
+
+        let mut duration_sum = 0; // getting the number of minutes
+        for (j, seen_times) in tutor_seen_times.iter().enumerate() {
+            let seeing_times = tutor_seeing_times[j].clone();
+            if seeing_times.request_id != seen_times.request_id {
+                continue;
+            }
+            // get the duration here
+            duration_sum += seen_times
+                .event_time
+                .signed_duration_since(seeing_times.event_time)
+                .num_minutes();
+        }
+
+        let average_duration = duration_sum / (tutor_seen_times.len() as i64);
+        average_times.push(average_duration);
+    }
+
+    ///////////////////////////// Tags Each Tutor Worked On //////////////////////////////
+    let tutors_tags_worked_on = tutor_info_list
+        .iter()
+        .map(|tutor_info| {
+            entities::request_status_log::Entity::find()
+                .select_only()
+                .left_join(entities::requests::Entity)
+                .column(entities::request_tags::Column::TagId)
+                .column(entities::tags::Column::Name)
+                .column(entities::queue_tags::Column::IsPriority)
+                .join_rev(
+                    JoinType::InnerJoin,
+                    entities::request_tags::Relation::Requests.def(),
+                )
+                .join_rev(
+                    JoinType::InnerJoin,
+                    entities::tags::Entity::belongs_to(entities::request_tags::Entity)
+                        .from(entities::tags::Column::TagId)
+                        .to(entities::request_tags::Column::TagId)
+                        .into(),
+                )
+                .join_rev(
+                    JoinType::InnerJoin,
+                    entities::queue_tags::Entity::belongs_to(entities::tags::Entity)
+                        .from(entities::queue_tags::Column::TagId)
+                        .to(entities::tags::Column::TagId)
+                        .into(),
+                )
+                .filter(
+                    entities::request_status_log::Column::TutorId
+                        .eq(tutor_info.zid)
+                        .and(entities::request_status_log::Column::Status.eq(Statuses::Seen)),
+                )
+                .distinct_on([entities::request_tags::Column::TagId])
+                .into_model::<Tag>()
+                .all(db)
+        })
+        .collect::<Vec<_>>();
+    let tutors_tags_worked_on = try_join_all(tutors_tags_worked_on).await?;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////// Join Tutor Summaries Together ///////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    let tutor_zipped_summaries = izip!(
+        tutor_info_list,
+        total_seeing_count,
+        total_seen_count,
+        average_times,
+        tutors_tags_worked_on
+    );
+
+    let tutor_summaries = tutor_zipped_summaries
+        .map(|(a, b, c, d, e)| QueueTutorSummaryData {
+            zid: a.zid,
+            first_name: a.first_name.clone(),
+            last_name: a.last_name,
+            total_seen: c,
+            total_seeing: b,
+            average_time: d,
+            tags_worked_on: e,
+        })
+        .collect::<Vec<_>>();
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////// Tag Summaries /////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // get list of tags for the queue
+    let tag_list = entities::queue_tags::Entity::find()
+        .select_only()
+        .left_join(entities::tags::Entity)
+        .column(entities::tags::Column::TagId)
+        .column(entities::tags::Column::Name)
+        .column(entities::queue_tags::Column::IsPriority)
+        .filter(entities::queue_tags::Column::QueueId.eq(query.queue_id))
+        .into_model::<Tag>()
+        .all(db)
+        .await?;
+
+    // for every tag, get list of request ids for that tag
+    let tag_request_ids = tag_list
+        .iter()
+        .map(|tag| {
+            entities::request_tags::Entity::find()
+                .select_only()
+                .column(entities::request_tags::Column::RequestId)
+                .distinct_on([entities::request_tags::Column::RequestId])
+                .filter(entities::request_tags::Column::TagId.eq(tag.tag_id))
+                .into_model::<RequestId>()
+                .all(db)
+        })
+        .collect::<Vec<_>>();
+    let tag_request_ids = try_join_all(tag_request_ids).await?;
+
+    let mut tag_summaries = Vec::new();
+    // for every tag, for every request id, find start and end time, and sum them
+    for (i, request_ids) in tag_request_ids.iter().enumerate() {
+        // get log for the first start_time (will not exist if student resolved themselves)
+        let start_times = request_ids
+            .iter()
+            .map(|x| {
+                entities::request_status_log::Entity::find()
+                    .select_only()
+                    .column(entities::request_status_log::Column::EventTime)
+                    .left_join(entities::users::Entity)
+                    .left_join(entities::requests::Entity)
+                    .filter(entities::request_status_log::Column::RequestId.eq(x.request_id))
+                    .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+                    .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+                    .into_model::<TimeStampModel>()
+                    .one(db)
+            })
+            .collect::<Vec<_>>();
+        let start_times = try_join_all(start_times).await?;
+
+        // get log for the end_time (will not exist if tutor did not get around to resolving them)
+        let end_times = request_ids
+            .iter()
+            .map(|x| {
+                entities::request_status_log::Entity::find()
+                    .select_only()
+                    .column(entities::request_status_log::Column::EventTime)
+                    .left_join(entities::users::Entity)
+                    .left_join(entities::requests::Entity)
+                    .filter(entities::request_status_log::Column::RequestId.eq(x.request_id))
+                    .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
+                    .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+                    .into_model::<TimeStampModel>()
+                    .one(db)
+            })
+            .collect::<Vec<_>>();
+        let end_times = try_join_all(end_times).await?;
+
+        // get all the durations
+        let mut tag_durations_mins = 0;
+        let mut tag_durations_hours = 0;
+        let mut tag_durations_seconds = 0;
+        for (i, start_time) in start_times.iter().enumerate() {
+            let end_time = end_times[i].clone();
+            let _duration = start_time.as_ref().map(|start_t| {
+                if let Some(end_t) = end_time {
+                    tag_durations_mins += end_t
+                        .event_time
+                        .signed_duration_since(start_t.event_time)
+                        .num_minutes();
+                    tag_durations_hours += end_t
+                        .event_time
+                        .signed_duration_since(start_t.event_time)
+                        .num_hours();
+                    tag_durations_seconds += end_t
+                        .event_time
+                        .signed_duration_since(start_t.event_time)
+                        .num_seconds();
+                }
+            });
+        }
+
+        // sum them together for total duration
+        tag_summaries.push(QueueTagSummaryData {
+            tag: tag_list[i].clone(),
+            duration: RequestDuration {
+                hours: tag_durations_hours,
+                minutes: tag_durations_mins,
+                seconds: tag_durations_seconds,
+            },
+        });
+    }
+
+    //////////////////////////////////// Queue Timestamps /////////////////////////////////////////
+    let time_difference = queue.end_time.signed_duration_since(queue.start_time);
+    let duration = RequestDuration {
+        hours: time_difference.num_hours(),
+        minutes: time_difference.num_minutes(),
+        seconds: time_difference.num_seconds(),
+    };
+
+    /////////////////////////////////////// Final Result //////////////////////////////////////
+
+    let queue_summary_result = QueueSummaryData {
+        title: queue.title,
+        course_code: queue.course_code,
+        start_time: TimeStampModel {
+            event_time: queue.start_time,
+        },
+        end_time: TimeStampModel {
+            event_time: queue.end_time,
+        },
+        duration,
+        tutor_summaries,
+        tag_summaries,
+    };
+
+    Ok(HttpResponse::Ok().json(queue_summary_result))
 }

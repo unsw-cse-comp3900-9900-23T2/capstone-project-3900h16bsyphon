@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::entities;
 
+use super::{RequestDuration, TimeStampModel};
+
 #[derive(Serialize, Deserialize, Debug, Clone, FromQueryResult)]
 pub struct Tag {
     pub tag_id: i32,
@@ -113,7 +115,12 @@ pub struct UpdateQueuePreviousRequestCount {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetQueueRequestCount {
-    pub queue_id: i32
+    pub queue_id: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetQueueSummaryQuery {
+    pub queue_id: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -124,4 +131,66 @@ pub struct GetQueueRequestCountResponse {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetRemainingStudents {
     pub queue_id: i32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct QueueInformationModel {
+    pub title: String,
+    pub course_code: String,
+    pub start_time: NaiveDateTime,
+    pub end_time: NaiveDateTime,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct TutorInformationModel {
+    pub zid: i32,
+    pub first_name: String,
+    pub last_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct RequestTutorInformationModel {
+    pub zid: i32,
+    pub tutor_id: i32,
+    pub first_name: String,
+    pub last_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct RequestStatusTimeInfo {
+    pub request_id: i32,
+    pub event_time: NaiveDateTime,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct RequestId {
+    pub request_id: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct QueueTutorSummaryData {
+    pub zid: i32,
+    pub first_name: String,
+    pub last_name: String,
+    pub total_seen: i64,
+    pub total_seeing: i64,
+    pub average_time: i64,
+    pub tags_worked_on: Vec<Tag>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct QueueTagSummaryData {
+    pub tag: Tag,
+    pub duration: RequestDuration,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct QueueSummaryData {
+    pub title: String,
+    pub course_code: String,
+    pub start_time: TimeStampModel,
+    pub end_time: TimeStampModel,
+    pub duration: RequestDuration,
+    pub tutor_summaries: Vec<QueueTutorSummaryData>,
+    pub tag_summaries: Vec<QueueTagSummaryData>,
 }

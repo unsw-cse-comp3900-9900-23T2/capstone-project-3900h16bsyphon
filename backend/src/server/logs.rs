@@ -1,11 +1,13 @@
-use actix_web::{HttpResponse, web::Query};
-use sea_orm::{ColumnTrait, EntityTrait, EntityOrSelect, QueryFilter, QueryOrder, QuerySelect};
+use actix_web::{web::Query, HttpResponse};
+use sea_orm::{ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 
-use crate::{models::{GetRequestLogById, SyphonResult}, utils::db::db, entities};
+use crate::{
+    entities,
+    models::{GetRequestLogById, SyphonResult},
+    utils::db::db,
+};
 
-pub async fn get_start_time(
-    query: Query<GetRequestLogById>,
-) -> SyphonResult<HttpResponse> {
+pub async fn get_start_time(query: Query<GetRequestLogById>) -> SyphonResult<HttpResponse> {
     let db = db();
     let log = entities::request_status_log::Entity::find()
         .select()

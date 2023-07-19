@@ -4,9 +4,10 @@ import styles from './RequestSummary.module.css';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { authenticatedGetFetch, formatZid, toCamelCase, changeBackgroundColour, changeTextColour, convertTime } from '../../../utils';
+import { authenticatedGetFetch, formatZid, toCamelCase, changeBackgroundColour, changeTextColour, convertTime, getActualDuration } from '../../../utils';
 import { Status, UserRequestSummary } from '../../../types/requests';
 import TagBox from '../../../components/TagBox';
+import OverallTimeSummary from '../../../components/OverallTimeSummary';
 
 const RequestSummary = () => {
   const router = useRouter();
@@ -94,7 +95,7 @@ const RequestSummary = () => {
           </Box>
           <div className={styles.summaryContainer}>
             <Card className={styles.infoCard}>
-              <Typography className={styles.summaryHeadings} variant='h6'>Tutors Involved</Typography>
+              <Typography className={styles.summaryHeadings} variant='h5'>Tutors Involved</Typography>
               <div className={styles.tutorIdNameContainer}>
                 {/* if there is no start time, request was resolved by student */}
                 {!requestSummary.startTime &&
@@ -114,32 +115,13 @@ const RequestSummary = () => {
                 })}
               </div>
             </Card>
-            <Card className={styles.infoCard}>
-              <Typography className={styles.summaryHeadings}  variant='h6'>Time Summary</Typography>
-              <div className={styles.tutorIdNameContainer}>
-                <div className={styles.tutorIdName} >
-                  {requestSummary.startTime &&
-                    <>
-                      <Typography className={styles.summaryHeadings} variant='body1'>Start Time:</Typography>
-                      <Typography variant='body1'>{convertTime(requestSummary.startTime?.eventTime)}</Typography>
-                    </>
-                  }
-                </div>
-                <div className={styles.tutorIdName} >
-                  <Typography className={styles.summaryHeadings} variant='body1'>End Time:</Typography>
-                  <Typography variant='body1'>{convertTime(requestSummary.endTime.eventTime)}</Typography>
-                </div>
-                {/* dont display duration if request was resolved by student */}
-                {requestSummary.startTime &&
-                  <div className={styles.durationTagBoxContainer}>
-                    <TagBox
-                      text={getDurationString()}
-                      backgroundColor={changeBackgroundColour(requestSummary.duration)}
-                      color={changeTextColour(requestSummary.duration)}
-                    />
-                  </div>}
-              </div>
-            </Card>
+            <OverallTimeSummary 
+              startTime={requestSummary.startTime}
+              endTime={requestSummary.endTime} 
+              duration={getActualDuration(requestSummary.duration)}
+              backgroundColor={changeBackgroundColour(requestSummary.duration)} 
+              textColor={changeTextColour(requestSummary.duration)} 
+            />
           </div>
         </div>
       </div>

@@ -17,13 +17,16 @@ type QueueCardProps = {
   courseAdmins?: String[];
   isEdit?: boolean;
   isTutor: boolean;
+  isPrevious?: boolean;
 }
 
-export default function QueueCard({ title, seen, unseen, location, courseAdmins, isEdit, queueId, isTutor }: QueueCardProps) {
+export default function QueueCard({ title, seen, unseen, location, courseAdmins, isEdit, queueId, isTutor, isPrevious }: QueueCardProps) {
   const router = useRouter();
   const findWhereToGo = async () => {
-    if (isTutor) {
+    if (isTutor && !isPrevious) {
       return `/active-queue/${queueId}`;
+    } else if (isTutor && isPrevious) {
+      return `/queue-summary/${queueId}`;
     }
     // if student, we need to find if the queue is open or not
     let res = await authenticatedGetFetch('/queue/is_open', { queue_id: queueId.toString() });

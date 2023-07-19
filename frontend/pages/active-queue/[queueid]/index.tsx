@@ -137,16 +137,19 @@ const ActiveQueue = () => {
     navigator.clipboard.writeText(window.location.href.replace('active-queue', 'create-request'));
   };
 
-  const handleCloseQueue = async () => {
-    const res = await authenticatedPutFetch('/queue/close', { 
-      queue_id: Number.parseInt(`${router.query.queueid}`), 
-      end_time: dayjs(new Date()).format('YYYY-MM-DDTHH:mm:ss')
-    });
-    if (!res.ok) {
-      console.log(res.body);
-      return;
-    }
-    router.push(`/course/${requestData.courseOfferingId}`);
+  const handleCloseQueue = () => {
+    const doCloseQueue = async () => {
+      const res = await authenticatedPutFetch('/queue/close', { 
+        queue_id: Number.parseInt(`${router.query.queueid}`), 
+        end_time: dayjs(new Date()).format('YYYY-MM-DDTHH:mm:ss')
+      });
+      if (!res.ok) {
+        console.log(res.body);
+        return;
+      }
+      router.push(`/queue-summary/${router.query.queueid}`);
+    };
+    doCloseQueue();
   };
 
   return <>
