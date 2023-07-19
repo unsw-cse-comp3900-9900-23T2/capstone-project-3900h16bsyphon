@@ -91,7 +91,7 @@ const ViewQueue = () => {
           {data
             .filter((d) => Date.parse(d.endTime) < Date.now())
             .filter((d) => isTutor || d.isVisible)
-            .map((d, index) => <QueueCard isTutor={isTutor} queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} seen={d.seen} unseen={d.unseen}/> )}
+            .map((d, index) => <QueueCard isPrevious={true} isTutor={isTutor} queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} seen={d.seen} unseen={d.unseen}/> )}
           {data
             .filter((d) => Date.parse(d.endTime) < Date.now())
             .filter((d) => isTutor || d.isVisible)
