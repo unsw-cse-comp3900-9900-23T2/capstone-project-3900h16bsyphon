@@ -14,7 +14,7 @@ use crate::models::{
 use crate::sockets::lobby::Lobby;
 use crate::sockets::messages::HttpServerAction;
 use crate::sockets::SocketChannels;
-use crate::utils::request::move_queue_ordering;
+use crate::utils::request::move_request;
 use crate::{entities, models, utils::db::db};
 use futures::future::join_all;
 use models::{
@@ -412,7 +412,7 @@ pub async fn request_summary(
         .await?;
 
     let duration = start_log.as_ref().map(|time| {
-        let diff: Duration = end_log.event_time.signed_duration_since(time.event_time);
+        let diff = end_log.event_time.signed_duration_since(time.event_time);
         RequestDuration {
             hours: diff.num_hours(),
             minutes: diff.num_minutes(),
@@ -430,16 +430,16 @@ pub async fn request_summary(
     Ok(HttpResponse::Ok().json(summary))
 }
 
-pub async fn move_queue_ordering_up(
+pub async fn move_request_ordering_up(
     token: ReqData<TokenClaims>,
     web::Json(body): web::Json<MoveRequestOrderingBody>,
 ) -> SyphonResult<HttpResponse> {
-    move_queue_ordering(token, body.request_id, MoveDirection::Up).await
+    move_request(token, body.request_id, MoveDirection::Up).await
 }
 
-pub async fn move_queue_ordering_down(
+pub async fn move_request_ordering_down(
     token: ReqData<TokenClaims>,
     web::Json(body): web::Json<MoveRequestOrderingBody>,
 ) -> SyphonResult<HttpResponse> {
-    move_queue_ordering(token, body.request_id, MoveDirection::Down).await
+    move_request(token, body.request_id, MoveDirection::Down).await
 }

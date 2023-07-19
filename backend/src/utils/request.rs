@@ -14,7 +14,7 @@ use utils::db::db;
 
 use super::user::is_tutor_queue;
 
-pub async fn move_queue_ordering(
+pub async fn move_request(
     token: ReqData<TokenClaims>,
     request_id: i32,
     direction: MoveDirection,
