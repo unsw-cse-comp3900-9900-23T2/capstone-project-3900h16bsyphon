@@ -25,3 +25,14 @@ week 6
 - fixed bugs in how to find the total number of requests someone made
 - fixed bug in how tags are handled by the backend
 - fixed bug in request creation
+
+week 7
+- completed all my tickets except for sorting
+	- adding tags
+	- priority tags
+	- see number of previous requests
+	- log out
+	- control when a request is able to be lodged
+week 8
+- completed sorting
+

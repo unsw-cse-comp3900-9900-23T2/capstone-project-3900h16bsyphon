@@ -12,7 +12,6 @@ type TimeSummaryCardProps = {
 }
 
 export default function TimeSummaryCard({ startTime, status } : TimeSummaryCardProps) {
-
   return (
     <Card>
       <CardContent>

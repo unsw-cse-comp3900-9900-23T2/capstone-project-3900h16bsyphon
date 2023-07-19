@@ -3,7 +3,7 @@ import Header from '../../../components/Header';
 import styles from './QueueSummary.module.css';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { authenticatedGetFetch, toCamelCase } from '../../../utils';
+import { authenticatedGetFetch, toCamelCase, getActualDuration } from '../../../utils';
 import { Status, Tag } from '../../../types/requests';
 import { QueueSummaryData } from '../../../types/queues';
 import OverallTimeSummary from '../../../components/OverallTimeSummary';
@@ -49,8 +49,8 @@ const tagSummary = [
 const queueSummaryInitialValue: QueueSummaryData = {
   title: 'This is a test title',
   courseCode: 'COMP1111',
-  startTime: { eventTime: new Date().toISOString() as unknown as Date},
-  endTime: { eventTime: new Date().toISOString() as unknown as Date},
+  startTime: { eventTime: '2023-07-19T11:54:11' as unknown as Date},
+  endTime: { eventTime: '2023-07-19T11:54:11' as unknown as Date},
   duration: { hours: 1, minutes: 54, seconds: 6 },
   tutorSummaries: tutorSummary,
   tagSummaries: tagSummary,
@@ -62,6 +62,7 @@ const QueueSummary = () => {
   
   useEffect(() => {
     let getQueueSummary = async () => {
+      console.log('getting queue summary . . .');
       let res = await authenticatedGetFetch('/queue/summary', {queue_id: `${router.query.queueid}`});
       if (!res.ok) {
         console.log('something went wrong with queue summary, see network tab');
@@ -71,7 +72,7 @@ const QueueSummary = () => {
       setSummaryData(toCamelCase(data));
       console.log('the data inside queue summary is ', data);
     };
-    if (!router.query.requestid) return;
+    if (!router.query.queueid) return;
     getQueueSummary();
   }, [router.query.queueid]);
 
@@ -91,7 +92,7 @@ const QueueSummary = () => {
             <OverallTimeSummary 
               startTime={summaryData.startTime}
               endTime={summaryData.endTime} 
-              duration={summaryData.duration}
+              duration={getActualDuration(summaryData.duration)}
               backgroundColor='var(--colour-main-red-200)'
               textColor='var(--colour-main-red-900)'
             />

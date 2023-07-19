@@ -45,6 +45,8 @@ const WaitingScreen = () => {
   const [queueData, setQueueData] = useState<QueueData>();
   const [waitingTime, setWaitingTime] = useState(0);
   const [positionInQueue, setPositionInQueue] = useState(0);
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
 
   const disableCluster = async () => {
     const res = await authenticatedPutFetch('/request/disable_cluster', {
@@ -58,6 +60,7 @@ const WaitingScreen = () => {
     return;
   };
 
+  // For initial request data
   useEffect(() => {
     let getRequest = async () => {
       let res = await authenticatedGetFetch('/request/get_info', {
@@ -76,7 +79,8 @@ const WaitingScreen = () => {
       return;
     }
     getRequest();
-  }, [router.query.requestid, router]);
+    setIsClusterable(requestData.isClusterable);
+  }, [router.query.requestid, router, requestData.isClusterable]);
 
   useEffect(() => {
     let getQueueData = async () => {
@@ -113,9 +117,11 @@ const WaitingScreen = () => {
       if (queueData.timeLimit) {
         setWaitingTime(queueData.timeLimit * (positionInQueue - 1));
       } else {
-        setWaitingTime((positionInQueue - 1) * 20);
+        setWaitingTime((positionInQueue - 1) * 15);
       }
     };
+    setTimeElapsed((new Date()).getTime() - (new Date(queueData?.startTime as string)).getTime());
+    setTimeLeft((new Date(queueData?.endTime as string)).getTime() - (new Date()).getTime());
 
     getNumberOfRequests();
   }, [queueData, requestData.queueId, router.query.requestid, positionInQueue]);
@@ -135,7 +141,15 @@ const WaitingScreen = () => {
   };
 
   // websocket for queue data:
-  let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
+  let { lastJsonMessage: lastJsonMessageQueue } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
+    queryParams: {queue_id: requestData.queueId},
+    onOpen: () => {
+      console.log('connected [queue data]');
+    }
+  });
+
+  // websocket for this specific request's data:
+  let { lastJsonMessage: lastJsonMessageRequest } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
     queryParams: {queue_id: requestData.queueId},
     onOpen: () => {
       console.log('connected [queue data]');
@@ -144,15 +158,24 @@ const WaitingScreen = () => {
 
   // update queue data:
   useEffect(() => {
-    if (!lastJsonMessage) return;
-    setQueueData(queueData => ({...queueData, ...((lastJsonMessage as any)?.queue)}));
-  }, [lastJsonMessage]);
+    if (!lastJsonMessageQueue) return;
+    if ((lastJsonMessageQueue as any)?.type !== 'queue_data') return;
+    setQueueData(queueData => ({...queueData, ...((lastJsonMessageQueue as any)?.queue)}));
+  }, [lastJsonMessageQueue]);
+
+  // Update request data
+  useEffect(() => {
+    if (!lastJsonMessageRequest) return;
+    if ((lastJsonMessageRequest as any)?.type !== 'request_data') return;
+    const newRequestData = (lastJsonMessageRequest as any).request as any;
+    setData(newRequestData);
+  }, [lastJsonMessageRequest]);
 
   // toast for announcement
   useEffect(() => {
     if (!queueData?.announcement) return;
     toast.info(queueData.announcement,  {
-      position: 'top-center',
+      position: 'bottom-left',
       autoClose: 5000,
       hideProgressBar: false,
       closeOnClick: true,
@@ -166,7 +189,7 @@ const WaitingScreen = () => {
   return (
     <>
       <ToastContainer
-        position="top-left"
+        position='bottom-left'
         autoClose={5000}
         hideProgressBar={false}
         newestOnTop={false}
@@ -175,7 +198,7 @@ const WaitingScreen = () => {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="light"
+        theme='light'
       />
       <Header />
       <div className={styles.pageContainer}>
@@ -217,6 +240,7 @@ const WaitingScreen = () => {
               content={[
                 `Current Position: ${positionInQueue}`,
                 `Estimated Waiting Time: ${waitingTime} mins`,
+                `Time Elapsed: ${Math.floor(timeElapsed / 60000)} mins`,
               ]}
             />
             <InformationCard

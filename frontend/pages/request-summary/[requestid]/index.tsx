@@ -4,7 +4,7 @@ import styles from './RequestSummary.module.css';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { authenticatedGetFetch, formatZid, toCamelCase, changeBackgroundColour, changeTextColour, convertTime } from '../../../utils';
+import { authenticatedGetFetch, formatZid, toCamelCase, changeBackgroundColour, changeTextColour, convertTime, getActualDuration } from '../../../utils';
 import { Status, UserRequestSummary } from '../../../types/requests';
 import TagBox from '../../../components/TagBox';
 import OverallTimeSummary from '../../../components/OverallTimeSummary';
@@ -78,7 +78,7 @@ const RequestSummary = () => {
         </div>
         <div className={styles.body}>
           <div className={styles.buttonContainer}>
-            <Button className={styles.greyButton} variant='contained' onClick={() => router.back()}>Back</Button>
+            <Button className={styles.greyButton} variant='contained' onClick={() => router.push(`/active-queue/${requestData.queueId}`)}>Back</Button>
             <Button className={styles.greyButton} variant='contained' onClick={() => router.push('/dashboard')}>Dashboard</Button>
           </div>
           <Box className={styles.cardBox}>
@@ -118,7 +118,7 @@ const RequestSummary = () => {
             <OverallTimeSummary 
               startTime={requestSummary.startTime}
               endTime={requestSummary.endTime} 
-              duration={requestSummary.duration}
+              duration={getActualDuration(requestSummary.duration)}
               backgroundColor={changeBackgroundColour(requestSummary.duration)} 
               textColor={changeTextColour(requestSummary.duration)} 
             />

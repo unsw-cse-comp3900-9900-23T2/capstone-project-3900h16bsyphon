@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import TagBox from '../TagBox';
-import { Status } from '../../types/requests';
 
 const calculateTimeElapsed = (startDate: Date) => {
   const difference = +new Date() - +new Date(startDate);
@@ -9,6 +8,7 @@ const calculateTimeElapsed = (startDate: Date) => {
   if (difference > 0) {
     timeElapsed = {
       mins: Math.floor((difference / (1000 * 60)) % 60),
+      secs: Math.floor((difference / 1000) % 60)
     };
   }
   return timeElapsed;

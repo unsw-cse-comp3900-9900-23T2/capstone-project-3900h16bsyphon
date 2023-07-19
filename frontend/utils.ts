@@ -137,3 +137,13 @@ export const convertTime = (time?: Date) => {
   if (!time) return '';
   return dayjs(time).format('h:mm A');
 };
+
+export const getActualDuration = (duration?: Duration) => {
+  if (!duration) return duration;
+  const result: Duration = {
+    hours: duration.hours,
+    minutes: Math.floor(duration.seconds / 60),
+    seconds: duration.seconds % 60
+  };
+  return result;
+};

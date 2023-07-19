@@ -26,6 +26,7 @@ use sea_orm::{
 pub async fn create_request(
     token: ReqData<TokenClaims>,
     body: web::Json<CreateRequest>,
+    lobby: web::Data<Addr<Lobby>>,
 ) -> SyphonResult<HttpResponse> {
     let db = db();
     let request_creation = body.into_inner();
@@ -61,9 +62,16 @@ pub async fn create_request(
     });
     join_all(tag_insertion).await;
 
+    let action = HttpServerAction::InvalidateKeys(vec![
+        SocketChannels::Request(insertion.request_id),
+        SocketChannels::QueueData(insertion.queue_id),
+    ]);
+    lobby.do_send(action);
+
     Ok(HttpResponse::Ok().json(CreateRequestResponse {
         request_id: insertion.request_id,
     }))
+
 }
 
 pub async fn edit_request(
