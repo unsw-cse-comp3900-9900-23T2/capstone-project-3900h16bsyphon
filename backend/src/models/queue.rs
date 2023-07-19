@@ -150,6 +150,14 @@ pub struct TutorInformationModel {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct RequestTutorInformationModel {
+    pub zid: i32,
+    pub tutor_id: i32,
+    pub first_name: String,
+    pub last_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
 pub struct RequestStatusTimeInfo {
     pub request_id: i32,
     pub event_time: NaiveDateTime,

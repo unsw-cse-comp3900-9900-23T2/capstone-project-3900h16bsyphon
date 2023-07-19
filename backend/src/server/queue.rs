@@ -4,7 +4,7 @@ use crate::{
         CloseQueueRequest, CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery,
         GetQueueByIdQuery, GetQueueRequestCount, GetQueueTagsQuery, GetQueuesByCourseQuery,
         GetRemainingStudents, QueueReturnModel, SyphonError, SyphonResult, Tag, TokenClaims,
-        UpdateQueuePreviousRequestCount, UpdateQueueRequest, GetQueueSummaryQuery, QueueSummaryData, QueueInformationModel, RequestDuration, TimeStampModel, TutorInformationModel, QueueTutorSummaryData, RequestStatusTimeInfo,
+        UpdateQueuePreviousRequestCount, UpdateQueueRequest, GetQueueSummaryQuery, QueueSummaryData, QueueInformationModel, RequestDuration, TimeStampModel, TutorInformationModel, QueueTutorSummaryData, RequestStatusTimeInfo, RequestTutorInformationModel,
     },
     test_is_user,
     utils::{db::db, user::validate_user}, sockets::{lobby::Lobby, messages::{HttpServerAction, WsMessage}, SocketChannels},
@@ -443,16 +443,26 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         .ok_or(SyphonError::QueueNotExist(query.queue_id))?;
 
     // get list of tutors for the queue
-    let tutor_info_list = entities::queue_tutors::Entity::find()
+    let tutor_info_list = entities::request_status_log::Entity::find()
         .select_only()
         .left_join(entities::users::Entity)
-        .column(entities::users::Column::Zid)
+        .left_join(entities::requests::Entity)
+        .column(entities::requests::Column::Zid)
+        .column(entities::request_status_log::Column::TutorId)
         .column(entities::users::Column::FirstName)
         .column(entities::users::Column::LastName)
-        .filter(entities::queue_tutors::Column::QueueId.eq(query.queue_id))
-        .into_model::<TutorInformationModel>()
+        .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+        .into_model::<RequestTutorInformationModel>()
         .all(db)
-        .await?;
+        .await?
+        .into_iter()
+        .filter(|x| x.zid != x.tutor_id)
+        .map(|x| TutorInformationModel {
+            zid: x.tutor_id,
+            first_name: x.first_name,
+            last_name: x.last_name,
+        })
+        .collect::<Vec<_>>();
 
     let total_seeing = tutor_info_list.iter().map(|tutor_info| {
         entities::request_status_log::Entity::find()
@@ -578,28 +588,9 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         .all(db)
         .await?;
 
+    // for every tag, get list of request ids for that tag 
 
-    // find all tutors that worked on any request that was in that queue
-    // logs.request_id join requests.request_id where requests.queue_id == body.queue_id
-    // get column for tutor id --> into Vec<i32>
-    
-    // for the tutors: Vec<i32> 
-    // logs.request_id join requests.request_id where requests.queue_id == body.queue_id
-    // 1. find num of requests status --> 'seeing'
-    // 2. find num of requests status --> 'seen'
-
-    // let requests = entities::requests::Entity::find()
-    //     .left_join(entities::queues::Entity)
-    //     .filter(entities::requests::Column::QueueId.eq(query.queue_id))
-    //     .filter(entities::requests::Column::Status.eq("unseen"))
-    //     .filter(entities::queues::Column::IsAvailable.eq(true))
-    //     .filter(entities::queues::Column::IsVisible.eq(true))
-    //     .select_only()
-    //     .column(entities::requests::Column::Zid)
-    //     .distinct()
-    //     .count(db)
-    //     .await?;
-
+    // for every tag, for every request id, find start and end time, and sum them
     let time_difference = queue.end_time.signed_duration_since(queue.start_time);
     let duration = RequestDuration {
         hours: time_difference.num_hours(),
