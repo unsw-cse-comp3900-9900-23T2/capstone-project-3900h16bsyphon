@@ -72,7 +72,7 @@ const FAQsModal = ({ courseOfferingId }: FAQsModalProps) => {
               <CloseIcon />
             </IconButton>
           </div>
-          {faqData.map((faq) => {
+          {faqData?.map((faq) => {
             return <div key={faq.id} className={styles.questionAnswerContainer}>
               <div className={styles.questionContainer}>
                 <Typography variant='h6'>{faq.question}</Typography>
