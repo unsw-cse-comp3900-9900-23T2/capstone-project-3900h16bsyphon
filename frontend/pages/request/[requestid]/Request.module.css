@@ -43,6 +43,13 @@
     background-color: var(--colour-main-red-200);
 }
 
+.greyButton {
+    font-weight: bold;
+    padding: 5px 25px;
+    background-color: var(--colour-main-grey-200);
+    color: var(--colour-main-grey-900);
+}
+
 .buttonContainer {
     min-width: 15%;
     display: flex;
