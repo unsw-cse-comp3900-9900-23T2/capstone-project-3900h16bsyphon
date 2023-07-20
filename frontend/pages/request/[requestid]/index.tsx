@@ -63,9 +63,11 @@ const Request = () => {
       );
       return;
     }
+    setData({...data, status});
     if (status !== Status.Seeing) {
       router.push(`/active-queue/${data.queueId}`);
     }
+
   };
 
 

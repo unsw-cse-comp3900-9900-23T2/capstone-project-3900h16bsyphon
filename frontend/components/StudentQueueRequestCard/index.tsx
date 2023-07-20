@@ -50,7 +50,8 @@ const StudentQueueRequestCard = ({
     setBackgroundColor(determineBackgroundColour(status));
   }, [status]);
 
-  const updateStatus = async (status: Status) => {
+  const updateStatus = async (status: Status, e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
     const res = await authenticatedPutFetch('/request/set_status', {
       request_id: requestId,
       status: status,
@@ -143,7 +144,7 @@ const StudentQueueRequestCard = ({
                     <Button
                       className={styles.claimButton}
                       variant="contained"
-                      onClick={() => updateStatus(Status.Unseen)}
+                      onClick={(e) => updateStatus(Status.Unseen, e)}
                     >
                       Unresolve
                     </Button>
@@ -155,14 +156,14 @@ const StudentQueueRequestCard = ({
                   <Button
                     className={styles.claimButton}
                     variant="contained"
-                    onClick={() => updateStatus(Status.Seeing)}
+                    onClick={(e) => updateStatus(Status.Seeing, e)}
                   >
                     Claim
                   </Button>
                   <Button
                     className={styles.notFoundButton}
                     variant="contained"
-                    onClick={() => updateStatus(Status.NotFound)}
+                    onClick={(e) => updateStatus(Status.NotFound, e)}
                   >
                     Not Found
                   </Button>
@@ -172,7 +173,7 @@ const StudentQueueRequestCard = ({
                 <Button
                   className={styles.claimButton}
                   variant="contained"
-                  onClick={() => updateStatus(Status.Seen)}
+                  onClick={(e) => updateStatus(Status.Seen, e)}
                 >
                   Resolve
                 </Button>
@@ -181,7 +182,7 @@ const StudentQueueRequestCard = ({
                 <Button
                   className={styles.claimButton}
                   variant="contained"
-                  onClick={() => updateStatus(Status.Unseen)}
+                  onClick={(e) => updateStatus(Status.Unseen, e)}
                 >
                   Unresolve
                 </Button>
