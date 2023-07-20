@@ -82,6 +82,27 @@ const WaitingScreen = () => {
     setIsClusterable(requestData.isClusterable);
   }, [router.query.requestid, router, requestData.isClusterable]);
 
+  // Set up websocket for live-request data updates
+  // let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/request', {
+  //   queryParams: {
+  //     request_id: `${router.query.requestid}`,
+  //   },
+  //   onOpen: () => {
+  //     console.log('connected [request data]:', `${router.query.requestid}`);
+  //   }
+  // });
+
+  // update the requet data
+  // useEffect(() => {
+  //   if (!lastJsonMessage) return;
+  //   console.debug('new_msg: ', lastJsonMessage);
+  //   if ((lastJsonMessage as any)?.type === 'request_data') {
+  //     let newRequestData = (lastJsonMessage as any).requests;
+  //     console.debug('newRequestData', newRequestData);
+  //     setData(toCamelCase(newRequestData));
+  //   }
+  // }, [lastJsonMessage]);
+
   useEffect(() => {
     let getQueueData = async () => {
       let res = await authenticatedGetFetch('/queue/get', {
@@ -148,28 +169,58 @@ const WaitingScreen = () => {
     }
   });
 
+  // This is no worky because of hooks stuff
+  // fix is very hacky - shoudlnt use long term
+  // const [requestId, setRequestId] = useState(undefined);
+  // useAuthenticatedWebSocket('ws:localhost:8000/ws/request', { queryParams: requestId });
+  // const connectHook = (requestId: Number) => {
+  //   useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {});
+  // };
   // websocket for this specific request's data:
-  let { lastJsonMessage: lastJsonMessageRequest } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
-    queryParams: {queue_id: requestData.queueId},
-    onOpen: () => {
-      console.log('connected [queue data]');
-    }
-  });
+  // useEffect(() => {
+  //   let { lastJsonMessage: lastJsonMessageRequest } = useAuthenticatedWebSocket('ws:localhost:8000/ws/request', {
+  //     queryParams: {request_id: `${router.query.requestid}`},
+  //     onOpen: () => {
+  //       console.log('connected [queue data]');
+  //     }
+  //   });
+  // });
+
 
   // update queue data:
   useEffect(() => {
+    const updateRequestDataFromQueueData = (allRequests: any[]) => {
+      // hacky asf
+      console.log('allRequests', allRequests);
+      let ourRequest = allRequests.find((r) => r.request_id === Number.parseInt(`${router.query.requestid}`));
+      console.log('ourRequest', ourRequest);
+      if (ourRequest) {
+        console.log('newRequestData', ourRequest);
+        setData(toCamelCase(ourRequest));
+        if (ourRequest.status === Status.Seen) {
+          router.push(`/request-summary/${router.query.requestid}`);
+        }
+      }
+    };
     if (!lastJsonMessageQueue) return;
     if ((lastJsonMessageQueue as any)?.type !== 'queue_data') return;
+    console.log('new_msg: ', lastJsonMessageQueue);
+    if ((lastJsonMessageQueue as any)?.requests) {
+      updateRequestDataFromQueueData((lastJsonMessageQueue as any)?.requests);
+    }
     setQueueData(queueData => ({...queueData, ...((lastJsonMessageQueue as any)?.queue)}));
-  }, [lastJsonMessageQueue]);
+  }, [lastJsonMessageQueue, router, router.query.requestid]);
 
+  // This is no worky because of hooks stuff
+  // fix is very hacky - shoudlnt use long term
   // Update request data
-  useEffect(() => {
-    if (!lastJsonMessageRequest) return;
-    if ((lastJsonMessageRequest as any)?.type !== 'request_data') return;
-    const newRequestData = (lastJsonMessageRequest as any).request as any;
-    setData(newRequestData);
-  }, [lastJsonMessageRequest]);
+  // useEffect(() => {
+  //   if (!lastJsonMessageRequest) return;
+  //   if ((lastJsonMessageRequest as any)?.type !== 'request_data') return;
+  //   const newRequestData = (lastJsonMessageRequest as any).request as any;
+  //   console.debug('newRequestData', newRequestData);
+  //   setData(newRequestData);
+  // }, [lastJsonMessageRequest]);
 
   // toast for announcement
   useEffect(() => {
