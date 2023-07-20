@@ -164,8 +164,9 @@ const WaitingScreen = () => {
     queryParams: {queue_id: requestData.queueId},
     onOpen: () => {
       console.log('connected [queue data]');
-    }
-  });
+    }, 
+    shouldReconnect: () => true,
+  }, !!requestData.queueId);
 
   // This is no worky because of hooks stuff
   // fix is very hacky - shoudlnt use long term

@@ -33,7 +33,8 @@ const ActiveQueue = () => {
     queryParams: {queue_id: requestData.queueId},
     onOpen: () => {
       console.log('connected [queue data]');
-    }
+    },
+    shouldReconnect: () => true,
   }, !!requestData.queueId);
 
   // update the queue data
