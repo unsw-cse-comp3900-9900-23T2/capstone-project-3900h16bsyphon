@@ -136,6 +136,57 @@ const StudentQueueRequestCard = ({
             })}
           </div>
           <CardActions className={styles.cardActions}>
+            <div className={styles.statusActionButtons}>
+              {
+                status === Status.NotFound && (
+                  <>
+                    <Button
+                      className={styles.claimButton}
+                      variant="contained"
+                      onClick={() => updateStatus(Status.Unseen)}
+                    >
+                      Unresolve
+                    </Button>
+                  </>
+                )
+              }
+              {status === Status.Unseen && (
+                <>
+                  <Button
+                    className={styles.claimButton}
+                    variant="contained"
+                    onClick={() => updateStatus(Status.Seeing)}
+                  >
+                    Claim
+                  </Button>
+                  <Button
+                    className={styles.notFoundButton}
+                    variant="contained"
+                    onClick={() => updateStatus(Status.NotFound)}
+                  >
+                    Not Found
+                  </Button>
+                </>
+              )}
+              {status === Status.Seeing && (
+                <Button
+                  className={styles.claimButton}
+                  variant="contained"
+                  onClick={() => updateStatus(Status.Seen)}
+                >
+                  Resolve
+                </Button>
+              )}
+              { status === Status.Seen && (
+                <Button
+                  className={styles.claimButton}
+                  variant="contained"
+                  onClick={() => updateStatus(Status.Unseen)}
+                >
+                  Unresolve
+                </Button>
+              )}
+            </div>
             <div className={styles.orderContainer}>
               <IconButton aria-label="move up button"
                 onClick={(e) => handleMove(e, 'up')}
@@ -148,55 +199,6 @@ const StudentQueueRequestCard = ({
                 <ArrowDownward />
               </IconButton>
             </div>
-            {
-              status === Status.NotFound && (
-                <>
-                  <Button
-                    className={styles.claimButton}
-                    variant="contained"
-                    onClick={() => updateStatus(Status.Unseen)}
-                  >
-                    Unresolve
-                  </Button>
-                </>
-              )
-            }
-            {status === Status.Unseen && (
-              <>
-                <Button
-                  className={styles.claimButton}
-                  variant="contained"
-                  onClick={() => updateStatus(Status.Seeing)}
-                >
-                  Claim
-                </Button>
-                <Button
-                  className={styles.notFoundButton}
-                  variant="contained"
-                  onClick={() => updateStatus(Status.NotFound)}
-                >
-                  Not Found
-                </Button>
-              </>
-            )}
-            {status === Status.Seeing && (
-              <Button
-                className={styles.claimButton}
-                variant="contained"
-                onClick={() => updateStatus(Status.Seen)}
-              >
-                Resolve
-              </Button>
-            )}
-            { status === Status.Seen && (
-              <Button
-                className={styles.claimButton}
-                variant="contained"
-                onClick={() => updateStatus(Status.Unseen)}
-              >
-                Unresolve
-              </Button>
-            )}
           </CardActions>
         </CardActionArea>
       </Card>
