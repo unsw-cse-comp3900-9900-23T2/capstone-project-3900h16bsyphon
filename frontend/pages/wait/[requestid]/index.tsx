@@ -18,6 +18,7 @@ import FAQs from '../../../components/FAQs';
 import useAuthenticatedWebSocket from '../../../hooks/useAuthenticatedWebSocket';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import FAQsModal from '../../../components/FAQsModal';
 
 const WaitingScreen = () => {
   const router = useRouter();
@@ -236,6 +237,7 @@ const WaitingScreen = () => {
             >
               Edit Request
             </Button>
+            <FAQsModal courseOfferingId={queueData?.courseOfferingId} />
             <InformationCard
               content={[
                 `Current Position: ${positionInQueue}`,

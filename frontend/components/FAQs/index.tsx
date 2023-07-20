@@ -5,12 +5,7 @@ import { Button, Typography } from '@mui/material';
 import { authenticatedDeleteFetch, authenticatedGetFetch, authenticatedPostFetch, authenticatedPutFetch} from '../../utils';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
-
-type FAQ = {
-  id: number;
-  question: string;
-  answer: string;
-};
+import { FAQ } from '../../types/faqs';
 
 type FAQsProps = {
   courseOfferingId: string | string[] | undefined;
