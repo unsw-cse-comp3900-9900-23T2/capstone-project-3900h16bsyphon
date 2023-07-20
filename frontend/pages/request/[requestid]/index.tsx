@@ -134,6 +134,7 @@ const Request = () => {
                 </Button>
               </>
             )}
+            <TimeSummaryCard startTime={startTime} status={data.status}/>
           </div>
           <Box className={styles.cardBox}>
             <StudentRequestCard
@@ -148,7 +149,6 @@ const Request = () => {
             />
           </Box>
           <div className={styles.chatContainer}>
-            <TimeSummaryCard startTime={startTime} status={data.status}/>
             <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} isStudent={false} studentZid={data.zid}/> 
           </div>
         </div>
