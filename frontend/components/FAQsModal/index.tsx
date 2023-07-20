@@ -33,17 +33,17 @@ const FAQsModal = ({ courseOfferingId }: FAQsModalProps) => {
   const [faqData, setFaqData] = useState(defaultData);
   
   // fetch faq data
-  // useEffect(() => {
-  //   const getFAQData = async () => {
-  //     if (!courseOfferingId) return;
-  //     let res = await authenticatedGetFetch('/faqs/list', {
-  //       course_offering_id: `${courseOfferingId}`,
-  //     });
-  //     let d = await res.json();
-  //     setFaqData(toCamelCase(d));
-  //   };
-  //   getFAQData();
-  // }, [courseOfferingId]);
+  useEffect(() => {
+    const getFAQData = async () => {
+      if (!courseOfferingId) return;
+      let res = await authenticatedGetFetch('/faqs/list', {
+        course_offering_id: `${courseOfferingId}`,
+      });
+      let d = await res.json();
+      setFaqData(toCamelCase(d));
+    };
+    getFAQData();
+  }, [courseOfferingId]);
 
 
   return (
@@ -51,9 +51,7 @@ const FAQsModal = ({ courseOfferingId }: FAQsModalProps) => {
       <Button
         onClick={handleOpen}
         className={styles.modalButton}
-        color='secondary'
         variant='contained'
-        size='medium'
       >
         FAQs
       </Button>
@@ -74,18 +72,17 @@ const FAQsModal = ({ courseOfferingId }: FAQsModalProps) => {
               <CloseIcon />
             </IconButton>
           </div>
-
+          {faqData.map((faq) => {
+            return <div key={faq.id} className={styles.questionAnswerContainer}>
+              <div className={styles.questionContainer}>
+                <Typography variant='h6'>{faq.question}</Typography>
+              </div>
+              <div className={styles.answerContainer}>
+                <Typography variant='body1'>{faq.answer}</Typography>
+              </div>
+            </div>;
+          })}
           {/* Faq question answer component */}
-          <div className={styles.questionAnswerContainer}>
-            {/* question div */}
-            <div className={styles.questionContainer}>
-              <Typography variant='h6'>{defaultData[0].question}</Typography>
-            </div>
-            {/* answer div */}
-            <div className={styles.answerContainer}>
-              <Typography variant='body1'>{defaultData[0].answer}</Typography>
-            </div>
-          </div>
           <div className={styles.buttonContainer} >
             <Button onClick={handleClose} variant='contained'>
               Close
