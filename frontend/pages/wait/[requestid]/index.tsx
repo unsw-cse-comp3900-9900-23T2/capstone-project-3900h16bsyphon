@@ -46,7 +46,6 @@ const WaitingScreen = () => {
   const [waitingTime, setWaitingTime] = useState(0);
   const [positionInQueue, setPositionInQueue] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(0);
 
   const disableCluster = async () => {
     const res = await authenticatedPutFetch('/request/disable_cluster', {
@@ -142,7 +141,6 @@ const WaitingScreen = () => {
       }
     };
     setTimeElapsed((new Date()).getTime() - (new Date(queueData?.startTime as string)).getTime());
-    setTimeLeft((new Date(queueData?.endTime as string)).getTime() - (new Date()).getTime());
 
     getNumberOfRequests();
   }, [queueData, requestData.queueId, router.query.requestid, positionInQueue]);
@@ -260,12 +258,12 @@ const WaitingScreen = () => {
         {isClusterable ? (
           <div className={styles.clusterContainer}>
             <TagBox
-              text="You have been added to a cluster by the tutor! You question will be answered as a group. Click the button to remove yourself"
+              text="You have enabled clustering! You question may be answered as a group. Click the button to disable clustering"
               backgroundColor="var(--colour-main-orange-200)"
               color="var(--colour-main-orange-900)"
             />
             <Button className={styles.removeBtn} onClick={disableCluster}>
-              Remove
+              Disable 
             </Button>
           </div>
         ) : null}
