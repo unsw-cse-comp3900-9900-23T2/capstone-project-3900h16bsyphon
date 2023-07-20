@@ -40,6 +40,7 @@
 
 .titleContainer {
     align-self: stretch;
+    display:flex;
 }
 
 .tagContainer {
@@ -49,7 +50,9 @@
 }
 
 .cardActions {
-    padding: 10px 20px 20px 20px;
+    align-self: stretch;
+    display: flex;
+    justify-content: space-between;
 }
 
 .claimButton {
@@ -67,4 +70,9 @@
 .orderContainer {
     display: flex;
     flex-direction: row;
+}
+
+.statusActionButtons {
+    display: flex;   
+    gap: 7px;
 }
