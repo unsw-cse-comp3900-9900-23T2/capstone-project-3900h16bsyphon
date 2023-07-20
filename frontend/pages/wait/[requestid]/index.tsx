@@ -261,7 +261,6 @@ const WaitingScreen = () => {
               previousRequests={requestData.previousRequests}
               description={requestData.description}
             />
-            <FAQs courseOfferingId={queueData?.courseOfferingId} tutor={false} />
           </Box>
           <div className={styles.chatContainer}>
             <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} studentZid={requestData.zid} isStudent={true}/>
