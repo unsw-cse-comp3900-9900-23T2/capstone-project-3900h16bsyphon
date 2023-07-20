@@ -4,7 +4,13 @@
 
 .timeContainer {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  flex-direction: column;
   margin-top: 20px;
+}
+
+.startTimeContainer {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  padding-bottom: 7px;
 }

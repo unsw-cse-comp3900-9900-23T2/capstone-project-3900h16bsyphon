@@ -15,13 +15,18 @@ export default function TimeSummaryCard({ startTime, status } : TimeSummaryCardP
   return (
     <Card>
       <CardContent>
-        <Typography className={styles.textHeading} variant="h6">
-          Time summary:
+        <Typography className={styles.textHeading} variant="h5">
+          Time Summary:
         </Typography>
         <div className={styles.timeContainer}>
-          <Typography variant="subtitle2">
-            Start time: { status === Status.Seeing ? `${convertTime(startTime)}` : 'N/A'}
-          </Typography>
+          <div className={styles.startTimeContainer}>
+            <Typography className={styles.textHeading}  variant="body1">
+              Start time: 
+            </Typography>
+            <Typography variant="body1">
+              { status === Status.Seeing ? `${convertTime(startTime)}` : ' N/A'}
+            </Typography>
+          </div>
           {/* TODO: add polling */}
           <Timer startTime={startTime} />
         </div>

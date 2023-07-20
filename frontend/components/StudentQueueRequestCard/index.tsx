@@ -86,7 +86,7 @@ const StudentQueueRequestCard = ({
   };
 
   const handleOpenCard = () => {
-    if (status === Status.NotFound || status === Status.Unseen) return;
+    if (status === Status.NotFound) return;
     if (status === Status.Seen) router.push(`/request-summary/${requestId}`);
     else router.push(`/request/${requestId}`);
   };

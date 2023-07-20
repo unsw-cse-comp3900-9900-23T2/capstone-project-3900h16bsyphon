@@ -46,7 +46,7 @@ const Request = () => {
         request_id: `${router.query.requestid}`,
       });
       let d = await res.json();
-      setStartTime(toCamelCase(d.event_time));
+      setStartTime(toCamelCase(d?.event_time));
     };
     getRequest();
     getStartTime();
@@ -105,6 +105,13 @@ const Request = () => {
                 >
                   Not Found
                 </Button>
+                <Button
+                  className={styles.greyButton}
+                  variant="contained"
+                  onClick={() => router.back()}
+                >
+                  Back
+                </Button>
               </>
             )}
             {data.status === Status.Seen && (
@@ -134,6 +141,7 @@ const Request = () => {
                 </Button>
               </>
             )}
+            <TimeSummaryCard startTime={startTime} status={data.status}/>
           </div>
           <Box className={styles.cardBox}>
             <StudentRequestCard
@@ -148,7 +156,6 @@ const Request = () => {
             />
           </Box>
           <div className={styles.chatContainer}>
-            <TimeSummaryCard startTime={startTime} status={data.status}/>
             <ChatBox requestId={Number.parseInt(`${router.query.requestid}`)} isStudent={false} studentZid={data.zid}/> 
           </div>
         </div>
