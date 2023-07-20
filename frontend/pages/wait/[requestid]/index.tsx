@@ -14,7 +14,6 @@ import InformationCard from '../../../components/InformationCard';
 import { QueueData } from '../../../types/queues';
 import ChatBox from '../../../components/ChatBox';
 import { Status } from '../../../types/requests';
-import FAQs from '../../../components/FAQs';
 import useAuthenticatedWebSocket from '../../../hooks/useAuthenticatedWebSocket';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
