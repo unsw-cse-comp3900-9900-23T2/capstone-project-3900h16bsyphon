@@ -44,10 +44,10 @@
 }
 
 .buttonContainer {
+    min-width: 15%;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    min-width: 15%;
     flex: 1;
 }
 
@@ -58,5 +58,5 @@
 .body {
     display: flex;
     width: 95%;
-    column-gap: 5%;
+    column-gap: 2%;
 }
