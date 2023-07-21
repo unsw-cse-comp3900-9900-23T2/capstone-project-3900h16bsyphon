@@ -1,8 +1,4 @@
-FROM rust:1.70.0-alpine as chef
-
-# muslc is required in order to build the rust image.
-RUN apk add openssl-dev musl-dev
-RUN rustup target add x86_64-unknown-linux-musl
+FROM rust:1.70.0-buster as chef
 
 RUN cargo install cargo-chef
 
@@ -25,11 +21,9 @@ COPY . .
 RUN cd migration && cargo build --release && cd ..
 RUN cargo build --release
 
-FROM alpine:3.18
+FROM debian:buster
+RUN apt-get update && apt install -y openssl
 
-# certs required
-RUN apk add pkgconfig openssl-dev
-RUN apk --no-cache add ca-certificates 
 WORKDIR /app
 
 # copy useful binaries

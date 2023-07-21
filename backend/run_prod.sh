@@ -2,7 +2,7 @@
 
 echo starting backend
 set -a # automatically export all variables
-source .env
+. ./.env
 DATABASE_HOST=database_prod
 BACKEND_HOST=backend_prod
 DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DATABASE_HOST}/${POSTGRES_DB}
