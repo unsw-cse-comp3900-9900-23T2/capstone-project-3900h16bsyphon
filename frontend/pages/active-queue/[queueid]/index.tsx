@@ -185,11 +185,10 @@ const ActiveQueue = () => {
       <div className={styles.body}>
         <div className={styles.buttonContainer}>
           <FormControl size='small' >
-            <InputLabel className={styles.label} id="sort-queue-select-label"> Sort Queue </InputLabel>
+            <InputLabel sx={{ textAlign: 'center', right: '0'}} className={styles.label} id="sort-queue-select-label"> Sort Queue </InputLabel>
             <Select
               labelId="sort-queue-select-label"
               id="sort-queue-select"
-              label='Sort Queue'
               className={styles.select}
               displayEmpty
               onChange={handleSubmit}
