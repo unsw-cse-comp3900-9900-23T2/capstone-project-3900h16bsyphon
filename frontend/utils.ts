@@ -142,7 +142,7 @@ export const getActualDuration = (duration?: Duration) => {
   if (!duration) return duration;
   const result: Duration = {
     hours: duration.hours,
-    minutes: Math.floor(duration.seconds / 60),
+    minutes: Math.floor(duration.seconds / 60) - (duration.hours * 60),
     seconds: duration.seconds % 60
   };
   return result;
