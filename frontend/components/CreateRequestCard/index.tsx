@@ -1,5 +1,5 @@
 import styles from './CreateRequestCard.module.css';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Box,
   Card,
@@ -8,14 +8,21 @@ import {
   Typography,
   Button,
   FormControlLabel,
-  Checkbox
+  Checkbox,
+  Table,
+  TableContainer,
+  TableHead,
+  TableCell,
+  TableRow,
+  TableBody
 } from '@mui/material';
 import { useRouter } from 'next/router';
-import { authenticatedPostFetch, authenticatedGetFetch, toCamelCase, authenticatedPutFetch } from '../../utils';
+import { authenticatedPostFetch, authenticatedGetFetch, authenticatedDeleteFetch, toCamelCase, authenticatedPutFetch, toBase64 } from '../../utils';
 import TagsSelection from '../TagsSelection';
 import { Tag } from '../../types/requests';
 import TagBox from '../TagBox';
-import { QuestionMark } from '@mui/icons-material';
+import { Delete, QuestionMark } from '@mui/icons-material';
+import { useDropzone } from 'react-dropzone';
 
 type CreateRequestCardProps = {
   isEditMode?: boolean;
@@ -37,6 +44,12 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
   const [tags, setTags] = useState<Tag[]>([]);
   const [tagHistory, setTagHistory] = useState<Record<string, number>>({});
   const [currentQueueId, setCurrentQueueId] = useState<number | undefined>(undefined);
+  const [files, setFiles] = useState<File[]>([]);
+  const [oldFiles, setOldFiles] = useState<string[]>([]);
+  const uploadFile = useCallback((newFiles: File[]) => {
+    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+  }, []);
+  const { getRootProps } = useDropzone({ onDrop: uploadFile, noClick: true });
 
   useEffect(() => {
     const getRequestData = async () => {
@@ -51,6 +64,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
       setIsClusterable(requestInfo.isClusterable);
       setTagSelection(requestInfo.tags);
       setCurrentQueueId(requestInfo.queueId);
+      setOldFiles(requestInfo.images.map((file: string) => `${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}${file}`));
     };
     // only want to fetch the request information if card is in edit mode
     if (isEditMode) getRequestData();
@@ -94,9 +108,14 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
       status: 'Unseen',
       tags: tagSelection.map((tag) => tag.tagId),
       queue_id: Number.parseInt(`${currentQueueId}`),
+      files: await Promise.all(files.map(
+        async (file) => (
+          {file_name: file.name, file_content: (await toBase64(file))}
+        )
+      ))
     };
     let res = await authenticatedPostFetch('/request/create', body);
-    let value = toCamelCase(await res.json());
+    let value: any = toCamelCase(await res.json());
     if (res.ok) router.push(`/wait/${value.requestId}`);
   };
 
@@ -109,6 +128,11 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
       status: 'Unseen',
       tags: tagSelection.map((tag) => tag.tagId),
       queue_id: Number.parseInt(`${currentQueueId}`),
+      files: await Promise.all(files.map(
+        async (file) => (
+          {file_name: file.name, file_content: await toBase64(file)}
+        )
+      ))
     };
     let res = await authenticatedPutFetch('/request/edit', body);
     if (res.ok) router.push(`/wait/${requestId}`);
@@ -170,7 +194,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
               placeholder='Give a descriptive overview of the issue'
               fullWidth />
           </div>
-          <div>
+          <div {...getRootProps()}>
             <div className={styles.headingWordCount}>
               <Typography variant="subtitle1">
                 Description
@@ -186,6 +210,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 setDescription(event.target.value);
               }}
+              onPaste={(e) => Array.from(e.clipboardData.items).forEach((f: DataTransferItem) => f.kind === 'file' && uploadFile([f.getAsFile() as File]))}
               placeholder='Give a detailed description of the issue. Include any error messages and what you have done so far to try and solve this.'
               id="outlined-input"
               fullWidth />
@@ -195,6 +220,50 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
               Tags
             </Typography>
             <TagsSelection tagSelection={tagSelection} tags={tags} setTagSelection={setTagSelection} color='black' backgroundColor='#e3e3e3' />
+          </div>
+          <div>
+            <Typography variant="subtitle1">
+                  Your uploads
+            </Typography>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ width: '70%' }}> Image </TableCell>
+                    <TableCell> Delete </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {oldFiles.map((file, index) => (
+                    <TableRow key={index}>
+                      {/* eslint-disable-next-line @next/next/no-img-element*/}
+                      <TableCell> <img src={file} alt={`image ${index}`} /> </TableCell>
+                      <TableCell> <Button onClick={() => {
+                        let oldCopy = [...oldFiles];
+                        let old = oldCopy.splice(index, 1)[0];
+                        setOldFiles(oldCopy);
+                        authenticatedDeleteFetch('/image/delete', {
+                          request_id: `${requestId}`,
+                          image_name: `${old}`.replace(process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL as string, '')
+                        });
+                      }}> <Delete /> </Button> </TableCell>
+                    </TableRow>
+                  ))}
+                  {files.map((file, index) => (
+                    <TableRow key={index}>
+                      {/* eslint-disable-next-line @next/next/no-img-element*/}
+                      <TableCell> <img src={URL.createObjectURL(file)} alt={`image ${index}`} /> </TableCell>
+                      <TableCell> <Button onClick={() => {
+                        let filesCopy = [...files];
+                        filesCopy.splice(index, 1);
+                        setFiles(filesCopy);
+                      }}> <Delete /> </Button> </TableCell>
+                    </TableRow>
+                  )
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </div>
           <FormControlLabel
             control={<Checkbox checked={isClusterable} onChange={() => setIsClusterable(!isClusterable)} />}

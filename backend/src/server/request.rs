@@ -1,28 +1,30 @@
+use std::fs;
+
 use actix::Addr;
 use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
+use base64::{Engine, engine};
+use base64::engine::general_purpose;
 use chrono::Utc;
 use chrono_tz::Australia::Sydney;
+use log::debug;
 use serde_json::json;
 
 use crate::entities::sea_orm_active_enums::Statuses;
-use crate::models::{
-    RequestDuration, RequestSummaryBody, RequestSummaryReturnModel, TimeStampModel,
-    TutorSummaryDetails, MoveDirection, MoveRequestOrderingBody, 
-};
+use crate::models::request::*;
+use crate::models::queue::Tag;
+use crate::models::auth::TokenClaims;
+use crate::models::{SyphonResult, SyphonError};
 use crate::sockets::lobby::Lobby;
 use crate::sockets::messages::HttpServerAction;
 use crate::sockets::SocketChannels;
 use crate::utils::request::move_request;
+use crate::utils::db::db;
 use crate::utils::unbox;
-use crate::{entities, models, utils::db::db};
+use crate::entities;
 use futures::future::join_all;
-use models::{
-    AllRequestsForQueueBody, CreateRequest, CreateRequestResponse, EditRequestBody,
-    PutRequestStatusBody, QueueRequest, RequestInfoBody, SyphonError, SyphonResult, Tag,
-    TokenClaims,
-};
+
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter,
     QuerySelect,
@@ -66,6 +68,19 @@ pub async fn create_request(
         .insert(db)
     });
     join_all(tag_insertion).await;
+    // save the image to the docker volume
+    let file_loc = format!("/images/{}", insertion.request_id);
+    fs::create_dir(file_loc)?;
+    let engine = engine::GeneralPurpose::new(&base64::alphabet::STANDARD, general_purpose::GeneralPurposeConfig::new());
+    let images_insertion = request_creation.files.into_iter().map(|file| {
+        let file_loc = format!("/images/{}/{}", insertion.request_id, file.file_name);
+        fs::write(file_loc.as_str(), engine.decode(file.file_content.as_bytes()).unwrap()).unwrap();
+        entities::request_images::ActiveModel {
+            request_id: ActiveValue::Set(insertion.request_id),
+            image_url: ActiveValue::Set(file_loc),
+        }.insert(db)
+    });
+    join_all(images_insertion).await;
 
     let action = HttpServerAction::InvalidateKeys(vec![
         SocketChannels::Request(insertion.request_id),
@@ -81,6 +96,7 @@ pub async fn create_request(
 pub async fn edit_request(
     _token: ReqData<TokenClaims>,
     edit_request_body: web::Json<EditRequestBody>,
+    lobby: web::Data<Addr<Lobby>>,
 ) -> SyphonResult<HttpResponse> {
     let db = db();
     let edit_request_body = edit_request_body.into_inner();
@@ -119,6 +135,31 @@ pub async fn edit_request(
     });
 
     join_all(tag_insertion).await;
+    // delete all images, then insert them again
+    entities::request_images::Entity::delete_many()
+        .filter(entities::request_images::Column::RequestId.eq(edit_request_body.request_id))
+        .exec(db)
+        .await?;
+    let file_loc = format!("/images/{}", edit_request_body.request_id);
+    fs::remove_dir_all(&file_loc)?;
+    fs::create_dir(&file_loc)?;
+    let engine = engine::GeneralPurpose::new(&base64::alphabet::STANDARD, general_purpose::GeneralPurposeConfig::new());
+    let images_insertion = edit_request_body.files.into_iter().map(|file| {
+        let file_loc = format!("/images/{}/{}", edit_request_body.request_id, file.file_name);
+        fs::write(file_loc.as_str(), engine.decode(file.file_content.as_bytes()).unwrap()).unwrap();
+        entities::request_images::ActiveModel {
+            request_id: ActiveValue::Set(edit_request_body.request_id),
+            image_url: ActiveValue::Set(file_loc),
+        }.insert(db)
+    });
+
+    join_all(images_insertion).await;
+
+    let action = HttpServerAction::InvalidateKeys(vec![
+        SocketChannels::Request(edit_request_body.request_id),
+        SocketChannels::QueueData(edit_request_body.queue_id),
+    ]);
+    lobby.do_send(action);
 
     Ok(HttpResponse::Ok().json("OK"))
 }
@@ -225,8 +266,7 @@ pub async fn request_info_not_web(
         .filter(entities::queues::Column::QueueId.eq(request.queue_id))
         .into_model::<Tag>()
         .all(db)
-        .await
-        .expect("Db broke");
+        .await?;
 
     let course_offering_id = entities::queues::Entity::find_by_id(request.queue_id)
         .one(db)
@@ -248,9 +288,14 @@ pub async fn request_info_not_web(
         )
         .filter(entities::queues::Column::CourseOfferingId.eq(course_offering_id))
         .count(db)
-        .await
-        .expect("db broke?");
-
+        .await?;
+    
+    let images: Vec<String> = entities::request_images::Entity::find()
+        .select_only()
+        .column(entities::request_images::Column::ImageUrl)
+        .filter(entities::request_images::Column::RequestId.eq(request.request_id))
+        .into_tuple()
+        .all(db).await?;
     let request_value = QueueRequest {
         request_id: request.request_id,
         first_name: user.first_name,
@@ -265,6 +310,7 @@ pub async fn request_info_not_web(
         course_offering_id,
         previous_requests,
         tags,
+        images,
     };
 
     Ok(request_value)
@@ -452,4 +498,14 @@ pub async fn move_request_ordering_down(
     lobby: web::Data<Addr<Lobby>>
 ) -> SyphonResult<HttpResponse> {
     move_request(token, body.request_id, MoveDirection::Down, unbox(lobby)).await
+}
+
+pub async fn delete_image(body: web::Query<DeleteImageQuery>) -> SyphonResult<HttpResponse> {
+    debug!("deleting {}", body.image_name);
+    let db = db();
+    entities::request_images::Entity::delete_by_id((body.request_id, body.image_name.clone()))
+    .exec(db)
+    .await?;
+    fs::remove_file(&body.image_name)?;
+    Ok(HttpResponse::Ok().json(()))
 }

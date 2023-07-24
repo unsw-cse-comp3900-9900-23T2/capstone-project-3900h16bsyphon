@@ -1,19 +1,17 @@
-use actix::{fut, ActorContext, ActorFutureExt};
-use actix::{Actor, Addr, ContextFutureSpawner, Running, StreamHandler, WrapFuture};
-use actix::{AsyncContext, Handler};
+use actix::{
+    fut, ActorContext, ActorFutureExt, Actor, Addr, ContextFutureSpawner,
+    Running, StreamHandler, WrapFuture, AsyncContext, Handler
+};
 use actix_web_actors::ws;
-use actix_web_actors::ws::Message::Text;
 use log;
 use serde_json::json;
 use std::time::{Duration, Instant};
 use uuid::Uuid;
 
-use crate::sockets;
-use crate::sockets::messages::try_parse_ws_action;
 use crate::utils::auth::validate_raw_token;
-use sockets::{
+use crate::sockets::{
     lobby::Lobby,
-    messages::{Connect, Disconnect},
+    messages::{Connect, Disconnect, try_parse_ws_action},
 };
 
 use super::messages::WsMessage;
@@ -165,7 +163,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
             Ok(ws::Message::Nop) => (),
             // Let the lobby deal w/ text messages and figure out where to
             // redirect
-            Ok(Text(s)) => {
+            Ok(ws::Message::Text(s)) => {
                 let raw_text = String::from(s);
                 // Should NOT be left in prod as it will capture BearerTokens
                 log::debug!("Recieved message as String: {}", raw_text);

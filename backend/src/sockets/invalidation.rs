@@ -1,14 +1,12 @@
 use actix::{fut, Actor, ActorFutureExt, ContextFutureSpawner, Handler, WrapFuture};
 use futures::{future::join, FutureExt};
 
-use crate::{
-    models::{QueueRequest, RequestInfoBody, TokenClaims},
-    server::{
-        queue::get_queue_by_id_not_web,
-        request::{all_requests_for_queue_not_web, request_info_not_web},
-    },
-    sockets::messages::WsMessage,
+use crate::models::{QueueRequest, RequestInfoBody, TokenClaims};
+use crate::server::{
+    queue::get_queue_by_id_not_web,
+    request::{all_requests_for_queue_not_web, request_info_not_web},
 };
+use crate::sockets::messages::WsMessage;
 
 use super::{lobby::Lobby, messages::HttpServerAction, SocketChannels};
 

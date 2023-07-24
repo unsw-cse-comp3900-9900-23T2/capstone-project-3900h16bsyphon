@@ -8,6 +8,12 @@ use entities::sea_orm_active_enums::Statuses;
 use super::Tag;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SerializedFile {
+    pub file_name: String,
+    pub file_content: String
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CreateRequest {
     pub queue_id: i32,
     pub title: String,
@@ -15,6 +21,7 @@ pub struct CreateRequest {
     pub tags: Vec<i32>,
     pub is_clusterable: bool,
     pub status: Statuses,
+    pub files: Vec<SerializedFile>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -26,6 +33,7 @@ pub struct EditRequestBody {
     pub tags: Vec<i32>,
     pub is_clusterable: bool,
     pub status: Statuses,
+    pub files: Vec<SerializedFile>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -63,6 +71,7 @@ pub struct QueueRequest {
     pub tags: Vec<Tag>,
     pub previous_requests: u64,
     pub course_offering_id: i32,
+    pub images: Vec<String>
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -106,4 +115,10 @@ pub struct MoveRequestOrderingBody {
 pub enum MoveDirection {
     Up,
     Down,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct DeleteImageQuery {
+    pub request_id: i32,
+    pub image_name: String,
 }

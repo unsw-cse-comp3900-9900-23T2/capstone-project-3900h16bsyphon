@@ -16,7 +16,7 @@ Dear marker, please use `docker compose -f docker-compose-prod.yaml up`. This co
 
 Caveats:
 
-Make sure the ports **8000, 5432, and 3000** are currently unused on your computer. These are exposed to allow
+Make sure the ports **8000, 15432, and 3000** are currently unused on your computer. These are exposed to allow
 for the project to be exposed. If they are in use, one of a few things are going to happen:
 
 
@@ -36,7 +36,7 @@ running on localhost:3000
 ```
 this will likely lead to cors errors.
 
-3. 5432 is used:
+3. 15432 is used:
 
 
 This often occurs if you installed postgres before and forgot to delete it after you stopped using it. 

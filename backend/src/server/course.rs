@@ -8,15 +8,10 @@ use futures::future::join_all;
 use rand::Rng;
 use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
-
+use crate::models::course::*;
 use crate::{
     entities,
-    models::{
-        AddTutorToCourseBody, AddTutorToCoursesBody, CourseOfferingReturnModel, CreateOfferingBody,
-        GetCourseTagsQuery, GetOfferingByIdQuery, JoinWithTutorLink, SyphonError, SyphonResult,
-        Tag, TokenClaims, INV_CODE_LEN,
-    },
-    test_is_user,
+    models::{SyphonError, SyphonResult, Tag, TokenClaims, INV_CODE_LEN},
     utils::{
         db::db,
         user::{validate_admin, validate_user},
@@ -91,11 +86,9 @@ pub async fn get_offerings(token: ReqData<TokenClaims>) -> HttpResponse {
 }
 
 pub async fn fetch_course_tags(
-    token: ReqData<TokenClaims>,
     query: web::Query<GetCourseTagsQuery>,
-) -> HttpResponse {
+) -> SyphonResult<HttpResponse> {
     let db = db();
-    test_is_user!(token, db);
     let mut tags = entities::queue_tags::Entity::find()
         .inner_join(entities::queues::Entity)
         .inner_join(entities::tags::Entity)
@@ -106,10 +99,9 @@ pub async fn fetch_course_tags(
         .column(entities::queue_tags::Column::IsPriority)
         .into_model::<Tag>()
         .all(db)
-        .await
-        .expect("Db broke");
+        .await?;
     tags.iter_mut().for_each(|tag| tag.is_priority = false);
-    HttpResponse::Ok().json(web::Json(tags))
+    Ok(HttpResponse::Ok().json(web::Json(tags)))
 }
 
 pub async fn get_courses_tutored(token: ReqData<TokenClaims>) -> HttpResponse {

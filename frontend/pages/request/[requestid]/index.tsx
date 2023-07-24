@@ -24,6 +24,7 @@ const Request = () => {
     lastName: 'Doe',
     status: Status.Seeing,
     previousRequests: 1,
+    images: ['http://localhost:8000/images/1/image.png'],
     title: 'Pls help me with printing this array - im so stuck!',
     tags: [{ name: 'Assignment 1', tagId: 1, isPriority: false }],
     isClusterable: false,
@@ -155,6 +156,7 @@ const Request = () => {
               title={data.title}
               previousRequests={data.previousRequests}
               description={data.description}
+              images={data.images}
             />
           </Box>
           <div className={styles.chatContainer}>
