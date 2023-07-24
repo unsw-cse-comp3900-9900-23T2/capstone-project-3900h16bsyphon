@@ -197,7 +197,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
           <div {...getRootProps()}>
             <div className={styles.headingWordCount}>
               <Typography variant="subtitle1">
-                Description
+                Description (drop or paste images here to add!)
               </Typography>
               <Typography variant="subtitle1">
                 {(MIN_DESCRIPTION - descriptionWordCount) < 0 ? 0 : MIN_DESCRIPTION - descriptionWordCount} more words required
