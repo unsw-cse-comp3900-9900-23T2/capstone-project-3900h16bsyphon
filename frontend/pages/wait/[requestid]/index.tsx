@@ -40,6 +40,7 @@ const WaitingScreen = () => {
     isClusterable: false,
     previousRequests: 5,
     description: '',
+    images: ['http://localhost:8000/images/1/image.png']
   });
   const [isClusterable, setIsClusterable] = useState(requestData.isClusterable);
   const [queueData, setQueueData] = useState<QueueData>();
@@ -309,6 +310,7 @@ const WaitingScreen = () => {
               title={requestData.title}
               previousRequests={requestData.previousRequests}
               description={requestData.description}
+              images={requestData.images}
             />
           </Box>
           <div className={styles.chatContainer}>

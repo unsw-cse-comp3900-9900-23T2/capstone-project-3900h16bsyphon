@@ -36,3 +36,6 @@ week 7
 week 8
 - completed sorting
 
+week 9
+- fixed docker issue on arm64v8 computers
+- done screenshots

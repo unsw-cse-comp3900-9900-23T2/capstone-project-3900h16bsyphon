@@ -6,7 +6,7 @@ use actix_web::{
     App, HttpServer,
 };
 use actix_web_httpauth::middleware::HttpAuthentication;
-
+use actix_files::Files;
 pub mod entities;
 pub mod models;
 pub mod prelude;
@@ -50,6 +50,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(lobby.clone())
             .service(server::echo)
             .route("/", web::get().to(server::hello))
+            .service(Files::new("/images", "/images"))
             .service(
                 scope("/ws")
                     .route("/dumb", web::get().to(server::sockets::start_socket_conn))
@@ -132,6 +133,11 @@ async fn main() -> std::io::Result<()> {
                     ),
             )
             .service(
+                scope("/image")
+                .wrap(amw.clone())
+                .route("/delete", web::delete().to(server::request::delete_image))
+            )
+            .service(
                 scope("/queue")
                     .wrap(amw.clone())
                     .route(
@@ -181,6 +187,7 @@ async fn main() -> std::io::Result<()> {
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
             .route("/{tail:.*}", web::put().to(server::res404))
+            .route("/{tail:.*}", web::delete().to(server::res404))
     })
     .bind({
         let host = host_port_from_env();

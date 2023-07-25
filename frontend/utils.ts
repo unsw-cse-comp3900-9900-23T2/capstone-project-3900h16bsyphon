@@ -147,3 +147,10 @@ export const getActualDuration = (duration?: Duration) => {
   };
   return result;
 };
+
+export const toBase64 = (file: File) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => resolve(reader.result?.toString().split('base64,')[1]);
+  reader.onerror = reject;
+});

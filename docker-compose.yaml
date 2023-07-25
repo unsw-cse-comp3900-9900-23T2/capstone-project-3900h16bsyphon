@@ -19,7 +19,7 @@ services:
   database:
     image: 'postgres:latest'
     ports:
-      - 5432:5432
+      - 15432:5432
     env_file:
       - ./backend/.env
     environment:
@@ -41,8 +41,13 @@ services:
       # Bind mount volume for live backend updates while developing
       - ./backend/src:/app/src
       - ./backend/migration:/app/migration
+      - images:/images
     depends_on:
       - database
 
 networks:
   net:
+
+volumes:
+  images:
+  

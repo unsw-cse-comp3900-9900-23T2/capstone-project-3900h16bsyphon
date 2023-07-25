@@ -6,11 +6,11 @@ use actix_web::{
     HttpResponse,
 };
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
-
+use crate::models::history::*;
+use crate::utils::db::db;
 use crate::{
-    entities::{self},
-    models::{GetRequestDetailsBody, SyphonError, SyphonResult, TokenClaims},
-    utils::db::db,
+    entities,
+    models::{SyphonError, SyphonResult, TokenClaims},
 };
 
 pub async fn get_previous_tag_details(

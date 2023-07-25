@@ -9,10 +9,7 @@ use std::collections::HashMap;
 use crate::sockets::messages::WsMessage;
 use uuid::Uuid;
 
-use super::messages::Connect;
-use super::messages::Disconnect;
-use super::messages::DisconnectAll;
-use super::messages::WsAction;
+use super::messages::{Connect, Disconnect, DisconnectAll, WsAction};
 use super::SocketChannels;
 
 type Socket = Recipient<WsMessage>;

@@ -14,6 +14,7 @@ type StudentRequestCardProps = {
   status: Status;
   description: string;
   previousRequests: number;
+  images: string[];
 };
 
 const StudentRequestCard = ({
@@ -25,6 +26,7 @@ const StudentRequestCard = ({
   tags,
   status,
   previousRequests,
+  images,
 }: StudentRequestCardProps) => {
   const backgroundColor = determineBackgroundColour(status);
 
@@ -74,6 +76,18 @@ const StudentRequestCard = ({
         </div>
         <div>
           <Typography variant="body1">{description}</Typography>
+        </div>
+        <div>
+          {
+            images?.map((image, i) => {
+              return (
+                <div key={i} className={styles.imageContainer}>
+                  {/*eslint-disable-next-line @next/next/no-img-element*/}
+                  <img src={`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}${image}`} alt="request" />
+                </div>
+              );
+            })
+          }
         </div>
       </CardContent>
     </Card>

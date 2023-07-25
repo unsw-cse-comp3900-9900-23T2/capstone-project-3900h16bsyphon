@@ -29,6 +29,7 @@ pub enum SyphonError {
     NotTutor,
     DbError(sea_orm::DbErr),
     ActixError(actix_web::Error),
+    IoError(std::io::Error),
 }
 
 impl std::fmt::Display for SyphonError {
@@ -40,6 +41,7 @@ impl std::fmt::Display for SyphonError {
             SyphonError::RequestNotExist(id) => write!(f, "Request {} does not exist", id),
             SyphonError::QueueNotExist(id) => write!(f, "Queue {} does not exist", id),
             SyphonError::ActixError(e) => write!(f, "{}", e),
+            SyphonError::IoError(e) => write!(f, "{}", e),
         }
     }
 }
@@ -53,6 +55,7 @@ impl SyphonError {
             SyphonError::RequestNotExist(id) => Ok(format!("Request does not exist: {}", id)),
             SyphonError::QueueNotExist(id) => Ok(format!("Queue does not exist: {}", id)),
             SyphonError::ActixError(e) => Ok(e.as_response_error().to_string()),
+            SyphonError::IoError(e) => Ok(e.to_string()),
         }
     }
 }
@@ -66,6 +69,7 @@ impl actix_web::ResponseError for SyphonError {
             SyphonError::RequestNotExist(_) => actix_web::http::StatusCode::BAD_REQUEST,
             SyphonError::QueueNotExist(_) => actix_web::http::StatusCode::BAD_REQUEST,
             SyphonError::ActixError(e) => e.as_response_error().status_code(),
+            SyphonError::IoError(_) => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
@@ -88,5 +92,12 @@ impl From<actix_web::Error> for SyphonError {
     fn from(err: actix_web::Error) -> Self {
         log::warn!("Actix Error: {}", err);
         SyphonError::ActixError(err)
+    }
+}
+
+impl From<std::io::Error> for SyphonError {
+    fn from(err: std::io::Error) -> Self {
+        log::warn!("IO Error: {}", err);
+        SyphonError::IoError(err)
     }
 }

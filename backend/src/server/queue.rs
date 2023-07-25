@@ -11,7 +11,7 @@ use crate::{
     },
     sockets::{
         lobby::Lobby,
-        messages::{HttpServerAction},
+        messages::HttpServerAction,
         SocketChannels,
     },
     test_is_user,
