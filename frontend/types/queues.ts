@@ -36,3 +36,20 @@ export type QueueSummaryData = {
   tutorSummaries: QueueTutorSummaryData[],
   tagSummaries: QueueTagSummaryData[],
 };
+
+export type QueueRequestSummaryData = {
+  requestId: number,
+  zid: number,
+  firstName: string,
+  lastName: string,
+  duration?: Duration
+};
+
+export type QueueAnalyticsData = {
+  title: string,
+  courseCode: string,
+  studentsJoined: number,
+  studentsResolved: number,
+  studentsUnresolved: number,
+  requests: QueueRequestSummaryData[],  
+};
