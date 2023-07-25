@@ -90,7 +90,8 @@ const RequestSummary = () => {
               tags={requestData.tags}
               title={requestData.title}
               previousRequests={requestData.previousRequests}
-              description={requestData.description}
+              description={requestData.description} 
+              images={[]}            
             />
           </Box>
           <div className={styles.summaryContainer}>
