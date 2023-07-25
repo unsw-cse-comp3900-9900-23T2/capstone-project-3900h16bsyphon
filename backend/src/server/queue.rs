@@ -439,7 +439,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
                         .and(entities::request_status_log::Column::Status.eq(Statuses::Seeing)),
                 )
                 .filter(
-                    entities::queue_tags::Column::QueueId
+                    entities::requests::Column::QueueId
                         .eq(query.queue_id)
                 )
                 .distinct_on([entities::request_status_log::Column::RequestId])
