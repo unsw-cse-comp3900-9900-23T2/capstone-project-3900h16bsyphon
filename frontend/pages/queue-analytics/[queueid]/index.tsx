@@ -48,7 +48,13 @@ const QueueAnalytics = () => {
 
   useEffect(() => {
     const getAnalyticsData = async () => {
-
+      const res = await authenticatedGetFetch('/queue/analytics', { queue_id: `${router.query.queue_id}`});
+      if (!res.ok) {
+        console.log('error: issue with queue analytics, check network tab');
+        return;
+      }
+      const d = await res.json();
+      setQueueAnalytics(toCamelCase(d));
     };
     if (!router.query.queueid) return;
     getAnalyticsData();
