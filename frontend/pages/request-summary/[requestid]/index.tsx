@@ -120,8 +120,6 @@ const RequestSummary = () => {
               startTime={requestSummary.startTime}
               endTime={requestSummary.endTime} 
               duration={getActualDuration(requestSummary.duration)}
-              backgroundColor={changeBackgroundColour(requestSummary.duration)} 
-              textColor={changeTextColour(requestSummary.duration)} 
             />
           </div>
         </div>

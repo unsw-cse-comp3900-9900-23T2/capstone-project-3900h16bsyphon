@@ -1,4 +1,4 @@
-import { Box, Button, Card, Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import Header from '../../../components/Header';
 import styles from './QueueAnalytics.module.css';
 import { useRouter } from 'next/router';
