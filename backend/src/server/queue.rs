@@ -154,6 +154,7 @@ pub async fn get_queues_by_course(
 pub async fn update_tag_priority(
     _: ReqData<TokenClaims>,
     body: web::Json<FlipTagPriority>,
+    lobby: web::Data<Addr<Lobby>>,
 ) -> SyphonResult<HttpResponse> {
     let db = db();
     let item = match entities::queue_tags::Entity::find_by_id((body.tag_id, body.queue_id))
@@ -168,6 +169,8 @@ pub async fn update_tag_priority(
         ..item.into()
     };
     model.update(db).await?;
+    let action = HttpServerAction::InvalidateKeys(vec![SocketChannels::QueueData(body.queue_id)]);
+    lobby.do_send(action);
     Ok(HttpResponse::Ok().json("Success!"))
 }
 
@@ -245,39 +248,38 @@ pub async fn update_queue(
     .update(db)
     .await?;
 
-    let action = HttpServerAction::InvalidateKeys(vec![SocketChannels::QueueData(body.queue_id)]);
-    lobby.do_send(action);
-
     /////////////////   TAGS    ///////////////////////
-    /*
-        let tag_creation_futures = body
-            .tags
-            .iter()
-            .filter(|tag| tag.tag_id == -1) // check if tag already exists
-            .map(|tag| {
-                entities::tags::ActiveModel {
-                    tag_id: ActiveValue::NotSet,
-                    name: ActiveValue::Set(tag.name.clone()),
-                }
-                .insert(db)
-            });
-        let new_tags = join_all(tag_creation_futures).await;
-        let mut new_tags_iter = new_tags.into_iter();
-        let tag_queue_addition = body.tags.iter().map(|tag| {
-            // crazy: we iterate over the tags again, but this time we get their id if they arent given
-            entities::queue_tags::ActiveModel {
-                tag_id: ActiveValue::Set(if tag.tag_id != -1 {
-                    tag.tag_id
-                } else {
-                    new_tags_iter.next().unwrap().unwrap().tag_id
-                }),
-                queue_id: ActiveValue::Set(queue.queue_id),
-                is_priority: ActiveValue::Set(tag.is_priority),
+    let tag_creation_futures = body
+        .tags
+        .iter()
+        .filter(|tag| tag.tag_id == -1) // check if tag already exists
+        .map(|tag| {
+            entities::tags::ActiveModel {
+                tag_id: ActiveValue::NotSet,
+                name: ActiveValue::Set(tag.name.clone()),
             }
             .insert(db)
         });
-        join_all(tag_queue_addition).await;
-    */
+    let new_tags = join_all(tag_creation_futures).await;
+    let mut new_tags_iter = new_tags.into_iter();
+    let tag_queue_addition = body.tags.iter().map(|tag| {
+        // crazy: we iterate over the tags again, but this time we get their id if they arent given
+        entities::queue_tags::ActiveModel {
+            tag_id: ActiveValue::Set(if tag.tag_id != -1 {
+                tag.tag_id
+            } else {
+                new_tags_iter.next().unwrap().unwrap().tag_id
+            }),
+            queue_id: ActiveValue::Set(queue.queue_id),
+            is_priority: ActiveValue::Set(tag.is_priority),
+        }
+        .insert(db)
+    });
+    join_all(tag_queue_addition).await;
+
+    let action = HttpServerAction::InvalidateKeys(vec![SocketChannels::QueueData(body.queue_id)]);
+    lobby.do_send(action);
+
     Ok(HttpResponse::Ok().json("Success!"))
 }
 
@@ -318,6 +320,7 @@ pub async fn close_queue(body: web::Json<CloseQueueRequest>) -> SyphonResult<Htt
 
 pub async fn set_is_sorted_by_previous_request_count(
     body: web::Json<UpdateQueuePreviousRequestCount>,
+    lobby: web::Data<Addr<Lobby>>,
 ) -> SyphonResult<HttpResponse> {
     let db = db();
     let queue = entities::queues::Entity::find_by_id(body.queue_id)
@@ -332,6 +335,8 @@ pub async fn set_is_sorted_by_previous_request_count(
     }
     .update(db)
     .await?;
+    let action = HttpServerAction::InvalidateKeys(vec![SocketChannels::QueueData(body.queue_id)]);
+    lobby.do_send(action);
     Ok(HttpResponse::Ok().json("Success!"))
 }
 

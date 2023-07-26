@@ -122,3 +122,9 @@ pub struct DeleteImageQuery {
     pub request_id: i32,
     pub image_name: String,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ClusterRequestsBody {
+    pub request_ids: Vec<i32>,
+    pub queue_id: i32,
+}

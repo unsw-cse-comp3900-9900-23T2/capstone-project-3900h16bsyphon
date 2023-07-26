@@ -206,7 +206,24 @@ pub async fn all_requests_for_queue_not_web(
         .collect::<Vec<_>>();
     requests.sort_by(|a, b| a.order.cmp(&b.order));
 
-    // sort by checking which requests are prio
+    // find clusters
+    let clusters = entities::clusters::Entity::find()
+        .filter(entities::clusters::Column::RequestId.is_in(
+            requests.iter().map(|r: &QueueRequest| r.request_id),
+        ))
+        .all(db)
+        .await?
+        .into_iter()
+        .map(|c| (c.cluster_id, c.request_id))
+        .collect::<Vec<_>>();
+    let cluster_map = clusters
+        .into_iter()
+        .fold(std::collections::HashMap::new(), |mut map, (cluster_id, request_id)| {
+            map.insert(request_id, cluster_id);
+            map
+        });
+
+    // sort by checking which requests are priority
     let is_priority = requests.iter().map(|request| {
         entities::queue_tags::Entity::find()
             .filter(entities::queue_tags::Column::IsPriority.eq(true))
@@ -222,15 +239,17 @@ pub async fn all_requests_for_queue_not_web(
         .map(|r| r.expect("db broke"))
         .collect();
 
-    let mut priority_request_zip: Vec<_> = requests.iter().zip(is_priority).collect();
+    let mut priority_request_zip: Vec<_> = requests.into_iter().zip(is_priority).collect();
     priority_request_zip.sort_by(|a, b| b.1.cmp(&a.1));
-    let mut requests = priority_request_zip.iter().map(|v| v.0).collect::<Vec<_>>();
+    let mut requests = priority_request_zip.into_iter().map(|v| v.0).collect::<Vec<_>>();
     // sort by the number of requests a user has made if this is set
     if queue.is_sorted_by_previous_request_count {
         requests.sort_by(|a, b| a.previous_requests.cmp(&b.previous_requests));
     }
 
-    Ok(requests.into_iter().cloned().collect())
+    // insert clusters into request structure
+
+    Ok(requests)
 }
 
 /// TODO: This is really cringe, don't do whatever this is
@@ -508,4 +527,31 @@ pub async fn delete_image(body: web::Query<DeleteImageQuery>) -> SyphonResult<Ht
     .await?;
     fs::remove_file(&body.image_name)?;
     Ok(HttpResponse::Ok().json(()))
+}
+
+pub async fn cluster_requests(
+    web::Json(body): web::Json<ClusterRequestsBody>,
+    lobby: web::Data<Addr<Lobby>>
+) -> SyphonResult<HttpResponse> {
+    let db = db();
+    let current_ids: Vec<i32> = entities::clusters::Entity::find()
+        .column(entities::clusters::Column::ClusterId)
+        .distinct_on([entities::clusters::Column::ClusterId])
+        .into_tuple()
+        .all(db).await?;
+    let new_id = current_ids.into_iter().max().unwrap_or(0) + 1;
+    let cluster_insertion = body.request_ids.iter().map(|r| entities::clusters::ActiveModel {
+        cluster_id: ActiveValue::Set(new_id),
+        request_id: ActiveValue::Set(*r)
+    }.insert(db));
+    join_all(cluster_insertion).await;
+    let mut keys_to_invalidate = vec![
+        SocketChannels::QueueData(body.queue_id),
+    ];
+    keys_to_invalidate.append(&mut body.request_ids.into_iter().map(|r| SocketChannels::Request(r)).collect());
+
+    let action = HttpServerAction::InvalidateKeys(keys_to_invalidate);
+
+    lobby.do_send(action);
+    Ok(HttpResponse::Ok().json(new_id))
 }

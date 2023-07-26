@@ -20,17 +20,18 @@ const ActiveQueue = () => {
   const [requests, setRequests] = useState<UserRequest[]>([]);
   const [requestData, setRequestData] = useState({
     title: 'COMP1521 Thursday Week 5 Help Session',
-    queueId: 1,
-    courseOfferingId: 1,
+    queueId: undefined,
+    courseOfferingId: undefined,
     isSortedByPreviousRequestCount: false,
     requests,
   });
   const [tags, setTags] = useState<Tag[]>([]);
   const [studentCount, setStudentCount] = useState(0);
   const [numReqsUntilClose, setNumReqsUntilClose] = useState(0);
+  const [selectedClustering, setSelectedClustering] = useState<number[]>([]);
 
   let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
-    queryParams: {queue_id: requestData.queueId},
+    queryParams: {queue_id: requestData.queueId as unknown as number},
     onOpen: () => {
       console.log('connected [queue data]');
     },
@@ -60,7 +61,7 @@ const ActiveQueue = () => {
       }
       setRequests(toCamelCase(newRequestsData));
     }
-  }, [lastJsonMessage, play]);
+  }, [lastJsonMessage, play, requests.length]);
 
 
   useEffect(() => {
@@ -131,6 +132,9 @@ const ActiveQueue = () => {
     } else if (e.target.value === 'prevRequestCount') {
       await flipRequestCountPriority();
     }
+  };
+
+  const handleClusterSubmit = async () => {
     router.reload();
   };
 
@@ -196,6 +200,23 @@ const ActiveQueue = () => {
             >
               {tags.map((tag) => (<MenuItem key={tag.tagId} value={tag.tagId}>{tag.isPriority ? 'Unprioritise':  'Prioritise'} &quot;{tag.name}&quot;</MenuItem>))}
               <MenuItem key={'key'} value='prevRequestCount'>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} by number of previous requests</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl size='small' >
+            <InputLabel className={styles.label} id="sort-queue-select-label"> New Cluster </InputLabel>
+            <Select
+              multiple
+              value={selectedClustering}
+              labelId="sort-queue-select-label"
+              id="sort-queue-select"
+              label='New Cluster'
+              className={styles.select}
+              displayEmpty
+              onClose={handleClusterSubmit}
+              onChange={(e) => setSelectedClustering(e.target.value as number[])}
+              sx={{ boxShadow: 'none', '.MuiOutlinedInput-notchedOutline': { border: 0 } }}
+            >
+              {requests.map((r) => (<MenuItem key={`${r.requestId} clustering`} value={r.requestId}>{r.title}</MenuItem>))}
             </Select>
           </FormControl>
           <Button className={styles.closeQueueButton} variant='contained' onClick={handleCloseQueue}>Close Queue</Button>
