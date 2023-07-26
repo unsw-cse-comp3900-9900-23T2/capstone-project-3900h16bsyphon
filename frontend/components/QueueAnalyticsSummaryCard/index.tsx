@@ -12,11 +12,11 @@ const QueueAnalyticsSummaryCard = ({ studentsJoined, studentsResolved, studentsU
   return <>
     <Card className={styles.infoCard}>
       <div className={styles.infoCardTitleContainer}>
-        <Typography className={styles.summaryHeadings}  variant='h5'>Queue Analytics</Typography>
+        <Typography className={styles.summaryHeadings}  variant='h5'>Total Request Summary</Typography>
       </div>
       <div className={styles.allSummaryItemsContainer}>
         <div className={styles.summaryItem} >
-          <Typography className={styles.summaryHeadings} variant='body1'>Total students joined: </Typography>
+          <Typography className={styles.summaryHeadings} variant='body1'>Total requests created: </Typography>
           <Typography variant='body1'>{studentsJoined}</Typography>
         </div>
         <div className={styles.summaryItem} >

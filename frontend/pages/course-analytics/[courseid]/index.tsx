@@ -9,6 +9,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import AnalyticsChart from '../../../components/Chart';
+import { Typography } from '@mui/material';
 
 const CourseAnalytics = () => {
   const [data, setData] = useState([
@@ -73,6 +74,18 @@ const CourseAnalytics = () => {
           </div>
         </div>
         <div className={styles.queuesContainer}>
+          <h1>Current queues</h1>
+          <div className={styles.cards}>
+            {data
+              .filter((d) => Date.parse(d.startTime) < Date.now() && Date.parse(d.endTime) > Date.now())
+              .filter((d) => isTutor || d.isVisible)
+              .map((d, index) => <QueueCard isQueueAnalyticsLive isTutor={isTutor} queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit}/>)
+            }
+            {data
+              .filter((d) => Date.parse(d.startTime) < Date.now() && Date.parse(d.endTime) > Date.now())
+              .filter((d) => isTutor || d.isVisible)
+              .length === 0 && <p>No live queues</p>}
+          </div>
           <h1>Past queues</h1>
           <div className={styles.cards}>
             {data
@@ -80,7 +93,7 @@ const CourseAnalytics = () => {
               .filter((d) => isTutor || d.isVisible)
               .map((d, index) => (
                 <QueueCard
-                  isPrevious={true}
+                  isPrevious
                   isTutor={isTutor} 
                   queueId={d.queueId}
                   key={index}

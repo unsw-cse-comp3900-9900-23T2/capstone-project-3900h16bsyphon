@@ -58,7 +58,6 @@ const QueueAnalytics = () => {
       }
       const d = await res.json();
       setQueueAnalytics(toCamelCase(d));
-      console.log('analytics data ', d);
     };
     if (!router.query.queueid) return;
     getAnalyticsData();
