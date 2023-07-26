@@ -1,4 +1,4 @@
-import { Button, Typography } from '@mui/material';
+import { Button, Card, Typography } from '@mui/material';
 import Header from '../../../components/Header';
 import styles from './QueueAnalytics.module.css';
 import { useRouter } from 'next/router';
@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase, getActualDuration } from '../../../utils';
 import { QueueAnalyticsData, QueueRequestSummaryData } from '../../../types/queues';
 import QueueRequestsSummaryCard from '../../../components/QueueRequestsSummaryCard';
+import QueueAnalyticsSummaryCard from '../../../components/QueueAnalyticsSummaryCard';
 
 
 const requests: QueueRequestSummaryData[] = [
@@ -64,7 +65,6 @@ const QueueAnalytics = () => {
           <div className={styles.buttonContainer}>
             <Button className={styles.greyButton} variant='contained' onClick={() => router.back()}>Back</Button>
           </div>
-
           <div className={styles.summaryContainer}>
             <QueueRequestsSummaryCard 
               requests={queueAnalytics.requests}            
@@ -72,9 +72,11 @@ const QueueAnalytics = () => {
           </div>
 
           <div className={styles.summaryContainer}>
-            {/* number of students entered the queue */}
-            {/* number of students served */}
-            {/* number of students left for the end of the help session */}
+            <QueueAnalyticsSummaryCard 
+              studentsJoined={queueAnalytics.studentsJoined} 
+              studentsResolved={queueAnalytics.studentsResolved} 
+              studentsUnresolved={queueAnalytics.studentsUnresolved}
+            />
           </div>
         </div>
       </div>

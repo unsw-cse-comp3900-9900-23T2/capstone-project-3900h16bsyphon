@@ -3,6 +3,7 @@ import styles from './QueueRequestsSummaryCard.module.css';
 import TagBox from '../TagBox';
 import { QueueRequestSummaryData } from '../../types/queues';
 import { formatZid, getActualDuration } from '../../utils';
+import DurationBox from '../DurationBox';
 
 type QueueRequestsSummaryCardProps = {
   requests: QueueRequestSummaryData[];
@@ -33,14 +34,9 @@ const QueueRequestsSummaryCard = ({
                     {request.firstName + ' ' + request.lastName}
                   </Typography>
                   {request.duration ? (
-                    <Typography variant='body1'>
-                      {getActualDuration(request.duration)?.minutes.toString() +
-                        ' mins ' +
-                        getActualDuration(
-                          request.duration
-                        )?.seconds.toString() +
-                        ' seconds'}
-                    </Typography>
+                    <DurationBox 
+                      duration={getActualDuration(request.duration)}
+                    />
                   ) : (
                     <Typography variant='body1'>
                       Not resolved by a tutor

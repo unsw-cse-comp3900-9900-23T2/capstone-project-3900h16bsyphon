@@ -3,6 +3,7 @@ import styles from './QueueTutorSummaryCard.module.css';
 import { changeBackgroundColour, changeTextColour, formatZid } from '../../utils';
 import TagBox from '../TagBox';
 import { QueueTutorSummaryData } from '../../types/queues';
+import DurationBox from '../DurationBox';
 
 const QueueTutorSummaryCard = ({ zid, firstName, lastName, totalSeen, totalSeeing, averageTime, tagsWorkedOn}: QueueTutorSummaryData) => {
   
@@ -27,10 +28,9 @@ const QueueTutorSummaryCard = ({ zid, firstName, lastName, totalSeen, totalSeein
         </div>
         <div className={styles.summaryItem} >
           <Typography className={styles.summaryHeadings} variant='body1'>Average Time Spent per Request: </Typography>
-          <TagBox
+          <DurationBox
+            duration={{ hours: 0, minutes: averageTime, seconds: 0 }}
             text={averageTime.toString() + ' mins'}
-            backgroundColor={changeBackgroundColour({ hours: 0, minutes: averageTime, seconds: 0 })}
-            color={changeTextColour({ hours: 0, minutes: averageTime, seconds: 0 })}
           />
         </div>
         <div className={styles.summaryItem} >
