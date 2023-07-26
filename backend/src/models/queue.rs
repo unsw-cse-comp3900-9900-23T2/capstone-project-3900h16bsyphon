@@ -142,6 +142,12 @@ pub struct QueueInformationModel {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct QueueNameModel {
+    pub title: String,
+    pub course_code: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
 pub struct TutorInformationModel {
     pub zid: i32,
     pub first_name: String,
@@ -160,6 +166,33 @@ pub struct RequestTutorInformationModel {
 pub struct RequestStatusTimeInfo {
     pub request_id: i32,
     pub event_time: NaiveDateTime,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct QueueRequestInfoModel {
+    pub zid: i32,
+    pub request_id: i32,
+    pub first_name: String,
+    pub last_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct QueueRequestSummaryModel {
+    pub zid: i32,
+    pub request_id: i32,
+    pub first_name: String,
+    pub last_name: String,
+    pub duration: Option<RequestDuration>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct QueueAnalyticsSummaryModel {
+    pub title: String,
+    pub course_code: String,
+    pub students_joined: i32,
+    pub students_resolved: i32,
+    pub students_unresolved: i32,
+    pub requests: Vec<QueueRequestSummaryModel>
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]

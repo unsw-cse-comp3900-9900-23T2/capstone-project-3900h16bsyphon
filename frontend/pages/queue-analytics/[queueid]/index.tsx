@@ -1,9 +1,9 @@
-import { Button, Card, Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import Header from '../../../components/Header';
 import styles from './QueueAnalytics.module.css';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { authenticatedGetFetch, toCamelCase, getActualDuration } from '../../../utils';
+import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 import { QueueAnalyticsData, QueueRequestSummaryData } from '../../../types/queues';
 import QueueRequestsSummaryCard from '../../../components/QueueRequestsSummaryCard';
 import QueueAnalyticsSummaryCard from '../../../components/QueueAnalyticsSummaryCard';
