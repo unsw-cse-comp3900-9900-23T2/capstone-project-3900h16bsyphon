@@ -11,24 +11,27 @@ import QueueAnalyticsSummaryCard from '../../../components/QueueAnalyticsSummary
 
 const requests: QueueRequestSummaryData[] = [
   {
-    requestId: 0,
+    requestId: 99,
     zid: 5309306,
     firstName: 'Aisha',
     lastName: 'Nauman',
+    isSelfResolved: false,
     duration: { hours: 0, minutes: 10, seconds: 23 }
   },
   {
-    requestId: 0,
+    requestId: 9999,
     zid: 5309306,
     firstName: 'Aisha',
     lastName: 'Nauman',
+    isSelfResolved: true,
     duration: { hours: 0, minutes: 10, seconds: 23 }
   },
   {
-    requestId: 0,
+    requestId: 999,
     zid: 5309306,
     firstName: 'Aisha',
     lastName: 'Nauman',
+    isSelfResolved: false,
     duration: { hours: 0, minutes: 10, seconds: 23 }
   },
 ];
@@ -48,13 +51,14 @@ const QueueAnalytics = () => {
 
   useEffect(() => {
     const getAnalyticsData = async () => {
-      const res = await authenticatedGetFetch('/queue/analytics', { queue_id: `${router.query.queue_id}`});
+      const res = await authenticatedGetFetch('/queue/analytics', { queue_id: `${router.query.queueid}`});
       if (!res.ok) {
         console.log('error: issue with queue analytics, check network tab');
         return;
       }
       const d = await res.json();
       setQueueAnalytics(toCamelCase(d));
+      console.log('analytics data ', d);
     };
     if (!router.query.queueid) return;
     getAnalyticsData();

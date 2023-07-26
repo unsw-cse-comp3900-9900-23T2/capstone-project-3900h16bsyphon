@@ -25,23 +25,32 @@ const QueueRequestsSummaryCard = ({
             {requests.map((request: QueueRequestSummaryData) => {
               return (
                 <div className={styles.summaryItem} key={request.requestId}>
-                  <TagBox
-                    text={formatZid(request.zid)}
-                    backgroundColor='var(--colour-main-yellow-500)'
-                    color='white'
-                  />
-                  <Typography className={styles.summaryHeadings} variant='body1'>
-                    {request.firstName + ' ' + request.lastName}
-                  </Typography>
-                  {request.duration ? (
-                    <DurationBox 
-                      duration={getActualDuration(request.duration)}
+                  <div className={styles.zidNameContainer}>
+                    <TagBox
+                      text={formatZid(request.zid)}
+                      backgroundColor='var(--colour-main-yellow-500)'
+                      color='white'
                     />
-                  ) : (
-                    <Typography variant='body1'>
-                      Not resolved by a tutor
+                    <Typography
+                      className={styles.summaryHeadings}
+                      variant='body1'
+                    >
+                      {request.firstName + ' ' + request.lastName}
                     </Typography>
-                  )}
+                  </div>
+                  <div className={styles.durationContainer}>
+                    {request.duration && (
+                      <DurationBox
+                        duration={getActualDuration(request.duration)}
+                      />
+                    )}
+                    {!request.duration && !request.isSelfResolved && (
+                      <Typography variant='body1'>Unresolved</Typography>
+                    )}
+                    {!request.duration && request.isSelfResolved && (
+                      <Typography variant='body1'>Resolved by student</Typography>
+                    )}
+                  </div>  
                 </div>
               );
             })}

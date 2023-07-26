@@ -42,6 +42,7 @@ export type QueueRequestSummaryData = {
   zid: number,
   firstName: string,
   lastName: string,
+  isSelfResolved: boolean,
   duration?: Duration
 };
 

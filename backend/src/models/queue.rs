@@ -182,6 +182,7 @@ pub struct QueueRequestSummaryModel {
     pub request_id: i32,
     pub first_name: String,
     pub last_name: String,
+    pub is_self_resolved: bool,
     pub duration: Option<RequestDuration>,
 }
 

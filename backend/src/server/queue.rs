@@ -745,6 +745,7 @@ pub async fn get_queue_analytics(query: Query<GetQueueSummaryQuery>) -> SyphonRe
                     request_id: request.request_id,
                     first_name: request.first_name.clone(),
                     last_name: request.last_name.clone(),
+                    is_self_resolved: true,
                     duration: None,
                 });
                 students_resolved += 1;
@@ -757,6 +758,7 @@ pub async fn get_queue_analytics(query: Query<GetQueueSummaryQuery>) -> SyphonRe
                     request_id: request.request_id,
                     first_name: request.first_name.clone(),
                     last_name: request.last_name.clone(),
+                    is_self_resolved: false,
                     duration: Some(RequestDuration {
                         hours: duration.num_hours(),
                         minutes: duration.num_minutes(),
@@ -771,6 +773,7 @@ pub async fn get_queue_analytics(query: Query<GetQueueSummaryQuery>) -> SyphonRe
                     request_id: request.request_id,
                     first_name: request.first_name.clone(),
                     last_name: request.last_name.clone(),
+                    is_self_resolved: false,
                     duration: None,
                 });
             }
