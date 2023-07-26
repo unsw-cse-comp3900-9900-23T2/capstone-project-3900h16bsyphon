@@ -1,0 +1,42 @@
+.analyticsContainer {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 90%;
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+
+.statsContainer {
+  display: flex;
+  flex-direction: row;
+  margin: 0 auto;
+  justify-content: space-between;
+  gap: 10%;
+}
+
+.queuesContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.queueCards {
+  display: flex;
+  flex-direction: row;
+}
+
+.text {
+  text-align: left;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.analytics {
+  display: flex;
+  flex-direction: column;
+}
