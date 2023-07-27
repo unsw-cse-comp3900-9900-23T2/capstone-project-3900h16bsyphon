@@ -34,12 +34,11 @@ export const data1 = {
 };
 
 type AnalyticsBarChartProps = {
-  data: ChartData,
-  chartTitle: string
+  data: ChartData;
+  chartTitle: string;
 };
 
 const AnalyticsBarChart = ({ data, chartTitle }: AnalyticsBarChartProps) => {
-
   const options = {
     responsive: true,
     plugins: {
@@ -53,7 +52,15 @@ const AnalyticsBarChart = ({ data, chartTitle }: AnalyticsBarChartProps) => {
     },
   };
 
-  return <Bar options={options} data={data} />;
+  return (
+    <Bar
+      options={options}
+      data={{
+        labels: data.labels ? data.labels : [],
+        datasets: data.datasets ? data.datasets : [],
+      }}
+    />
+  );
 };
 
 export default AnalyticsBarChart;

@@ -1,6 +1,6 @@
 export type Dataset = {
   label: string,
-  data?: number[],
+  data: number[],
   backgroundColor: string,
 };
 

@@ -101,7 +101,7 @@ const CourseAnalytics = () => {
                 labels: waitTimeAnalytics?.waitTimes.map(x => x.fullName),
                 datasets: [{
                   label: 'mins',
-                  data: waitTimeAnalytics?.waitTimes.map(x => x.averageWait),
+                  data: waitTimeAnalytics ? waitTimeAnalytics.waitTimes.map(x => x.averageWait) : [],
                   backgroundColor: '#D5CFFF', // doesn't let me use global css vars here
                 }],
               }}
