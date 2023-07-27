@@ -21,9 +21,19 @@ export type UserRequest = {
   title: string,
   tags: Tag[],
   status: Status,
+  clusterId?: number,
   description: string,
   order: number
 };
+
+export type ClusterRequest = {
+  clusterId: number,
+  requests: UserRequest[],
+}
+
+export function isCluster(request: (UserRequest | ClusterRequest)): request is ClusterRequest {
+  return Object.keys(request).includes('requests');
+}
 
 export type UserInfo = {
   zid: number,

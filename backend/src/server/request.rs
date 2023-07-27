@@ -165,22 +165,19 @@ pub async fn edit_request(
 }
 
 pub async fn request_info_wrapper(
-    token: ReqData<TokenClaims>,
     web::Query(body): web::Query<RequestInfoBody>,
 ) -> SyphonResult<HttpResponse> {
-    Ok(HttpResponse::Ok().json(request_info_not_web(token.into_inner(), body).await?))
+    Ok(HttpResponse::Ok().json(request_info_not_web(body).await?))
 }
 
 pub async fn all_requests_for_queue(
-    token: ReqData<TokenClaims>,
     web::Query(body): web::Query<AllRequestsForQueueBody>,
 ) -> SyphonResult<HttpResponse> {
     Ok(HttpResponse::Ok()
-        .json(all_requests_for_queue_not_web(token.into_inner(), body.queue_id).await?))
+        .json(all_requests_for_queue_not_web(body.queue_id).await?))
 }
 
 pub async fn all_requests_for_queue_not_web(
-    token: TokenClaims,
     queue_id: i32,
 ) -> SyphonResult<Vec<QueueRequest>> {
     let db = db();
@@ -190,38 +187,21 @@ pub async fn all_requests_for_queue_not_web(
         .await?
         .ok_or(SyphonError::QueueNotExist(queue_id))?;
 
-    let requests_future = entities::requests::Entity::find()
+    let requests = entities::requests::Entity::find()
         .filter(entities::requests::Column::QueueId.eq(queue_id))
         .all(db)
         .await?
         .into_iter()
         .map(|req| req.request_id)
-        .map(|request_id| request_info_not_web(token.clone(), RequestInfoBody { request_id }));
+        .map(|request_id| request_info_not_web(RequestInfoBody { request_id }));
 
     // Ignores DbErrors - No Panic. Also no 500 Return
-    let mut requests = join_all(requests_future)
+    let mut requests = join_all(requests)
         .await
         .into_iter()
         .filter_map(Result::ok)
         .collect::<Vec<_>>();
     requests.sort_by(|a, b| a.order.cmp(&b.order));
-
-    // find clusters
-    let clusters = entities::clusters::Entity::find()
-        .filter(entities::clusters::Column::RequestId.is_in(
-            requests.iter().map(|r: &QueueRequest| r.request_id),
-        ))
-        .all(db)
-        .await?
-        .into_iter()
-        .map(|c| (c.cluster_id, c.request_id))
-        .collect::<Vec<_>>();
-    let cluster_map = clusters
-        .into_iter()
-        .fold(std::collections::HashMap::new(), |mut map, (cluster_id, request_id)| {
-            map.insert(request_id, cluster_id);
-            map
-        });
 
     // sort by checking which requests are priority
     let is_priority = requests.iter().map(|request| {
@@ -247,15 +227,31 @@ pub async fn all_requests_for_queue_not_web(
         requests.sort_by(|a, b| a.previous_requests.cmp(&b.previous_requests));
     }
 
-    // insert clusters into request structure
-
     Ok(requests)
+}
+
+pub async fn all_requests_for_cluster(body: web::Query<AllRequestsForClusterBody>) -> SyphonResult<HttpResponse> {
+    let db = db();
+    let request_ids: Vec<i32> = entities::clusters::Entity::find()
+    .column(entities::clusters::Column::RequestId)
+    .filter(entities::clusters::Column::ClusterId.eq(body.cluster_id))
+    .into_tuple()
+    .all(db)
+    .await?;
+
+    let requests: Vec<_> = join_all(request_ids
+        .into_iter()
+        .map(|r| request_info_not_web(RequestInfoBody { request_id: r })))
+        .await
+        .into_iter()
+        .filter_map(Result::ok)
+        .collect();
+    Ok(HttpResponse::Ok().json(requests))
 }
 
 /// TODO: This is really cringe, don't do whatever this is
 /// There should be a way to move this into the models
 pub async fn request_info_not_web(
-    _token: TokenClaims,
     body: RequestInfoBody,
 ) -> SyphonResult<QueueRequest> {
     let db = db();
@@ -315,6 +311,14 @@ pub async fn request_info_not_web(
         .filter(entities::request_images::Column::RequestId.eq(request.request_id))
         .into_tuple()
         .all(db).await?;
+
+    let cluster_id: Option<i32> = entities::clusters::Entity::find()
+        .select_only()
+        .column(entities::clusters::Column::ClusterId)
+        .filter(entities::clusters::Column::RequestId.eq(request.request_id))
+        .into_tuple()
+        .one(db).await?;
+
     let request_value = QueueRequest {
         request_id: request.request_id,
         first_name: user.first_name,
@@ -328,6 +332,7 @@ pub async fn request_info_not_web(
         order: request.order,
         course_offering_id,
         previous_requests,
+        cluster_id,
         tags,
         images,
     };
@@ -338,19 +343,15 @@ pub async fn request_info_not_web(
 pub async fn disable_cluster(
     _token: ReqData<TokenClaims>,
     body: web::Json<RequestInfoBody>,
-) -> HttpResponse {
+) -> SyphonResult<HttpResponse> {
     let db = db();
     let body = body.into_inner();
 
     // find request by id
     let db_request = entities::requests::Entity::find_by_id(body.request_id)
         .one(db)
-        .await
-        .map_err(|_e| {
-            HttpResponse::InternalServerError().body("request id does not exist");
-        })
-        .unwrap()
-        .unwrap();
+        .await?
+        .ok_or(SyphonError::RequestNotExist(body.request_id))?;
 
     // update is_clusterable to false
     entities::requests::ActiveModel {
@@ -358,10 +359,13 @@ pub async fn disable_cluster(
         ..db_request.into()
     }
     .update(db)
-    .await
-    .expect("db broke");
-
-    HttpResponse::Ok().json(())
+    .await?;
+    // remove from any existing cluster
+    entities::clusters::Entity::delete_many()
+        .filter(entities::clusters::Column::RequestId.eq(body.request_id))
+        .exec(db)
+        .await?;
+    Ok(HttpResponse::Ok().json(()))
 }
 
 /// # Returns
@@ -540,6 +544,13 @@ pub async fn cluster_requests(
         .into_tuple()
         .all(db).await?;
     let new_id = current_ids.into_iter().max().unwrap_or(0) + 1;
+    let requests = entities::requests::Entity::find()
+        .filter(entities::requests::Column::RequestId.is_in(body.request_ids.clone()))
+        .all(db).await?;
+    if requests.iter().any(|r| !r.is_clusterable) {
+        return Err(SyphonError::Json(json!("One or more requests are not clusterable"), StatusCode::BAD_REQUEST));
+    }
+
     let cluster_insertion = body.request_ids.iter().map(|r| entities::clusters::ActiveModel {
         cluster_id: ActiveValue::Set(new_id),
         request_id: ActiveValue::Set(*r)

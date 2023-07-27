@@ -18,6 +18,7 @@ import useAuthenticatedWebSocket from '../../../hooks/useAuthenticatedWebSocket'
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FAQsModal from '../../../components/FAQsModal';
+import MetaData from '../../../components/MetaData';
 
 const WaitingScreen = () => {
   const router = useRouter();
@@ -239,6 +240,7 @@ const WaitingScreen = () => {
 
   return (
     <>
+      <MetaData />
       <ToastContainer
         position='bottom-left'
         autoClose={5000}

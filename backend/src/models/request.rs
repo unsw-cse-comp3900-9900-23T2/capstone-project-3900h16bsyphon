@@ -69,6 +69,7 @@ pub struct QueueRequest {
     pub is_clusterable: bool,
     pub status: Statuses,
     pub tags: Vec<Tag>,
+    pub cluster_id: Option<i32>,
     pub previous_requests: u64,
     pub course_offering_id: i32,
     pub images: Vec<String>
@@ -127,4 +128,9 @@ pub struct DeleteImageQuery {
 pub struct ClusterRequestsBody {
     pub request_ids: Vec<i32>,
     pub queue_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct AllRequestsForClusterBody {
+    pub cluster_id: i32,
 }

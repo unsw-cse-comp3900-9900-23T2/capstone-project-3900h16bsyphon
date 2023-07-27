@@ -5,19 +5,20 @@ import StudentQueueRequestCard from '../../../components/StudentQueueRequestCard
 import MetaData from '../../../components/MetaData';
 import Header from '../../../components/Header';
 import { useEffect, useState } from 'react';
-import { authenticatedGetFetch, authenticatedPutFetch, toCamelCase } from '../../../utils';
-import { Tag, UserRequest } from '../../../types/requests';
+import { authenticatedGetFetch, authenticatedPostFetch, authenticatedPutFetch, toCamelCase } from '../../../utils';
+import { ClusterRequest, Tag, UserRequest, isCluster } from '../../../types/requests';
 import dayjs from 'dayjs';
 import InfoIcon from '@mui/icons-material/Info';
 import useAuthenticatedWebSocket from '../../../hooks/useAuthenticatedWebSocket';
 import useSound from 'use-sound';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import StudentQueueClusterRequestCard from '../../../components/StudentQueueClusterRequestCard';
 
 const ActiveQueue = () => {
   const router = useRouter();
   const [play] = useSound('/sounds/queueUpdate.mp3', { volume: 1 });
-  const [requests, setRequests] = useState<UserRequest[]>([]);
+  const [requests, setRequests] = useState<(UserRequest | ClusterRequest)[]>([]);
   const [requestData, setRequestData] = useState({
     title: 'COMP1521 Thursday Week 5 Help Session',
     queueId: undefined,
@@ -69,7 +70,35 @@ const ActiveQueue = () => {
       let res = await authenticatedGetFetch('/request/all_requests_for_queue', {queue_id: `${router.query.queueid}`});
       // yolo assume OK
       let d = await res.json();
-      setRequests(toCamelCase(d));
+      let reqList: UserRequest[] = toCamelCase(d);
+      // collapse requests with the same clusterId
+      let clusterIdToRequest = new Map<number, UserRequest[]>();
+      reqList.forEach((r: UserRequest) => {
+        if (!r.clusterId) return;
+        let clusterList = clusterIdToRequest.get(r.clusterId);
+        if (!clusterList) {
+          clusterIdToRequest.set(r.clusterId, [r]);
+        } else {
+          clusterList.push(r);
+        }
+      });
+      let newReqList: (UserRequest | ClusterRequest)[] = [];
+      for (const request of reqList) {
+        if (!request.clusterId) {
+          newReqList.push(request);
+        } else {
+          let clusterList = clusterIdToRequest.get(request.clusterId);
+          // only look for the first request
+          if (!clusterList || clusterList[0].requestId !== request.requestId)
+            continue;
+          
+          newReqList.push({
+            requests: clusterList,
+            clusterId: request.clusterId,
+          });
+        }
+      }
+      setRequests(newReqList);
     };
     let getQueueData = async () => {
       let res = await authenticatedGetFetch('/queue/get', {queue_id: `${router.query.queueid}`});
@@ -135,7 +164,30 @@ const ActiveQueue = () => {
   };
 
   const handleClusterSubmit = async () => {
-    router.reload();
+    console.log('selectedClustering', selectedClustering);
+    if (selectedClustering.length === 0 ||
+      (selectedClustering.length < 2 && selectedClustering[0] === -1)
+    ) return;
+    selectedClustering.shift();
+    let res = await authenticatedPostFetch('/queue/cluster/create', {
+      queue_id: Number.parseInt(`${router.query.queueid}`),
+      request_ids: selectedClustering,
+    });
+    if (!res.ok) {
+      let err = await res.json();
+      toast(err, {
+        position: 'bottom-left',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light',
+        className: styles.toast,
+      });
+    }
+    setSelectedClustering([]);
   };
 
   const handleCopyQueueLink = () => {
@@ -189,34 +241,33 @@ const ActiveQueue = () => {
       <div className={styles.body}>
         <div className={styles.buttonContainer}>
           <FormControl size='small' >
-            <InputLabel sx={{ textAlign: 'center', right: '0'}} className={styles.label} id="sort-queue-select-label"> Sort Queue </InputLabel>
+            <InputLabel sx={{ textAlign: 'center', right: '0'}} className={styles.label} shrink={false} id="sort-queue-select-label"> Sort Queue </InputLabel>
             <Select
               labelId="sort-queue-select-label"
               id="sort-queue-select"
               className={styles.select}
               displayEmpty
               onChange={handleSubmit}
-              sx={{ boxShadow: 'none', '.MuiOutlinedInput-notchedOutline': { border: 0 } }}
             >
               {tags.map((tag) => (<MenuItem key={tag.tagId} value={tag.tagId}>{tag.isPriority ? 'Unprioritise':  'Prioritise'} &quot;{tag.name}&quot;</MenuItem>))}
               <MenuItem key={'key'} value='prevRequestCount'>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} by number of previous requests</MenuItem>
             </Select>
           </FormControl>
           <FormControl size='small' >
-            <InputLabel className={styles.label} id="sort-queue-select-label"> New Cluster </InputLabel>
+            <InputLabel disableAnimation sx={selectedClustering.length !== 0 ? {} : { textAlign: 'center', right: '0'}} className={styles.label} id="new-cluster-select-label"> New Cluster </InputLabel>
             <Select
               multiple
               value={selectedClustering}
-              labelId="sort-queue-select-label"
-              id="sort-queue-select"
+              labelId="new-cluster-select-label"
+              id="new-cluster-select"
               label='New Cluster'
               className={styles.select}
               displayEmpty
+              onOpen={() => setSelectedClustering([-1])}
               onClose={handleClusterSubmit}
               onChange={(e) => setSelectedClustering(e.target.value as number[])}
-              sx={{ boxShadow: 'none', '.MuiOutlinedInput-notchedOutline': { border: 0 } }}
             >
-              {requests.map((r) => (<MenuItem key={`${r.requestId} clustering`} value={r.requestId}>{r.title}</MenuItem>))}
+              {requests.filter((r) => !isCluster(r)).map((r) => (!isCluster(r) && <MenuItem key={`${r.requestId} clustering`} value={r.requestId}>{r.title}</MenuItem>))}
             </Select>
           </FormControl>
           <Button className={styles.closeQueueButton} variant='contained' onClick={handleCloseQueue}>Close Queue</Button>
@@ -225,17 +276,25 @@ const ActiveQueue = () => {
           <div className={styles.requestCardContainer}>
             {requests && requests.length !== 0 ? (
               requests.map((request) => (
-                <StudentQueueRequestCard
-                  key={request.order}
-                  requestId={request.requestId}
-                  zid={request.zid}
-                  firstName={request.firstName}
-                  lastName={request.lastName}
-                  tags={request.tags}
-                  title={request.title}
-                  status={request.status}
-                  previousRequests={request.previousRequests}
-                />
+                !isCluster(request) ? (
+                  <StudentQueueRequestCard
+                    key={`key ${request.requestId}`}
+                    requestId={request.requestId}
+                    zid={request.zid}
+                    firstName={request.firstName}
+                    lastName={request.lastName}
+                    tags={request.tags}
+                    title={request.title}
+                    status={request.status}
+                    previousRequests={request.previousRequests}
+                  />
+                ) : (
+                  <StudentQueueClusterRequestCard
+                    key={`cluster ${request.clusterId}`}
+                    clusterId={request.clusterId}
+                    requests={request.requests}
+                  />
+                )
               ))
             ) : (
               <div>There are no requests</div>

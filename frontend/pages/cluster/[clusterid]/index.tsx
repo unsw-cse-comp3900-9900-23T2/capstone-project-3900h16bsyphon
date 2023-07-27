@@ -1,6 +1,6 @@
-import styles from './Request.module.css';
+import styles from './Cluster.module.css';
 import React, { useEffect, useState } from 'react';
-import { Button } from '@mui/material';
+import { Typography, Button } from '@mui/material';
 import { useRouter } from 'next/router';
 import Header from '../../../components/Header';
 import MetaData from '../../../components/MetaData';
@@ -10,52 +10,36 @@ import {
   toCamelCase,
 } from '../../../utils';
 import { Status } from '../../../types/requests';
-import TimeSummaryCard from '../../../components/TimeSummaryCard';
 import RequestDetails from '../../../components/RequestDetails';
 
-const Request = () => {
+const Cluster = () => {
   const router = useRouter();
   const [status, setStatus] = useState(Status.Seeing);
-  const [startTime, setStartTime] = useState(new Date());
-  const [queueData, setQueueData] = useState({
+  const [clusterData, setClusterData] = useState([{
     queueId: 1,
+    requestId: 1,
     status: Status.Seeing,
     title: 'COMP1521 Thursday Week 5 Help Session',
-  });
-  const [requestId, setRequestId] = useState<number | undefined>(undefined);
-  useEffect(() => {
-    let getRequest = async () => {
-      if (!router.query.requestid) return;
-      const res = await authenticatedGetFetch('/request/get_info', {
-        request_id: `${router.query.requestid}`,
-      });
-      let d = await res.json();
-      setQueueData(toCamelCase(d));
-      setStatus(d.status);
-    };
-    let getStartTime = async () => {
-      if (!router.query.requestid) return;
-      const res = await authenticatedGetFetch('/logs/get_start_time', {
-        request_id: `${router.query.requestid}`,
-      });
-      let d = await res.json();
-      setStartTime(toCamelCase(d?.event_time));
-    };
-    getStartTime();
-    getRequest();
-  }, [router.query.requestid]);
+  }]);
 
   useEffect(() => {
-    if (!router.query.requestid) return;
-    setRequestId(Number.parseInt(`${router.query.requestid}`));
-  }, [router.query.requestid]);
+    let getCluster = async () => {
+      if (!router.query.clusterid) return;
+      const res = await authenticatedGetFetch('/queue/cluster/get', {
+        cluster_id: `${router.query.clusterid}`,
+      });
+      let d = await res.json();
+      setClusterData(toCamelCase(d));
+    };
+    getCluster();
+  }, [router.query.clusterid]);
 
   const updateStatus = async (status: Status) => {
-    const res = await authenticatedPutFetch('/request/set_status', {
-      request_id: Number.parseInt(`${router.query.requestid}`),
+    const res = await Promise.all(clusterData.map((request) => authenticatedPutFetch('/request/set_status', {
+      request_id: request.requestId,
       status,
-    });
-    if (!res.ok) {
+    })));
+    if (res.some((r) => !r.ok)) {
       console.log(
         'error: something went wrong with resolve request; check network tab'
       );
@@ -63,7 +47,7 @@ const Request = () => {
     }
     setStatus(status);
     if (status !== Status.Seeing) {
-      router.push(`/active-queue/${queueData.queueId}`);
+      router.push(`/active-queue/${clusterData[0].queueId}`);
     }
 
   };
@@ -74,6 +58,9 @@ const Request = () => {
       <MetaData />
       <Header />
       <div className={styles.pageContainer}>
+        <div className={styles.queueTitle}>
+          <Typography variant="h2">{clusterData[0].title + ' cluster'}</Typography>
+        </div>
         <div className={styles.body}>
           {/* TODO: fix the colours */}
           <div className={styles.buttonContainer}>
@@ -138,10 +125,11 @@ const Request = () => {
                 </Button>
               </>
             )}
-            <TimeSummaryCard startTime={startTime} status={status}/>
           </div>
-          <div className={styles.details}>
-            <RequestDetails requestId={requestId} />
+          <div className={styles.clusterRequests}>
+            { clusterData.map(
+              (request) => <RequestDetails key={request.requestId} requestId={request.requestId} />
+            )}
           </div>
         </div>
       </div>
@@ -149,5 +137,4 @@ const Request = () => {
   );
 };
 
-export default Request;
-
+export default Cluster;

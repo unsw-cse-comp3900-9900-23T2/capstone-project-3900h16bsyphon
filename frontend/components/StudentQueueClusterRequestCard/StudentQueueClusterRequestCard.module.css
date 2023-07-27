@@ -1,0 +1,78 @@
+.card {
+    background-color: pink;
+    width: 100%;
+}
+
+.cardContent {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    padding: 20px;
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.zidNameContainer {
+    display: flex;
+    gap: 10px;
+}
+
+.previousRequestsContainer {
+    display: flex;
+}
+
+.textHeading {
+    font-weight: bold;
+}
+
+.cardContainer {
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 35px;
+}
+
+.titleContainer {
+    align-self: stretch;
+    display:flex;
+}
+
+.tagContainer {
+    display: flex;
+    gap: 5px;
+    width: 100%;
+}
+
+.cardActions {
+    align-self: stretch;
+    display: flex;
+    justify-content: space-between;
+}
+
+.claimButton {
+    font-weight: bold;
+    background-color: var(--colour-main-green-400);
+    color: var(--colour-main-green-900);
+}
+
+.notFoundButton {
+    font-weight: bold;
+    background-color: var(--colour-main-red-200);
+    color: var(--colour-main-red-900);
+}
+
+.orderContainer {
+    display: flex;
+    flex-direction: row;
+}
+
+.statusActionButtons {
+    display: flex;   
+    gap: 7px;
+}
