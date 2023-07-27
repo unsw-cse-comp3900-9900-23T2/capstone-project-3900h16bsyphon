@@ -1,14 +1,3 @@
-use actix_web::{
-    http::StatusCode,
-    web::{self, ReqData},
-    HttpResponse,
-};
-use chrono::NaiveDate;
-use futures::future::join_all;
-use rand::Rng;
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect, JoinType};
-use serde_json::json;
-use crate::{models::{course::*, TimeStampModel}, entities::sea_orm_active_enums::Statuses};
 use crate::{
     entities,
     models::{SyphonError, SyphonResult, Tag, TokenClaims, INV_CODE_LEN},
@@ -17,6 +6,23 @@ use crate::{
         user::{validate_admin, validate_user},
     },
 };
+use crate::{
+    entities::sea_orm_active_enums::Statuses,
+    models::{course::*, RequestDuration, TimeStampModel},
+};
+use actix_web::{
+    http::StatusCode,
+    web::{self, ReqData},
+    HttpResponse,
+};
+use chrono::{NaiveDate, NaiveDateTime, Utc};
+use chrono_tz::Australia::Sydney;
+use futures::future::join_all;
+use rand::Rng;
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, JoinType, QueryFilter, QuerySelect,
+};
+use serde_json::json;
 
 pub async fn create_offering(
     token: ReqData<TokenClaims>,
@@ -404,9 +410,9 @@ pub async fn join_with_tutor_link(
 
 pub async fn get_analytics_wait_time(
     query: web::Query<GetOfferingByIdQuery>,
-) -> SyphonResult<HttpResponse>  {
+) -> SyphonResult<HttpResponse> {
     let db = db();
-    // get average wait time 
+    // get average wait time
 
     // from tutors table, get list of zid ,matching course_id
     let tutors = entities::tutors::Entity::find()
@@ -416,15 +422,14 @@ pub async fn get_analytics_wait_time(
         .column(entities::users::Column::FirstName)
         .column(entities::users::Column::LastName)
         .filter(entities::tutors::Column::CourseOfferingId.eq(query.course_id))
+        .into_model::<TutorAnalyticsInfo>()
         .all(db)
         .await?;
-
-
 
     let mut wait_times = Vec::new();
 
     for tutor in tutors.iter() {
-        // for each tutor, get a list of request_ids they worked on 
+        // for each tutor, get a list of request_ids they worked on
         let all_requests = entities::request_status_log::Entity::find()
             .join_rev(
                 JoinType::InnerJoin,
@@ -439,10 +444,17 @@ pub async fn get_analytics_wait_time(
             .all(db)
             .await?;
 
+        let mut total_durations = RequestDuration {
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+        };
+        let mut total_request_count = 0;
+
         for request in all_requests.iter() {
-            // for each req, get Unseen time and Seeing time 
-            // get avg 
-            // push into array 
+            // for each req, get Unseen time and Seeing time
+            // get avg
+            // push into array
             let creation_time = entities::request_status_log::Entity::find()
                 .select_only()
                 .column(entities::request_status_log::Column::EventTime)
@@ -461,28 +473,49 @@ pub async fn get_analytics_wait_time(
 
             match (creation_time, start_time) {
                 (Some(create), Some(start)) => {
-
-                },
+                    let duration = start.event_time.signed_duration_since(create.event_time);
+                    total_durations.hours += duration.num_hours();
+                    total_durations.minutes += duration.num_minutes();
+                    total_durations.seconds += duration.num_seconds();
+                    total_request_count += 1;
+                }
                 (Some(create), None) => {
-                    // check if the queue has eneded, then use the end time of queue, 
-                    // otherwise use current time 
-                    // ^^ write function for this 
-                },
+                    let start = get_request_start_time(request.request_id).await;
+                    let duration = start.signed_duration_since(create.event_time);
+                    total_durations.hours += duration.num_hours();
+                    total_durations.minutes += duration.num_minutes();
+                    total_durations.seconds += duration.num_seconds();
+                    total_request_count += 1;
+                }
                 _ => {}
             }
         }
-
+        // push the average for each tutor
+        wait_times.push(AnalyticsWaitTime {
+            zid: tutor.zid,
+            first_name: tutor.first_name.clone(),
+            last_name: tutor.last_name.clone(),
+            average_wait: if total_request_count == 0 {
+                RequestDuration {
+                    hours: 0,
+                    minutes: 0,
+                    seconds: 0,
+                }
+            } else {
+                RequestDuration {
+                    hours: total_durations.hours / total_request_count,
+                    minutes: total_durations.minutes / total_request_count,
+                    seconds: total_durations.seconds / total_request_count,
+                }
+            },
+        });
     }
-    
 
     /////////////////////////////////////// Final Result //////////////////////////////////////
-    let analytics_wait_time_result = AnalyticsWaitTimeResult {
-        wait_times
-    };
+    let analytics_wait_time_result = AnalyticsWaitTimeResult { wait_times };
 
     Ok(HttpResponse::Ok().json(analytics_wait_time_result))
 }
-
 
 // TODO: THIS SHOULD BE A REAL TYPE
 fn not_exist_error(missing: Vec<impl Into<String>>) -> HttpResponse {
@@ -545,4 +578,23 @@ pub async fn check_user_exists(user_id: i32) -> SyphonResult<Result<i32, i32>> {
         .await?
         .map(|u| u.zid)
         .ok_or(user_id))
+}
+
+pub async fn get_request_start_time(request_id: i32) -> NaiveDateTime {
+    // get the queue info 
+    let queue = entities::queues::Entity::find()
+        .left_join(entities::requests::Entity)
+        .filter(entities::requests::Column::RequestId.eq(request_id))
+        .one(db())
+        .await
+        .expect("db broke")
+        .unwrap();
+
+    // check if queue has finished 
+    if !queue.is_available && !queue.is_visible {
+        return queue.end_time;
+    }
+
+    // otherwise queue is still going -> return current time 
+    Utc::now().with_timezone(&Sydney).naive_local()
 }
