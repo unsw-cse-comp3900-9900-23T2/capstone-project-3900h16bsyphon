@@ -82,6 +82,17 @@ pub async fn create_request(
     });
     join_all(images_insertion).await;
 
+    // Add log entry for creating request
+    entities::request_status_log::ActiveModel {
+        log_id: ActiveValue::NotSet,
+        request_id: ActiveValue::Set(insertion.request_id),
+        tutor_id: ActiveValue::Set(token.username),
+        status: ActiveValue::Set(Statuses::Unseen),
+        event_time: ActiveValue::Set(Utc::now().with_timezone(&Sydney).naive_local()),
+    }
+    .insert(db)
+    .await?;
+
     let action = HttpServerAction::InvalidateKeys(vec![
         SocketChannels::Request(insertion.request_id),
         SocketChannels::QueueData(insertion.queue_id),
