@@ -6,9 +6,9 @@ use actix_web::{
 use chrono::NaiveDate;
 use futures::future::join_all;
 use rand::Rng;
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
+use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect, JoinType};
 use serde_json::json;
-use crate::models::course::*;
+use crate::{models::{course::*, TimeStampModel}, entities::sea_orm_active_enums::Statuses};
 use crate::{
     entities,
     models::{SyphonError, SyphonResult, Tag, TokenClaims, INV_CODE_LEN},
@@ -401,6 +401,88 @@ pub async fn join_with_tutor_link(
 
     HttpResponse::Ok().json(web::Json(course))
 }
+
+pub async fn get_analytics_wait_time(
+    query: web::Query<GetOfferingByIdQuery>,
+) -> SyphonResult<HttpResponse>  {
+    let db = db();
+    // get average wait time 
+
+    // from tutors table, get list of zid ,matching course_id
+    let tutors = entities::tutors::Entity::find()
+        .left_join(entities::users::Entity)
+        .select_only()
+        .column(entities::tutors::Column::Zid)
+        .column(entities::users::Column::FirstName)
+        .column(entities::users::Column::LastName)
+        .filter(entities::tutors::Column::CourseOfferingId.eq(query.course_id))
+        .all(db)
+        .await?;
+
+
+
+    let mut wait_times = Vec::new();
+
+    for tutor in tutors.iter() {
+        // for each tutor, get a list of request_ids they worked on 
+        let all_requests = entities::request_status_log::Entity::find()
+            .join_rev(
+                JoinType::InnerJoin,
+                entities::tutors::Entity::belongs_to(entities::request_status_log::Entity)
+                    .from(entities::tutors::Column::Zid)
+                    .to(entities::request_status_log::Column::TutorId)
+                    .into(),
+            )
+            .select_only()
+            .column(entities::request_status_log::Column::RequestId)
+            .filter(entities::tutors::Column::CourseOfferingId.eq(query.course_id))
+            .all(db)
+            .await?;
+
+        for request in all_requests.iter() {
+            // for each req, get Unseen time and Seeing time 
+            // get avg 
+            // push into array 
+            let creation_time = entities::request_status_log::Entity::find()
+                .select_only()
+                .column(entities::request_status_log::Column::EventTime)
+                .filter(entities::request_status_log::Column::RequestId.eq(request.request_id))
+                .filter(entities::request_status_log::Column::Status.eq(Statuses::Unseen))
+                .one(db)
+                .await?;
+
+            let start_time = entities::request_status_log::Entity::find()
+                .select_only()
+                .column(entities::request_status_log::Column::EventTime)
+                .filter(entities::request_status_log::Column::RequestId.eq(request.request_id))
+                .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+                .one(db)
+                .await?;
+
+            match (creation_time, start_time) {
+                (Some(create), Some(start)) => {
+
+                },
+                (Some(create), None) => {
+                    // check if the queue has eneded, then use the end time of queue, 
+                    // otherwise use current time 
+                    // ^^ write function for this 
+                },
+                _ => {}
+            }
+        }
+
+    }
+    
+
+    /////////////////////////////////////// Final Result //////////////////////////////////////
+    let analytics_wait_time_result = AnalyticsWaitTimeResult {
+        wait_times
+    };
+
+    Ok(HttpResponse::Ok().json(analytics_wait_time_result))
+}
+
 
 // TODO: THIS SHOULD BE A REAL TYPE
 fn not_exist_error(missing: Vec<impl Into<String>>) -> HttpResponse {
