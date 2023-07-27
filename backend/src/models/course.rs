@@ -58,12 +58,15 @@ pub struct TutorAnalyticsInfo {
     pub last_name: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct RequestInfo {
+    pub request_id: i32,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnalyticsWaitTime {
-    pub zid: i32,
-    pub first_name: String,
-    pub last_name: String,
-    pub average_wait: RequestDuration,
+    pub full_name: String,
+    pub average_wait: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

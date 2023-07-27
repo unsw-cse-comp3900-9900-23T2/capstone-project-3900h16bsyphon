@@ -719,7 +719,7 @@ pub async fn get_queue_analytics(query: Query<GetQueueSummaryQuery>) -> SyphonRe
     let mut requests = Vec::new();
     let mut students_resolved = 0;
 
-    for (i, request) in all_requests.iter().enumerate() {
+    for request in all_requests.iter(){
         let start_time = entities::request_status_log::Entity::find()
             .select_only()
             .column(entities::request_status_log::Column::EventTime)

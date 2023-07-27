@@ -1,4 +1,4 @@
-import router from 'next/router';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import QueueCard from '../../../components/QueueCard';
 import { authenticatedGetFetch, toCamelCase } from '../../../utils';
@@ -9,9 +9,11 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import AnalyticsChart from '../../../components/Chart';
-import { Typography } from '@mui/material';
+import AnalyticsBarChart from '../../../components/AnalyticsBarChart';
+import { AnalyticsWaitTimeData } from '../../../types/courses';
 
 const CourseAnalytics = () => {
+  const router = useRouter();
   const [data, setData] = useState([
     {
       queueId: 1,
@@ -26,36 +28,59 @@ const CourseAnalytics = () => {
       isEdit: true,
     },
   ]);
-  const [courseData, setCourseData] = useState<any>({title: 'COMP1000'});
+  const [courseData, setCourseData] = useState<any>({ title: 'COMP1000' });
   const [isTutor, setIsTutor] = useState(false);
+  const [waitTimeAnalytics, setWaitTimeAnalytics] =
+    useState<AnalyticsWaitTimeData>();
 
   useEffect(() => {
-    let getQueues = async () => {
+    const getQueues = async () => {
       if (!router.query.courseid) return;
       const res = await authenticatedGetFetch('/queue/get_by_course', {
         course_id: `${router.query.courseid}`,
       });
-      let d = await res.json();
+      const d = await res.json();
       setData(toCamelCase(d));
     };
-    let getCourse = async () => {
+    const getCourse = async () => {
       if (!router.query.courseid) return;
-      const res = await authenticatedGetFetch('/course/get', {course_id: `${router.query.courseid}`});
-      let d = await res.json();
+      const res = await authenticatedGetFetch('/course/get', {
+        course_id: `${router.query.courseid}`,
+      });
+      const d = await res.json();
       setCourseData(toCamelCase(d));
     };
     // TODO: replace with courses/get course admins route
-    let getTutored = async () => {
-      const res = await authenticatedGetFetch('/course/get_tutored', {course_id: `${router.query.courseid}`});
-      let d = await res.json();
+    const getTutored = async () => {
+      const res = await authenticatedGetFetch('/course/get_tutored', {
+        course_id: `${router.query.courseid}`,
+      });
+      const d = await res.json();
       setIsTutor(
-        toCamelCase(d).some((course: {courseCode: string}) => course.courseCode === courseData.courseCode)
+        toCamelCase(d).some(
+          (course: { courseCode: string }) =>
+            course.courseCode === courseData.courseCode
+        )
       );
+    };
+    const getWaitTimeAnalytics = async () => {
+      if (!router.query.courseid) return;
+      const res = await authenticatedGetFetch('/course/wait_time_analytics', {
+        course_id: `${router.query.courseid}`,
+      });
+      if (!res.ok) {
+        console.log('something went wrong with wait time analytics request, check network tab');
+        return;
+      }
+      const d = await res.json();
+      setWaitTimeAnalytics(toCamelCase(d));
+      console.log('wwai time analutocs data ', d);
     };
     getQueues();
     getCourse();
     getTutored();
-  }, [courseData.courseCode]);
+    getWaitTimeAnalytics();
+  }, [courseData.courseCode, router.query.courseid]);
 
   return (
     <>
@@ -71,20 +96,50 @@ const CourseAnalytics = () => {
             <AnalyticsChart />
             <AnalyticsChart />
             <AnalyticsChart />
+            <AnalyticsBarChart
+              data={{
+                labels: waitTimeAnalytics?.waitTimes.map(x => x.fullName),
+                datasets: [{
+                  label: 'mins',
+                  data: waitTimeAnalytics?.waitTimes.map(x => x.averageWait),
+                  backgroundColor: '#D5CFFF', // doesn't let me use global css vars here
+                }],
+              }}
+              chartTitle={'Average Tutor Wait Times'}
+            />
           </div>
         </div>
         <div className={styles.queuesContainer}>
           <h1>Current queues</h1>
           <div className={styles.cards}>
             {data
-              .filter((d) => Date.parse(d.startTime) < Date.now() && Date.parse(d.endTime) > Date.now())
+              .filter(
+                (d) =>
+                  Date.parse(d.startTime) < Date.now() &&
+                  Date.parse(d.endTime) > Date.now()
+              )
               .filter((d) => isTutor || d.isVisible)
-              .map((d, index) => <QueueCard isQueueAnalyticsLive isTutor={isTutor} queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit}/>)
-            }
+              .map((d, index) => (
+                <QueueCard
+                  isQueueAnalyticsLive
+                  isTutor={isTutor}
+                  queueId={d.queueId}
+                  key={index}
+                  title={d.title}
+                  location={[]}
+                  courseAdmins={d.courseAdmins}
+                  isEdit={d.isEdit}
+                />
+              ))}
             {data
-              .filter((d) => Date.parse(d.startTime) < Date.now() && Date.parse(d.endTime) > Date.now())
-              .filter((d) => isTutor || d.isVisible)
-              .length === 0 && <p>No live queues</p>}
+              .filter(
+                (d) =>
+                  Date.parse(d.startTime) < Date.now() &&
+                  Date.parse(d.endTime) > Date.now()
+              )
+              .filter((d) => isTutor || d.isVisible).length === 0 && (
+              <p>No live queues</p>
+            )}
           </div>
           <h1>Past queues</h1>
           <div className={styles.cards}>
@@ -94,7 +149,7 @@ const CourseAnalytics = () => {
               .map((d, index) => (
                 <QueueCard
                   isPrevious
-                  isTutor={isTutor} 
+                  isTutor={isTutor}
                   queueId={d.queueId}
                   key={index}
                   title={d.title}
