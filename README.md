@@ -25,7 +25,7 @@ or
 ```
 Cannot connect to the Docker daemon at unix:///Users/aishanauman/.docker/run/docker.sock. Is the docker daemon running?
 ```
-or some other output mentioning how docker is not installed or running. If this happens, this means that docker desktop is not running. Ensure it is running and live:
+or some other output mentioning how docker is not installed or running. If this happens, this means that docker desktop is not running. Ensure it is running and live by making sure you see this screen on docker desktop:
 ![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/1a976ce3-7490-4a9a-a6cd-db6b86f499fe)
 4. run `docker compose -f docker-compose-prod.yaml build` for a prod environment. This will build the production builds of both the backend and frontend. This will pull docker containers related to rust, node, and postgres, and then copy the syphon code into it to build a full docker image with our backend and frontend. This command may take up to an hour to build depending on your depending on your internet connection and what images you may already have cached.
 Here is the output that will occur when you do this:
