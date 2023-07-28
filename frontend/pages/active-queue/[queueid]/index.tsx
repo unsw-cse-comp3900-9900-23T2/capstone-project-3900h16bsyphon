@@ -168,9 +168,7 @@ const ActiveQueue = () => {
 
   const handleClusterSubmit = async () => {
     console.log('selectedClustering', selectedClustering);
-    if (selectedClustering.length === 0 ||
-      (selectedClustering.length < 2 && selectedClustering[0] === -1)
-    ) return;
+    if (selectedClustering.length === 0 || selectedClustering.length < 2) return;
     selectedClustering.shift();
     let res = await authenticatedPostFetch('/queue/cluster/create', {
       queue_id: Number.parseInt(`${router.query.queueid}`),
