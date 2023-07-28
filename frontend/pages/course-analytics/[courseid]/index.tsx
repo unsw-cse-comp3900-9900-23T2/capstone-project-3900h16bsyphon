@@ -8,11 +8,8 @@ import MetaData from '../../../components/MetaData';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
-import AnalyticsChart from '../../../components/Chart';
-import AnalyticsBarChart from '../../../components/AnalyticsBarChart';
 import { AnalyticsWaitTimeData } from '../../../types/courses';
 import { Button, Typography } from '@mui/material';
-import Carousel from 'react-material-ui-carousel';
 import AnalyticsChartCarousel from '../../../components/AnalyticsChartCarousel';
 
 const CourseAnalytics = () => {
@@ -112,10 +109,9 @@ const CourseAnalytics = () => {
                   <DateCalendar />
                 </LocalizationProvider>
               </div>
-              <div className={styles.allAnalyticsContainer}>
-                <div className={styles.chartCarouselContainer}>
-                  <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} />
-                </div>
+
+              <div className={styles.chartCarouselContainer}>
+                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} />
               </div>
             </div>
             <div className={styles.queuesContainer}>

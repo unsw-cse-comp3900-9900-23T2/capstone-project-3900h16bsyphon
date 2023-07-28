@@ -68,16 +68,9 @@
   width: 100%;
 }
 
-.allAnalyticsContainer {
+.chartCarouselContainer {
   display: flex;
   flex-direction: column;
   flex: 7;
-}
-
-.analyticsChartContainer {
-  padding: 0px 50px;
-}
-
-.chartCarouselContainer {
   width: 100%;
 }

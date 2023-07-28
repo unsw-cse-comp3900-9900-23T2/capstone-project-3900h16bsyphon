@@ -18,6 +18,7 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics }: AnalyticsChartCarouselPro
           borderRadius: 100,
         },
       }}
+      autoPlay={false}
     >
       <div className={styles.analyticsChartContainer}>
         <AnalyticsBarChart
