@@ -38,6 +38,7 @@ const StudentQueueRequestCard = ({
   };
 
   const handleOpenCard = () => {
+    if (requests.length === 0) return;
     if (requests[0].status === Status.NotFound) return;
     if (requests[0].status === Status.Seen) router.push(`/request-summary/${requests[0].requestId}`);
     else router.push(`/cluster/${clusterId}`);
@@ -71,20 +72,18 @@ const StudentQueueRequestCard = ({
           </div>
           <CardActions className={styles.cardActions}>
             <div className={styles.statusActionButtons}>
-              {
-                requests[0].status === Status.NotFound && (
-                  <>
-                    <Button
-                      className={styles.claimButton}
-                      variant="contained"
-                      onClick={(e) => updateStatus(Status.Unseen, e)}
-                    >
+              { requests.length > 0 && requests[0].status === Status.NotFound && (
+                <>
+                  <Button
+                    className={styles.claimButton}
+                    variant="contained"
+                    onClick={(e) => updateStatus(Status.Unseen, e)}
+                  >
                       Unresolve
-                    </Button>
-                  </>
-                )
-              }
-              {requests[0].status === Status.Unseen && (
+                  </Button>
+                </>
+              )}
+              { requests.length > 0 && requests[0].status === Status.Unseen && (
                 <>
                   <Button
                     className={styles.claimButton}
@@ -102,7 +101,7 @@ const StudentQueueRequestCard = ({
                   </Button>
                 </>
               )}
-              {requests[0].status === Status.Seeing && (
+              { requests.length > 0 && requests[0].status === Status.Seeing && (
                 <Button
                   className={styles.claimButton}
                   variant="contained"
@@ -111,7 +110,7 @@ const StudentQueueRequestCard = ({
                   Resolve
                 </Button>
               )}
-              { requests[0].status === Status.Seen && (
+              { requests.length > 0 && requests[0].status === Status.Seen && (
                 <Button
                   className={styles.claimButton}
                   variant="contained"
