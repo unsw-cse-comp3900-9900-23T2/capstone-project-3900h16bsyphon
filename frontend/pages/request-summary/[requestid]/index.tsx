@@ -90,7 +90,8 @@ const RequestSummary = () => {
               tags={requestData.tags}
               title={requestData.title}
               previousRequests={requestData.previousRequests}
-              description={requestData.description}
+              description={requestData.description} 
+              images={[]}            
             />
           </Box>
           <div className={styles.summaryContainer}>
@@ -119,8 +120,6 @@ const RequestSummary = () => {
               startTime={requestSummary.startTime}
               endTime={requestSummary.endTime} 
               duration={getActualDuration(requestSummary.duration)}
-              backgroundColor={changeBackgroundColour(requestSummary.duration)} 
-              textColor={changeTextColour(requestSummary.duration)} 
             />
           </div>
         </div>

@@ -5,10 +5,12 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase, getActualDuration } from '../../../utils';
 import { Status, Tag } from '../../../types/requests';
-import { QueueSummaryData } from '../../../types/queues';
+import { QueueAnalyticsData, QueueRequestSummaryData, QueueSummaryData } from '../../../types/queues';
 import OverallTimeSummary from '../../../components/OverallTimeSummary';
 import QueueTutorSummaryCard from '../../../components/QueueTutorSummaryCard';
 import QueueTagSummaryCard from '../../../components/QueueTagSummaryCard';
+import QueueRequestsSummaryCard from '../../../components/QueueRequestsSummaryCard';
+import QueueAnalyticsSummaryCard from '../../../components/QueueAnalyticsSummaryCard';
 
 const tags = [
   {
@@ -56,14 +58,51 @@ const queueSummaryInitialValue: QueueSummaryData = {
   tagSummaries: tagSummary,
 };
 
+const requests: QueueRequestSummaryData[] = [
+  {
+    requestId: 99,
+    zid: 5309306,
+    firstName: 'Aisha',
+    lastName: 'Nauman',
+    isSelfResolved: false,
+    duration: { hours: 0, minutes: 10, seconds: 23 }
+  },
+  {
+    requestId: 9999,
+    zid: 5309306,
+    firstName: 'Aisha',
+    lastName: 'Nauman',
+    isSelfResolved: true,
+    duration: { hours: 0, minutes: 10, seconds: 23 }
+  },
+  {
+    requestId: 999,
+    zid: 5309306,
+    firstName: 'Aisha',
+    lastName: 'Nauman',
+    isSelfResolved: false,
+    duration: { hours: 0, minutes: 10, seconds: 23 }
+  },
+];
+
+const dummyQueueAnalytics: QueueAnalyticsData = {
+  courseCode: 'COMP1000',
+  title: 'this is the title of a queue',
+  studentsJoined: 10,
+  studentsResolved: 7,
+  studentsUnresolved: 3,
+  requests
+};
+
 const QueueSummary = () => {
   const router = useRouter();
   const [summaryData, setSummaryData] = useState<QueueSummaryData>(queueSummaryInitialValue);
+  const [queueAnalytics, setQueueAnalytics] = useState<QueueAnalyticsData>(dummyQueueAnalytics);
   
   useEffect(() => {
-    let getQueueSummary = async () => {
+    const getQueueSummary = async () => {
       console.log('getting queue summary . . .');
-      let res = await authenticatedGetFetch('/queue/summary', {queue_id: `${router.query.queueid}`});
+      const res = await authenticatedGetFetch('/queue/summary', {queue_id: `${router.query.queueid}`});
       if (!res.ok) {
         console.log('something went wrong with queue summary, see network tab');
         return;
@@ -72,8 +111,18 @@ const QueueSummary = () => {
       setSummaryData(toCamelCase(data));
       console.log('the data inside queue summary is ', data);
     };
+    const getAnalyticsData = async () => {
+      const res = await authenticatedGetFetch('/queue/analytics', { queue_id: `${router.query.queueid}`});
+      if (!res.ok) {
+        console.log('error: issue with queue analytics inside queue summary, check network tab');
+        return;
+      }
+      const d = await res.json();
+      setQueueAnalytics(toCamelCase(d));
+    };
     if (!router.query.queueid) return;
     getQueueSummary();
+    getAnalyticsData();
   }, [router.query.queueid]);
 
   return (
@@ -111,7 +160,15 @@ const QueueSummary = () => {
           </div>
           <div className={styles.summaryContainer}>
             {/* tag summaries in this div */}
+            <QueueAnalyticsSummaryCard 
+              studentsJoined={queueAnalytics.studentsJoined} 
+              studentsResolved={queueAnalytics.studentsResolved} 
+              studentsUnresolved={queueAnalytics.studentsUnresolved}
+            />
             <QueueTagSummaryCard tagSummaries={summaryData.tagSummaries} />
+            <QueueRequestsSummaryCard 
+              requests={queueAnalytics.requests}            
+            />
           </div>
         </div>
       </div>

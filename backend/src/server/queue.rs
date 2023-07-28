@@ -3,17 +3,14 @@ use crate::{
     models::{
         CloseQueueRequest, CreateQueueRequest, FlipTagPriority, GetActiveQueuesQuery,
         GetQueueByIdQuery, GetQueueRequestCount, GetQueueSummaryQuery, GetQueueTagsQuery,
-        GetQueuesByCourseQuery, GetRemainingStudents, QueueInformationModel, QueueReturnModel,
-        QueueSummaryData, QueueTagSummaryData, QueueTutorSummaryData, RequestDuration, RequestId,
-        RequestStatusTimeInfo, RequestTutorInformationModel, SyphonError, SyphonResult, Tag,
-        TimeStampModel, TokenClaims, TutorInformationModel, UpdateQueuePreviousRequestCount,
-        UpdateQueueRequest,
+        GetQueuesByCourseQuery, GetRemainingStudents, QueueAnalyticsSummaryModel,
+        QueueInformationModel, QueueNameModel, QueueRequestInfoModel, QueueRequestSummaryModel,
+        QueueReturnModel, QueueSummaryData, QueueTagSummaryData, QueueTutorSummaryData,
+        RequestDuration, RequestId, RequestStatusTimeInfo, RequestTutorInformationModel,
+        SyphonError, SyphonResult, Tag, TimeStampModel, TokenClaims, TutorInformationModel,
+        UpdateQueuePreviousRequestCount, UpdateQueueRequest,
     },
-    sockets::{
-        lobby::Lobby,
-        messages::HttpServerAction,
-        SocketChannels,
-    },
+    sockets::{lobby::Lobby, messages::HttpServerAction, SocketChannels},
     test_is_user,
     utils::{db::db, user::validate_user},
 };
@@ -443,10 +440,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
                         .eq(tutor_info.zid)
                         .and(entities::request_status_log::Column::Status.eq(Statuses::Seeing)),
                 )
-                .filter(
-                    entities::requests::Column::QueueId
-                        .eq(query.queue_id)
-                )
+                .filter(entities::requests::Column::QueueId.eq(query.queue_id))
                 .distinct_on([entities::request_status_log::Column::RequestId])
                 .into_model::<RequestStatusTimeInfo>()
                 .all(db)
@@ -471,10 +465,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
                         .eq(tutor_info.zid)
                         .and(entities::request_status_log::Column::Status.eq(Statuses::Seen)),
                 )
-                .filter(
-                    entities::requests::Column::QueueId
-                        .eq(query.queue_id)
-                )
+                .filter(entities::requests::Column::QueueId.eq(query.queue_id))
                 .distinct_on([entities::request_status_log::Column::RequestId])
                 .into_model::<RequestStatusTimeInfo>()
                 .all(db)
@@ -543,10 +534,7 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
                         .eq(tutor_info.zid)
                         .and(entities::request_status_log::Column::Status.eq(Statuses::Seen)),
                 )
-                .filter(
-                    entities::queue_tags::Column::QueueId
-                        .eq(query.queue_id)
-                )
+                .filter(entities::queue_tags::Column::QueueId.eq(query.queue_id))
                 .distinct_on([entities::request_tags::Column::TagId])
                 .into_model::<Tag>()
                 .all(db)
@@ -617,7 +605,6 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
                 entities::request_status_log::Entity::find()
                     .select_only()
                     .column(entities::request_status_log::Column::EventTime)
-                    .left_join(entities::users::Entity)
                     .left_join(entities::requests::Entity)
                     .filter(entities::request_status_log::Column::RequestId.eq(x.request_id))
                     .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
@@ -635,7 +622,6 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
                 entities::request_status_log::Entity::find()
                     .select_only()
                     .column(entities::request_status_log::Column::EventTime)
-                    .left_join(entities::users::Entity)
                     .left_join(entities::requests::Entity)
                     .filter(entities::request_status_log::Column::RequestId.eq(x.request_id))
                     .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
@@ -703,6 +689,110 @@ pub async fn get_queue_summary(query: Query<GetQueueSummaryQuery>) -> SyphonResu
         duration,
         tutor_summaries,
         tag_summaries,
+    };
+
+    Ok(HttpResponse::Ok().json(queue_summary_result))
+}
+
+pub async fn get_queue_analytics(query: Query<GetQueueSummaryQuery>) -> SyphonResult<HttpResponse> {
+    let db = db();
+
+    // get queue information
+    let queue = entities::queues::Entity::find_by_id(query.queue_id)
+        .select_only()
+        .left_join(entities::course_offerings::Entity)
+        .column(entities::queues::Column::Title)
+        .column(entities::course_offerings::Column::CourseCode)
+        .into_model::<QueueNameModel>()
+        .one(db)
+        .await?
+        .ok_or(SyphonError::QueueNotExist(query.queue_id))?;
+
+    // get all the requests made in the queue
+    let all_requests = entities::requests::Entity::find()
+        .select_only()
+        .left_join(entities::users::Entity)
+        .column(entities::requests::Column::RequestId)
+        .column(entities::requests::Column::Zid)
+        .column(entities::users::Column::FirstName)
+        .column(entities::users::Column::LastName)
+        .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+        .into_model::<QueueRequestInfoModel>()
+        .all(db)
+        .await?;
+
+    let mut requests = Vec::new();
+    let mut students_resolved = 0;
+
+    for (i, request) in all_requests.iter().enumerate() {
+        let start_time = entities::request_status_log::Entity::find()
+            .select_only()
+            .column(entities::request_status_log::Column::EventTime)
+            .filter(entities::request_status_log::Column::RequestId.eq(request.request_id))
+            .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+            .into_model::<TimeStampModel>()
+            .one(db)
+            .await?;
+
+        let end_time = entities::request_status_log::Entity::find()
+            .select_only()
+            .column(entities::request_status_log::Column::EventTime)
+            .filter(entities::request_status_log::Column::RequestId.eq(request.request_id))
+            .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
+            .into_model::<TimeStampModel>()
+            .one(db)
+            .await?;
+
+        match (start_time, end_time) {
+            (None, Some(_)) => {
+                requests.push(QueueRequestSummaryModel {
+                    zid: request.zid,
+                    request_id: request.request_id,
+                    first_name: request.first_name.clone(),
+                    last_name: request.last_name.clone(),
+                    is_self_resolved: true,
+                    duration: None,
+                });
+                students_resolved += 1;
+            }
+            (Some(start), Some(end)) => {
+                // get duration
+                let duration = end.event_time.signed_duration_since(start.event_time);
+                requests.push(QueueRequestSummaryModel {
+                    zid: request.zid,
+                    request_id: request.request_id,
+                    first_name: request.first_name.clone(),
+                    last_name: request.last_name.clone(),
+                    is_self_resolved: false,
+                    duration: Some(RequestDuration {
+                        hours: duration.num_hours(),
+                        minutes: duration.num_minutes(),
+                        seconds: duration.num_seconds(),
+                    }),
+                });
+                students_resolved += 1;
+            }
+            _ => {
+                requests.push(QueueRequestSummaryModel {
+                    zid: request.zid,
+                    request_id: request.request_id,
+                    first_name: request.first_name.clone(),
+                    last_name: request.last_name.clone(),
+                    is_self_resolved: false,
+                    duration: None,
+                });
+            }
+        }
+    }
+
+    /////////////////////////////////////// Final Result //////////////////////////////////////
+    let queue_summary_result = QueueAnalyticsSummaryModel {
+        title: queue.title,
+        course_code: queue.course_code,
+        students_joined: all_requests.len() as i32,
+        students_resolved,
+        students_unresolved: (all_requests.len() as i32) - students_resolved,
+        requests
     };
 
     Ok(HttpResponse::Ok().json(queue_summary_result))
