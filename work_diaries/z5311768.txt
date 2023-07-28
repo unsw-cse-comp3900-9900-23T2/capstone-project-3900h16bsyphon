@@ -39,3 +39,4 @@ week 8
 week 9
 - fixed docker issue on arm64v8 computers
 - done screenshots
+- done with clustering

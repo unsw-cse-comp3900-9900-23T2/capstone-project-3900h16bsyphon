@@ -4,7 +4,7 @@ import styles from './Chat.module.css';
 import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
 type ChatBoxProps = {
-  requestId: number;
+  requestId?: number;
   studentZid: number;
   isStudent: boolean;
 };
@@ -23,7 +23,7 @@ const ChatBox = ({requestId, studentZid, isStudent} : ChatBoxProps) => {
   const [newMessage, setNewMessage] = useState('');
 
   const { sendJsonMessage, lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/chat', {
-    queryParams: {request_id: requestId},
+    queryParams: {request_id: requestId as string | number},
     shouldReconnect: () => true,
   }, !!requestId);
 

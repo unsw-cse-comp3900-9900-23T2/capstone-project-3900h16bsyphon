@@ -68,8 +68,10 @@
     column-gap: 2%;
 }
 
-.details {
-    flex-grow: 3;
+.clusterRequests {
+    flex-grow: 4;
+    flex-direction: column;
     display: flex;
-    gap: 2%;
+    row-gap: 5%;
+    margin-bottom: 5%;
 }

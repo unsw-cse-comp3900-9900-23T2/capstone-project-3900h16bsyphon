@@ -68,8 +68,9 @@
     column-gap: 2%;
 }
 
-.details {
-    flex-grow: 3;
+.detailsContainer {
+    flex: 1;
     display: flex;
+    flex-direction: row;
     gap: 2%;
 }

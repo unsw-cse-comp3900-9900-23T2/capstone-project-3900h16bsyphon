@@ -140,6 +140,11 @@ async fn main() -> std::io::Result<()> {
             .service(
                 scope("/queue")
                     .wrap(amw.clone())
+                    .service(
+                        scope("/cluster")
+                            .route("create", web::post().to(server::request::cluster_requests))
+                            .route("get", web::get().to(server::request::all_requests_for_cluster))
+                    )
                     .route(
                         "/set_is_sorted_by_previous_request_count",
                         web::put().to(server::queue::set_is_sorted_by_previous_request_count),

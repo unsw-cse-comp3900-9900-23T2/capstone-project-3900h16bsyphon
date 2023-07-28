@@ -17,7 +17,7 @@ const Header = () => {
 
   return (
     <div className={styles.header}>
-      <h1 className={styles.heading}>
+      <h1>
         <Link href="/dashboard">Syphon</Link>
       </h1>
       <div className={styles.right}>
@@ -25,7 +25,7 @@ const Header = () => {
         <Avatar onClick={() => router.push('/user-profile/current')} className={styles.profile}>
           <PersonIcon />
         </Avatar>
-        <Button className={styles.button} onClick={() => logout()}>Log out</Button>
+        <Button onClick={() => logout()}>Log out</Button>
       </div>
     </div>
   );

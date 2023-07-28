@@ -1,11 +1,14 @@
 //! This file contains all the prelude imports for the project.
 //! Helps in keeping `main.rs` clean.
 
+use crate::entities;
 use crate::models::CreateUserBody;
 use crate::server::auth::create_user;
+use crate::utils::db::db;
 pub use crate::utils::db::initialise_db;
 use actix_web::web::Json;
 use actix_web::ResponseError;
+use sea_orm::EntityTrait;
 
 /// Secret used to hash passwords.
 /// Requires `SECRET` to be set as and environemnt variable or in
@@ -91,4 +94,15 @@ pub fn startup_logger() {
     log::info!("Logger set up successfully!");
     log::info!("");
     log::info!("");
+}
+
+pub async fn remove_images_file() {
+    let db = db();
+    let any_images = entities::request_images::Entity::find()
+        .one(db)
+        .await;
+    if any_images.is_ok() && any_images.unwrap().is_none() {
+        std::fs::remove_dir_all("/images").unwrap();
+        std::fs::create_dir("/images").unwrap();
+    }
 }

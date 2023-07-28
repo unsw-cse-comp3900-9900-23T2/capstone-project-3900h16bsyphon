@@ -1,7 +1,7 @@
 use actix::{fut, Actor, ActorFutureExt, ContextFutureSpawner, Handler, WrapFuture};
 use futures::{future::join, FutureExt};
 
-use crate::models::{QueueRequest, RequestInfoBody, TokenClaims};
+use crate::models::{QueueRequest, RequestInfoBody};
 use crate::server::{
     queue::get_queue_by_id_not_web,
     request::{all_requests_for_queue_not_web, request_info_not_web},
@@ -37,7 +37,7 @@ impl Lobby {
     fn invalidate_queue_data(&mut self, queue_id: i32, ctx: &mut <Self as Actor>::Context) {
         log::debug!("Invalidating queue {}", queue_id);
         let queue_fut = get_queue_by_id_not_web(queue_id);
-        let requests_fut = all_requests_for_queue_not_web(TokenClaims::master(), queue_id);
+        let requests_fut = all_requests_for_queue_not_web(queue_id);
         let queue_and_req_fut = join(queue_fut, requests_fut).then(|(q_res, reqs_res)| async {
             match (q_res, reqs_res) {
                 (Ok(q), Ok(r)) => Ok((q, r)),
@@ -73,7 +73,7 @@ impl Lobby {
     }
 
     fn invalidate_request(&mut self, request_id: i32, ctx: &mut <Self as Actor>::Context) {
-        request_info_not_web(TokenClaims::master(), RequestInfoBody { request_id })
+        request_info_not_web(RequestInfoBody { request_id })
             .into_actor(self)
             .then(move |req_info, lobby, _ctx| {
                 // Unpack the request info
@@ -93,6 +93,11 @@ impl Lobby {
                     request_id,
                     content: req_info,
                 };
+                log::debug!(
+                    "Broadcasting request data: {:?} , targets {:?}",
+                    ws_msg,
+                    targets
+                );
                 lobby.broadcast_message(ws_msg, &targets);
 
                 fut::ready(())
