@@ -68,26 +68,6 @@ pub async fn conn_request(
     stream: web::Payload,
     lobby_addr: web::Data<Addr<Lobby>>,
 ) -> SyphonResult<HttpResponse> {
-    //
-    // let db = db();
-    // // Check that tutor or, owns request
-    // let request = entities::requests::Entity::find_by_id(req_id)
-    //     .one(db)
-    //     .await?
-    //     .ok_or(SyphonError::RequestNotExist(req_id))?;
-    // let course_offering_id = entities::queues::Entity::find_by_id(request.queue_id)
-    //     .one(db)
-    //     .await?
-    //     .expect("Q exists because request exists")
-    //     .course_offering_id;
-    // let is_tutor = entities::tutors::Entity::find_by_id((
-    //     .one(db)
-    //     .await?
-    //     .is_some();
-    // if
-    //     return Err(SyphonError::NotTutor);
-    // }
-    //
     log::info!("Starting Request({}) socket", query.request_id);
     let conn = WsConn::new(
         vec![SocketChannels::Request(query.request_id)],

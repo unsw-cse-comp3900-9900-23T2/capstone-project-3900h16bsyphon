@@ -137,7 +137,7 @@ impl Actor for WsConn {
 
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
-        log::info!(
+        log::trace!(
             "WsConn Recieved {:?};\n\tHandler zid: {:?}; Connection: {:?}",
             msg,
             self.zid,

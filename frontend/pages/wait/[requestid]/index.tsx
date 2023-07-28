@@ -84,25 +84,24 @@ const WaitingScreen = () => {
   }, [router.query.requestid, router, requestData.isClusterable]);
 
   // Set up websocket for live-request data updates
-  // let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/request', {
-  //   queryParams: {
-  //     request_id: `${router.query.requestid}`,
-  //   },
-  //   onOpen: () => {
-  //     console.log('connected [request data]:', `${router.query.requestid}`);
-  //   }
-  // });
+  let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/request', {
+    queryParams: {
+      request_id: `${router.query.requestid}`,
+    },
+    onOpen: () => {
+      console.log('connected [request data]:', `${router.query.requestid}`);
+    }
+  }, !!router.query.requestid);
 
-  // update the requet data
-  // useEffect(() => {
-  //   if (!lastJsonMessage) return;
-  //   console.debug('new_msg: ', lastJsonMessage);
-  //   if ((lastJsonMessage as any)?.type === 'request_data') {
-  //     let newRequestData = (lastJsonMessage as any).requests;
-  //     console.debug('newRequestData', newRequestData);
-  //     setData(toCamelCase(newRequestData));
-  //   }
-  // }, [lastJsonMessage]);
+  useEffect(() => {
+    if (!lastJsonMessage) return;
+    console.debug('new_msg: ', lastJsonMessage);
+    if ((lastJsonMessage as any)?.type === 'request_data') {
+      let newRequestData = (lastJsonMessage as any).content;
+      console.debug('newRequestData', newRequestData);
+      setData(toCamelCase(newRequestData));
+    }
+  }, [lastJsonMessage]);
 
   useEffect(() => {
     let getQueueData = async () => {
@@ -170,24 +169,6 @@ const WaitingScreen = () => {
     shouldReconnect: () => true,
   }, !!requestData.queueId);
 
-  // This is no worky because of hooks stuff
-  // fix is very hacky - shoudlnt use long term
-  // const [requestId, setRequestId] = useState(undefined);
-  // useAuthenticatedWebSocket('ws:localhost:8000/ws/request', { queryParams: requestId });
-  // const connectHook = (requestId: Number) => {
-  //   useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {});
-  // };
-  // websocket for this specific request's data:
-  // useEffect(() => {
-  //   let { lastJsonMessage: lastJsonMessageRequest } = useAuthenticatedWebSocket('ws:localhost:8000/ws/request', {
-  //     queryParams: {request_id: `${router.query.requestid}`},
-  //     onOpen: () => {
-  //       console.log('connected [queue data]');
-  //     }
-  //   });
-  // });
-
-
   // update queue data:
   useEffect(() => {
     const updateRequestDataFromQueueData = (allRequests: any[]) => {
@@ -196,7 +177,6 @@ const WaitingScreen = () => {
       let ourRequest = allRequests.find((r) => r.request_id === Number.parseInt(`${router.query.requestid}`));
       console.log('ourRequest', ourRequest);
       if (ourRequest) {
-        console.log('newRequestData', ourRequest);
         setData(toCamelCase(ourRequest));
         if (ourRequest.status === Status.Seen) {
           router.push(`/request-summary/${router.query.requestid}`);

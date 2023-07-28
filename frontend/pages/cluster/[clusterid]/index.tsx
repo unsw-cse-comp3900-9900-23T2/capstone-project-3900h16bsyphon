@@ -28,8 +28,9 @@ const Cluster = () => {
       const res = await authenticatedGetFetch('/queue/cluster/get', {
         cluster_id: `${router.query.clusterid}`,
       });
-      let d = await res.json();
-      setClusterData(toCamelCase(d));
+      let d = toCamelCase(await res.json());
+      setClusterData(d);
+      setStatus(d[0].status);
     };
     getCluster();
   }, [router.query.clusterid]);
@@ -52,7 +53,7 @@ const Cluster = () => {
 
   };
 
-
+  console.log(status);
   return (
     <>
       <MetaData />
@@ -70,7 +71,7 @@ const Cluster = () => {
                 variant="contained"
                 onClick={() => updateStatus(Status.Seen)}
               >
-                Resolve
+                Resolve All
               </Button>
             )}
             {status === Status.Unseen && (
@@ -80,14 +81,14 @@ const Cluster = () => {
                   variant="contained"
                   onClick={() => updateStatus(Status.Seeing)}
                 >
-                  Claim
+                  Claim All
                 </Button>
                 <Button
                   className={styles.redButton}
                   variant="contained"
                   onClick={() => updateStatus(Status.NotFound)}
                 >
-                  Not Found
+                  All Not Found
                 </Button>
                 <Button
                   className={styles.greyButton}
@@ -104,7 +105,7 @@ const Cluster = () => {
                 variant="contained"
                 onClick={() => updateStatus(Status.Unseen)}
               >
-                Unresolve
+                Unresolve All
               </Button>
             )}
             {status === Status.NotFound && (
@@ -114,14 +115,14 @@ const Cluster = () => {
                   variant="contained"
                   onClick={() => updateStatus(Status.Seeing)}
                 >
-                  Claim
+                  Claim All
                 </Button>
                 <Button
                   className={styles.greenButton}
                   variant="contained"
                   onClick={() => updateStatus(Status.Seen)}
                 >
-                  Resolve
+                  Resolve All
                 </Button>
               </>
             )}

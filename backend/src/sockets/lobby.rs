@@ -147,7 +147,7 @@ impl Handler<Connect> for Lobby {
                 SocketChannels::QueueData(q_id) => self.queues.entry(*q_id),
                 SocketChannels::Announcements(q_id) => self.annoucements.entry(*q_id),
                 SocketChannels::Chat(req_id) => self.chat_rooms.entry(*req_id),
-                SocketChannels::Request(req_id) => self.chat_rooms.entry(*req_id),
+                SocketChannels::Request(req_id) => self.requests.entry(*req_id),
             }
             .or_default()
             .insert(uuid);

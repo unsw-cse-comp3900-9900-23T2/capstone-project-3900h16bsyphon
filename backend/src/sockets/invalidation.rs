@@ -93,6 +93,11 @@ impl Lobby {
                     request_id,
                     content: req_info,
                 };
+                log::debug!(
+                    "Broadcasting request data: {:?} , targets {:?}",
+                    ws_msg,
+                    targets
+                );
                 lobby.broadcast_message(ws_msg, &targets);
 
                 fut::ready(())

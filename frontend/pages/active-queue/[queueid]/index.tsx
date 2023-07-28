@@ -60,45 +60,48 @@ const ActiveQueue = () => {
           className: styles.toast,
         });
       }
-      setRequests(toCamelCase(newRequestsData));
+      setRequests(transformRequests(toCamelCase(newRequestsData)));
     }
   }, [lastJsonMessage, play, requests.length]);
 
+  const transformRequests = (reqList: UserRequest[]): (UserRequest | ClusterRequest)[]  => {
+    // collapse requests with the same clusterId
+    let clusterIdToRequest = new Map<number, UserRequest[]>();
+    reqList.forEach((r) => {
+      if (!r.clusterId) return;
+      let clusterList = clusterIdToRequest.get(r.clusterId);
+      if (!clusterList) {
+        clusterIdToRequest.set(r.clusterId, [r]);
+      } else {
+        clusterList.push(r);
+      }
+    });
+    let newReqList: (UserRequest | ClusterRequest)[] = [];
+    for (const request of reqList) {
+      if (!request.clusterId) {
+        newReqList.push(request);
+      } else {
+        let clusterList = clusterIdToRequest.get(request.clusterId);
+        // only look for the first request
+        if (!clusterList || clusterList[0].requestId !== request.requestId)
+          continue;
+        
+        newReqList.push({
+          requests: clusterList,
+          clusterId: request.clusterId,
+        });
+      }
+    }
+    return newReqList;
+  };
 
   useEffect(() => {
     let getRequests = async () => {
       let res = await authenticatedGetFetch('/request/all_requests_for_queue', {queue_id: `${router.query.queueid}`});
       // yolo assume OK
       let d = await res.json();
-      let reqList: UserRequest[] = toCamelCase(d);
-      // collapse requests with the same clusterId
-      let clusterIdToRequest = new Map<number, UserRequest[]>();
-      reqList.forEach((r: UserRequest) => {
-        if (!r.clusterId) return;
-        let clusterList = clusterIdToRequest.get(r.clusterId);
-        if (!clusterList) {
-          clusterIdToRequest.set(r.clusterId, [r]);
-        } else {
-          clusterList.push(r);
-        }
-      });
-      let newReqList: (UserRequest | ClusterRequest)[] = [];
-      for (const request of reqList) {
-        if (!request.clusterId) {
-          newReqList.push(request);
-        } else {
-          let clusterList = clusterIdToRequest.get(request.clusterId);
-          // only look for the first request
-          if (!clusterList || clusterList[0].requestId !== request.requestId)
-            continue;
-          
-          newReqList.push({
-            requests: clusterList,
-            clusterId: request.clusterId,
-          });
-        }
-      }
-      setRequests(newReqList);
+
+      setRequests(transformRequests(toCamelCase(d)));
     };
     let getQueueData = async () => {
       let res = await authenticatedGetFetch('/queue/get', {queue_id: `${router.query.queueid}`});
