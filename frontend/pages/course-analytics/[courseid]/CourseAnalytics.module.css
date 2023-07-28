@@ -1,18 +1,50 @@
-.analyticsContainer {
+.pageContainer {
   display: flex;
   flex-direction: column;
-  margin: 0 auto;
-  max-width: 90%;
-  padding-top: 50px;
-  padding-bottom: 50px;
+  align-items: center;
+  min-height: 90vh;
+  padding-top: 1%;
+}
+
+.body {
+  display: flex;
+  width: 95%;
+  column-gap: 2%;
+}
+
+.courseAnalyticsContent {
+  display: flex;
+  flex-direction: column;
+  flex: 9;
+}
+
+.buttonContainer {
+  min-width: 15%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.queueTitle {
+  padding-top: 2%;
+  padding-bottom: 3%;
+}
+
+.greyButton {
+  font-weight: bold;
+  padding: 5px 25px;
+  background-color: var(--colour-main-grey-400);
+  color: var(--colour-main-grey-600);
 }
 
 .statsContainer {
   display: flex;
-  flex-direction: row;
-  margin: 0 auto;
-  justify-content: space-between;
-  gap: 10%;
+  gap: 15px;
+}
+
+.calendarContainer {
+  flex: 2;
 }
 
 .queuesContainer {
@@ -36,7 +68,16 @@
   width: 100%;
 }
 
-.analytics {
+.allAnalyticsContainer {
   display: flex;
   flex-direction: column;
+  flex: 7;
+}
+
+.analyticsChartContainer {
+  padding: 0px 50px;
+}
+
+.chartCarouselContainer {
+  width: 100%;
 }

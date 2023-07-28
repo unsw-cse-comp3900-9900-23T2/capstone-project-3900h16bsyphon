@@ -11,6 +11,8 @@ import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import AnalyticsChart from '../../../components/Chart';
 import AnalyticsBarChart from '../../../components/AnalyticsBarChart';
 import { AnalyticsWaitTimeData } from '../../../types/courses';
+import { Button, Typography } from '@mui/material';
+import Carousel from 'react-material-ui-carousel';
 
 const CourseAnalytics = () => {
   const router = useRouter();
@@ -69,7 +71,9 @@ const CourseAnalytics = () => {
         course_id: `${router.query.courseid}`,
       });
       if (!res.ok) {
-        console.log('something went wrong with wait time analytics request, check network tab');
+        console.log(
+          'something went wrong with wait time analytics request, check network tab'
+        );
         return;
       }
       const d = await res.json();
@@ -86,84 +90,142 @@ const CourseAnalytics = () => {
     <>
       <MetaData />
       <Header />
-      <div className={styles.analyticsContainer}>
-        <h1 className={styles.text}>Course analytics dashboard</h1>
-        <div className={styles.statsContainer}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar />
-          </LocalizationProvider>
-          <div className={styles.analytics}>
-            <AnalyticsChart />
-            <AnalyticsChart />
-            <AnalyticsChart />
-            <AnalyticsBarChart
-              data={{
-                labels: waitTimeAnalytics?.waitTimes.map(x => x.fullName),
-                datasets: [{
-                  label: 'mins',
-                  data: waitTimeAnalytics ? waitTimeAnalytics.waitTimes.map(x => x.averageWait) : [],
-                  backgroundColor: '#D5CFFF', // doesn't let me use global css vars here
-                }],
-              }}
-              chartTitle={'Average Tutor Wait Times'}
-            />
-          </div>
+      <div className={styles.pageContainer}>
+        <div className={styles.queueTitle}>
+          <Typography variant="h3">Course Analytics</Typography>
         </div>
-        <div className={styles.queuesContainer}>
-          <h1>Current queues</h1>
-          <div className={styles.cards}>
-            {data
-              .filter(
-                (d) =>
-                  Date.parse(d.startTime) < Date.now() &&
-                  Date.parse(d.endTime) > Date.now()
-              )
-              .filter((d) => isTutor || d.isVisible)
-              .map((d, index) => (
-                <QueueCard
-                  isQueueAnalyticsLive
-                  isTutor={isTutor}
-                  queueId={d.queueId}
-                  key={index}
-                  title={d.title}
-                  location={[]}
-                  courseAdmins={d.courseAdmins}
-                  isEdit={d.isEdit}
-                />
-              ))}
-            {data
-              .filter(
-                (d) =>
-                  Date.parse(d.startTime) < Date.now() &&
-                  Date.parse(d.endTime) > Date.now()
-              )
-              .filter((d) => isTutor || d.isVisible).length === 0 && (
-              <p>No live queues</p>
-            )}
+        <div className={styles.body}>
+          <div className={styles.buttonContainer}>
+            <Button
+              className={styles.greyButton}
+              variant="contained"
+              onClick={() => router.back()}
+            >
+              Back
+            </Button>
           </div>
-          <h1>Past queues</h1>
-          <div className={styles.cards}>
-            {data
-              .filter((d) => Date.parse(d.endTime) < Date.now())
-              .filter((d) => isTutor || d.isVisible)
-              .map((d, index) => (
-                <QueueCard
-                  isPrevious
-                  isTutor={isTutor}
-                  queueId={d.queueId}
-                  key={index}
-                  title={d.title}
-                  location={[]}
-                  courseAdmins={d.courseAdmins}
-                  seen={d.seen}
-                  unseen={d.unseen}
-                />
-              ))}
-            {data
-              .filter((d) => Date.parse(d.endTime) < Date.now())
-              .filter((d) => isTutor || d.isVisible).length === 0 && (
-              <p>No previous queues</p>
-            )}
+          <div className={styles.courseAnalyticsContent}>
+            <div className={styles.statsContainer}>
+              <div className={styles.calendarContainer}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DateCalendar />
+                </LocalizationProvider>
+              </div>
+              <div className={styles.allAnalyticsContainer}>
+                <div className={styles.chartCarouselContainer}>
+                  <Carousel
+                    next={(now: any, previous: any) =>
+                      console.log(
+                        `Next User Callback: Now displaying child ${now}. Previously displayed child ${previous}`
+                      )
+                    }
+                    prev={(now, previous) =>
+                      console.log(
+                        `Prev User Callback: Now displaying child ${now}. Previously displayed child ${previous}`
+                      )
+                    }
+                    onChange={(now, previous) =>
+                      console.log(
+                        `OnChange User Callback: Now displaying child ${now}. Previously displayed child ${previous}`
+                      )
+                    }
+                    navButtonsProps={{
+                      style: {
+                        backgroundColor: 'cornflowerblue',
+                        borderRadius: 0,
+                      },
+                    }}
+                    navButtonsWrapperProps={{
+                      style: { bottom: '0', top: 'unset' },
+                    }}
+                    indicatorContainerProps={{ style: { margin: '20px' } }}
+                  >
+                    <div className={styles.analyticsChartContainer}>
+                      <AnalyticsBarChart
+                        data={{
+                          labels: waitTimeAnalytics?.waitTimes.map(
+                            (x) => x.fullName
+                          ),
+                          datasets: [
+                            {
+                              label: 'mins',
+                              data: waitTimeAnalytics
+                                ? waitTimeAnalytics.waitTimes.map((x) => x.averageWait)
+                                : [],
+                              backgroundColor: '#D5CFFF', // doesn't let me use global css vars here
+                            },
+                          ],
+                        }}
+                        chartTitle={'Average Tutor Wait Times'}
+                      />
+                    </div>
+                    <div className={styles.analyticsChartContainer}>
+                      <AnalyticsChart />
+                    </div>
+                    <div className={styles.analyticsChartContainer}>
+                      <AnalyticsChart />
+                    </div>
+                  </Carousel>
+                </div>
+              </div>
+            </div>
+            <div className={styles.queuesContainer}>
+              <h1>Current queues</h1>
+              <div className={styles.cards}>
+                {data
+                  .filter(
+                    (d) =>
+                      Date.parse(d.startTime) < Date.now() &&
+                      Date.parse(d.endTime) > Date.now()
+                  )
+                  .filter((d) => isTutor || d.isVisible)
+                  .map((d, index) => (
+                    <QueueCard
+                      isQueueAnalyticsLive
+                      isTutor={isTutor}
+                      queueId={d.queueId}
+                      key={index}
+                      title={d.title}
+                      location={[]}
+                      courseAdmins={d.courseAdmins}
+                      isEdit={d.isEdit}
+                    />
+                  ))}
+                {data
+                  .filter(
+                    (d) =>
+                      Date.parse(d.startTime) < Date.now() &&
+                      Date.parse(d.endTime) > Date.now()
+                  )
+                  .filter((d) => isTutor || d.isVisible).length === 0 && (
+                  <p>No live queues</p>
+                )}
+              </div>
+              <h1>Past queues</h1>
+              <div className={styles.cards}>
+                {data
+                  .filter((d) => Date.parse(d.endTime) < Date.now())
+                  .filter((d) => isTutor || d.isVisible)
+                  .map((d, index) => (
+                    <QueueCard
+                      isPrevious
+                      isTutor={isTutor}
+                      queueId={d.queueId}
+                      key={index}
+                      title={d.title}
+                      location={[]}
+                      courseAdmins={d.courseAdmins}
+                      seen={d.seen}
+                      unseen={d.unseen}
+                    />
+                  ))}
+                {data
+                  .filter((d) => Date.parse(d.endTime) < Date.now())
+                  .filter((d) => isTutor || d.isVisible).length === 0 && (
+                  <p>No previous queues</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
