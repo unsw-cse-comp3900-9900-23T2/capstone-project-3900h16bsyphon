@@ -3,19 +3,17 @@ import styles from './OverallTimeSummary.module.css';
 import { Duration, TimeStamp } from '../../types/requests';
 import { convertTime } from '../../utils';
 import TagBox from '../TagBox';
+import DurationBox from '../DurationBox';
 
 type OverallTimeSummaryProps = {
   startTime?: TimeStamp,
   endTime: TimeStamp,
   duration?: Duration,
-  backgroundColor: string,
-  textColor: string,
+  backgroundColor?: string,
+  textColor?: string,
 }
 
 const OverallTimeSummary = ({ startTime, endTime, duration, backgroundColor, textColor }: OverallTimeSummaryProps) => {
-  const getDurationString = () => {
-    return 'Duration: ' + duration?.hours.toString() + ' hours ' + duration?.minutes.toString() + ' mins ' + duration?.seconds.toString() + ' seconds';
-  };
   
   return <>
     <Card className={styles.infoCard}>
@@ -36,8 +34,8 @@ const OverallTimeSummary = ({ startTime, endTime, duration, backgroundColor, tex
         {/* dont display duration if request was resolved by student */}
         {startTime &&
           <div className={styles.durationTagBoxContainer}>
-            <TagBox
-              text={getDurationString()}
+            <DurationBox 
+              duration={duration} 
               backgroundColor={backgroundColor}
               color={textColor}
             />
