@@ -168,8 +168,7 @@ const ActiveQueue = () => {
 
   const handleClusterSubmit = async () => {
     console.log('selectedClustering', selectedClustering);
-    if (selectedClustering.length === 0 || selectedClustering.length < 2) return;
-    selectedClustering.shift();
+    if (selectedClustering.length < 2) return;
     let res = await authenticatedPostFetch('/queue/cluster/create', {
       queue_id: Number.parseInt(`${router.query.queueid}`),
       request_ids: selectedClustering,
@@ -264,7 +263,7 @@ const ActiveQueue = () => {
               label='New Cluster'
               className={styles.select}
               displayEmpty
-              onOpen={() => setSelectedClustering([-1])}
+              onOpen={() => setSelectedClustering([])}
               onClose={handleClusterSubmit}
               onChange={(e) => setSelectedClustering(e.target.value as number[])}
             >
