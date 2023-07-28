@@ -1,15 +1,12 @@
 use crate::{
     entities,
-    models::{SyphonError, SyphonResult, Tag, TokenClaims, INV_CODE_LEN},
+    models::{SyphonError, SyphonResult, Tag, TokenClaims, INV_CODE_LEN, TimeStampModel},
     utils::{
         db::db,
         user::{validate_admin, validate_user},
     },
 };
-use crate::{
-    entities::sea_orm_active_enums::Statuses,
-    models::course::*,
-};
+use crate::{entities::sea_orm_active_enums::Statuses, models::course::*};
 use actix_web::{
     http::StatusCode,
     web::{self, ReqData},
@@ -420,19 +417,19 @@ pub async fn get_wait_time_analytics(
         .column(entities::users::Column::FirstName)
         .column(entities::users::Column::LastName)
         .filter(entities::tutors::Column::CourseOfferingId.eq(query.course_id))
+        .distinct_on([entities::tutors::Column::Zid])
         .into_model::<TutorAnalyticsInfo>()
         .all(db)
         .await?;
 
     let mut wait_times = Vec::new();
 
-    
     for tutor in tutors.iter() {
         let all_requests = entities::requests::Entity::find()
             .left_join(entities::request_status_log::Entity)
             .left_join(entities::queues::Entity)
             .select_only()
-            .column(entities::request_status_log::Column::RequestId)
+            .column(entities::requests::Column::RequestId)
             .filter(
                 entities::queues::Column::CourseOfferingId
                     .eq(query.course_id)
@@ -450,19 +447,26 @@ pub async fn get_wait_time_analytics(
             let creation_time = entities::request_status_log::Entity::find()
                 .select_only()
                 .column(entities::request_status_log::Column::EventTime)
-                .filter(entities::request_status_log::Column::RequestId.eq(request.request_id))
-                .filter(entities::request_status_log::Column::Status.eq(Statuses::Unseen))
+                .filter(
+                    entities::request_status_log::Column::RequestId
+                        .eq(request.request_id)
+                        .and(entities::request_status_log::Column::Status.eq(Statuses::Unseen)),
+                )
+                .into_model::<TimeStampModel>()
                 .one(db)
                 .await?;
 
             let start_time = entities::request_status_log::Entity::find()
                 .select_only()
                 .column(entities::request_status_log::Column::EventTime)
-                .filter(entities::request_status_log::Column::RequestId.eq(request.request_id))
-                .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+                .filter(
+                    entities::request_status_log::Column::RequestId
+                        .eq(request.request_id)
+                        .and(entities::request_status_log::Column::Status.eq(Statuses::Seeing)),
+                )
+                .into_model::<TimeStampModel>()
                 .one(db)
                 .await?;
-
             match (creation_time, start_time) {
                 (Some(create), Some(start)) => {
                     total_durations += start
