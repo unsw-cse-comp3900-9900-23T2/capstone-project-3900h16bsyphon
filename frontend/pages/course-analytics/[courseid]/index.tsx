@@ -13,6 +13,7 @@ import AnalyticsBarChart from '../../../components/AnalyticsBarChart';
 import { AnalyticsWaitTimeData } from '../../../types/courses';
 import { Button, Typography } from '@mui/material';
 import Carousel from 'react-material-ui-carousel';
+import AnalyticsChartCarousel from '../../../components/AnalyticsChartCarousel';
 
 const CourseAnalytics = () => {
   const router = useRouter();
@@ -113,59 +114,7 @@ const CourseAnalytics = () => {
               </div>
               <div className={styles.allAnalyticsContainer}>
                 <div className={styles.chartCarouselContainer}>
-                  <Carousel
-                    next={(now: any, previous: any) =>
-                      console.log(
-                        `Next User Callback: Now displaying child ${now}. Previously displayed child ${previous}`
-                      )
-                    }
-                    prev={(now, previous) =>
-                      console.log(
-                        `Prev User Callback: Now displaying child ${now}. Previously displayed child ${previous}`
-                      )
-                    }
-                    onChange={(now, previous) =>
-                      console.log(
-                        `OnChange User Callback: Now displaying child ${now}. Previously displayed child ${previous}`
-                      )
-                    }
-                    navButtonsProps={{
-                      style: {
-                        backgroundColor: 'cornflowerblue',
-                        borderRadius: 0,
-                      },
-                    }}
-                    navButtonsWrapperProps={{
-                      style: { bottom: '0', top: 'unset' },
-                    }}
-                    indicatorContainerProps={{ style: { margin: '20px' } }}
-                  >
-                    <div className={styles.analyticsChartContainer}>
-                      <AnalyticsBarChart
-                        data={{
-                          labels: waitTimeAnalytics?.waitTimes.map(
-                            (x) => x.fullName
-                          ),
-                          datasets: [
-                            {
-                              label: 'mins',
-                              data: waitTimeAnalytics
-                                ? waitTimeAnalytics.waitTimes.map((x) => x.averageWait)
-                                : [],
-                              backgroundColor: '#D5CFFF', // doesn't let me use global css vars here
-                            },
-                          ],
-                        }}
-                        chartTitle={'Average Tutor Wait Times'}
-                      />
-                    </div>
-                    <div className={styles.analyticsChartContainer}>
-                      <AnalyticsChart />
-                    </div>
-                    <div className={styles.analyticsChartContainer}>
-                      <AnalyticsChart />
-                    </div>
-                  </Carousel>
+                  <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} />
                 </div>
               </div>
             </div>
