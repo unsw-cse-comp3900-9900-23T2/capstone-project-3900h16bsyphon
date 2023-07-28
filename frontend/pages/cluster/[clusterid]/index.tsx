@@ -30,7 +30,7 @@ const Cluster = () => {
       });
       let d = toCamelCase(await res.json());
       setClusterData(d);
-      setStatus(d[0].status);
+      setStatus(status => d.length > 0 ? d[0].status : status);
     };
     getCluster();
   }, [router.query.clusterid]);
@@ -47,7 +47,7 @@ const Cluster = () => {
       return;
     }
     setStatus(status);
-    if (status !== Status.Seeing) {
+    if (status !== Status.Seeing && clusterData.length > 0) {
       router.push(`/active-queue/${clusterData[0].queueId}`);
     }
 
@@ -60,7 +60,7 @@ const Cluster = () => {
       <Header />
       <div className={styles.pageContainer}>
         <div className={styles.queueTitle}>
-          <Typography variant="h2">{clusterData[0].title + ' cluster'}</Typography>
+          <Typography variant="h2">{ clusterData.length > 0 && clusterData[0].title + ' cluster'}</Typography>
         </div>
         <div className={styles.body}>
           {/* TODO: fix the colours */}
