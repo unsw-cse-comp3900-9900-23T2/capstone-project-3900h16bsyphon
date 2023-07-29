@@ -1,5 +1,4 @@
 import React, { MouseEvent, useRef } from 'react';
-import type { InteractionItem } from 'chart.js';
 import {
   Chart as ChartJS,
   LinearScale,
@@ -9,6 +8,7 @@ import {
   LineElement,
   Legend,
   Tooltip,
+  InteractionItem
 } from 'chart.js';
 import {
   Chart,
