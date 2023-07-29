@@ -1,0 +1,56 @@
+.pageContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 90vh;
+    padding-top: 1%;
+    gap: 5%;
+    margin-left: 5%;
+}
+
+
+.queueTitle {
+    padding-top: 2%;
+    padding-bottom: 3%;
+}
+
+.greyButton {
+    font-weight: bold;
+    padding: 5px 25px;
+    background-color: var(--colour-main-grey-200);
+    color: var(--colour-main-grey-900);
+}
+
+.greyButton:hover {
+    background-color: white;
+}
+
+.buttonContainer {
+    min-width: 20%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.body {
+    display: flex;
+    width: 100%;
+    column-gap: 2%;
+    align-self: center;
+}
+
+.clusterRequests {
+    flex-grow: 3;
+    flex-direction: column;
+    display: flex;
+    row-gap: 3%;
+    margin-bottom: 5%;
+}
+
+.redButton {
+    font-weight: bold;
+    padding: 5px 25px;
+    background-color: var(--colour-main-red-200);
+    color: var(--colour-main-red-900);
+}

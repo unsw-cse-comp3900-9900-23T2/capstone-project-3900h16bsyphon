@@ -10,9 +10,10 @@ import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
 type RequestDetailsProps = {
   requestId: number | undefined;
+  isTutorView: boolean;
 };
 
-const RequestDetails = ({ requestId }: RequestDetailsProps) => {
+const RequestDetails = ({ requestId, isTutorView }: RequestDetailsProps) => {
   const [data, setData] = useState({
     zid: 5303033,
     queueId: 1,
@@ -72,9 +73,11 @@ const RequestDetails = ({ requestId }: RequestDetailsProps) => {
           images={data.images}
         />
       </Box>
-      <div className={styles.chatContainer}>
-        <ChatBox requestId={requestId} isStudent={false} studentZid={data.zid} />
-      </div>
+      {isTutorView && (
+        <div className={styles.chatContainer}>
+          <ChatBox requestId={requestId} isStudent={false} studentZid={data.zid} />
+        </div>
+      )}
     </div>
   );
 };

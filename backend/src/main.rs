@@ -142,8 +142,11 @@ async fn main() -> std::io::Result<()> {
                     .wrap(amw.clone())
                     .service(
                         scope("/cluster")
-                            .route("create", web::post().to(server::request::cluster_requests))
+                            .route("create", web::post().to(server::cluster::cluster_requests))
                             .route("get", web::get().to(server::request::all_requests_for_cluster))
+                            .route("delete", web::delete().to(server::cluster::delete_cluster))
+                            .route("join", web::put().to(server::cluster::join_cluster))
+                            .route("leave", web::put().to(server::cluster::leave_cluster))
                     )
                     .route(
                         "/set_is_sorted_by_previous_request_count",

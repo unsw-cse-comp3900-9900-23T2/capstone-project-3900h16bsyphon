@@ -533,36 +533,3 @@ pub async fn delete_image(body: web::Query<DeleteImageQuery>) -> SyphonResult<Ht
     Ok(HttpResponse::Ok().json(()))
 }
 
-pub async fn cluster_requests(
-    web::Json(body): web::Json<ClusterRequestsBody>,
-    lobby: web::Data<Addr<Lobby>>
-) -> SyphonResult<HttpResponse> {
-    let db = db();
-    let current_ids: Vec<i32> = entities::clusters::Entity::find()
-        .column(entities::clusters::Column::ClusterId)
-        .distinct_on([entities::clusters::Column::ClusterId])
-        .into_tuple()
-        .all(db).await?;
-    let new_id = current_ids.into_iter().max().unwrap_or(0) + 1;
-    let requests = entities::requests::Entity::find()
-        .filter(entities::requests::Column::RequestId.is_in(body.request_ids.clone()))
-        .all(db).await?;
-    if requests.iter().any(|r| !r.is_clusterable) {
-        return Err(SyphonError::Json(json!("One or more requests are not clusterable"), StatusCode::BAD_REQUEST));
-    }
-
-    let cluster_insertion = body.request_ids.iter().map(|r| entities::clusters::ActiveModel {
-        cluster_id: ActiveValue::Set(new_id),
-        request_id: ActiveValue::Set(*r)
-    }.insert(db));
-    join_all(cluster_insertion).await;
-    let mut keys_to_invalidate = vec![
-        SocketChannels::QueueData(body.queue_id),
-    ];
-    keys_to_invalidate.append(&mut body.request_ids.into_iter().map(|r| SocketChannels::Request(r)).collect());
-
-    let action = HttpServerAction::InvalidateKeys(keys_to_invalidate);
-
-    lobby.do_send(action);
-    Ok(HttpResponse::Ok().json(new_id))
-}
