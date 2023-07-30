@@ -1,4 +1,4 @@
-import { Button, Card, CardActionArea, Modal, TextField, Typography } from '@mui/material';
+import { Button, Card, CardActionArea, IconButton, Modal, TextField, Typography } from '@mui/material';
 import styles from './CreateClusterModal.module.css';
 import { useEffect, useState } from 'react';
 import { ClusterRequest, Tag, UserRequest, isCluster } from '../../types/requests';
@@ -6,6 +6,7 @@ import { authenticatedGetFetch, authenticatedPostFetch, formatZid } from '../../
 import { toast } from 'react-toastify';
 import TagsSelection from '../TagsSelection';
 import TagBox from '../TagBox';
+import CloseIcon from '@mui/icons-material/Close';
 
 type CreateClusterModalProps = {
   queueId: number;
@@ -85,6 +86,14 @@ const CreateClusterModal = (
         onClose={() => setOpen(false)}
       >
         <div className={styles.container}>
+          <IconButton
+            onClick={() => setOpen(false)}
+            size="small"
+            aria-label="close modal button"
+            className={styles.closeButton}
+          >
+            <CloseIcon />
+          </IconButton>
           <div className={styles.titleContainer}> 
             <Typography variant="h4" className={styles.title}>Create Cluster</Typography>
           </div>
@@ -143,7 +152,7 @@ const CreateClusterModal = (
           )) :
             <Typography variant="body1">No requests to cluster</Typography>
           }
-          {clusterableUserRequests.length > 0 && <Button onClick={handleClusterSubmit} className={styles.submitButton}>Create Cluster</Button>}
+          {clusterableUserRequests.length > 0 && <Button onClick={handleClusterSubmit} className={styles.createClusterButton}>Create Cluster</Button>}
         </div>
       </Modal>
     </div>

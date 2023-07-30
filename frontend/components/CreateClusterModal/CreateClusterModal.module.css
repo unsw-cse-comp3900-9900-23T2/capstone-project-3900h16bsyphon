@@ -25,13 +25,20 @@
   padding: 40px;
   overflow: scroll;
   max-width: 1000px;
+  max-height: 1100px;
+  overflow: scroll;
 }
 
 .titleContainer {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
   align-self: center;
+}
+
+.closeButton {
+  font-weight: bold;
+  display: flex;
+  align-self: last baseline;
 }
 
 .buttonContainer {
@@ -50,11 +57,16 @@
   gap: 2%;
 }
 
-.submitButton {
+.createClusterButton {
   font-weight: bold;
   background-color: var(--colour-main-purple-200);
   color: var(--colour-main-purple-900);
   display: flex;
+  position: absolute;
+  bottom: 3%;
+  height: 6%;
+  align-self: center;
+  width: 20%;
 }
 
 .cancelButton {
