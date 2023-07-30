@@ -141,7 +141,7 @@ const Request = () => {
             <TimeSummaryCard startTime={startTime} status={status}/>
           </div>
           <div className={styles.details}>
-            <RequestDetails requestId={requestId} />
+            <RequestDetails requestId={requestId} isTutorView={true}/>
           </div>
         </div>
       </div>

@@ -28,6 +28,9 @@ type StudentQueueRequestCardProps = {
   requestId: number;
   status: Status;
   previousRequests: number;
+  isTutorView: boolean; 
+  onClickAction?: () => void;
+  createClusterAction?: () => void;
 };
 
 const StudentQueueRequestCard = ({
@@ -39,6 +42,9 @@ const StudentQueueRequestCard = ({
   requestId,
   status,
   previousRequests,
+  isTutorView,
+  onClickAction,
+  createClusterAction,
 }: StudentQueueRequestCardProps) => {
   const router = useRouter();
   const [backgroundColor, setBackgroundColor] = useState(
@@ -89,15 +95,20 @@ const StudentQueueRequestCard = ({
   const handleOpenCard = () => {
     if (status === Status.NotFound) return;
     if (status === Status.Seen) router.push(`/request-summary/${requestId}`);
-    else router.push(`/request/${requestId}`);
+    if (isTutorView) {
+      router.push(`/request/${requestId}`);
+    } else {
+      router.push(`/request-student-view/${requestId}`);
+    }
   };
+
 
   return (
     <>
       <Card className={styles.card} style={{ backgroundColor }}>
         <CardActionArea
           className={styles.cardContent}
-          onClick={handleOpenCard}
+          onClick={onClickAction ? onClickAction : handleOpenCard}
         >
           <div className={styles.cardHeader}>
             <div className={styles.zidNameContainer}>
@@ -110,13 +121,15 @@ const StudentQueueRequestCard = ({
                 {firstName + ' ' + lastName}
               </Typography>
             </div>
-            <div className={styles.previousRequestsContainer}>
-              <TagBox
-                text={`PREVIOUS TOTAL REQUESTS: ${previousRequests}`}
-                backgroundColor="var(--colour-main-purple-400)"
-                color="var(--colour-main-purple-900)"
-              />
-            </div>
+            {isTutorView && (
+              <div className={styles.previousRequestsContainer}>
+                <TagBox
+                  text={`PREVIOUS TOTAL REQUESTS: ${previousRequests}`}
+                  backgroundColor="var(--colour-main-purple-400)"
+                  color="var(--colour-main-purple-900)"
+                />
+              </div>
+            )}
           </div>
           <div className={styles.titleContainer}>
             <Typography className={styles.textHeading} variant="h6">
@@ -136,72 +149,85 @@ const StudentQueueRequestCard = ({
               );
             })}
           </div>
-          <CardActions className={styles.cardActions}>
-            <div className={styles.statusActionButtons}>
-              {
-                status === Status.NotFound && (
+          {isTutorView && (
+            <CardActions className={styles.cardActions}>
+              <div className={styles.statusActionButtons}>
+                {
+                  status === Status.NotFound && (
+                    <>
+                      <Button
+                        className={styles.claimButton}
+                        variant="contained"
+                        onClick={(e) => updateStatus(Status.Unseen, e)}
+                      >
+                      Unresolve
+                      </Button>
+                    </>
+                  )
+                }
+                {status === Status.Unseen && (
                   <>
                     <Button
                       className={styles.claimButton}
                       variant="contained"
-                      onClick={(e) => updateStatus(Status.Unseen, e)}
+                      onClick={(e) => updateStatus(Status.Seeing, e)}
                     >
-                      Unresolve
+                    Claim
+                    </Button>
+                    <Button
+                      className={styles.notFoundButton}
+                      variant="contained"
+                      onClick={(e) => updateStatus(Status.NotFound, e)}
+                    >
+                    Not Found
                     </Button>
                   </>
-                )
-              }
-              {status === Status.Unseen && (
-                <>
+                )}
+                {status === Status.Seeing && (
                   <Button
                     className={styles.claimButton}
                     variant="contained"
-                    onClick={(e) => updateStatus(Status.Seeing, e)}
+                    onClick={(e) => updateStatus(Status.Seen, e)}
                   >
-                    Claim
-                  </Button>
-                  <Button
-                    className={styles.notFoundButton}
-                    variant="contained"
-                    onClick={(e) => updateStatus(Status.NotFound, e)}
-                  >
-                    Not Found
-                  </Button>
-                </>
-              )}
-              {status === Status.Seeing && (
-                <Button
-                  className={styles.claimButton}
-                  variant="contained"
-                  onClick={(e) => updateStatus(Status.Seen, e)}
-                >
                   Resolve
-                </Button>
-              )}
-              { status === Status.Seen && (
-                <Button
-                  className={styles.claimButton}
-                  variant="contained"
-                  onClick={(e) => updateStatus(Status.Unseen, e)}
-                >
+                  </Button>
+                )}
+                { status === Status.Seen && (
+                  <Button
+                    className={styles.claimButton}
+                    variant="contained"
+                    onClick={(e) => updateStatus(Status.Unseen, e)}
+                  >
                   Unresolve
-                </Button>
-              )}
-            </div>
-            <div className={styles.orderContainer}>
-              <IconButton aria-label="move up button"
-                onClick={(e) => handleMove(e, 'up')}
-              >
-                <ArrowUpward />
-              </IconButton>
-              <IconButton aria-label="move down button"
-                onClick={(e) => handleMove(e, 'down')}
-              >
-                <ArrowDownward />
-              </IconButton>
-            </div>
-          </CardActions>
+                  </Button>
+                )}
+              </div>
+              <div className={styles.orderContainer}>
+                <IconButton aria-label="move up button"
+                  onClick={(e) => handleMove(e, 'up')}
+                >
+                  <ArrowUpward />
+                </IconButton>
+                <IconButton aria-label="move down button"
+                  onClick={(e) => handleMove(e, 'down')}
+                >
+                  <ArrowDownward />
+                </IconButton>
+              </div>
+            </CardActions>
+          )}
         </CardActionArea>
+        {!isTutorView && createClusterAction && (
+          <CardActions className={styles.clusterCardActions}>
+            <Button
+              className={styles.createClusterButton}
+              variant="contained"
+              onClick={createClusterAction}
+            >
+              Create Cluster
+            </Button>
+          </CardActions>
+        )}
       </Card>
     </>
   );

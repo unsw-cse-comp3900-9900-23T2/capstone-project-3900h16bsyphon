@@ -134,3 +134,22 @@ pub struct ClusterRequestsBody {
 pub struct AllRequestsForClusterBody {
     pub cluster_id: i32,
 }
+
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct JoinClusterRequest {
+    pub request_id: i32,
+    pub cluster_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct LeaveClusterRequest {
+    pub request_id: i32,
+    pub cluster_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct DeleteClusterRequest {
+    pub cluster_id: i32,
+}
+

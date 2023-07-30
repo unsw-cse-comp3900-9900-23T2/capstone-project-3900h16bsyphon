@@ -1,6 +1,7 @@
 .card {
     background-color: pink;
     width: 100%;
+    display: flex;
 }
 
 .cardContent {
@@ -75,4 +76,30 @@
 .statusActionButtons {
     display: flex;   
     gap: 7px;
+}
+
+.joinClusterButton {
+    font-weight: bold;
+    background-color: var(--colour-main-green-200);
+    color: var(--colour-main-green-900);
+}
+
+.joinClusterButton:hover {
+    background-color: white;
+}
+
+.leaveClusterButton {
+    font-weight: bold;
+    background-color: var(--colour-main-red-200);
+    color: var(--colour-main-red-900);
+}
+
+.leaveClusterButton:hover {
+    background-color: white;
+}
+
+.clusterCardActions {
+    display: flex;
+    align-self: last baseline;
+    justify-self: last baseline;
 }
