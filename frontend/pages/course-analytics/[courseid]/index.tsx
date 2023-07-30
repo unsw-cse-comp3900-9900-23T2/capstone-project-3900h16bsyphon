@@ -34,6 +34,22 @@ const CourseAnalytics = () => {
     useState<AnalyticsWaitTimeData>();
   const [tagAnalytics, setTagAnalytics] = useState<TagAnalytics>();
 
+  const parseTags = (d: TagAnalytics) => {
+    const tagAnalytics = d.reduce((accumulator, tag) => {
+      const { name, requestIds } = tag;
+      if (accumulator.has(name)) {
+        // if the name is already in the map, merge the request ids
+        const existingTag = accumulator.get(name);
+        existingTag.requestIds.push(...requestIds);
+      } else {
+        // if the name is not found, add the tag to the map
+        accumulator.set(name, { ...tag, requestIds: [...requestIds] });
+      }
+      return accumulator;
+    }, new Map());
+    return Array.from(tagAnalytics.values());
+  };
+
   useEffect(() => {
     const getQueues = async () => {
       if (!router.query.courseid) return;
@@ -83,19 +99,7 @@ const CourseAnalytics = () => {
         course_offering_id: `${router.query.courseid}`,
       });
       const d = await res.json();
-      const tagAnalytics = d.reduce((accumulator: any, tag: any) => {
-        const { name, request_ids } = tag;
-        if (accumulator.has(name)) {
-          // if the name is already in the map, merge the request_ids
-          const existingTag = accumulator.get(name);
-          existingTag.request_ids.push(...request_ids);
-        } else {
-          // if the name is not found, add the tag to the map
-          accumulator.set(name, { ...tag, request_ids: [...request_ids] });
-        }
-        return accumulator;
-      }, new Map());
-      setTagAnalytics(toCamelCase(Array.from(tagAnalytics.values())));
+      setTagAnalytics((parseTags(toCamelCase(d))));
     };
     getQueues();
     getCourse();
