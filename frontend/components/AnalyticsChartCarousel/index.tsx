@@ -51,15 +51,20 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics }: AnalyticsCh
                   ? tagAnalytics.map((tag) => tag.requestIds.length)
                   : 0,
                 backgroundColor: [
-                  'rgba(75, 192, 192, 0.2)',
-                  'rgba(153, 102, 255, 0.1)',
-                  'rgba(255, 159, 70, 0.5)',
-                  'rgba(255, 159, 64, 0.3)',
+                  '#BCD1F4',
+                  '#D3D3D3',
+                  '#B6EDB8',
+                  '#F4BC4D',
+                  '#D5CFFF',
+                  '#EDB6B6',
+                  '#EDB392',
+                  '#6F7CB2',
+                  '#B9490A'
                 ]
               }
             ]
           }}
-          chartTitle={'Queue tag distribution'}
+          chartTitle={'Course tag distribution'}
         />
       </div>
     </Carousel>
