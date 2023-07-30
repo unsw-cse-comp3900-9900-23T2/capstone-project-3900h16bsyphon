@@ -43,7 +43,7 @@
 .requestCard {
   display: flex;
   flex-direction: row;
-  justify-content: space-evenly;
+  justify-content: baseline;
   align-items: center;
   padding: 2% 3%;
   gap: 2%;
