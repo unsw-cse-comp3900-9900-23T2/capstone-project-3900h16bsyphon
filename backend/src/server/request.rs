@@ -68,6 +68,18 @@ pub async fn create_request(
         .insert(db)
     });
     join_all(tag_insertion).await;
+
+    // Add log entry for creating request
+    entities::request_status_log::ActiveModel {
+        log_id: ActiveValue::NotSet,
+        request_id: ActiveValue::Set(insertion.request_id),
+        tutor_id: ActiveValue::Set(token.username),
+        status: ActiveValue::Set(Statuses::Unseen),
+        event_time: ActiveValue::Set(Utc::now().with_timezone(&Sydney).naive_local()),
+    }
+    .insert(db)
+    .await?;
+
     // save the image to the docker volume
     let file_loc = format!("/images/{}", insertion.request_id);
     fs::create_dir(file_loc)?;

@@ -8,6 +8,8 @@ use serde_json::json;
 
 use crate::server::course::check_user_exists;
 
+use super::RequestDuration;
+
 pub const INV_CODE_LEN: usize = 6;
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
@@ -47,6 +49,29 @@ pub struct AddTutorToCoursesBody {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JoinWithTutorLink {
     pub tutor_link: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct TutorAnalyticsInfo {
+    pub zid: i32,
+    pub first_name: String,
+    pub last_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct RequestInfo {
+    pub request_id: i32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AnalyticsWaitTime {
+    pub full_name: String,
+    pub average_wait: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AnalyticsWaitTimeResult {
+    pub wait_times: Vec<AnalyticsWaitTime>
 }
 
 #[derive(Deserialize)]
