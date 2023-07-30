@@ -14,3 +14,12 @@ export type AnalyticsWaitTime = {
 export type AnalyticsWaitTimeData = {
     waitTimes: AnalyticsWaitTime[];
 };
+
+type Tag = {
+    tagId: number;
+    name: string;
+    isPriority: boolean;
+    requestIds: number[];
+};
+
+export type TagAnalytics = Tag[];
