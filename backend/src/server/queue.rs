@@ -11,8 +11,10 @@ use crate::{
         UpdateQueuePreviousRequestCount, UpdateQueueRequest,
     },
     sockets::{lobby::Lobby, messages::HttpServerAction, SocketChannels},
-    test_is_user,
-    utils::{db::db, user::validate_user},
+    utils::{
+        db::db,
+        user::{is_tutor_course, validate_user},
+    },
 };
 use actix::Addr;
 use actix_web::{
@@ -34,43 +36,9 @@ use serde_json::json;
 pub async fn create_queue(
     token: ReqData<TokenClaims>,
     req_body: web::Json<CreateQueueRequest>,
-) -> HttpResponse {
-    let db = db();
-    test_is_user!(token, db);
-    let req_body = req_body.into_inner();
-    let queue = entities::queues::ActiveModel::from(req_body.clone())
-        .insert(db)
-        .await
-        .expect("Db broke");
-
-    let tag_creation_futures = req_body
-        .tags
-        .iter()
-        .filter(|tag| tag.tag_id == -1) // check if tag already exists
-        .map(|tag| {
-            entities::tags::ActiveModel {
-                tag_id: ActiveValue::NotSet,
-                name: ActiveValue::Set(tag.name.clone()),
-            }
-            .insert(db)
-        });
-    let new_tags = join_all(tag_creation_futures).await;
-    let mut new_tags_iter = new_tags.into_iter();
-    let tag_queue_addition = req_body.tags.iter().map(|tag| {
-        // crazy: we iterate over the tags again, but this time we get their id if they arent given
-        entities::queue_tags::ActiveModel {
-            tag_id: ActiveValue::Set(if tag.tag_id != -1 {
-                tag.tag_id
-            } else {
-                new_tags_iter.next().unwrap().unwrap().tag_id
-            }),
-            queue_id: ActiveValue::Set(queue.queue_id),
-            is_priority: ActiveValue::Set(tag.is_priority),
-        }
-        .insert(db)
-    });
-    join_all(tag_queue_addition).await;
-    HttpResponse::Ok().json(queue)
+) -> SyphonResult<HttpResponse> {
+    let queue = create_queue_not_web(token.username, req_body.into_inner()).await?;
+    Ok(HttpResponse::Ok().json(queue))
 }
 
 pub async fn get_queue_by_id(
@@ -724,7 +692,7 @@ pub async fn get_queue_analytics(query: Query<GetQueueSummaryQuery>) -> SyphonRe
     let mut requests = Vec::new();
     let mut students_resolved = 0;
 
-    for request in all_requests.iter(){
+    for request in all_requests.iter() {
         let start_time = entities::request_status_log::Entity::find()
             .select_only()
             .column(entities::request_status_log::Column::EventTime)
@@ -792,8 +760,63 @@ pub async fn get_queue_analytics(query: Query<GetQueueSummaryQuery>) -> SyphonRe
         students_joined: all_requests.len() as i32,
         students_resolved,
         students_unresolved: (all_requests.len() as i32) - students_resolved,
-        requests
+        requests,
     };
 
     Ok(HttpResponse::Ok().json(queue_summary_result))
+}
+
+pub async fn bulk_create_queue(
+    token: ReqData<TokenClaims>,
+    req_body: web::Json<Vec<CreateQueueRequest>>,
+) -> SyphonResult<HttpResponse> {
+    todo!()
+}
+
+pub async fn create_queue_not_web(
+    zid: i32,
+    body: CreateQueueRequest,
+) -> SyphonResult<entities::queues::Model> {
+    let db: &sea_orm::DatabaseConnection = db();
+
+    if !is_tutor_course(body.course_id, zid).await? {
+        return Err(SyphonError::NotTutor);
+    };
+
+    let queue = entities::queues::ActiveModel::from(body.clone())
+        .insert(db)
+        .await
+        .expect("Db broke");
+
+    let tags_fut = body.tags.into_iter().map(|tag| async move {
+        if tag.tag_id == -1 {
+            entities::tags::ActiveModel {
+                tag_id: ActiveValue::NotSet,
+                name: ActiveValue::Set(tag.name.clone()),
+            }
+            .insert(db)
+            .await
+            .map(|t| Tag {
+                tag_id: t.tag_id,
+                name: t.name,
+                is_priority: tag.is_priority,
+            })
+        } else {
+            Ok(tag.clone())
+        }
+    });
+    let queue_tags =
+        try_join_all(tags_fut)
+            .await?
+            .into_iter()
+            .map(|tag| entities::queue_tags::ActiveModel {
+                tag_id: ActiveValue::Set(tag.tag_id),
+                queue_id: ActiveValue::Set(queue.queue_id),
+                is_priority: ActiveValue::Set(tag.is_priority),
+            });
+    entities::queue_tags::Entity::insert_many(queue_tags)
+        .exec(db)
+        .await?;
+
+    Ok(queue)
 }

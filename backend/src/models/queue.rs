@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use sea_orm::{ActiveValue, FromQueryResult};
+use sea_orm::{ActiveValue, FromQueryResult, IntoActiveModel};
 use serde::{Deserialize, Serialize};
 
 use crate::entities;
@@ -193,7 +193,7 @@ pub struct QueueAnalyticsSummaryModel {
     pub students_joined: i32,
     pub students_resolved: i32,
     pub students_unresolved: i32,
-    pub requests: Vec<QueueRequestSummaryModel>
+    pub requests: Vec<QueueRequestSummaryModel>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
