@@ -30,8 +30,7 @@ const ActiveQueue = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [studentCount, setStudentCount] = useState(0);
   const [numReqsUntilClose, setNumReqsUntilClose] = useState(0);
-  const [selectedClustering, setSelectedClustering] = useState<number[]>([]);
-  const [openClusterModal, setOpenClusterModal] = useState(false);
+  const [noti, setNoti] = useState(false);
 
   let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
     queryParams: {queue_id: requestData.queueId as unknown as number},
@@ -48,23 +47,39 @@ const ActiveQueue = () => {
     if ((lastJsonMessage as any)?.type === 'queue_data') {
       let newRequestsData = (lastJsonMessage as any).requests;
       console.debug('newRequestsData', newRequestsData);
-      if (newRequestsData.length > requests.length) {
-        play();
-        toast(`${newRequestsData[newRequestsData.length - 1].first_name} ${newRequestsData[newRequestsData.length - 1].last_name} has joined the queue!`, {
-          position: 'bottom-left',
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'light',
-          className: styles.toast,
-        });
+      for (const r of newRequestsData) {
+        if (!isCluster(r)) {
+          if (!(requests.some((req) => (isCluster(req) ? req.requests.some((req2) => req2.requestId === r.request_id) : req.requestId === r.request_id)))) {
+            setNoti(true);
+            break;
+          }
+        } else {
+          if (!(r.requests.some((req) => (requests.some((req2) => isCluster(req) ? (req2 as ClusterRequest).requests.some((req3) => req3.requestId === req.requestId) : (req2 as UserRequest).requestId === req.requestId))))){
+            setNoti(true);
+            break;
+          }
+        }
       }
       setRequests(transformRequests(toCamelCase(newRequestsData)));
     }
-  }, [lastJsonMessage, play, requests.length]);
+  }, [lastJsonMessage]);
+
+  useEffect(() => {
+    play();
+    toast('new student in queue!', {
+      position: 'bottom-left',
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: 'light',
+      className: styles.toast,
+    });
+    setNoti(false);
+  }, [noti]);
+
 
   const transformRequests = (reqList: UserRequest[]): (UserRequest | ClusterRequest)[]  => {
     // collapse requests with the same clusterId

@@ -1,4 +1,4 @@
-import { Button, Card, CardActionArea, Modal, Typography } from '@mui/material';
+import { Button, Card, CardActionArea, Modal, TextField, Typography } from '@mui/material';
 import styles from './CreateClusterModal.module.css';
 import { useEffect, useState } from 'react';
 import { ClusterRequest, Tag, UserRequest, isCluster } from '../../types/requests';
@@ -88,12 +88,35 @@ const CreateClusterModal = (
           <div className={styles.titleContainer}> 
             <Typography variant="h4" className={styles.title}>Create Cluster</Typography>
           </div>
-          <TagsSelection 
-            tags={tags} 
-            isCreator={false} 
-            tagSelection={selectedTags} 
-            setTagSelection={setSelectedTags} 
-          />
+          <div className={styles.searchBarContainer}>
+            <TagsSelection 
+              tags={tags} 
+              isCreator={false} 
+              tagSelection={selectedTags} 
+              setTagSelection={setSelectedTags} 
+            />
+            <TextField 
+              className={styles.searchBar}
+              label="Search"
+              variant="outlined"
+              fullWidth
+              onChange={(e) => {
+                let search = e.target.value.toLowerCase();
+                if (search === '') {
+                  setSelectedClustering([]);
+                  return;
+                }
+                try {
+                  const regex = new RegExp(search);
+                  setSelectedClustering(clusterableUserRequests.filter((r) => regex.test(r.title.toLowerCase()) || regex.test(r.description.toLowerCase())));
+                } catch (e) {
+                  console.log('invalid regex');
+                  console.log(e);
+                  setSelectedClustering([]);
+                }
+              }}
+            />
+          </div>
           {clusterableUserRequests.length > 0 ? clusterableUserRequests.map((request, index) => (
             <CardActionArea 
               key={`${index}`}

@@ -24,6 +24,7 @@
   gap: 20px;
   padding: 40px;
   overflow: scroll;
+  max-width: 1000px;
 }
 
 .titleContainer {
@@ -63,3 +64,6 @@
   display: flex;
 }
 
+.searchBarContainer {
+  max-width: 1000px;
+}
