@@ -8,8 +8,6 @@ use serde_json::json;
 
 use crate::server::course::check_user_exists;
 
-use super::RequestDuration;
-
 pub const INV_CODE_LEN: usize = 6;
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
@@ -77,6 +75,19 @@ pub struct AnalyticsWaitTimeResult {
 #[derive(Deserialize)]
 pub struct GetOfferingByIdQuery {
     pub course_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct GetTagAnalytics {
+    pub course_offering_id: i32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TagAnalytics {
+    pub tag_id: i32,
+    pub name: String,
+    pub is_priority: bool,
+    pub request_ids: Vec<i32>
 }
 
 impl CreateOfferingBody {
