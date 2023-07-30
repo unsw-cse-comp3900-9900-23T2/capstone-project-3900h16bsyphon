@@ -83,7 +83,19 @@ const CourseAnalytics = () => {
         course_offering_id: `${router.query.courseid}`,
       });
       const d = await res.json();
-      setTagAnalytics(toCamelCase(d));
+      const tagAnalytics = d.reduce((accumulator: any, tag: any) => {
+        const { name, request_ids } = tag;
+        if (accumulator.has(name)) {
+          // if the name is already in the map, merge the request_ids
+          const existingTag = accumulator.get(name);
+          existingTag.request_ids.push(...request_ids);
+        } else {
+          // if the name is not found, add the tag to the map
+          accumulator.set(name, { ...tag, request_ids: [...request_ids] });
+        }
+        return accumulator;
+      }, new Map());
+      setTagAnalytics(toCamelCase(Array.from(tagAnalytics.values())));
     };
     getQueues();
     getCourse();

@@ -43,12 +43,12 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics }: AnalyticsCh
       <div className={styles.analyticsChartContainer}>
         <AnalyticsPieChart 
           data={{
-            labels: tagAnalytics?.filter((tag) => tag.requestIds.length > 0).map((tag) => tag.name),
+            labels: tagAnalytics?.map((tag) => tag.name),
             datasets: [
               {
                 label: '# of requests',
                 data: tagAnalytics
-                  ? tagAnalytics.map((tag) => tag.requestIds)
+                  ? tagAnalytics.map((tag) => tag.requestIds.length)
                   : 0,
                 backgroundColor: [
                   'rgba(75, 192, 192, 0.2)',
