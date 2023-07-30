@@ -5,3 +5,12 @@ export type CourseOfferingData = {
     startDate: string;
     tutorInviteCode: string;
 };
+
+export type AnalyticsWaitTime = {
+    fullName: string,
+    averageWait: number, 
+};
+
+export type AnalyticsWaitTimeData = {
+    waitTimes: AnalyticsWaitTime[];
+};

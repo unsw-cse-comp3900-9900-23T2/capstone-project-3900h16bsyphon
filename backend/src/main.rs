@@ -86,6 +86,7 @@ async fn main() -> std::io::Result<()> {
                         web::get().to(server::course::get_courses_tutored),
                     )
                     .route("/get", web::get().to(server::course::get_offering_by_id))
+                    .route("/wait_time_analytics", web::get().to(server::course::get_wait_time_analytics))
                     .route("/list", web::get().to(server::course::get_offerings))
                     .route("/tags", web::get().to(server::course::fetch_course_tags))
                     .route(

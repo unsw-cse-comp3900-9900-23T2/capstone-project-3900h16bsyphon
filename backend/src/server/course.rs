@@ -1,22 +1,25 @@
-use actix_web::{
-    http::StatusCode,
-    web::{self, ReqData},
-    HttpResponse,
-};
-use chrono::NaiveDate;
-use futures::future::join_all;
-use rand::Rng;
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
-use serde_json::json;
-use crate::models::course::*;
 use crate::{
     entities,
-    models::{SyphonError, SyphonResult, Tag, TokenClaims, INV_CODE_LEN},
+    models::{SyphonError, SyphonResult, Tag, TokenClaims, INV_CODE_LEN, TimeStampModel},
     utils::{
         db::db,
         user::{validate_admin, validate_user},
     },
 };
+use crate::{entities::sea_orm_active_enums::Statuses, models::course::*};
+use actix_web::{
+    http::StatusCode,
+    web::{self, ReqData},
+    HttpResponse,
+};
+use chrono::{NaiveDate, NaiveDateTime, Utc};
+use chrono_tz::Australia::Sydney;
+use futures::future::join_all;
+use rand::Rng;
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, JoinType, QueryFilter, QuerySelect,
+};
+use serde_json::json;
 
 pub async fn create_offering(
     token: ReqData<TokenClaims>,
@@ -402,6 +405,101 @@ pub async fn join_with_tutor_link(
     HttpResponse::Ok().json(web::Json(course))
 }
 
+pub async fn get_wait_time_analytics(
+    query: web::Query<GetOfferingByIdQuery>,
+) -> SyphonResult<HttpResponse> {
+    let db = db();
+
+    let tutors = entities::tutors::Entity::find()
+        .left_join(entities::users::Entity)
+        .select_only()
+        .column(entities::tutors::Column::Zid)
+        .column(entities::users::Column::FirstName)
+        .column(entities::users::Column::LastName)
+        .filter(entities::tutors::Column::CourseOfferingId.eq(query.course_id))
+        .distinct_on([entities::tutors::Column::Zid])
+        .into_model::<TutorAnalyticsInfo>()
+        .all(db)
+        .await?;
+
+    let mut wait_times = Vec::new();
+
+    for tutor in tutors.iter() {
+        let all_requests = entities::requests::Entity::find()
+            .left_join(entities::request_status_log::Entity)
+            .left_join(entities::queues::Entity)
+            .select_only()
+            .column(entities::requests::Column::RequestId)
+            .filter(
+                entities::queues::Column::CourseOfferingId
+                    .eq(query.course_id)
+                    .and(entities::request_status_log::Column::TutorId.eq(tutor.zid)),
+            )
+            .distinct_on([entities::request_status_log::Column::RequestId])
+            .into_model::<RequestInfo>()
+            .all(db)
+            .await?;
+
+        let mut total_durations = 0;
+        let mut total_request_count = 0;
+
+        for request in all_requests.iter() {
+            let creation_time = entities::request_status_log::Entity::find()
+                .select_only()
+                .column(entities::request_status_log::Column::EventTime)
+                .filter(
+                    entities::request_status_log::Column::RequestId
+                        .eq(request.request_id)
+                        .and(entities::request_status_log::Column::Status.eq(Statuses::Unseen)),
+                )
+                .into_model::<TimeStampModel>()
+                .one(db)
+                .await?;
+
+            let start_time = entities::request_status_log::Entity::find()
+                .select_only()
+                .column(entities::request_status_log::Column::EventTime)
+                .filter(
+                    entities::request_status_log::Column::RequestId
+                        .eq(request.request_id)
+                        .and(entities::request_status_log::Column::Status.eq(Statuses::Seeing)),
+                )
+                .into_model::<TimeStampModel>()
+                .one(db)
+                .await?;
+            match (creation_time, start_time) {
+                (Some(create), Some(start)) => {
+                    total_durations += start
+                        .event_time
+                        .signed_duration_since(create.event_time)
+                        .num_minutes();
+                    total_request_count += 1;
+                }
+                (Some(create), None) => {
+                    let start = get_request_start_time(request.request_id).await;
+                    total_durations += start.signed_duration_since(create.event_time).num_minutes();
+                    total_request_count += 1;
+                }
+                _ => {}
+            }
+        }
+        // push the average for each tutor
+        wait_times.push(AnalyticsWaitTime {
+            full_name: tutor.first_name.clone() + " " + &tutor.last_name.clone(),
+            average_wait: if total_request_count == 0 {
+                0
+            } else {
+                total_durations / total_request_count
+            },
+        });
+    }
+
+    /////////////////////////////////////// Final Result //////////////////////////////////////
+    let analytics_wait_time_result = AnalyticsWaitTimeResult { wait_times };
+
+    Ok(HttpResponse::Ok().json(analytics_wait_time_result))
+}
+
 // TODO: THIS SHOULD BE A REAL TYPE
 fn not_exist_error(missing: Vec<impl Into<String>>) -> HttpResponse {
     HttpResponse::BadRequest().json(json!({
@@ -463,4 +561,23 @@ pub async fn check_user_exists(user_id: i32) -> SyphonResult<Result<i32, i32>> {
         .await?
         .map(|u| u.zid)
         .ok_or(user_id))
+}
+
+pub async fn get_request_start_time(request_id: i32) -> NaiveDateTime {
+    // get the queue info
+    let queue = entities::queues::Entity::find()
+        .left_join(entities::requests::Entity)
+        .filter(entities::requests::Column::RequestId.eq(request_id))
+        .one(db())
+        .await
+        .expect("db broke")
+        .unwrap();
+
+    // check if queue has finished
+    if !queue.is_available && !queue.is_visible {
+        return queue.end_time;
+    }
+
+    // otherwise queue is still going -> return current time
+    Utc::now().with_timezone(&Sydney).naive_local()
 }
