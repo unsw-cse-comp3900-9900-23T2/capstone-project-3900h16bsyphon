@@ -45,10 +45,6 @@ pub async fn get_queue_by_id(
     _token: ReqData<TokenClaims>,
     Query(query): Query<GetQueueByIdQuery>,
 ) -> SyphonResult<HttpResponse> {
-    // match queue {
-    //     Some(q) => HttpResponse::Ok().json(web::Json(q)),
-    //     None => HttpResponse::NotFound().json("No queue of that id!"),
-    // }
     Ok(HttpResponse::Ok().json(get_queue_by_id_not_web(query.queue_id).await?))
 }
 
@@ -158,28 +154,23 @@ pub async fn fetch_queue_tags(
 }
 
 pub async fn get_is_open(
-    token: ReqData<TokenClaims>,
+    _token: ReqData<TokenClaims>,
     query: Query<GetActiveQueuesQuery>,
-) -> HttpResponse {
+) -> SyphonResult<HttpResponse> {
     let db = db();
-    let error = validate_user(&token, db).await.err();
-    if error.is_some() {
-        return error.unwrap();
-    }
     let queues_result = entities::queues::Entity::find()
         .select()
         .filter(entities::queues::Column::QueueId.eq(query.queue_id))
         .into_model::<QueueReturnModel>()
         .one(db)
-        .await
-        .expect("db broke");
+        .await?;
 
     // return queues result result
     match queues_result {
-        Some(queues_result) => HttpResponse::Ok().json(json!({
+        Some(queues_result) => Ok(HttpResponse::Ok().json(json!({
             "is_open" : web::Json(queues_result.is_available)
-        })),
-        None => HttpResponse::BadRequest().json("no queue found"),
+        }))),
+        None => Err(SyphonError::QueueNotExist(query.queue_id)),
     }
 }
 
@@ -768,9 +759,13 @@ pub async fn get_queue_analytics(query: Query<GetQueueSummaryQuery>) -> SyphonRe
 
 pub async fn bulk_create_queue(
     token: ReqData<TokenClaims>,
-    req_body: web::Json<Vec<CreateQueueRequest>>,
+    web::Json(body): web::Json<Vec<CreateQueueRequest>>,
 ) -> SyphonResult<HttpResponse> {
-    todo!()
+    let q_fut = body
+        .into_iter()
+        .map(|req| create_queue_not_web(token.username, req));
+    let queues = try_join_all(q_fut).await?;
+    Ok(HttpResponse::Ok().json(queues))
 }
 
 pub async fn create_queue_not_web(
@@ -785,8 +780,7 @@ pub async fn create_queue_not_web(
 
     let queue = entities::queues::ActiveModel::from(body.clone())
         .insert(db)
-        .await
-        .expect("Db broke");
+        .await?;
 
     let tags_fut = body.tags.into_iter().map(|tag| async move {
         if tag.tag_id == -1 {
