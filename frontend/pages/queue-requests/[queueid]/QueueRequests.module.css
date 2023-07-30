@@ -15,8 +15,8 @@
 }
 
 .queueTitle {
-    padding-top: 10px;
-    padding-bottom: 50px;
+    padding-top: 30px;
+    padding-bottom: 68px;
 }
 
 .requestCardContainer {
@@ -138,4 +138,15 @@
     align-items: baseline;
     justify-content: baseline;
     align-self: baseline;
+}
+
+.greyButton {
+    font-weight: bold;
+    background-color: var(--colour-main-grey-200);
+    color: var(--colour-main-grey-900);
+    padding: 5px 25px;
+}
+
+.greyButton:hover {
+    background-color: inherit;
 }

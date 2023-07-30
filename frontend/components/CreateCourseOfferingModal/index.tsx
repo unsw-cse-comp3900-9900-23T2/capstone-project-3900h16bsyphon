@@ -82,6 +82,7 @@ const CreateCourseOfferingModal = () => {
     });
   };
 
+
   return (
     <div>
       <Button startIcon={<AddIcon />} className={styles.createOfferingBtn} onClick={handleOpen}>Create Offering</Button>

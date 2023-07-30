@@ -141,7 +141,7 @@ const QueueRequests = () => {
         </div>
         <div className={styles.body}>
           <div className={styles.buttonContainer}>
-            <Button variant="contained" color="primary" size="large" className={styles.button} onClick={() => router.back()}>
+            <Button variant="contained" size="large" className={styles.greyButton} onClick={() => router.back()}>
                 Return to Request
             </Button>
           </div>
