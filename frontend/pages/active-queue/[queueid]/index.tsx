@@ -1,4 +1,4 @@
-import { Box, Button, Card, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import { Box, Button, Card, FormControl, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, Typography } from '@mui/material';
 import styles from './ActiveQueue.module.css';
 import { useRouter } from 'next/router';
 import StudentQueueRequestCard from '../../../components/StudentQueueRequestCard';
@@ -14,6 +14,7 @@ import useSound from 'use-sound';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import StudentQueueClusterRequestCard from '../../../components/StudentQueueClusterRequestCard';
+import CreateClusterModal from '../../../components/CreateClusterModal';
 
 const ActiveQueue = () => {
   const router = useRouter();
@@ -30,6 +31,7 @@ const ActiveQueue = () => {
   const [studentCount, setStudentCount] = useState(0);
   const [numReqsUntilClose, setNumReqsUntilClose] = useState(0);
   const [selectedClustering, setSelectedClustering] = useState<number[]>([]);
+  const [openClusterModal, setOpenClusterModal] = useState(false);
 
   let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
     queryParams: {queue_id: requestData.queueId as unknown as number},
@@ -166,30 +168,7 @@ const ActiveQueue = () => {
     }
   };
 
-  const handleClusterSubmit = async () => {
-    console.log('selectedClustering', selectedClustering);
-    if (selectedClustering.length < 2) return;
-    let res = await authenticatedPostFetch('/queue/cluster/create', {
-      queue_id: Number.parseInt(`${router.query.queueid}`),
-      request_ids: selectedClustering,
-    });
-    if (!res.ok) {
-      let err = await res.json();
-      toast(err, {
-        position: 'bottom-left',
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: 'light',
-        className: styles.toast,
-      });
-    }
-    setSelectedClustering([]);
-  };
-
+  
   const handleCopyQueueLink = () => {
     navigator.clipboard.writeText(window.location.href.replace('active-queue', 'create-request'));
   };
@@ -253,23 +232,7 @@ const ActiveQueue = () => {
               <MenuItem key={'key'} value='prevRequestCount'>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} by number of previous requests</MenuItem>
             </Select>
           </FormControl>
-          <FormControl size='small' >
-            <InputLabel disableAnimation sx={selectedClustering.length !== 0 ? {} : { textAlign: 'center', right: '0'}} className={styles.label} id="new-cluster-select-label"> New Cluster </InputLabel>
-            <Select
-              multiple
-              value={selectedClustering}
-              labelId="new-cluster-select-label"
-              id="new-cluster-select"
-              label='New Cluster'
-              className={styles.select}
-              displayEmpty
-              onOpen={() => setSelectedClustering([])}
-              onClose={handleClusterSubmit}
-              onChange={(e) => setSelectedClustering(e.target.value as number[])}
-            >
-              {requests.filter((r) => !isCluster(r)).map((r) => (!isCluster(r) && <MenuItem key={`${r.requestId} clustering`} value={r.requestId}>{r.title}</MenuItem>))}
-            </Select>
-          </FormControl>
+          <CreateClusterModal queueId={Number.parseInt(`${router.query.queueid}`)} requests={requests}/>
           <Button className={styles.closeQueueButton} variant='contained' onClick={handleCloseQueue}>Close Queue</Button>
         </div>
         <Box className={styles.cardBox}>

@@ -1,0 +1,65 @@
+.genericButton {
+    height: 45px;
+    font-weight: bold;
+    background-color: var(--colour-main-purple-200);
+    color: var(--colour-main-purple-900);
+    padding: 5px 25px;
+}
+
+.genericButton:hover {
+    background-color: var(--colour-main-purple-600);
+}
+
+.container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  background-color: white;
+  box-shadow: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 40px;
+  overflow: scroll;
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-self: center;
+}
+
+.buttonContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 20%;
+}
+
+.requestCard {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 2% 3%;
+  gap: 2%;
+}
+
+.submitButton {
+  font-weight: bold;
+  background-color: var(--colour-main-purple-200);
+  color: var(--colour-main-purple-900);
+  display: flex;
+}
+
+.cancelButton {
+  font-weight: bold;
+  background-color: var(--colour-main-grey-200);
+  color: var(--colour-main-grey-900);
+  display: flex;
+}
+
