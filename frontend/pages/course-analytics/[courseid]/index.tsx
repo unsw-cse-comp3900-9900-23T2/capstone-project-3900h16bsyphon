@@ -8,7 +8,7 @@ import MetaData from '../../../components/MetaData';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
-import { AnalyticsWaitTimeData } from '../../../types/courses';
+import { AnalyticsWaitTimeData, TagAnalytics } from '../../../types/courses';
 import { Button, Typography } from '@mui/material';
 import AnalyticsChartCarousel from '../../../components/AnalyticsChartCarousel';
 
@@ -32,6 +32,23 @@ const CourseAnalytics = () => {
   const [isTutor, setIsTutor] = useState(false);
   const [waitTimeAnalytics, setWaitTimeAnalytics] =
     useState<AnalyticsWaitTimeData>();
+  const [tagAnalytics, setTagAnalytics] = useState<TagAnalytics>();
+
+  const parseTags = (d: TagAnalytics) => {
+    const tagAnalytics = d.reduce((accumulator, tag) => {
+      const { name, requestIds } = tag;
+      if (accumulator.has(name)) {
+        // if the name is already in the map, merge the request ids
+        const existingTag = accumulator.get(name);
+        existingTag.requestIds.push(...requestIds);
+      } else {
+        // if the name is not found, add the tag to the map
+        accumulator.set(name, { ...tag, requestIds: [...requestIds] });
+      }
+      return accumulator;
+    }, new Map());
+    return Array.from(tagAnalytics.values());
+  };
 
   useEffect(() => {
     const getQueues = async () => {
@@ -50,7 +67,6 @@ const CourseAnalytics = () => {
       const d = await res.json();
       setCourseData(toCamelCase(d));
     };
-    // TODO: replace with courses/get course admins route
     const getTutored = async () => {
       const res = await authenticatedGetFetch('/course/get_tutored', {
         course_id: `${router.query.courseid}`,
@@ -76,12 +92,20 @@ const CourseAnalytics = () => {
       }
       const d = await res.json();
       setWaitTimeAnalytics(toCamelCase(d));
-      console.log('wwai time analutocs data ', d);
+    };
+    const getTagAnalytics = async () => {
+      if (!router.query.courseid) return;
+      const res = await authenticatedGetFetch('/course/get_tag_analytics', {
+        course_offering_id: `${router.query.courseid}`,
+      });
+      const d = await res.json();
+      setTagAnalytics((parseTags(toCamelCase(d))));
     };
     getQueues();
     getCourse();
     getTutored();
     getWaitTimeAnalytics();
+    getTagAnalytics();
   }, [courseData.courseCode, router.query.courseid]);
 
   return (
@@ -90,7 +114,7 @@ const CourseAnalytics = () => {
       <Header />
       <div className={styles.pageContainer}>
         <div className={styles.queueTitle}>
-          <Typography variant="h3">Course Analytics</Typography>
+          <Typography variant="h3">{courseData.courseCode} Analytics</Typography>
         </div>
         <div className={styles.body}>
           <div className={styles.buttonContainer}>
@@ -111,7 +135,7 @@ const CourseAnalytics = () => {
               </div>
 
               <div className={styles.chartCarouselContainer}>
-                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} />
+                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics}/>
               </div>
             </div>
             <div className={styles.queuesContainer}>

@@ -1,15 +1,16 @@
 import Carousel from 'react-material-ui-carousel';
 import styles from './AnalyticsChartCarousel.module.css';
 import AnalyticsBarChart from '../AnalyticsBarChart';
-import AnalyticsChart from '../Chart';
-import { AnalyticsWaitTimeData } from '../../types/courses';
+import { AnalyticsWaitTimeData, TagAnalytics } from '../../types/courses';
+import AnalyticsPieChart from '../AnalyticsPieChart';
 
 type AnalyticsChartCarouselProps = {
   waitTimeAnalytics?: AnalyticsWaitTimeData;
+  tagAnalytics?: TagAnalytics;
 };
 
 // add more props here for other charts 
-const AnalyticsChartCarousel = ({ waitTimeAnalytics }: AnalyticsChartCarouselProps ) => {
+const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics }: AnalyticsChartCarouselProps ) => {
   return <>
     <Carousel
       navButtonsProps={{
@@ -40,10 +41,31 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics }: AnalyticsChartCarouselPro
         />
       </div>
       <div className={styles.analyticsChartContainer}>
-        <AnalyticsChart />
-      </div>
-      <div className={styles.analyticsChartContainer}>
-        <AnalyticsChart />
+        <AnalyticsPieChart 
+          data={{
+            labels: tagAnalytics?.sort((a, b) => a.name.localeCompare(b.name)).map((tag) => tag.name),
+            datasets: [
+              {
+                label: '# of requests',
+                data: tagAnalytics
+                  ? tagAnalytics.map((tag) => tag.requestIds.length)
+                  : 0,
+                backgroundColor: [
+                  '#BCD1F4',
+                  '#D3D3D3',
+                  '#B6EDB8',
+                  '#F4BC4D',
+                  '#D5CFFF',
+                  '#EDB6B6',
+                  '#EDB392',
+                  '#6F7CB2',
+                  '#B9490A'
+                ]
+              }
+            ]
+          }}
+          chartTitle={'Course tag distribution'}
+        />
       </div>
     </Carousel>
   </>;

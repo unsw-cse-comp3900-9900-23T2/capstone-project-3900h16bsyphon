@@ -1,6 +1,6 @@
 use crate::{
     entities,
-    models::{SyphonError, SyphonResult, Tag, TokenClaims, INV_CODE_LEN, TimeStampModel},
+    models::{SyphonError, SyphonResult, Tag, TokenClaims, INV_CODE_LEN, TimeStampModel, GetTagAnalytics, RequestId},
     utils::{
         db::db,
         user::{validate_admin, validate_user},
@@ -9,7 +9,7 @@ use crate::{
 use crate::{entities::sea_orm_active_enums::Statuses, models::course::*};
 use actix_web::{
     http::StatusCode,
-    web::{self, ReqData},
+    web::{self, ReqData, Query},
     HttpResponse,
 };
 use chrono::{NaiveDate, NaiveDateTime, Utc};
@@ -17,7 +17,7 @@ use chrono_tz::Australia::Sydney;
 use futures::future::join_all;
 use rand::Rng;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, JoinType, QueryFilter, QuerySelect,
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect,
 };
 use serde_json::json;
 
@@ -580,4 +580,49 @@ pub async fn get_request_start_time(request_id: i32) -> NaiveDateTime {
 
     // otherwise queue is still going -> return current time
     Utc::now().with_timezone(&Sydney).naive_local()
+}
+
+pub async fn get_tag_analytics(query: Query<GetTagAnalytics>) -> SyphonResult<HttpResponse> {
+    let db = db();
+
+    // get queue ids that match course offering id
+    let queue_ids: Vec<i32> = entities::queues::Entity::find()
+        .column(entities::queues::Column::QueueId)
+        .filter(entities::queues::Column::CourseOfferingId.eq(query.course_offering_id))
+        .into_tuple()
+        .all(db)
+        .await?;
+
+    // get tag ids that match queue ids    
+    let tag_list = entities::queue_tags::Entity::find()
+        .select_only()
+        .left_join(entities::tags::Entity)
+        .column(entities::tags::Column::TagId)
+        .column(entities::tags::Column::Name)
+        .column(entities::queue_tags::Column::IsPriority)
+        .filter(entities::queue_tags::Column::QueueId.is_in(queue_ids.clone()))
+        .into_model::<Tag>()
+        .all(db)
+        .await?;
+
+    // get list of request ids for each tag id and push to the array
+    let mut tag_analytics = Vec::new();
+
+    for tag in &tag_list {
+        let request_ids: Vec<i32> = entities::request_tags::Entity::find()
+            .column(entities::request_tags::Column::RequestId)
+            .filter(entities::request_tags::Column::TagId.eq(tag.tag_id))
+            .into_tuple()
+            .all(db)
+            .await?;
+
+        tag_analytics.push(TagAnalytics {
+            tag_id: tag.tag_id,
+            name: tag.name.clone(),
+            is_priority: tag.is_priority,
+            request_ids,
+        });
+    }
+
+    Ok(HttpResponse::Ok().json(tag_analytics))
 }

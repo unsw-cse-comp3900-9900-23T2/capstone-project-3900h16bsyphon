@@ -19,7 +19,6 @@
     "@mui/x-date-pickers": "^6.9.0",
     "chart.js": "^4.3.1",
     "dayjs": "^1.11.8",
-    "nanoid": "^4.0.2",
     "next": "12.3.4",
     "react": "18.2.0",
     "react-chartjs-2": "^5.2.0",
@@ -32,7 +31,6 @@
     "use-sound": "^4.0.1"
   },
   "devDependencies": {
-    "@faker-js/faker": "^8.0.2",
     "@types/node": "20.3.1",
     "@types/react": "18.2.13",
     "@types/react-dom": "18.2.6",

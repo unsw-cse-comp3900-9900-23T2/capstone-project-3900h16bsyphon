@@ -97,6 +97,9 @@ async fn main() -> std::io::Result<()> {
                         "/get_courses_admined",
                         web::get().to(server::course::get_courses_admined),
                     )
+                    .route("/get_tag_analytics",
+                        web::get().to(server::course::get_tag_analytics),
+                    )
                     .route(
                         "/add_tutor_to_courses",
                         web::put().to(server::course::add_tutor_to_courses),
@@ -131,7 +134,7 @@ async fn main() -> std::io::Result<()> {
                     .route(
                         "/move_down",
                         web::post().to(server::request::move_request_ordering_down),
-                    ),
+                    )
             )
             .service(
                 scope("/image")
