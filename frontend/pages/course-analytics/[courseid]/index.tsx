@@ -114,7 +114,7 @@ const CourseAnalytics = () => {
       <Header />
       <div className={styles.pageContainer}>
         <div className={styles.queueTitle}>
-          <Typography variant="h3">Course Analytics</Typography>
+          <Typography variant="h3">{courseData.courseCode} Analytics</Typography>
         </div>
         <div className={styles.body}>
           <div className={styles.buttonContainer}>
