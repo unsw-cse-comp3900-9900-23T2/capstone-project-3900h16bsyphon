@@ -43,7 +43,7 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics }: AnalyticsCh
       <div className={styles.analyticsChartContainer}>
         <AnalyticsPieChart 
           data={{
-            labels: tagAnalytics?.map((tag) => tag.name),
+            labels: tagAnalytics?.sort((a, b) => a.name.localeCompare(b.name)).map((tag) => tag.name),
             datasets: [
               {
                 label: '# of requests',
