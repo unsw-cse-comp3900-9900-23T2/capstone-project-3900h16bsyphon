@@ -287,12 +287,14 @@ const ActiveQueue = () => {
                     title={request.title}
                     status={request.status}
                     previousRequests={request.previousRequests}
+                    isTutorView={true}
                   />
                 ) : (
                   <StudentQueueClusterRequestCard
                     key={`cluster ${request.clusterId}`}
                     clusterId={request.clusterId}
                     requests={request.requests}
+                    isTutorView={true}
                   />
                 )
               ))

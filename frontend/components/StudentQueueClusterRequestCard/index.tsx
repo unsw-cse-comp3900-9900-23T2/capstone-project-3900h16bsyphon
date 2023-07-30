@@ -8,20 +8,32 @@ import {
 import styles from './StudentQueueClusterRequestCard.module.css';
 import { useRouter } from 'next/router';
 import TagBox from '../TagBox';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { authenticatedPutFetch, formatZid } from '../../utils';
 import { Status, UserRequest } from '../../types/requests';
 
 type StudentQueueRequestCardProps = {
   clusterId: number;
   requests: UserRequest[];
+  isTutorView: boolean;
+  joinClusterAction?: () => void;
+  leaveClusterAction?: () => void;
 };
 
 const StudentQueueRequestCard = ({
   clusterId,
   requests,
+  isTutorView,
+  joinClusterAction,
+  leaveClusterAction,
 }: StudentQueueRequestCardProps) => {
   const router = useRouter();
+  const [tagsOfFirstRequest, setTagsOfFirstRequest] = useState(requests[0]?.tags ?? []);
+
+  useEffect(() => {
+    if (requests.length === 0) return;
+    setTagsOfFirstRequest(requests[0]?.tags ?? []);
+  }, [requests]);
 
   const updateStatus = async (status: Status, e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
@@ -41,7 +53,7 @@ const StudentQueueRequestCard = ({
     if (requests.length === 0) return;
     if (requests[0].status === Status.NotFound) return;
     if (requests[0].status === Status.Seen) router.push(`/request-summary/${requests[0].requestId}`);
-    else router.push(`/cluster/${clusterId}`);
+    else router.push(`/cluster-student-view/${clusterId}`);
   };
 
   return (
@@ -70,58 +82,101 @@ const StudentQueueRequestCard = ({
               );
             })}
           </div>
-          <CardActions className={styles.cardActions}>
-            <div className={styles.statusActionButtons}>
-              { requests.length > 0 && requests[0].status === Status.NotFound && (
-                <>
+          <div className={styles.tagContainer}>
+            {tagsOfFirstRequest?.map((tag, i) => {
+              return (
+                <TagBox
+                  text={tag.name}
+                  key={i}
+                  isPriority={tag.isPriority}
+                  backgroundColor="var(--colour-main-yellow-500)"
+                  color="white"
+                />
+              );
+            })}
+          </div>
+          {isTutorView && (
+            <CardActions className={styles.cardActions}>
+              <div className={styles.statusActionButtons}>
+                { requests.length > 0 && requests[0].status === Status.NotFound && (
+                  <>
+                    <Button
+                      className={styles.claimButton}
+                      variant="contained"
+                      onClick={(e) => updateStatus(Status.Unseen, e)}
+                    >
+                      Unresolve
+                    </Button>
+                  </>
+                )}
+                { requests.length > 0 && requests[0].status === Status.Unseen && (
+                  <>
+                    <Button
+                      className={styles.claimButton}
+                      variant="contained"
+                      onClick={(e) => updateStatus(Status.Seeing, e)}
+                    >
+                    Claim
+                    </Button>
+                    <Button
+                      className={styles.notFoundButton}
+                      variant="contained"
+                      onClick={(e) => updateStatus(Status.NotFound, e)}
+                    >
+                    Not Found
+                    </Button>
+                  </>
+                )}
+                { requests.length > 0 && requests[0].status === Status.Seeing && (
+                  <Button
+                    className={styles.claimButton}
+                    variant="contained"
+                    onClick={(e) => updateStatus(Status.Seen, e)}
+                  >
+                  Resolve
+                  </Button>
+                )}
+                { requests.length > 0 && requests[0].status === Status.Seen && (
                   <Button
                     className={styles.claimButton}
                     variant="contained"
                     onClick={(e) => updateStatus(Status.Unseen, e)}
                   >
-                      Unresolve
-                  </Button>
-                </>
-              )}
-              { requests.length > 0 && requests[0].status === Status.Unseen && (
-                <>
-                  <Button
-                    className={styles.claimButton}
-                    variant="contained"
-                    onClick={(e) => updateStatus(Status.Seeing, e)}
-                  >
-                    Claim
-                  </Button>
-                  <Button
-                    className={styles.notFoundButton}
-                    variant="contained"
-                    onClick={(e) => updateStatus(Status.NotFound, e)}
-                  >
-                    Not Found
-                  </Button>
-                </>
-              )}
-              { requests.length > 0 && requests[0].status === Status.Seeing && (
-                <Button
-                  className={styles.claimButton}
-                  variant="contained"
-                  onClick={(e) => updateStatus(Status.Seen, e)}
-                >
-                  Resolve
-                </Button>
-              )}
-              { requests.length > 0 && requests[0].status === Status.Seen && (
-                <Button
-                  className={styles.claimButton}
-                  variant="contained"
-                  onClick={(e) => updateStatus(Status.Unseen, e)}
-                >
                   Unresolve
-                </Button>
-              )}
+                  </Button>
+                )}
+              </div>
+            </CardActions>
+          )}
+        </CardActionArea>
+        {!isTutorView && joinClusterAction && (
+          <CardActions className={styles.clusterCardActions}>
+            <div className={styles.statusActionButtons}>
+              <Button
+                className={styles.joinClusterButton}
+                variant="contained"
+                onClick={joinClusterAction}
+              >
+                Join Cluster
+              </Button>
             </div>
           </CardActions>
-        </CardActionArea>
+        )}
+
+        {!isTutorView && leaveClusterAction && (
+          <CardActions className={styles.clusterCardActions}>
+            <div className={styles.statusActionButtons}>
+              <Button
+                className={styles.leaveClusterButton}
+                variant="contained"
+                onClick={leaveClusterAction}
+              >
+                Leave Cluster
+              </Button>
+            </div>
+          </CardActions>
+        )}
+
       </Card>
     </>
   );

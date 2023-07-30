@@ -23,7 +23,8 @@ export type UserRequest = {
   status: Status,
   clusterId?: number,
   description: string,
-  order: number
+  order: number,
+  isClusterable: boolean,
 };
 
 export type ClusterRequest = {

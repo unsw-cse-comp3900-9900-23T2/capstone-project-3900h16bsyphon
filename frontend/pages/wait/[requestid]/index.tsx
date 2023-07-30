@@ -269,6 +269,15 @@ const WaitingScreen = () => {
             >
               Edit Request
             </Button>
+            <Button
+              className={styles.greyButton}
+              variant="contained"
+              onClick={() =>
+                router.push({pathname: `/queue-requests/${requestData.queueId}`, query: {requestid: router.query.requestid}})
+              }
+            >
+              View Queue
+            </Button>
             <FAQsModal courseOfferingId={queueData?.courseOfferingId} />
             <InformationCard
               content={[
