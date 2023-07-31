@@ -3,6 +3,7 @@ import styles from './AnalyticsChartCarousel.module.css';
 import AnalyticsBarChart from '../AnalyticsBarChart';
 import { AnalyticsWaitTimeData, TagAnalytics } from '../../types/courses';
 import AnalyticsPieChart from '../AnalyticsPieChart';
+import AnalyticsLineGraph from '../AnalyticsLineGraph';
 
 type AnalyticsChartCarouselProps = {
   waitTimeAnalytics?: AnalyticsWaitTimeData;
@@ -66,6 +67,9 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics }: AnalyticsCh
           }}
           chartTitle={'Course tag distribution'}
         />
+      </div>
+      <div className={styles.analyticsChartContainer}>
+        <AnalyticsLineGraph />
       </div>
     </Carousel>
   </>;

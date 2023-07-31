@@ -30,3 +30,4 @@ Week 8:
 
 Week 9:
 - Finish course offering tag analytics
+- Finish consultation analytics feature
