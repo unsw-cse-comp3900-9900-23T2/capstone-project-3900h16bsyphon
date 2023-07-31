@@ -12,6 +12,8 @@ import {
 import { Line } from 'react-chartjs-2';
 import { DateRange } from 'react-day-picker';
 import { format, eachDayOfInterval } from 'date-fns';
+import { Dayjs } from 'dayjs';
+import { createTimeInterval } from '../../utils';
 
 ChartJS.register(
   CategoryScale,
@@ -25,17 +27,25 @@ ChartJS.register(
 
 type AnalyticsLineGraphProps = {
   range: DateRange | undefined;
+  startTime: Dayjs;
+  endTime: Dayjs;
 };
 
-export default function AnalyticsLineGraph({ range }: AnalyticsLineGraphProps) {
+export default function AnalyticsLineGraph({ range, startTime, endTime }: AnalyticsLineGraphProps) {
+  const start = startTime.format('h:mm A');
+  const end = endTime.format('h:mm A');
+
   // render consultation demand title and correct labels
   let text: string = 'Consultation demand breakdown';
   let labels: string[] = [];
 
-  if (range?.from) {
+  // create interval time arr separated by hour
+  const timeArr = createTimeInterval(startTime, endTime);
+
+  if (range?.from && startTime.isBefore(endTime)) {
     if (!range.to) {
-      text = `Consultation demand breakdown for ${format(range.from, 'PPP')}`;
-      labels = [format(range.from, 'dd/MM/yyyy')];
+      text = `Consultation demand breakdown for ${format(range.from, 'PPP')} between ${start} - ${end}`;
+      labels = timeArr.map((time) => time);
     } else if (range.to) {
       text = `Consultation demand breakdown between ${format(
         range.from,
@@ -54,26 +64,26 @@ export default function AnalyticsLineGraph({ range }: AnalyticsLineGraphProps) {
       {
         label: 'Time spent idle',
         data: [1, 2, 3, 4, 5],
-        borderColor: '#6F7CB2',
-        backgroundColor: '#6F7CB2',
+        borderColor: '#BCD1F4',
+        backgroundColor: '#BCD1F4',
       },
       {
         label: 'Total number of students seen',
         data: [4, 2, 4, 20, 5],
-        borderColor: '#C7C7C7',
-        backgroundColor: '#C7C7C7',
+        borderColor: '#D3D3D3',
+        backgroundColor: '#D3D3D3',
       },
       {
         label: 'Total number of students unseen',
         data: [6, 2, 7, 8, 9],
-        borderColor: '#F4BC4D',
-        backgroundColor: '#F4BC4D',
+        borderColor: '#E9E6FD',
+        backgroundColor: '#E9E6FD',
       },
       {
         label: 'Average wait time',
         data: [10, 2, 5, 0, 10],
-        borderColor: '#EDB392',
-        backgroundColor: '#EDB392',
+        borderColor: '#EDB6B6',
+        backgroundColor: '#EDB6B6',
       },
     ],
   };
@@ -95,5 +105,6 @@ export default function AnalyticsLineGraph({ range }: AnalyticsLineGraphProps) {
       },
     },
   };
+
   return <Line options={options} data={data} />;
 }

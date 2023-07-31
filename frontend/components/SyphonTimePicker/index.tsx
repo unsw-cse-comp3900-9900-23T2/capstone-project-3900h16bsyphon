@@ -8,10 +8,10 @@ import { Dayjs } from 'dayjs';
 import style from './SyphonTimePicker.module.css';
 
 type SyphonTimePickerProps = {
-    timeStart: Dayjs,
-    setTimeStart: React.Dispatch<React.SetStateAction<Dayjs>>,
-    timeEnd: Dayjs, 
-    setTimeEnd: React.Dispatch<React.SetStateAction<Dayjs>>,
+  timeStart: Dayjs,
+  setTimeStart: React.Dispatch<React.SetStateAction<Dayjs>>,
+  timeEnd: Dayjs, 
+  setTimeEnd: React.Dispatch<React.SetStateAction<Dayjs>>,
 }
 
 const SyphonTimePicker = (props: SyphonTimePickerProps) => {

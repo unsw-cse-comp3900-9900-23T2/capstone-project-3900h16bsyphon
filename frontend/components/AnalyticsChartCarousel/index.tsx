@@ -5,16 +5,19 @@ import { AnalyticsWaitTimeData, TagAnalytics } from '../../types/courses';
 import AnalyticsPieChart from '../AnalyticsPieChart';
 import AnalyticsLineGraph from '../AnalyticsLineGraph';
 import { DateRange } from 'react-day-picker';
+import { Dayjs } from 'dayjs';
 
 type AnalyticsChartCarouselProps = {
   waitTimeAnalytics?: AnalyticsWaitTimeData;
   tagAnalytics?: TagAnalytics;
-  range: DateRange | undefined; 
+  range: DateRange | undefined;
+  startTime: Dayjs,
+  endTime: Dayjs
 };
 
 // add more props here for other charts 
-const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, range }: AnalyticsChartCarouselProps ) => {
-  return <>
+const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, range, startTime, endTime }: AnalyticsChartCarouselProps ) => {
+  return (
     <Carousel
       navButtonsProps={{
         style: {
@@ -71,10 +74,10 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, range }: Anal
         />
       </div>
       <div className={styles.analyticsChartContainer}>
-        <AnalyticsLineGraph range={range} />
+        <AnalyticsLineGraph range={range} startTime={startTime} endTime={endTime}/>
       </div>
     </Carousel>
-  </>;
+  );
 };
 
 export default AnalyticsChartCarousel;

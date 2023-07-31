@@ -11,10 +11,16 @@ import AnalyticsChartCarousel from '../../../components/AnalyticsChartCarousel';
 import AnalyticsCalendar from '../../../components/AnalyticsCalendar';
 import { DateRange } from 'react-day-picker';
 import { addDays } from 'date-fns';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import SyphonTimePicker from '../../../components/SyphonTimePicker';
+import dayjs, { Dayjs } from 'dayjs';
 
 const CourseAnalytics = () => {
   const router = useRouter();
   const pastMonth = new Date();
+  const [startTime, setTimeStart] = useState<Dayjs>(dayjs(new Date()));
+  const [endTime, setTimeEnd] = useState<Dayjs>(dayjs(new Date()).add(2, 'hour'));
   const [data, setData] = useState([
     {
       queueId: 1,
@@ -38,11 +44,9 @@ const CourseAnalytics = () => {
     from: pastMonth,
     to: addDays(pastMonth, 4)
   };
-  const [range, setRange] = useState<DateRange | undefined>(defaultSelected);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(defaultSelected);
 
-  const handleRangeChange = (newRange: DateRange | undefined) => {
-    setRange(newRange);
-  };
+  const handleRangeChange = (newRange: DateRange | undefined) => setDateRange(newRange);
 
   const parseTags = (d: TagAnalytics) => {
     const tagAnalytics = d.reduce((accumulator, tag) => {
@@ -116,7 +120,7 @@ const CourseAnalytics = () => {
     getTutored();
     getWaitTimeAnalytics();
     getTagAnalytics();
-  }, [courseData.courseCode, router.query.courseid, range]);
+  }, [courseData.courseCode, router.query.courseid, dateRange, startTime, endTime]);
 
   return (
     <>
@@ -139,11 +143,21 @@ const CourseAnalytics = () => {
           <div className={styles.courseAnalyticsContent}>
             <div className={styles.statsContainer}>
               <div className={styles.calendarContainer}>
-                <AnalyticsCalendar range={range} onRangeChange={handleRangeChange} />
+                <AnalyticsCalendar range={dateRange} onRangeChange={handleRangeChange} />
+                { dateRange?.from !== undefined && dateRange?.to === undefined && <div className={styles.timePickerContainer}>
+                  <Typography>Enter start and end time</Typography>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <SyphonTimePicker 
+                      timeStart={startTime} 
+                      setTimeStart={setTimeStart} 
+                      timeEnd={endTime} 
+                      setTimeEnd={setTimeEnd} 
+                    />
+                  </LocalizationProvider>
+                </div>}
               </div>
-
               <div className={styles.chartCarouselContainer}>
-                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics} range={range} />
+                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics} range={dateRange} startTime={startTime} endTime={endTime} />
               </div>
             </div>
             <div className={styles.queuesContainer}>

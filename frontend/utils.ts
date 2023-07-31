@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { Status, Duration } from './types/requests';
 
 const setCookie = (cookieName: string, cookieValue: string) => {
@@ -154,3 +154,14 @@ export const toBase64 = (file: File) => new Promise((resolve, reject) => {
   reader.onload = () => resolve(reader.result?.toString().split('base64,')[1]);
   reader.onerror = reject;
 });
+
+export const createTimeInterval = (startTime: Dayjs, endTime: Dayjs) => {
+  const hoursArray = [];
+  let currentTime = startTime;
+
+  while (currentTime.isBefore(endTime) || currentTime.isSame(endTime)) {
+    hoursArray.push(currentTime.format('h:mm A'));
+    currentTime = currentTime.add(1, 'hour');
+  }
+  return hoursArray;
+};
