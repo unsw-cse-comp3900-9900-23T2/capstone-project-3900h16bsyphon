@@ -9,9 +9,12 @@ import { AnalyticsWaitTimeData, TagAnalytics } from '../../../types/courses';
 import { Button, Typography } from '@mui/material';
 import AnalyticsChartCarousel from '../../../components/AnalyticsChartCarousel';
 import AnalyticsCalendar from '../../../components/AnalyticsCalendar';
+import { DateRange } from 'react-day-picker';
+import { addDays } from 'date-fns';
 
 const CourseAnalytics = () => {
   const router = useRouter();
+  const pastMonth = new Date();
   const [data, setData] = useState([
     {
       queueId: 1,
@@ -31,6 +34,15 @@ const CourseAnalytics = () => {
   const [waitTimeAnalytics, setWaitTimeAnalytics] =
     useState<AnalyticsWaitTimeData>();
   const [tagAnalytics, setTagAnalytics] = useState<TagAnalytics>();
+  const defaultSelected: DateRange = {
+    from: pastMonth,
+    to: addDays(pastMonth, 4)
+  };
+  const [range, setRange] = useState<DateRange | undefined>(defaultSelected);
+
+  const handleRangeChange = (newRange: DateRange | undefined) => {
+    setRange(newRange);
+  };
 
   const parseTags = (d: TagAnalytics) => {
     const tagAnalytics = d.reduce((accumulator, tag) => {
@@ -104,7 +116,7 @@ const CourseAnalytics = () => {
     getTutored();
     getWaitTimeAnalytics();
     getTagAnalytics();
-  }, [courseData.courseCode, router.query.courseid]);
+  }, [courseData.courseCode, router.query.courseid, range]);
 
   return (
     <>
@@ -127,11 +139,11 @@ const CourseAnalytics = () => {
           <div className={styles.courseAnalyticsContent}>
             <div className={styles.statsContainer}>
               <div className={styles.calendarContainer}>
-                <AnalyticsCalendar />
+                <AnalyticsCalendar range={range} onRangeChange={handleRangeChange} />
               </div>
 
               <div className={styles.chartCarouselContainer}>
-                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics}/>
+                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics} range={range} />
               </div>
             </div>
             <div className={styles.queuesContainer}>

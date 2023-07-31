@@ -4,14 +4,16 @@ import AnalyticsBarChart from '../AnalyticsBarChart';
 import { AnalyticsWaitTimeData, TagAnalytics } from '../../types/courses';
 import AnalyticsPieChart from '../AnalyticsPieChart';
 import AnalyticsLineGraph from '../AnalyticsLineGraph';
+import { DateRange } from 'react-day-picker';
 
 type AnalyticsChartCarouselProps = {
   waitTimeAnalytics?: AnalyticsWaitTimeData;
   tagAnalytics?: TagAnalytics;
+  range: DateRange | undefined; 
 };
 
 // add more props here for other charts 
-const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics }: AnalyticsChartCarouselProps ) => {
+const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, range }: AnalyticsChartCarouselProps ) => {
   return <>
     <Carousel
       navButtonsProps={{
@@ -69,7 +71,7 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics }: AnalyticsCh
         />
       </div>
       <div className={styles.analyticsChartContainer}>
-        <AnalyticsLineGraph />
+        <AnalyticsLineGraph range={range} />
       </div>
     </Carousel>
   </>;
