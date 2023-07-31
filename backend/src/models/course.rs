@@ -1,5 +1,5 @@
 use actix_web::HttpResponse;
-use chrono::NaiveDate;
+use chrono::{NaiveDate, NaiveDateTime};
 use futures::future::join_all;
 use regex::Regex;
 use sea_orm::FromQueryResult;
@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::server::course::check_user_exists;
+
+use super::RequestDuration;
 
 pub const INV_CODE_LEN: usize = 6;
 
@@ -88,6 +90,21 @@ pub struct TagAnalytics {
     pub name: String,
     pub is_priority: bool,
     pub request_ids: Vec<i32>
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConsultationAnalyticsBody {
+    pub start_time: Option<NaiveDateTime>,
+    pub end_time: Option<NaiveDateTime>,
+    pub course_id: i32
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConsultationAnalyticsReturnModal {
+    pub num_students_seen: i32,
+    pub num_students_unseen: i32,
+    pub avg_wait_time: RequestDuration,
+    pub time_spent_idle: RequestDuration,
 }
 
 impl CreateOfferingBody {

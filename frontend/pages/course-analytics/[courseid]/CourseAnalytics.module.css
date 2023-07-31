@@ -80,3 +80,13 @@
   flex-direction: column;
   gap: 10px;
 }
+
+.submitBtn {
+  background-color: var(--colour-main-purple-200);
+  color: var(--colour-main-purple-900);
+}
+
+.submitBtn:hover {
+  background-color: var(--colour-main-purple-400);
+  color: var(--colour-main-purple-900);
+}

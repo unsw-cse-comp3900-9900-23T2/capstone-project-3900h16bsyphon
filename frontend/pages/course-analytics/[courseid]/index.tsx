@@ -15,6 +15,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import SyphonTimePicker from '../../../components/SyphonTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
+import { utcToZonedTime, format } from 'date-fns-tz';
 
 const CourseAnalytics = () => {
   const router = useRouter();
@@ -122,6 +123,20 @@ const CourseAnalytics = () => {
     getTagAnalytics();
   }, [courseData.courseCode, router.query.courseid, dateRange, startTime, endTime]);
 
+  // const timeZone = 'Australia/Sydney';
+  // const convertDateRange = (date: any) => {
+  //   const newDate = Date.parse(date);
+  //   return format(utcToZonedTime(newDate, timeZone), 'yyyy-MM-dd\'T\'HH:mm:ss', { timeZone });
+  // };
+  
+  const handleSubmit = async () => {
+    // console.log(convertDateRange(dateRange?.from));
+    // console.log(convertDateRange(dateRange?.to));
+    console.log(startTime.format('YYYY-MM-DDTHH:mm:ss'));
+    console.log(endTime.format('YYYY-MM-DDTHH:mm:ss'));
+    console.log(router.query.courseid);
+  };
+  
   return (
     <>
       <MetaData />
@@ -155,6 +170,7 @@ const CourseAnalytics = () => {
                     />
                   </LocalizationProvider>
                 </div>}
+                <Button onClick={handleSubmit} className={styles.submitBtn}>Submit</Button>
               </div>
               <div className={styles.chartCarouselContainer}>
                 <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics} range={dateRange} startTime={startTime} endTime={endTime} />
