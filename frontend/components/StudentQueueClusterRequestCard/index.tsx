@@ -10,7 +10,8 @@ import { useRouter } from 'next/router';
 import TagBox from '../TagBox';
 import React, { useEffect, useState } from 'react';
 import { authenticatedPutFetch, formatZid } from '../../utils';
-import { Status, UserRequest } from '../../types/requests';
+import { ClusterRequest, Status, UserRequest } from '../../types/requests';
+import ClusterModal from '../ClusterModal';
 
 type StudentQueueRequestCardProps = {
   clusterId: number;
@@ -18,6 +19,7 @@ type StudentQueueRequestCardProps = {
   isTutorView: boolean;
   joinClusterAction?: () => void;
   leaveClusterAction?: () => void;
+  allRequests: (UserRequest | ClusterRequest)[];
 };
 
 const StudentQueueRequestCard = ({
@@ -26,6 +28,7 @@ const StudentQueueRequestCard = ({
   isTutorView,
   joinClusterAction,
   leaveClusterAction,
+  allRequests
 }: StudentQueueRequestCardProps) => {
   const router = useRouter();
   const [tagsOfFirstRequest, setTagsOfFirstRequest] = useState(requests[0]?.tags ?? []);
@@ -53,7 +56,7 @@ const StudentQueueRequestCard = ({
     if (requests.length === 0) return;
     if (requests[0].status === Status.NotFound) return;
     if (requests[0].status === Status.Seen) router.push(`/request-summary/${requests[0].requestId}`);
-    else router.push(`/cluster-student-view/${clusterId}`);
+    else router.push(isTutorView ? `/cluster/${clusterId}`: `/cluster-student-view/${clusterId}`);
   };
 
   return (
@@ -146,6 +149,18 @@ const StudentQueueRequestCard = ({
                   </Button>
                 )}
               </div>
+              <ClusterModal queueId={Number.parseInt(`${router.query.queueid}`)} button={
+                <Button
+                  className={styles.editButton}
+                  variant="contained"
+                >
+                  Edit
+                </Button>
+              }
+              requests={allRequests}
+              clusterId={clusterId}
+              selectedRequests={requests}
+              />
             </CardActions>
           )}
         </CardActionArea>
