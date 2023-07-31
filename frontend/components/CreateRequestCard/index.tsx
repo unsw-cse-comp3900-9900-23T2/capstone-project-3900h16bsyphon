@@ -76,12 +76,12 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
 
   useEffect(() => {
     const fetchTags = async () => {
-      const res = await authenticatedGetFetch('/queue/tags', {queue_id: `${currentQueueId}`});
+      const res = await authenticatedGetFetch('/queue/tags', { queue_id: `${currentQueueId}` });
       const data = await res.json();
       setTags(toCamelCase(data));
     };
     const fetchPreviousRequests = async () => {
-      const res = await authenticatedGetFetch('/history/previous_tags', {queue_id: `${currentQueueId}`});
+      const res = await authenticatedGetFetch('/history/previous_tags', { queue_id: `${currentQueueId}` });
       setTagHistory(await res.json());
     };
     if (!currentQueueId) return;
@@ -94,10 +94,10 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
       return 'you have no previous requests for this course. Happy first question!';
     }
     return 'You have previously submitted:' +
-    Object.keys(tagHistory).map(
-      (tag: string) => ` ${tagHistory[tag]} request${tagHistory[tag] === 1 ? '': 's'} for "${tag}"`
-    ).join(' and ') +
-    '.';
+      Object.keys(tagHistory).map(
+        (tag: string) => ` ${tagHistory[tag]} request${tagHistory[tag] === 1 ? '' : 's'} for "${tag}"`
+      ).join(' and ') +
+      '.';
   };
 
   const handleCreateRequestSubmit = async () => {
@@ -110,7 +110,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
       queue_id: Number.parseInt(`${currentQueueId}`),
       files: await Promise.all(files.map(
         async (file) => (
-          {file_name: file.name, file_content: (await toBase64(file))}
+          { file_name: file.name, file_content: (await toBase64(file)) }
         )
       ))
     };
@@ -130,7 +130,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
       queue_id: Number.parseInt(`${currentQueueId}`),
       files: await Promise.all(files.map(
         async (file) => (
-          {file_name: file.name, file_content: await toBase64(file)}
+          { file_name: file.name, file_content: await toBase64(file) }
         )
       ))
     };
@@ -141,7 +141,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
   useEffect(() => {
     if (title.trim() === '') {
       setTitleWordCount(0);
-    } else  {
+    } else {
       setTitleWordCount(title.trim().split(' ').length);
     }
   }, [title]);
@@ -149,7 +149,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
   useEffect(() => {
     if (description.trim() === '') {
       setDescriptionWordCount(0);
-    } else  {
+    } else {
       setDescriptionWordCount(description.trim().split(' ').length);
     }
   }, [description]);
@@ -223,7 +223,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
           </div>
           <div>
             <Typography variant="subtitle1">
-                  Your uploads
+              Your uploads
             </Typography>
             <TableContainer>
               <Table>
