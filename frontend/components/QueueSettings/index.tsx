@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import style from './QueueSettings.module.css';
 import TextField from '@mui/material/TextField';
-import { FormGroup, Box, Typography, Button, Card} from '@mui/material';
+import { FormGroup, Box, Typography, Button, Card } from '@mui/material';
 import SwitchToggles from '../SwitchToggles';
 import SyphonDatePicker from '../SyphonDatePicker';
 import SyphonTimePicker from '../SyphonTimePicker';
@@ -12,14 +12,12 @@ import TagsSelection from '../TagsSelection';
 import { Tag } from '../../types/requests';
 import { useRouter } from 'next/router';
 
-import CardActions from '@mui/material/CardActions';
-import CardContent from '@mui/material/CardContent';
 import QueueCard from '../QueueCard';
 
 type QueueSettingsProps = {
-    courseOfferingId: string | string[] | undefined;
-    queueId?: string | string[] | undefined;
-    isEdit: boolean;
+  courseOfferingId: string | string[] | undefined;
+  queueId?: string | string[] | undefined;
+  isEdit: boolean;
 };
 
 type QueueCreationInfo = {
@@ -36,11 +34,11 @@ type QueueCreationInfo = {
   announcement: string;
 };
 
-const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps ) => {
+const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps) => {
   const [date, setDate] = useState<Dayjs>(dayjs(new Date()));
   const [startTime, setTimeStart] = useState<Dayjs>(dayjs(new Date()));
   const [endTime, setTimeEnd] = useState<Dayjs>(dayjs(new Date()).add(2, 'hour'));
-  const [tags, setTags] = useState<Tag[]>([{tagId: 1, name: 'A tag', isPriority: false}]);
+  const [tags, setTags] = useState<Tag[]>([{ tagId: 1, name: 'A tag', isPriority: false }]);
   const [tagSelection, setTagSelection] = useState<Tag[]>([]);
   const [isVisible, setIsVisible] = useState(true);
   const [isAvailable, setIsAvailable] = useState(true);
@@ -48,17 +46,17 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
   const [title, setTitle] = useState('');
   const [timeLimit, setTimeLimit] = useState(0);
   const [course, setCourse] = useState('');
-  const [error, setError] = useState<{title?: string}>({});
+  const [error, setError] = useState<{ title?: string }>({});
   const [announcement, setAnnouncement] = useState<string>('');
 
   const [toBeCreatedList, setToBeCreatedList] = useState<QueueCreationInfo[]>([]);
 
   const router = useRouter();
-  
+
   useEffect(() => {
     if (!isEdit || !queueId) return;
     const fetchQueue = async () => {
-      const res = await authenticatedGetFetch('/queue/get', {queue_id: queueId as string});
+      const res = await authenticatedGetFetch('/queue/get', { queue_id: queueId as string });
       const data = await res.json();
       const queue = toCamelCase(data);
       setDate(dayjs(queue.startTime));
@@ -72,7 +70,7 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
       setAnnouncement(queue.announcement);
     };
     const fetchQueueTags = async () => {
-      const res = await authenticatedGetFetch('/queue/tags', {queue_id: queueId as string});
+      const res = await authenticatedGetFetch('/queue/tags', { queue_id: queueId as string });
       const data = await res.json();
       setTagSelection(toCamelCase(data));
     };
@@ -82,14 +80,14 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
 
   useEffect(() => {
     const fetchCourse = async () => {
-      const res = await authenticatedGetFetch('/course/get', {course_id: courseOfferingId as string});
+      const res = await authenticatedGetFetch('/course/get', { course_id: courseOfferingId as string });
       // TODO: this type is incorrect
-      const data: {course_code: string} = await res.json();
+      const data: { course_code: string } = await res.json();
       setCourse(data.course_code);
     };
 
     const fetchTags = async () => {
-      const res = await authenticatedGetFetch('/course/tags', {course_id: courseOfferingId as string});
+      const res = await authenticatedGetFetch('/course/tags', { course_id: courseOfferingId as string });
       const data = await res.json();
       setTags(toCamelCase(data));
     };
@@ -126,8 +124,8 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
 
   const handleAddAnother = () => {
     if (title === '') {
-      window.scrollTo({top: 0, behavior: 'smooth'});
-      return setError({title: 'Title cannot be empty'});
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return setError({ title: 'Title cannot be empty' });
     }
     setDataInBulkList(true);
     resetCurrentQueueData();
@@ -137,7 +135,7 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
     setDate(dayjs(new Date()));
     setTimeStart(dayjs(new Date()));
     setTimeEnd(dayjs(new Date()).add(2, 'hour'));
-    setTags([{tagId: 1, name: 'A tag', isPriority: false}]);
+    setTags([{ tagId: 1, name: 'A tag', isPriority: false }]);
     setTagSelection([]);
     setIsVisible(true);
     setIsAvailable(true);
@@ -169,7 +167,7 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
     setTimeLimit(data.timeLimit);
     setAnnouncement(data.announcement);
 
-    window.scrollTo({top: 0, behavior: 'smooth'});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setIndexInBulkList(idx);
   };
 
@@ -199,8 +197,8 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
 
   const handleSaveChanges = async () => {
     if (title === '') {
-      setError({title: 'Title cannot be empty'});
-      window.scrollTo({top: 0, behavior: 'smooth'});
+      setError({ title: 'Title cannot be empty' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     const body = {
@@ -231,10 +229,10 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
 
   return (
     <>
-      <div className={style.container}> 
+      <div className={style.container}>
         <Box className={style.cardBox}>
           <Card className={style.cardContainer}>
-            {isEdit? <Typography variant="h5" className={style.pageTitle}>Edit Queue for {course}</Typography>
+            {isEdit ? <Typography variant="h5" className={style.pageTitle}>Edit Queue for {course}</Typography>
               : <Typography variant="h5" className={style.pageTitle}>Create a new Queue for {course}</Typography>
             }
             <Typography variant="body1" className={style.title}>Queue Title</Typography>
@@ -251,13 +249,13 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
               />
             </FormGroup>
             <Typography variant="body1" className={style.title}>Date</Typography>
-            <SyphonDatePicker date={date} setDate={setDate}/>
+            <SyphonDatePicker date={date} setDate={setDate} />
             <Typography variant="body1" className={style.title}>Time</Typography>
-            <SyphonTimePicker 
-              timeStart={startTime} 
-              setTimeStart={setTimeStart} 
-              timeEnd={endTime} 
-              setTimeEnd={setTimeEnd} 
+            <SyphonTimePicker
+              timeStart={startTime}
+              setTimeStart={setTimeStart}
+              timeEnd={endTime}
+              setTimeEnd={setTimeEnd}
             />
             <Typography variant='body1' className={style.title}>Tags (you must choose at least one)</Typography>
             <TagsSelection tagSelection={tagSelection} tags={tags} setTagSelection={setTagSelection} isCreator />
@@ -273,8 +271,8 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
                 rows={2}
               />
             </FormGroup>
-            <SwitchToggles 
-              isAvailable={isAvailable} 
+            <SwitchToggles
+              isAvailable={isAvailable}
               setIsAvailable={setIsAvailable}
               isVisible={isVisible}
               setIsVisible={setIsVisible}
@@ -284,10 +282,10 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
               setTimeLimit={setTimeLimit}
             />
             <div className={style.faq}>
-              <FAQs courseOfferingId={courseOfferingId} tutor={true}/>
+              <FAQs courseOfferingId={courseOfferingId} tutor={true} />
             </div>
             {isEdit ?
-              <Button variant="contained" className={style.button} onClick={handleSaveChanges}>Save Changes</Button> 
+              <Button variant="contained" className={style.button} onClick={handleSaveChanges}>Save Changes</Button>
               : (<>
                 <span>
                   <Button variant="contained" className={style.button} onClick={handleAddAnother}>Add as New Queue</Button>
@@ -296,7 +294,7 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
               )}
           </Card>
         </Box>
-        <div style = {{marginTop: '1.5rem'}} />
+        <div style={{ marginTop: '1.5rem' }} />
         <Box className={style.cardBox}>
           <Card className={style.cardContainer}>
             {
@@ -336,9 +334,9 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
                     className={style.button}
                     onClick={handleCreateAll}
                     disabled={toBeCreatedList.length <= 0}
-                    style={{margin: 'auto'}}
+                    style={{ margin: 'auto' }}
                   >
-                  Create All & Finish
+                    Create All & Finish
                   </Button>
                 </div>
               </div>
