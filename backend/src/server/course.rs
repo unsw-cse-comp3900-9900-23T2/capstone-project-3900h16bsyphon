@@ -1,6 +1,10 @@
 use crate::{
     entities,
-    models::{SyphonError, SyphonResult, Tag, TokenClaims, INV_CODE_LEN, TimeStampModel, GetTagAnalytics, QueueRequestInfoModel, RequestDuration, RequestTutorInformationModel, TutorInformationModel},
+    models::{
+        GetTagAnalytics, QueueRequestInfoModel, RequestDuration, RequestTutorInformationModel,
+        SyphonError, SyphonResult, Tag, TimeStampModel, TokenClaims, TutorInformationModel,
+        INV_CODE_LEN,
+    },
     utils::{
         db::db,
         user::{validate_admin, validate_user},
@@ -9,16 +13,14 @@ use crate::{
 use crate::{entities::sea_orm_active_enums::Statuses, models::course::*};
 use actix_web::{
     http::StatusCode,
-    web::{self, ReqData, Query},
+    web::{self, Query, ReqData},
     HttpResponse,
 };
-use chrono::{NaiveDate, NaiveDateTime, Utc, Duration};
+use chrono::{Duration, NaiveDate, NaiveDateTime, Utc};
 use chrono_tz::Australia::Sydney;
-use futures::future::{join_all, try_join_all};
+use futures::future::join_all;
 use rand::Rng;
-use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect, PaginatorTrait,
-};
+use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use serde_json::json;
 
 pub async fn create_offering(
@@ -593,7 +595,7 @@ pub async fn get_tag_analytics(query: Query<GetTagAnalytics>) -> SyphonResult<Ht
         .all(db)
         .await?;
 
-    // get tag ids that match queue ids    
+    // get tag ids that match queue ids
     let tag_list = entities::queue_tags::Entity::find()
         .select_only()
         .left_join(entities::tags::Entity)
@@ -627,7 +629,9 @@ pub async fn get_tag_analytics(query: Query<GetTagAnalytics>) -> SyphonResult<Ht
     Ok(HttpResponse::Ok().json(tag_analytics))
 }
 
-pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) -> SyphonResult<HttpResponse> {
+pub async fn get_consultation_analytics(
+    body: Query<ConsultationAnalyticsBody>,
+) -> SyphonResult<HttpResponse> {
     let db = db();
 
     let difference = (body.end_time - body.start_time).num_hours() + 1;
@@ -635,6 +639,7 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
 
     for i in 0..difference {
         let curr_hour = body.start_time + Duration::hours(i);
+        let curr_hour_end = curr_hour + Duration::hours(1);
 
         // get queue ids that match course offering id and are located between the start and end time
         let queue_ids: Vec<i32> = entities::queues::Entity::find()
@@ -646,7 +651,9 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
             .all(db)
             .await?;
 
-        log::info!("queue ids: {:?}", queue_ids);
+        log::warn!("curr_hour: {:?}", curr_hour);
+        log::warn!("curr_hour_end: {:?}", curr_hour_end);
+        log::warn!("queue ids: {:?}", queue_ids);
 
         // get request id list
         let request_list = entities::requests::Entity::find()
@@ -661,7 +668,7 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
             .all(db)
             .await?;
 
-        log::info!("request list: {:?}", request_list);
+        log::warn!("request list: {:?}", request_list);
 
         // get a list of tutors
         let tutor_list = entities::request_status_log::Entity::find()
@@ -685,137 +692,135 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
                 last_name: x.last_name,
             })
             .collect::<Vec<_>>();
-            
-        log::info!("tutor list: {:?}", tutor_list);
-        
+
+        log::warn!("tutor list: {:?}", tutor_list);
+
         let mut num_students_unseen = 0;
         let mut num_students_seen = 0;
-        let mut total_num_requests = 0;
-        let mut wait_time_seconds = 0;
-        let mut idle_time_seconds = 0;
+        let mut total_idle_time = 0;
+        let mut idle_counter = 0;
+        let mut total_waiting_time = 0;
+        let mut wait_time_counter = 0;
 
         for consult in &request_list {
-            // calculate num students unseen
-            num_students_unseen += entities::request_status_log::Entity::find()
+            // calculate avg wait time
+            let wait_start_time = entities::request_status_log::Entity::find()
+                .select_only()
+                .column(entities::request_status_log::Column::EventTime)
+                .column(entities::request_status_log::Column::RequestId)
+                .left_join(entities::requests::Entity)
                 .filter(entities::request_status_log::Column::RequestId.eq(consult.request_id))
                 .filter(entities::request_status_log::Column::Status.eq(Statuses::Unseen))
-                .count(db)
+                .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
+                .into_model::<WaitTimeModel>()
+                .all(db)
                 .await?;
 
-            // calculate num students seen
-            num_students_seen += entities::request_status_log::Entity::find()
+            let wait_end_time = entities::request_status_log::Entity::find()
+                .select_only()
+                .column(entities::request_status_log::Column::EventTime)
+                .column(entities::request_status_log::Column::RequestId)
+                .left_join(entities::requests::Entity)
                 .filter(entities::request_status_log::Column::RequestId.eq(consult.request_id))
-                .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
-                .count(db)
+                .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+                .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
+                .into_model::<WaitTimeModel>()
+                .all(db)
                 .await?;
 
-            // calculate avg wait time
-            let wait_start_times = request_list
-                .iter()
-                .map(|x| {
-                    entities::request_status_log::Entity::find()
-                        .select_only()
-                        .column(entities::request_status_log::Column::EventTime)
-                        .left_join(entities::requests::Entity)
-                        .filter(entities::request_status_log::Column::RequestId.eq(x.request_id))
-                        .filter(entities::request_status_log::Column::Status.eq(Statuses::Unseen))
-                        .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
-                        .into_model::<TimeStampModel>()
-                        .one(db)
-                })
-                .collect::<Vec<_>>();
-            let wait_start_times = try_join_all(wait_start_times).await?;
-    
-            let wait_end_times = request_list
-                .iter()
-                .map(|x| {
-                    entities::request_status_log::Entity::find()
-                        .select_only()
-                        .column(entities::request_status_log::Column::EventTime)
-                        .left_join(entities::requests::Entity)
-                        .filter(entities::request_status_log::Column::RequestId.eq(x.request_id))
-                        .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
-                        .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
-                        .into_model::<TimeStampModel>()
-                        .one(db)
-                })
-                .collect::<Vec<_>>();
-            let wait_end_times = try_join_all(wait_end_times).await?;
-    
-            for (i, start_time) in wait_start_times.iter().enumerate() {
-                let end_time = wait_end_times[i].clone();
-                let _duration = start_time.as_ref().map(|start_t| {
-                    if let Some(end_t) = end_time {
-                        wait_time_seconds += end_t
+            for start_time in wait_start_time.iter() {
+                log::warn!("inside start time");
+                let mut found = false;
+                for end_time in wait_end_time.iter() {
+                    if end_time.event_time > start_time.event_time
+                        && start_time.event_time <= curr_hour
+                        && end_time.request_id == start_time.request_id
+                    {
+                        total_waiting_time += end_time
                             .event_time
-                            .signed_duration_since(start_t.event_time)
-                            .num_seconds();
-                        total_num_requests += 1;
-                    }
-                });
-            }
-
-            // calculate time spent idle
-            // calculate start times of when tutor started being idle
-            let idle_start_times = tutor_list
-                .iter()
-                .map(|x| {
-                    entities::request_status_log::Entity::find()
-                        .select_only()
-                        .column(entities::request_status_log::Column::EventTime)
-                        .left_join(entities::requests::Entity)
-                        .filter(entities::request_status_log::Column::TutorId.eq(x.zid))
-                        .filter(entities::request_status_log::Column::Status.ne(Statuses::Seeing))
-                        .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
-                        .into_model::<TimeStampModel>()
-                        .one(db)
-                })
-                .collect::<Vec<_>>();
-            let idle_start_times = try_join_all(idle_start_times).await?;
-        
-            // calculate end times of when tutor stopped being idle
-            let idle_end_times = tutor_list
-                .iter()
-                .map(|x| {
-                    entities::request_status_log::Entity::find()
-                        .select_only()
-                        .column(entities::request_status_log::Column::EventTime)
-                        .left_join(entities::requests::Entity)
-                        .filter(entities::request_status_log::Column::TutorId.eq(x.zid))
-                        .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
-                        .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
-                        .into_model::<TimeStampModel>()
-                        .one(db)
-                })
-                .collect::<Vec<_>>();
-            let idle_end_times = try_join_all(idle_end_times).await?;
-            
-            // calculate the idle time for the tutor and add it to the total
-            for (i, start_time) in idle_start_times.iter().enumerate() {
-                let end_time = idle_end_times[i].clone();
-                let _duration = start_time.as_ref().map(|start_t| {
-                    if let Some(end_t) = end_time {
-                        idle_time_seconds += end_t
-                            .event_time
-                            .signed_duration_since(start_t.event_time)
+                            .signed_duration_since(start_time.event_time)
                             .num_seconds()
                             .abs();
-                        total_num_requests += 1;
+                        wait_time_counter += 1;
+                        found = true;
+                        num_students_seen += 1;
+                        break;
                     }
-                });
+                }
+                if !found {
+                    let end_time = get_request_start_time(start_time.request_id).await;
+                    total_waiting_time += end_time
+                        .signed_duration_since(start_time.event_time)
+                        .num_seconds()
+                        .abs();
+                    wait_time_counter += 1;
+                    num_students_unseen += 1;
+                }
+                log::warn!("wait time counter {:?}", wait_time_counter);
+            }
+
+            for tutor in &tutor_list {
+                log::warn!("inside tutor information model");
+                // calculate time spent idle
+                // calculate start times of when tutor started being idle
+                let idle_start_times = entities::request_status_log::Entity::find()
+                    .select_only()
+                    .column(entities::request_status_log::Column::EventTime)
+                    .column(entities::request_status_log::Column::RequestId)
+                    .left_join(entities::requests::Entity)
+                    .filter(entities::request_status_log::Column::TutorId.eq(tutor.zid))
+                    .filter(entities::request_status_log::Column::Status.ne(Statuses::Seeing))
+                    .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
+                    .into_model::<WaitTimeModel>()
+                    .all(db)
+                    .await?;
+                log::warn!("idle start times {:?}", idle_start_times);
+
+                // calculate end times of when tutor stopped being idle
+                let idle_end_times = entities::request_status_log::Entity::find()
+                    .select_only()
+                    .column(entities::request_status_log::Column::EventTime)
+                    .column(entities::request_status_log::Column::RequestId)
+                    .left_join(entities::requests::Entity)
+                    .filter(entities::request_status_log::Column::TutorId.eq(tutor.zid))
+                    .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+                    .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
+                    .into_model::<WaitTimeModel>()
+                    .all(db)
+                    .await?;
+                log::warn!("idle end times {:?}", idle_end_times);
+
+                // calculate the idle time for the tutor and add it to the total
+                for start_time in idle_start_times.iter() {
+                    for end_time in idle_end_times.iter() {
+                        if end_time.event_time < start_time.event_time
+                            && start_time.event_time >= curr_hour
+                            && end_time.request_id == start_time.request_id
+                        {
+                            total_idle_time += end_time
+                                .event_time
+                                .signed_duration_since(start_time.event_time)
+                                .num_seconds()
+                                .abs();
+                            idle_counter += 1;
+                            break;
+                        }
+                    }
+                    log::warn!("idle counter {:?}", idle_counter);
+                }
             }
         }
-        
+
         consult_analytics.push(ConsultationAnalyticsReturnModal {
             hour: curr_hour,
             num_students_seen,
             num_students_unseen,
             avg_wait_time: {
-                let avg_wait = if total_num_requests > 0 {
+                let avg_wait = if wait_time_counter > 0 {
                     RequestDuration {
-                        hours: (wait_time_seconds / total_num_requests) / 3600,
-                        minutes: ((wait_time_seconds / total_num_requests) / 60) % 60,
-                        seconds: (wait_time_seconds / total_num_requests) % 60,
+                        hours: (total_waiting_time / wait_time_counter) / 3600,
+                        minutes: ((total_waiting_time / wait_time_counter) / 60) % 60,
+                        seconds: (total_waiting_time / wait_time_counter) % 60,
                     }
                 } else {
                     RequestDuration {
@@ -827,11 +832,11 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
                 avg_wait
             },
             time_spent_idle: {
-                let time_idle = if total_num_requests > 0 {
+                let time_idle = if idle_counter > 0 {
                     RequestDuration {
-                        hours: idle_time_seconds / 3600,
-                        minutes: (idle_time_seconds / 60) % 60,
-                        seconds: idle_time_seconds % 60,
+                        hours: (total_idle_time / idle_counter) / 3600,
+                        minutes: ((total_idle_time / idle_counter) / 60) % 60,
+                        seconds: (total_idle_time / idle_counter) % 60,
                     }
                 } else {
                     RequestDuration {
@@ -841,11 +846,9 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
                     }
                 };
                 time_idle
-            }
+            },
         })
     }
 
     Ok(HttpResponse::Ok().json(consult_analytics))
 }
-
-// num of students unseen / seen doesn't work (??) 

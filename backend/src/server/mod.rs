@@ -5,6 +5,7 @@ use actix_web::{post, HttpResponse, Responder};
 use crate::prelude::in_release_build;
 
 pub mod auth;
+pub mod cluster;
 pub mod course;
 pub mod faqs;
 pub mod history;
@@ -13,7 +14,6 @@ pub mod queue;
 pub mod request;
 pub mod sockets;
 pub mod user;
-pub mod cluster;
 
 #[post("/echo")]
 pub async fn echo(req_body: String) -> impl Responder {

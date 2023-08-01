@@ -9,9 +9,9 @@ use sea_orm::ModelTrait;
 
 use crate::entities;
 use crate::models;
-use crate::sockets::SocketChannels;
 use crate::sockets::lobby::Lobby;
 use crate::sockets::messages::HttpServerAction;
+use crate::sockets::SocketChannels;
 use crate::utils;
 use models::{MoveDirection, SyphonError, SyphonResult, TokenClaims};
 use utils::db::db;
@@ -22,7 +22,7 @@ pub async fn move_request(
     token: ReqData<TokenClaims>,
     request_id: i32,
     direction: MoveDirection,
-    lobby: Addr<Lobby>
+    lobby: Addr<Lobby>,
 ) -> SyphonResult<HttpResponse> {
     let db = db();
     let request = entities::requests::Entity::find_by_id(request_id)
@@ -94,7 +94,7 @@ async fn swap_order(
             e
         })?;
         log::info!("swap order result: \n\t{:#?}\nTo:\n\t{:#?}", (&a, &b), res);
-        return Ok(Some((a.request_id, b.request_id)))
+        return Ok(Some((a.request_id, b.request_id)));
     }
 
     Ok(None)

@@ -1,12 +1,12 @@
 use actix::Actor;
 use actix_cors::Cors;
+use actix_files::Files;
 use actix_web::{
     http, middleware,
     web::{self, scope, Data},
     App, HttpServer,
 };
 use actix_web_httpauth::middleware::HttpAuthentication;
-use actix_files::Files;
 pub mod entities;
 pub mod models;
 pub mod prelude;
@@ -86,19 +86,26 @@ async fn main() -> std::io::Result<()> {
                         web::get().to(server::course::get_courses_tutored),
                     )
                     .route("/get", web::get().to(server::course::get_offering_by_id))
-                    .route("/wait_time_analytics", web::get().to(server::course::get_wait_time_analytics))
+                    .route(
+                        "/wait_time_analytics",
+                        web::get().to(server::course::get_wait_time_analytics),
+                    )
                     .route("/list", web::get().to(server::course::get_offerings))
                     .route("/tags", web::get().to(server::course::fetch_course_tags))
                     .route(
                         "/join_with_tutor_link",
                         web::put().to(server::course::join_with_tutor_link),
                     )
-                    .route("/consultation_analytics", web::get().to(server::course::get_consultation_analytics))
+                    .route(
+                        "/consultation_analytics",
+                        web::get().to(server::course::get_consultation_analytics),
+                    )
                     .route(
                         "/get_courses_admined",
                         web::get().to(server::course::get_courses_admined),
                     )
-                    .route("/get_tag_analytics",
+                    .route(
+                        "/get_tag_analytics",
                         web::get().to(server::course::get_tag_analytics),
                     )
                     .route(
@@ -135,12 +142,12 @@ async fn main() -> std::io::Result<()> {
                     .route(
                         "/move_down",
                         web::post().to(server::request::move_request_ordering_down),
-                    )
+                    ),
             )
             .service(
                 scope("/image")
-                .wrap(amw.clone())
-                .route("/delete", web::delete().to(server::request::delete_image))
+                    .wrap(amw.clone())
+                    .route("/delete", web::delete().to(server::request::delete_image)),
             )
             .service(
                 scope("/queue")
@@ -148,10 +155,13 @@ async fn main() -> std::io::Result<()> {
                     .service(
                         scope("/cluster")
                             .route("create", web::post().to(server::cluster::cluster_requests))
-                            .route("get", web::get().to(server::request::all_requests_for_cluster))
+                            .route(
+                                "get",
+                                web::get().to(server::request::all_requests_for_cluster),
+                            )
                             .route("edit", web::put().to(server::cluster::edit_cluster))
                             .route("join", web::put().to(server::cluster::join_cluster))
-                            .route("leave", web::put().to(server::cluster::leave_cluster))
+                            .route("leave", web::put().to(server::cluster::leave_cluster)),
                     )
                     .route(
                         "/set_is_sorted_by_previous_request_count",
@@ -160,7 +170,10 @@ async fn main() -> std::io::Result<()> {
                     .route("/create", web::post().to(server::queue::create_queue))
                     .route("/get", web::get().to(server::queue::get_queue_by_id))
                     .route("/summary", web::get().to(server::queue::get_queue_summary))
-                    .route("/analytics", web::get().to(server::queue::get_queue_analytics))
+                    .route(
+                        "/analytics",
+                        web::get().to(server::queue::get_queue_analytics),
+                    )
                     .route(
                         "/get_by_course",
                         web::get().to(server::queue::get_queues_by_course),
