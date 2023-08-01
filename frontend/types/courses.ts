@@ -26,12 +26,18 @@ type Tag = {
 
 export type TagAnalytics = Tag[];
 
+type Duration = {
+    hours: number;
+    minutes: number;
+    seconds: number;
+}
+
 type Consultation = {
     hour: Dayjs;
-    avgWaitTime: number;
+    avgWaitTime: Duration;
     numStudentsSeen: number;
     numStudentsUnseen: number;
-    timeSpentIdle: number;
+    timeSpentIdle: Duration;
 }
 
 export type ConsultationAnalytics = Consultation[];

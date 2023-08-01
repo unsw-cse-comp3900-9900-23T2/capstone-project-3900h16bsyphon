@@ -31,11 +31,8 @@ type AnalyticsLineGraphProps = {
 };
 
 export default function AnalyticsLineGraph({ startTime, endTime, consultationAnalytics }: AnalyticsLineGraphProps) {
-  // render consultation demand title and correct labels
   let text: string = `Consultation demand breakdown between ${startTime?.format('MMMM D, YYYY h:mm A')} - ${endTime?.format('MMMM D, YYYY h:mm A')}`;
-
   console.log(consultationAnalytics);
-  // create interval time arr separated by hour
   const timeArr = createTimeInterval(startTime, endTime);
   let labels: string[] = timeArr.map((time) => time);
   
@@ -43,8 +40,8 @@ export default function AnalyticsLineGraph({ startTime, endTime, consultationAna
     labels,
     datasets: [
       {
-        label: 'Time spent idle',
-        data: consultationAnalytics?.map((x) => x.timeSpentIdle),
+        label: 'Time spent idle (mins)',
+        data: consultationAnalytics?.map((c) => c.timeSpentIdle.minutes),
         borderColor: '#BCD1F4',
         backgroundColor: '#BCD1F4',
       },
@@ -61,8 +58,8 @@ export default function AnalyticsLineGraph({ startTime, endTime, consultationAna
         backgroundColor: '#D3D3D3',
       },
       {
-        label: 'Average wait time',
-        data: consultationAnalytics?.map((x) => x.avgWaitTime),
+        label: 'Average wait time (mins)',
+        data: consultationAnalytics?.map((c) => c.avgWaitTime.minutes),
         borderColor: '#EDB6B6',
         backgroundColor: '#EDB6B6',
       },

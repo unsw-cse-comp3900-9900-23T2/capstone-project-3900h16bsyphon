@@ -640,12 +640,13 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
         let queue_ids: Vec<i32> = entities::queues::Entity::find()
             .column(entities::queues::Column::QueueId)
             .filter(entities::queues::Column::CourseOfferingId.eq(body.course_id))
-            .filter(entities::queues::Column::StartTime.gt(body.start_time))
-            .filter(entities::queues::Column::EndTime.lt(body.end_time))
+            .filter(entities::queues::Column::StartTime.lte(curr_hour))
+            .filter(entities::queues::Column::EndTime.gt(curr_hour))
             .into_tuple()
             .all(db)
-            .await
-            .expect("db broke");
+            .await?;
+
+        log::info!("queue ids: {:?}", queue_ids);
 
         // get request id list
         let request_list = entities::requests::Entity::find()
@@ -659,6 +660,7 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
             .into_model::<QueueRequestInfoModel>()
             .all(db)
             .await?;
+
         log::info!("request list: {:?}", request_list);
 
         // get a list of tutors
@@ -692,33 +694,36 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
         let mut wait_time_seconds = 0;
         let mut idle_time_seconds = 0;
 
+        // TODO: debug all these calculations
         for consult in &request_list {
             // calculate num students unseen
             num_students_unseen = entities::request_status_log::Entity::find()
+                .left_join(entities::requests::Entity)
                 .filter(entities::request_status_log::Column::RequestId.eq(consult.request_id))
                 .filter(entities::request_status_log::Column::Status.eq(Statuses::Unseen))
                 .select_only()
-                .left_join(entities::requests::Entity)
-                .column(entities::request_status_log::Column::RequestId)
                 .column(entities::requests::Column::Zid)
                 .distinct()
                 .count(db)
                 .await
                 .unwrap_or(0) as i32;
-    
+
+            log::info!("num students unseen: {:?}", num_students_unseen);
+
             // calculate num students seen
             num_students_seen = entities::request_status_log::Entity::find()
+                .left_join(entities::requests::Entity)
                 .filter(entities::request_status_log::Column::RequestId.eq(consult.request_id))
                 .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
                 .select_only()
-                .left_join(entities::requests::Entity)
-                .column(entities::request_status_log::Column::RequestId)
                 .column(entities::requests::Column::Zid)
                 .distinct()
                 .count(db)
                 .await
                 .unwrap_or(0) as i32;
-    
+
+            log::info!("num students seen: {:?}", num_students_seen);
+
             // calculate avg wait time
             let wait_start_times = request_list
                 .iter()
@@ -764,7 +769,7 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
                     }
                 });
             }
-    
+
             // calculate time spent idle
             for tutor in &tutor_list {
                 // calculate start times of when tutor started being idle
@@ -809,7 +814,8 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
                             idle_time_seconds += end_t
                                 .event_time
                                 .signed_duration_since(start_t.event_time)
-                                .num_seconds();
+                                .num_seconds()
+                                .abs();
                             total_num_requests += 1;
                         }
                     });
@@ -821,18 +827,42 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
             hour: curr_hour,
             num_students_seen,
             num_students_unseen,
-            avg_wait_time: RequestDuration {
-                hours: ((wait_time_seconds / total_num_requests) / 3600) as i64,
-                minutes: ((wait_time_seconds / total_num_requests) / 60) % 60 as i64,
-                seconds: (wait_time_seconds % 60) as i64,
+            avg_wait_time: {
+                let avg_wait = if total_num_requests > 0 {
+                    RequestDuration {
+                        hours: (wait_time_seconds / total_num_requests) / 3600,
+                        minutes: ((wait_time_seconds / total_num_requests) / 60) % 60,
+                        seconds: (wait_time_seconds / total_num_requests) % 60,
+                    }
+                } else {
+                    RequestDuration {
+                        hours: 0,
+                        minutes: 0,
+                        seconds: 0,
+                    }
+                };
+                avg_wait
             },
-            time_spent_idle: RequestDuration {
-                hours: (idle_time_seconds / 3600) as i64,
-                minutes: (idle_time_seconds / 60) % 60 as i64,
-                seconds: (idle_time_seconds % 60) as i64,
-            },
+            time_spent_idle: {
+                let time_idle = if total_num_requests > 0 {
+                    RequestDuration {
+                        hours: idle_time_seconds / 3600,
+                        minutes: (idle_time_seconds / 60) % 60,
+                        seconds: idle_time_seconds % 60,
+                    }
+                } else {
+                    RequestDuration {
+                        hours: 0,
+                        minutes: 0,
+                        seconds: 0,
+                    }
+                };
+                time_idle
+            }
         })
     }
 
     Ok(HttpResponse::Ok().json(consult_analytics))
 }
+
+// num of students unseen / seen doesn't work (??) 
