@@ -5,9 +5,6 @@ import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 import styles from './CourseAnalytics.module.css';
 import Header from '../../../components/Header';
 import MetaData from '../../../components/MetaData';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { AnalyticsWaitTimeData, TagAnalytics } from '../../../types/courses';
 import { Button, Typography } from '@mui/material';
 import AnalyticsChartCarousel from '../../../components/AnalyticsChartCarousel';
@@ -107,7 +104,7 @@ const CourseAnalytics = () => {
     getWaitTimeAnalytics();
     getTagAnalytics();
   }, [courseData.courseCode, router.query.courseid]);
-
+  
   return (
     <>
       <MetaData />
@@ -128,14 +125,8 @@ const CourseAnalytics = () => {
           </div>
           <div className={styles.courseAnalyticsContent}>
             <div className={styles.statsContainer}>
-              <div className={styles.calendarContainer}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DateCalendar />
-                </LocalizationProvider>
-              </div>
-
               <div className={styles.chartCarouselContainer}>
-                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics}/>
+                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics} courseId={router.query.courseId}/>
               </div>
             </div>
             <div className={styles.queuesContainer}>

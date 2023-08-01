@@ -3,15 +3,17 @@ import styles from './AnalyticsChartCarousel.module.css';
 import AnalyticsBarChart from '../AnalyticsBarChart';
 import { AnalyticsWaitTimeData, TagAnalytics } from '../../types/courses';
 import AnalyticsPieChart from '../AnalyticsPieChart';
+import AnalyticsLineGraph from '../AnalyticsLineGraph';
 
 type AnalyticsChartCarouselProps = {
   waitTimeAnalytics?: AnalyticsWaitTimeData;
   tagAnalytics?: TagAnalytics;
+  courseId: string | string[] | undefined;
 };
 
 // add more props here for other charts 
-const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics }: AnalyticsChartCarouselProps ) => {
-  return <>
+const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, courseId }: AnalyticsChartCarouselProps ) => {
+  return (
     <Carousel
       navButtonsProps={{
         style: {
@@ -21,6 +23,9 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics }: AnalyticsCh
       }}
       autoPlay={false}
     >
+      <div className={styles.analyticsChartContainer}>
+        <AnalyticsLineGraph courseId={courseId}/>
+      </div>
       <div className={styles.analyticsChartContainer}>
         <AnalyticsBarChart
           data={{
@@ -68,7 +73,7 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics }: AnalyticsCh
         />
       </div>
     </Carousel>
-  </>;
+  );
 };
 
 export default AnalyticsChartCarousel;

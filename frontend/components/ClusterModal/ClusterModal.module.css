@@ -24,7 +24,6 @@
   flex-direction: column;
   gap: 20px;
   padding: 40px;
-  overflow: scroll;
   max-width: 1000px;
   max-height: 1100px;
   overflow: scroll;

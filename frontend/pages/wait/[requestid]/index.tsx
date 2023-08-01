@@ -238,7 +238,6 @@ const WaitingScreen = () => {
         <div className={styles.queueTitle}>
           <Typography variant="h3">{queueData?.title}</Typography>
         </div>
-        {/* make state variable for isclusterable  */}
         {isClusterable ? (
           <div className={styles.clusterContainer}>
             <TagBox

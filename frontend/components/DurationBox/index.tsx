@@ -1,4 +1,3 @@
-import styles from './DurationBox.module.css';
 import { Duration } from '../../types/requests';
 import TagBox from '../TagBox';
 import { changeBackgroundColour, changeTextColour } from '../../utils';

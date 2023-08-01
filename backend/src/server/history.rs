@@ -1,17 +1,17 @@
 use std::collections::HashMap;
 
-use actix_web::{
-    http::StatusCode,
-    web::{Query, ReqData},
-    HttpResponse,
-};
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use crate::models::history::*;
 use crate::utils::db::db;
 use crate::{
     entities,
     models::{SyphonError, SyphonResult, TokenClaims},
 };
+use actix_web::{
+    http::StatusCode,
+    web::{Query, ReqData},
+    HttpResponse,
+};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 
 pub async fn get_previous_tag_details(
     token: ReqData<TokenClaims>,

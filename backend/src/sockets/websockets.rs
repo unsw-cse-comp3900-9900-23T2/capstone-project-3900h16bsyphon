@@ -1,6 +1,6 @@
 use actix::{
-    fut, ActorContext, ActorFutureExt, Actor, Addr, ContextFutureSpawner,
-    Running, StreamHandler, WrapFuture, AsyncContext, Handler
+    fut, Actor, ActorContext, ActorFutureExt, Addr, AsyncContext, ContextFutureSpawner, Handler,
+    Running, StreamHandler, WrapFuture,
 };
 use actix_web_actors::ws;
 use log;
@@ -8,11 +8,11 @@ use serde_json::json;
 use std::time::{Duration, Instant};
 use uuid::Uuid;
 
-use crate::utils::auth::validate_raw_token;
 use crate::sockets::{
     lobby::Lobby,
-    messages::{Connect, Disconnect, try_parse_ws_action},
+    messages::{try_parse_ws_action, Connect, Disconnect},
 };
+use crate::utils::auth::validate_raw_token;
 
 use super::messages::WsMessage;
 use super::SocketChannels;

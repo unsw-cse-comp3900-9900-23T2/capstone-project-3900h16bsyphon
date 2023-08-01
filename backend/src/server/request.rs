@@ -4,25 +4,25 @@ use actix::Addr;
 use actix_web::http::StatusCode;
 use actix_web::web::{self, ReqData};
 use actix_web::HttpResponse;
-use base64::{Engine, engine};
 use base64::engine::general_purpose;
+use base64::{engine, Engine};
 use chrono::Utc;
 use chrono_tz::Australia::Sydney;
 use log::debug;
 use serde_json::json;
 
+use crate::entities;
 use crate::entities::sea_orm_active_enums::Statuses;
-use crate::models::request::*;
-use crate::models::queue::Tag;
 use crate::models::auth::TokenClaims;
-use crate::models::{SyphonResult, SyphonError};
+use crate::models::queue::Tag;
+use crate::models::request::*;
+use crate::models::{SyphonError, SyphonResult};
 use crate::sockets::lobby::Lobby;
 use crate::sockets::messages::HttpServerAction;
 use crate::sockets::SocketChannels;
-use crate::utils::request::move_request;
 use crate::utils::db::db;
+use crate::utils::request::move_request;
 use crate::utils::unbox;
-use crate::entities;
 use futures::future::join_all;
 
 use sea_orm::{
@@ -83,14 +83,22 @@ pub async fn create_request(
     // save the image to the docker volume
     let file_loc = format!("/images/{}", insertion.request_id);
     fs::create_dir(file_loc)?;
-    let engine = engine::GeneralPurpose::new(&base64::alphabet::STANDARD, general_purpose::GeneralPurposeConfig::new());
+    let engine = engine::GeneralPurpose::new(
+        &base64::alphabet::STANDARD,
+        general_purpose::GeneralPurposeConfig::new(),
+    );
     let images_insertion = request_creation.files.into_iter().map(|file| {
         let file_loc = format!("/images/{}/{}", insertion.request_id, file.file_name);
-        fs::write(file_loc.as_str(), engine.decode(file.file_content.as_bytes()).unwrap()).unwrap();
+        fs::write(
+            file_loc.as_str(),
+            engine.decode(file.file_content.as_bytes()).unwrap(),
+        )
+        .unwrap();
         entities::request_images::ActiveModel {
             request_id: ActiveValue::Set(insertion.request_id),
             image_url: ActiveValue::Set(file_loc),
-        }.insert(db)
+        }
+        .insert(db)
     });
     join_all(images_insertion).await;
 
@@ -155,14 +163,25 @@ pub async fn edit_request(
     let file_loc = format!("/images/{}", edit_request_body.request_id);
     fs::remove_dir_all(&file_loc)?;
     fs::create_dir(&file_loc)?;
-    let engine = engine::GeneralPurpose::new(&base64::alphabet::STANDARD, general_purpose::GeneralPurposeConfig::new());
+    let engine = engine::GeneralPurpose::new(
+        &base64::alphabet::STANDARD,
+        general_purpose::GeneralPurposeConfig::new(),
+    );
     let images_insertion = edit_request_body.files.into_iter().map(|file| {
-        let file_loc = format!("/images/{}/{}", edit_request_body.request_id, file.file_name);
-        fs::write(file_loc.as_str(), engine.decode(file.file_content.as_bytes()).unwrap()).unwrap();
+        let file_loc = format!(
+            "/images/{}/{}",
+            edit_request_body.request_id, file.file_name
+        );
+        fs::write(
+            file_loc.as_str(),
+            engine.decode(file.file_content.as_bytes()).unwrap(),
+        )
+        .unwrap();
         entities::request_images::ActiveModel {
             request_id: ActiveValue::Set(edit_request_body.request_id),
             image_url: ActiveValue::Set(file_loc),
-        }.insert(db)
+        }
+        .insert(db)
     });
 
     join_all(images_insertion).await;
@@ -185,13 +204,10 @@ pub async fn request_info_wrapper(
 pub async fn all_requests_for_queue(
     web::Query(body): web::Query<AllRequestsForQueueBody>,
 ) -> SyphonResult<HttpResponse> {
-    Ok(HttpResponse::Ok()
-        .json(all_requests_for_queue_not_web(body.queue_id).await?))
+    Ok(HttpResponse::Ok().json(all_requests_for_queue_not_web(body.queue_id).await?))
 }
 
-pub async fn all_requests_for_queue_not_web(
-    queue_id: i32,
-) -> SyphonResult<Vec<QueueRequest>> {
+pub async fn all_requests_for_queue_not_web(queue_id: i32) -> SyphonResult<Vec<QueueRequest>> {
     let db = db();
     // Find all related requests
     let queue = entities::queues::Entity::find_by_id(queue_id)
@@ -233,7 +249,10 @@ pub async fn all_requests_for_queue_not_web(
 
     let mut priority_request_zip: Vec<_> = requests.into_iter().zip(is_priority).collect();
     priority_request_zip.sort_by(|a, b| b.1.cmp(&a.1));
-    let mut requests = priority_request_zip.into_iter().map(|v| v.0).collect::<Vec<_>>();
+    let mut requests = priority_request_zip
+        .into_iter()
+        .map(|v| v.0)
+        .collect::<Vec<_>>();
     // sort by the number of requests a user has made if this is set
     if queue.is_sorted_by_previous_request_count {
         requests.sort_by(|a, b| a.previous_requests.cmp(&b.previous_requests));
@@ -242,30 +261,32 @@ pub async fn all_requests_for_queue_not_web(
     Ok(requests)
 }
 
-pub async fn all_requests_for_cluster(body: web::Query<AllRequestsForClusterBody>) -> SyphonResult<HttpResponse> {
+pub async fn all_requests_for_cluster(
+    body: web::Query<AllRequestsForClusterBody>,
+) -> SyphonResult<HttpResponse> {
     let db = db();
     let request_ids: Vec<i32> = entities::clusters::Entity::find()
-    .column(entities::clusters::Column::RequestId)
-    .filter(entities::clusters::Column::ClusterId.eq(body.cluster_id))
-    .into_tuple()
-    .all(db)
-    .await?;
+        .column(entities::clusters::Column::RequestId)
+        .filter(entities::clusters::Column::ClusterId.eq(body.cluster_id))
+        .into_tuple()
+        .all(db)
+        .await?;
 
-    let requests: Vec<_> = join_all(request_ids
-        .into_iter()
-        .map(|r| request_info_not_web(RequestInfoBody { request_id: r })))
-        .await
-        .into_iter()
-        .filter_map(Result::ok)
-        .collect();
+    let requests: Vec<_> = join_all(
+        request_ids
+            .into_iter()
+            .map(|r| request_info_not_web(RequestInfoBody { request_id: r })),
+    )
+    .await
+    .into_iter()
+    .filter_map(Result::ok)
+    .collect();
     Ok(HttpResponse::Ok().json(requests))
 }
 
 /// TODO: This is really cringe, don't do whatever this is
 /// There should be a way to move this into the models
-pub async fn request_info_not_web(
-    body: RequestInfoBody,
-) -> SyphonResult<QueueRequest> {
+pub async fn request_info_not_web(body: RequestInfoBody) -> SyphonResult<QueueRequest> {
     let db = db();
     // Get the request from the database
     let db_request = entities::requests::Entity::find_by_id(body.request_id)
@@ -316,20 +337,22 @@ pub async fn request_info_not_web(
         .filter(entities::queues::Column::CourseOfferingId.eq(course_offering_id))
         .count(db)
         .await?;
-    
+
     let images: Vec<String> = entities::request_images::Entity::find()
         .select_only()
         .column(entities::request_images::Column::ImageUrl)
         .filter(entities::request_images::Column::RequestId.eq(request.request_id))
         .into_tuple()
-        .all(db).await?;
+        .all(db)
+        .await?;
 
     let cluster_id: Option<i32> = entities::clusters::Entity::find()
         .select_only()
         .column(entities::clusters::Column::ClusterId)
         .filter(entities::clusters::Column::RequestId.eq(request.request_id))
         .into_tuple()
-        .one(db).await?;
+        .one(db)
+        .await?;
 
     let request_value = QueueRequest {
         request_id: request.request_id,
@@ -522,7 +545,7 @@ pub async fn request_summary(
 pub async fn move_request_ordering_up(
     token: ReqData<TokenClaims>,
     web::Json(body): web::Json<MoveRequestOrderingBody>,
-    lobby: web::Data<Addr<Lobby>>
+    lobby: web::Data<Addr<Lobby>>,
 ) -> SyphonResult<HttpResponse> {
     move_request(token, body.request_id, MoveDirection::Up, unbox(lobby)).await
 }
@@ -530,7 +553,7 @@ pub async fn move_request_ordering_up(
 pub async fn move_request_ordering_down(
     token: ReqData<TokenClaims>,
     web::Json(body): web::Json<MoveRequestOrderingBody>,
-    lobby: web::Data<Addr<Lobby>>
+    lobby: web::Data<Addr<Lobby>>,
 ) -> SyphonResult<HttpResponse> {
     move_request(token, body.request_id, MoveDirection::Down, unbox(lobby)).await
 }
@@ -539,9 +562,8 @@ pub async fn delete_image(body: web::Query<DeleteImageQuery>) -> SyphonResult<Ht
     debug!("deleting {}", body.image_name);
     let db = db();
     entities::request_images::Entity::delete_by_id((body.request_id, body.image_name.clone()))
-    .exec(db)
-    .await?;
+        .exec(db)
+        .await?;
     fs::remove_file(&body.image_name)?;
     Ok(HttpResponse::Ok().json(()))
 }
-

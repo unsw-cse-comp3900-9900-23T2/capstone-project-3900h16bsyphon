@@ -1,5 +1,5 @@
 use actix_web::HttpResponse;
-use chrono::NaiveDate;
+use chrono::{NaiveDate, NaiveDateTime};
 use futures::future::join_all;
 use regex::Regex;
 use sea_orm::FromQueryResult;
@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::server::course::check_user_exists;
+
+use super::RequestDuration;
 
 pub const INV_CODE_LEN: usize = 6;
 
@@ -69,7 +71,7 @@ pub struct AnalyticsWaitTime {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnalyticsWaitTimeResult {
-    pub wait_times: Vec<AnalyticsWaitTime>
+    pub wait_times: Vec<AnalyticsWaitTime>,
 }
 
 #[derive(Deserialize)]
@@ -87,7 +89,29 @@ pub struct TagAnalytics {
     pub tag_id: i32,
     pub name: String,
     pub is_priority: bool,
-    pub request_ids: Vec<i32>
+    pub request_ids: Vec<i32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConsultationAnalyticsBody {
+    pub start_time: NaiveDateTime,
+    pub end_time: NaiveDateTime,
+    pub course_id: i32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConsultationAnalyticsReturnModal {
+    pub hour: NaiveDateTime,
+    pub num_students_seen: u64,
+    pub num_students_unseen: u64,
+    pub avg_wait_time: RequestDuration,
+    pub time_spent_idle: RequestDuration,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct WaitTimeModel {
+    pub event_time: NaiveDateTime,
+    pub request_id: i32,
 }
 
 impl CreateOfferingBody {

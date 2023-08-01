@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { Status, Duration, UserRequest, ClusterRequest } from './types/requests';
 
 const setCookie = (cookieName: string, cookieValue: string) => {
@@ -33,7 +33,7 @@ export const authenticatedPostFetch = async (route: string, body: any) => {
   });
 };
 
-export const authenticatedGetFetch = async (route: string, queryStrings: Record<string, string>) => {
+export const authenticatedGetFetch = async (route: string, queryStrings?: Record<string, string>) => {
   return fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}${route}?${new URLSearchParams(queryStrings)}`, {
     method: 'GET',
     headers: {
@@ -154,6 +154,18 @@ export const toBase64 = (file: File) => new Promise((resolve, reject) => {
   reader.onload = () => resolve(reader.result?.toString().split('base64,')[1]);
   reader.onerror = reject;
 });
+
+export const createTimeInterval = (startTime: Dayjs | null, endTime: Dayjs | null) => {
+  if (startTime === null || endTime === null) return [];
+  const hoursArray = [];
+  let currentTime = startTime;
+
+  while (currentTime.isBefore(endTime) || currentTime.isSame(endTime)) {
+    hoursArray.push(currentTime.format('h:mm A'));
+    currentTime = currentTime.add(1, 'hour');
+  }
+  return hoursArray;
+};
 
 export const transformRequests = (reqList: UserRequest[]): (UserRequest | ClusterRequest)[]  => {
   // collapse requests with the same clusterId
