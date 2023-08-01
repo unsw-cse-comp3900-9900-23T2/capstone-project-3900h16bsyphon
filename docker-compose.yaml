@@ -26,6 +26,8 @@ services:
       - DATABASE_HOST=database
     networks:
       - net
+    volumes:
+      - pgdata:/var/lib/postgresql/data
   backend:
     build:
       context: backend
@@ -50,4 +52,5 @@ networks:
 
 volumes:
   images:
+  pgdata:
   

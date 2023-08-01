@@ -1,3 +1,5 @@
+import { Dayjs } from 'dayjs';
+
 export type CourseOfferingData = {
     title: string;
     courseCode: string;
@@ -14,3 +16,28 @@ export type AnalyticsWaitTime = {
 export type AnalyticsWaitTimeData = {
     waitTimes: AnalyticsWaitTime[];
 };
+
+type Tag = {
+    tagId: number;
+    name: string;
+    isPriority: boolean;
+    requestIds: number[];
+};
+
+export type TagAnalytics = Tag[];
+
+type Duration = {
+    hours: number;
+    minutes: number;
+    seconds: number;
+}
+
+type Consultation = {
+    hour: Dayjs;
+    avgWaitTime: Duration;
+    numStudentsSeen: number;
+    numStudentsUnseen: number;
+    timeSpentIdle: Duration;
+}
+
+export type ConsultationAnalytics = Consultation[];

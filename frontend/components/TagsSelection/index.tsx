@@ -28,7 +28,8 @@ const TagsSelection = ({ tags, tagSelection, isCreator, setTagSelection, color =
       <Autocomplete
         id="size-small-outlined"
         size="medium"
-        onChange={(_, value) => {
+        onChange={(e, value) => {
+          e.stopPropagation();
           // ensure everything inside value is a Tag type and not string 
           // need to do this bc of create queue >:(
           setTagSelection(value.map((tag) => {

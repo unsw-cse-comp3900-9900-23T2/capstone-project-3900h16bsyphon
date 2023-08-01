@@ -141,7 +141,7 @@ const QueueRequests = () => {
         </div>
         <div className={styles.body}>
           <div className={styles.buttonContainer}>
-            <Button variant="contained" color="primary" size="large" className={styles.button} onClick={() => router.back()}>
+            <Button variant="contained" size="large" className={styles.greyButton} onClick={() => router.back()}>
                 Return to Request
             </Button>
           </div>
@@ -176,6 +176,7 @@ const QueueRequests = () => {
                         isTutorView={false}
                         joinClusterAction={request.requests.findIndex((r) => r.requestId === Number.parseInt(`${router.query.requestid}` as string)) === -1 && (ownRequest as UserRequest)?.isClusterable ? () => joinCluster(request.clusterId) : undefined}
                         leaveClusterAction={request.requests.findIndex((r) => r.requestId === Number.parseInt(`${router.query.requestid}` as string)) !== -1 ? () => leaveCluster(request.clusterId) : undefined}
+                        allRequests={requests}
                       />
                     </div>
                   )

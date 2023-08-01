@@ -1,16 +1,18 @@
 import Carousel from 'react-material-ui-carousel';
 import styles from './AnalyticsChartCarousel.module.css';
 import AnalyticsBarChart from '../AnalyticsBarChart';
-import AnalyticsChart from '../Chart';
-import { AnalyticsWaitTimeData } from '../../types/courses';
+import { AnalyticsWaitTimeData, TagAnalytics } from '../../types/courses';
+import AnalyticsLineGraph from '../AnalyticsLineGraph';
 
 type AnalyticsChartCarouselProps = {
   waitTimeAnalytics?: AnalyticsWaitTimeData;
+  tagAnalytics?: TagAnalytics;
+  courseId: string | string[] | undefined;
 };
 
 // add more props here for other charts 
-const AnalyticsChartCarousel = ({ waitTimeAnalytics }: AnalyticsChartCarouselProps ) => {
-  return <>
+const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, courseId }: AnalyticsChartCarouselProps ) => {
+  return (
     <Carousel
       navButtonsProps={{
         style: {
@@ -20,6 +22,9 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics }: AnalyticsChartCarouselPro
       }}
       autoPlay={false}
     >
+      <div className={styles.analyticsChartContainer}>
+        <AnalyticsLineGraph courseId={courseId}/>
+      </div>
       <div className={styles.analyticsChartContainer}>
         <AnalyticsBarChart
           data={{
@@ -40,13 +45,24 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics }: AnalyticsChartCarouselPro
         />
       </div>
       <div className={styles.analyticsChartContainer}>
-        <AnalyticsChart />
-      </div>
-      <div className={styles.analyticsChartContainer}>
-        <AnalyticsChart />
+        <AnalyticsBarChart
+          data={{
+            labels: tagAnalytics?.sort((a, b) => a.name.localeCompare(b.name)).map((tag) => tag.name),
+            datasets: [
+              {
+                label: '# of requests',
+                data: tagAnalytics
+                  ? tagAnalytics.map((tag) => tag.requestIds.length)
+                  : [],
+                backgroundColor: '#BCD1F4',
+              }
+            ],
+          }}
+          chartTitle={'Course tag distribution'}
+        />
       </div>
     </Carousel>
-  </>;
+  );
 };
 
 export default AnalyticsChartCarousel;

@@ -1,0 +1,28 @@
+.calendarContainer {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 20px;
+  justify-content: center;
+}
+
+.submitBtn {
+  background-color: var(--colour-main-purple-200);
+  color: var(--colour-main-purple-900);
+}
+
+.submitBtn:hover {
+  background-color: var(--colour-main-purple-400);
+  color: var(--colour-main-purple-900);
+}
+
+.container {
+  display: flex;
+  min-height: 100%;
+  gap: 30px;
+}
+
+.lineGraphContainer {
+  flex: 6;
+}

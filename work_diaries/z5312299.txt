@@ -27,3 +27,10 @@ Week 6/7:
 Week 8:
 - Connect set status endpoint to frontend
 - Finish waiting screen timer ticket (SYP-58)
+
+Week 9:
+- Finish course offering tag analytics
+
+Week 10:
+- Finish consultation analytics feature
+- Write up assigned parts of the report (third party functionalities + other stuff)

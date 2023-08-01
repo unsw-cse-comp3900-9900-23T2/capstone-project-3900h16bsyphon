@@ -10,7 +10,7 @@ use super::Tag;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SerializedFile {
     pub file_name: String,
-    pub file_content: String
+    pub file_content: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -21,7 +21,7 @@ pub struct CreateRequest {
     pub tags: Vec<i32>,
     pub is_clusterable: bool,
     pub status: Statuses,
-    pub files: Vec<SerializedFile>
+    pub files: Vec<SerializedFile>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -33,7 +33,7 @@ pub struct EditRequestBody {
     pub tags: Vec<i32>,
     pub is_clusterable: bool,
     pub status: Statuses,
-    pub files: Vec<SerializedFile>
+    pub files: Vec<SerializedFile>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -72,7 +72,7 @@ pub struct QueueRequest {
     pub cluster_id: Option<i32>,
     pub previous_requests: u64,
     pub course_offering_id: i32,
-    pub images: Vec<String>
+    pub images: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -135,7 +135,6 @@ pub struct AllRequestsForClusterBody {
     pub cluster_id: i32,
 }
 
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct JoinClusterRequest {
     pub request_id: i32,
@@ -149,7 +148,7 @@ pub struct LeaveClusterRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct DeleteClusterRequest {
+pub struct EditClusterRequest {
     pub cluster_id: i32,
+    pub request_ids: Vec<i32>,
 }
-

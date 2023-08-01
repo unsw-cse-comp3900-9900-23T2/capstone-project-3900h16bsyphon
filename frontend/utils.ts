@@ -1,5 +1,5 @@
-import dayjs from 'dayjs';
-import { Status, Duration } from './types/requests';
+import dayjs, { Dayjs } from 'dayjs';
+import { Status, Duration, UserRequest, ClusterRequest } from './types/requests';
 
 const setCookie = (cookieName: string, cookieValue: string) => {
   document.cookie = `${cookieName}=${cookieValue};path=/`;
@@ -33,7 +33,7 @@ export const authenticatedPostFetch = async (route: string, body: any) => {
   });
 };
 
-export const authenticatedGetFetch = async (route: string, queryStrings: Record<string, string>) => {
+export const authenticatedGetFetch = async (route: string, queryStrings?: Record<string, string>) => {
   return fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}${route}?${new URLSearchParams(queryStrings)}`, {
     method: 'GET',
     headers: {
@@ -154,3 +154,46 @@ export const toBase64 = (file: File) => new Promise((resolve, reject) => {
   reader.onload = () => resolve(reader.result?.toString().split('base64,')[1]);
   reader.onerror = reject;
 });
+
+export const createTimeInterval = (startTime: Dayjs | null, endTime: Dayjs | null) => {
+  if (startTime === null || endTime === null) return [];
+  const hoursArray = [];
+  let currentTime = startTime;
+
+  while (currentTime.isBefore(endTime) || currentTime.isSame(endTime)) {
+    hoursArray.push(currentTime.format('h:mm A'));
+    currentTime = currentTime.add(1, 'hour');
+  }
+  return hoursArray;
+};
+
+export const transformRequests = (reqList: UserRequest[]): (UserRequest | ClusterRequest)[]  => {
+  // collapse requests with the same clusterId
+  let clusterIdToRequest = new Map<number, UserRequest[]>();
+  reqList.forEach((r) => {
+    if (!r.clusterId) return;
+    let clusterList = clusterIdToRequest.get(r.clusterId);
+    if (!clusterList) {
+      clusterIdToRequest.set(r.clusterId, [r]);
+    } else {
+      clusterList.push(r);
+    }
+  });
+  let newReqList: (UserRequest | ClusterRequest)[] = [];
+  for (const request of reqList) {
+    if (!request.clusterId) {
+      newReqList.push(request);
+    } else {
+      let clusterList = clusterIdToRequest.get(request.clusterId);
+      // only look for the first request
+      if (!clusterList || clusterList[0].requestId !== request.requestId)
+        continue;
+      
+      newReqList.push({
+        requests: clusterList,
+        clusterId: request.clusterId,
+      });
+    }
+  }
+  return newReqList;
+};

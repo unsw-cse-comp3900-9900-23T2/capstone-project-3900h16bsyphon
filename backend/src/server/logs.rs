@@ -1,9 +1,9 @@
-use actix_web::{web::Query, HttpResponse};
-use sea_orm::{ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
+use crate::entities::sea_orm_active_enums::Statuses;
 use crate::models::logs::*;
 use crate::models::SyphonResult;
 use crate::{entities, utils::db::db};
-use crate::entities::sea_orm_active_enums::Statuses;
+use actix_web::{web::Query, HttpResponse};
+use sea_orm::{ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 
 pub async fn get_start_time(query: Query<GetRequestLogById>) -> SyphonResult<HttpResponse> {
     let db = db();
