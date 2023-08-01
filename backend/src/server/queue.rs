@@ -30,7 +30,7 @@ use sea_orm::{
     PaginatorTrait, QueryFilter, QuerySelect, RelationTrait,
 };
 
-use futures::future::{join_all, try_join_all, try_join};
+use futures::future::{join_all, try_join, try_join_all};
 use serde_json::json;
 
 pub async fn create_queue(
@@ -764,9 +764,12 @@ pub async fn bulk_create_queue(
     let q_fut = body
         .into_iter()
         .map(|req| create_queue_not_web(token.username, req));
-    let queues = join_all(q_fut).await;
-    log::debug!("PROG: FINISHED BULK RES: {:?}", queues);
-    Ok(HttpResponse::Ok().json(""))
+    let (oks, errs) = (join_all(q_fut).await)
+        .into_iter()
+        .partition::<Vec<_>, _>(Result::is_ok);
+    let oks = oks.into_iter().map(Result::unwrap).collect::<Vec<_>>();
+    log::debug!("Couldnt create the following queues: {:?}", errs);
+    Ok(HttpResponse::Ok().json(oks))
 }
 
 pub async fn create_queue_not_web(
