@@ -96,9 +96,9 @@ pub async fn join_cluster(
 }
 
 
-pub async fn delete_cluster(
+pub async fn edit_cluster(
     _token: ReqData<TokenClaims>,
-    web::Json(body): web::Json<DeleteClusterRequest>,
+    web::Json(body): web::Json<EditClusterRequest>,
     lobby: web::Data<Addr<Lobby>>
 ) -> SyphonResult<HttpResponse> {
     let db = db();
@@ -117,6 +117,13 @@ pub async fn delete_cluster(
     entities::clusters::Entity::delete_many()
         .filter(entities::clusters::Column::ClusterId.eq(body.cluster_id))
         .exec(db).await?;
+
+    let items = body.request_ids.into_iter().map(|request_id| entities::clusters::ActiveModel {
+        request_id: ActiveValue::Set(request_id),
+        cluster_id: sea_orm::ActiveValue::Set(body.cluster_id),
+    });
+
+    entities::clusters::Entity::insert_many(items).exec(db).await?;
     let keys_to_invalidate = vec![
         SocketChannels::QueueData(queue_id),
     ];

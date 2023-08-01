@@ -149,7 +149,8 @@ pub struct LeaveClusterRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct DeleteClusterRequest {
+pub struct EditClusterRequest {
     pub cluster_id: i32,
+    pub request_ids: Vec<i32>
 }
 

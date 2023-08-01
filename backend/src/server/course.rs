@@ -1,6 +1,6 @@
 use crate::{
     entities,
-    models::{SyphonError, SyphonResult, Tag, TokenClaims, INV_CODE_LEN, TimeStampModel, GetTagAnalytics, RequestId},
+    models::{SyphonError, SyphonResult, Tag, TokenClaims, INV_CODE_LEN, TimeStampModel, GetTagAnalytics},
     utils::{
         db::db,
         user::{validate_admin, validate_user},
