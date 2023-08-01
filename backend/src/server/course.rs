@@ -694,7 +694,6 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
         let mut wait_time_seconds = 0;
         let mut idle_time_seconds = 0;
 
-        // TODO: debug all these calculations
         for consult in &request_list {
             // calculate num students unseen
             num_students_unseen += entities::request_status_log::Entity::find()
@@ -703,17 +702,12 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
                 .count(db)
                 .await?;
 
-            log::warn!("num students unseen: {:?}", num_students_unseen);
-            log::warn!("consult id: {:?}", consult.request_id);
-
             // calculate num students seen
             num_students_seen += entities::request_status_log::Entity::find()
                 .filter(entities::request_status_log::Column::RequestId.eq(consult.request_id))
                 .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
                 .count(db)
                 .await?;
-
-            log::warn!("num students seen: {:?}", num_students_seen);
 
             // calculate avg wait time
             let wait_start_times = request_list
@@ -762,55 +756,53 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
             }
 
             // calculate time spent idle
-            for tutor in &tutor_list {
-                // calculate start times of when tutor started being idle
-                let idle_start_times = tutor_list
-                    .iter()
-                    .map(|_x| {
-                        entities::request_status_log::Entity::find()
-                            .select_only()
-                            .column(entities::request_status_log::Column::EventTime)
-                            .left_join(entities::requests::Entity)
-                            .filter(entities::request_status_log::Column::TutorId.eq(tutor.zid))
-                            .filter(entities::request_status_log::Column::Status.eq(Statuses::NotFound))
-                            .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
-                            .into_model::<TimeStampModel>()
-                            .one(db)
-                    })
-                    .collect::<Vec<_>>();
-                let idle_start_times = try_join_all(idle_start_times).await?;
+            // calculate start times of when tutor started being idle
+            let idle_start_times = tutor_list
+                .iter()
+                .map(|x| {
+                    entities::request_status_log::Entity::find()
+                        .select_only()
+                        .column(entities::request_status_log::Column::EventTime)
+                        .left_join(entities::requests::Entity)
+                        .filter(entities::request_status_log::Column::TutorId.eq(x.zid))
+                        .filter(entities::request_status_log::Column::Status.ne(Statuses::Seeing))
+                        .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
+                        .into_model::<TimeStampModel>()
+                        .one(db)
+                })
+                .collect::<Vec<_>>();
+            let idle_start_times = try_join_all(idle_start_times).await?;
+        
+            // calculate end times of when tutor stopped being idle
+            let idle_end_times = tutor_list
+                .iter()
+                .map(|x| {
+                    entities::request_status_log::Entity::find()
+                        .select_only()
+                        .column(entities::request_status_log::Column::EventTime)
+                        .left_join(entities::requests::Entity)
+                        .filter(entities::request_status_log::Column::TutorId.eq(x.zid))
+                        .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+                        .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
+                        .into_model::<TimeStampModel>()
+                        .one(db)
+                })
+                .collect::<Vec<_>>();
+            let idle_end_times = try_join_all(idle_end_times).await?;
             
-                // calculate end times of when tutor stopped being idle
-                let idle_end_times = tutor_list
-                    .iter()
-                    .map(|_x| {
-                        entities::request_status_log::Entity::find()
-                            .select_only()
-                            .column(entities::request_status_log::Column::EventTime)
-                            .left_join(entities::requests::Entity)
-                            .filter(entities::request_status_log::Column::TutorId.eq(tutor.zid))
-                            .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
-                            .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
-                            .into_model::<TimeStampModel>()
-                            .one(db)
-                    })
-                    .collect::<Vec<_>>();
-                let idle_end_times = try_join_all(idle_end_times).await?;
-                
-                // calculate the idle time for the tutor and add it to the total
-                for (i, start_time) in idle_start_times.iter().enumerate() {
-                    let end_time = idle_end_times[i].clone();
-                    let _duration = start_time.as_ref().map(|start_t| {
-                        if let Some(end_t) = end_time {
-                            idle_time_seconds += end_t
-                                .event_time
-                                .signed_duration_since(start_t.event_time)
-                                .num_seconds()
-                                .abs();
-                            total_num_requests += 1;
-                        }
-                    });
-                }
+            // calculate the idle time for the tutor and add it to the total
+            for (i, start_time) in idle_start_times.iter().enumerate() {
+                let end_time = idle_end_times[i].clone();
+                let _duration = start_time.as_ref().map(|start_t| {
+                    if let Some(end_t) = end_time {
+                        idle_time_seconds += end_t
+                            .event_time
+                            .signed_duration_since(start_t.event_time)
+                            .num_seconds()
+                            .abs();
+                        total_num_requests += 1;
+                    }
+                });
             }
         }
         
