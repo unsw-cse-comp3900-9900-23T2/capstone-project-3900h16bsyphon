@@ -4,19 +4,17 @@ import AnalyticsBarChart from '../AnalyticsBarChart';
 import { AnalyticsWaitTimeData, TagAnalytics } from '../../types/courses';
 import AnalyticsPieChart from '../AnalyticsPieChart';
 import AnalyticsLineGraph from '../AnalyticsLineGraph';
-import { DateRange } from 'react-day-picker';
 import { Dayjs } from 'dayjs';
 
 type AnalyticsChartCarouselProps = {
   waitTimeAnalytics?: AnalyticsWaitTimeData;
   tagAnalytics?: TagAnalytics;
-  range: DateRange | undefined;
-  startTime: Dayjs,
-  endTime: Dayjs
+  startTime: Dayjs | null,
+  endTime: Dayjs | null
 };
 
 // add more props here for other charts 
-const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, range, startTime, endTime }: AnalyticsChartCarouselProps ) => {
+const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, startTime, endTime }: AnalyticsChartCarouselProps ) => {
   return (
     <Carousel
       navButtonsProps={{
@@ -27,6 +25,9 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, range, startT
       }}
       autoPlay={false}
     >
+      <div className={styles.analyticsChartContainer}>
+        <AnalyticsLineGraph startTime={startTime} endTime={endTime}/>
+      </div>
       <div className={styles.analyticsChartContainer}>
         <AnalyticsBarChart
           data={{
@@ -72,9 +73,6 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, range, startT
           }}
           chartTitle={'Course tag distribution'}
         />
-      </div>
-      <div className={styles.analyticsChartContainer}>
-        <AnalyticsLineGraph range={range} startTime={startTime} endTime={endTime}/>
       </div>
     </Carousel>
   );

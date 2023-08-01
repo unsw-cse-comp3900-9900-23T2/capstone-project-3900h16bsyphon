@@ -8,20 +8,14 @@ import MetaData from '../../../components/MetaData';
 import { AnalyticsWaitTimeData, TagAnalytics } from '../../../types/courses';
 import { Button, Typography } from '@mui/material';
 import AnalyticsChartCarousel from '../../../components/AnalyticsChartCarousel';
-import AnalyticsCalendar from '../../../components/AnalyticsCalendar';
-import { DateRange } from 'react-day-picker';
-import { addDays } from 'date-fns';
-import { LocalizationProvider } from '@mui/x-date-pickers';
+import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import SyphonTimePicker from '../../../components/SyphonTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
-import { utcToZonedTime, format } from 'date-fns-tz';
 
 const CourseAnalytics = () => {
   const router = useRouter();
-  const pastMonth = new Date();
-  const [startTime, setTimeStart] = useState<Dayjs>(dayjs(new Date()));
-  const [endTime, setTimeEnd] = useState<Dayjs>(dayjs(new Date()).add(2, 'hour'));
+  const [startTime, setStartTime] = useState<Dayjs | null>(dayjs(new Date()));
+  const [endTime, setEndTime] = useState<Dayjs | null>(dayjs(new Date()).add(2, 'hour'));
   const [data, setData] = useState([
     {
       queueId: 1,
@@ -41,13 +35,6 @@ const CourseAnalytics = () => {
   const [waitTimeAnalytics, setWaitTimeAnalytics] =
     useState<AnalyticsWaitTimeData>();
   const [tagAnalytics, setTagAnalytics] = useState<TagAnalytics>();
-  const defaultSelected: DateRange = {
-    from: pastMonth,
-    to: addDays(pastMonth, 4)
-  };
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(defaultSelected);
-
-  const handleRangeChange = (newRange: DateRange | undefined) => setDateRange(newRange);
 
   const parseTags = (d: TagAnalytics) => {
     const tagAnalytics = d.reduce((accumulator, tag) => {
@@ -121,19 +108,11 @@ const CourseAnalytics = () => {
     getTutored();
     getWaitTimeAnalytics();
     getTagAnalytics();
-  }, [courseData.courseCode, router.query.courseid, dateRange, startTime, endTime]);
-
-  // const timeZone = 'Australia/Sydney';
-  // const convertDateRange = (date: any) => {
-  //   const newDate = Date.parse(date);
-  //   return format(utcToZonedTime(newDate, timeZone), 'yyyy-MM-dd\'T\'HH:mm:ss', { timeZone });
-  // };
+  }, [courseData.courseCode, router.query.courseid, startTime, endTime]);
   
   const handleSubmit = async () => {
-    // console.log(convertDateRange(dateRange?.from));
-    // console.log(convertDateRange(dateRange?.to));
-    console.log(startTime.format('YYYY-MM-DDTHH:mm:ss'));
-    console.log(endTime.format('YYYY-MM-DDTHH:mm:ss'));
+    console.log(startTime?.format('YYYY-MM-DDTHH:mm:ss'));
+    console.log(endTime?.format('YYYY-MM-DDTHH:mm:ss'));
     console.log(router.query.courseid);
   };
   
@@ -158,22 +137,22 @@ const CourseAnalytics = () => {
           <div className={styles.courseAnalyticsContent}>
             <div className={styles.statsContainer}>
               <div className={styles.calendarContainer}>
-                <AnalyticsCalendar range={dateRange} onRangeChange={handleRangeChange} />
-                { dateRange?.from !== undefined && dateRange?.to === undefined && <div className={styles.timePickerContainer}>
-                  <Typography>Enter start and end time</Typography>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <SyphonTimePicker 
-                      timeStart={startTime} 
-                      setTimeStart={setTimeStart} 
-                      timeEnd={endTime} 
-                      setTimeEnd={setTimeEnd} 
-                    />
-                  </LocalizationProvider>
-                </div>}
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DateTimePicker
+                    label="Start time"
+                    value={startTime}
+                    onChange={(time) => setStartTime(time)}
+                  />
+                  <DateTimePicker
+                    label="End time"
+                    value={endTime}
+                    onChange={(time) => setEndTime(time)}
+                  />
+                </LocalizationProvider>
                 <Button onClick={handleSubmit} className={styles.submitBtn}>Submit</Button>
               </div>
               <div className={styles.chartCarouselContainer}>
-                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics} range={dateRange} startTime={startTime} endTime={endTime} />
+                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics} startTime={startTime} endTime={endTime} />
               </div>
             </div>
             <div className={styles.queuesContainer}>

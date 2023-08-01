@@ -5,7 +5,6 @@ import Footer from '../components/Footer';
 import createEmotionCache from '../createEmotionCache';
 import { CacheProvider, type EmotionCache } from '@emotion/react';
 import Head from 'next/head';
-import 'react-day-picker/dist/style.css';
 
 const clientSideEmotionCache = createEmotionCache();
 

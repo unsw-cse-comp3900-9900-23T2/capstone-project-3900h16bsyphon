@@ -629,6 +629,8 @@ pub async fn get_tag_analytics(query: Query<GetTagAnalytics>) -> SyphonResult<Ht
 
 pub async fn get_consultation_analytics(web::Json(body): web::Json<ConsultationAnalyticsBody>) -> SyphonResult<HttpResponse> {
     let db = db();
+
+    // TODO: figure how to separate by hour
     
     // get queue ids that match course offering id and are located between the start and end time
     let queue_ids: Vec<i32> = entities::queues::Entity::find()
@@ -757,37 +759,55 @@ pub async fn get_consultation_analytics(web::Json(body): web::Json<ConsultationA
         }
 
         // calculate time spent idle
-        let mut total_idle_time_seconds = 0;
+        let mut idle_time_seconds = 0;
 
         for tutor in &tutor_list {
-            // find the first "NotFound" status for the tutor
-            let start_time = entities::request_status_log::Entity::find()
-                .select_only()
-                .column(entities::request_status_log::Column::EventTime)
-                .left_join(entities::requests::Entity)
-                .filter(entities::request_status_log::Column::TutorId.eq(tutor.zid))
-                .filter(entities::request_status_log::Column::Status.eq(Statuses::NotFound))
-                .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
-                .into_model::<TimeStampModel>()
-                .one(db)
-                .await?;
-            
-            // find the first "Seeing" status for the tutor after the "NotFound" status
-            let end_time = entities::request_status_log::Entity::find()
-                .select_only()
-                .column(entities::request_status_log::Column::EventTime)
-                .left_join(entities::requests::Entity)
-                .filter(entities::request_status_log::Column::TutorId.eq(tutor.zid))
-                .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
-                .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
-                .into_model::<TimeStampModel>()
-                .one(db)
-                .await?;
+            // calculate start times of when tutor started being idle
+            let idle_start_times = tutor_list
+                .iter()
+                .map(|_x| {
+                    entities::request_status_log::Entity::find()
+                        .select_only()
+                        .column(entities::request_status_log::Column::EventTime)
+                        .left_join(entities::requests::Entity)
+                        .filter(entities::request_status_log::Column::TutorId.eq(tutor.zid))
+                        .filter(entities::request_status_log::Column::Status.eq(Statuses::NotFound))
+                        .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
+                        .into_model::<TimeStampModel>()
+                        .one(db)
+                })
+                .collect::<Vec<_>>();
+            let idle_start_times = try_join_all(idle_start_times).await?;
+        
+            // calculate end times of when tutor stopped being idle
+            let idle_end_times = tutor_list
+                .iter()
+                .map(|_x| {
+                    entities::request_status_log::Entity::find()
+                        .select_only()
+                        .column(entities::request_status_log::Column::EventTime)
+                        .left_join(entities::requests::Entity)
+                        .filter(entities::request_status_log::Column::TutorId.eq(tutor.zid))
+                        .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
+                        .filter(entities::requests::Column::QueueId.is_in(queue_ids.clone()))
+                        .into_model::<TimeStampModel>()
+                        .one(db)
+                })
+                .collect::<Vec<_>>();
+            let idle_end_times = try_join_all(idle_end_times).await?;
             
             // calculate the idle time for the tutor and add it to the total
-            if let (Some(start_time), Some(end_time)) = (start_time, end_time) {
-                let idle_time_seconds = end_time.event_time.signed_duration_since(start_time.event_time).num_seconds();
-                total_idle_time_seconds += idle_time_seconds;
+            for (i, start_time) in idle_start_times.iter().enumerate() {
+                let end_time = idle_end_times[i].clone();
+                let _duration = start_time.as_ref().map(|start_t| {
+                    if let Some(end_t) = end_time {
+                        idle_time_seconds += end_t
+                            .event_time
+                            .signed_duration_since(start_t.event_time)
+                            .num_seconds();
+                        total_num_requests += 1;
+                    }
+                });
             }
         }
         
@@ -800,9 +820,9 @@ pub async fn get_consultation_analytics(web::Json(body): web::Json<ConsultationA
                 seconds: (wait_time_seconds % 60) as i64,
             },
             time_spent_idle: RequestDuration {
-                hours: (total_idle_time_seconds / 3600) as i64,
-                minutes: (total_idle_time_seconds / 60) % 60 as i64,
-                seconds: (total_idle_time_seconds % 60) as i64,
+                hours: (idle_time_seconds / 3600) as i64,
+                minutes: (idle_time_seconds / 60) % 60 as i64,
+                seconds: (idle_time_seconds % 60) as i64,
             },
         })
     }

@@ -10,8 +10,6 @@ import {
   Legend,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { DateRange } from 'react-day-picker';
-import { format, eachDayOfInterval } from 'date-fns';
 import { Dayjs } from 'dayjs';
 import { createTimeInterval } from '../../utils';
 
@@ -26,38 +24,18 @@ ChartJS.register(
 );
 
 type AnalyticsLineGraphProps = {
-  range: DateRange | undefined;
-  startTime: Dayjs;
-  endTime: Dayjs;
+  startTime: Dayjs | null;
+  endTime: Dayjs | null;
 };
 
-export default function AnalyticsLineGraph({ range, startTime, endTime }: AnalyticsLineGraphProps) {
-  const start = startTime.format('h:mm A');
-  const end = endTime.format('h:mm A');
-
+export default function AnalyticsLineGraph({ startTime, endTime }: AnalyticsLineGraphProps) {
   // render consultation demand title and correct labels
-  let text: string = 'Consultation demand breakdown';
-  let labels: string[] = [];
+  let text: string = `Consultation demand breakdown between ${startTime?.format('MMMM D, YYYY h:mm A')} - ${endTime?.format('MMMM D, YYYY h:mm A')}`;
 
   // create interval time arr separated by hour
   const timeArr = createTimeInterval(startTime, endTime);
-
-  if (range?.from && startTime.isBefore(endTime)) {
-    if (!range.to) {
-      text = `Consultation demand breakdown for ${format(range.from, 'PPP')} between ${start} - ${end}`;
-      labels = timeArr.map((time) => time);
-    } else if (range.to) {
-      text = `Consultation demand breakdown between ${format(
-        range.from,
-        'PPP'
-      )} – ${format(range.to, 'PPP')}`;
-      labels = eachDayOfInterval({
-        start: range.from,
-        end: range.to,
-      }).map((d) => format(d, 'dd/MM/yyyy'));
-    }
-  }
-
+  let labels: string[] = timeArr.map((time) => time);
+  
   const data = {
     labels,
     datasets: [

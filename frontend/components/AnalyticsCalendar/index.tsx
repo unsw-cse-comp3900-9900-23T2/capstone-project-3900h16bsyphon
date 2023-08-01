@@ -1,21 +1,25 @@
-import { DateRange, DayPicker } from 'react-day-picker';
+import dayjs, { Dayjs } from 'dayjs';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { useState } from 'react';
 
-const pastMonth = new Date();
-
-type AnalyticsCalendarProps = {
-  range: DateRange | undefined;
-  onRangeChange: (newRange: DateRange | undefined) => void;
-};
-
-export default function AnalyticsCalendar({ range, onRangeChange }: AnalyticsCalendarProps) {
+export default function AnalyticsTimeSelector() {
+  const [value, setValue] = useState<Dayjs | null>(dayjs('2022-04-17T15:30'));
   return (
-    <DayPicker
-      id="test"
-      mode="range"
-      defaultMonth={pastMonth}
-      selected={range}
-      onSelect={onRangeChange}
-      disableNavigation
-    />
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
+        <DateTimePicker
+          label="Uncontrolled picker"
+          defaultValue={dayjs('2022-04-17T15:30')}
+        />
+        <DateTimePicker
+          label="Controlled picker"
+          value={value}
+          onChange={(newValue) => setValue(newValue)}
+        />
+      </DemoContainer>
+    </LocalizationProvider>
   );
 }

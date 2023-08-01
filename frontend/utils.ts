@@ -155,7 +155,8 @@ export const toBase64 = (file: File) => new Promise((resolve, reject) => {
   reader.onerror = reject;
 });
 
-export const createTimeInterval = (startTime: Dayjs, endTime: Dayjs) => {
+export const createTimeInterval = (startTime: Dayjs | null, endTime: Dayjs | null) => {
+  if (startTime === null || endTime === null) return [];
   const hoursArray = [];
   let currentTime = startTime;
 

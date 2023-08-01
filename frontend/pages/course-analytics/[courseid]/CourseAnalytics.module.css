@@ -45,6 +45,9 @@
 
 .calendarContainer {
   flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .queuesContainer {
@@ -73,12 +76,6 @@
   flex-direction: column;
   flex: 7;
   width: 100%;
-}
-
-.timePickerContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 
 .submitBtn {
