@@ -95,12 +95,3 @@ pub fn startup_logger() {
     log::info!("");
     log::info!("");
 }
-
-pub async fn remove_images_file() {
-    let db = db();
-    let any_images = entities::request_images::Entity::find().one(db).await;
-    if any_images.is_ok() && any_images.unwrap().is_none() {
-        std::fs::remove_dir_all("/images").unwrap();
-        std::fs::create_dir("/images").unwrap();
-    }
-}

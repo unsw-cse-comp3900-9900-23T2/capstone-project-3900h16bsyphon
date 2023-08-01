@@ -77,3 +77,9 @@
 .searchBarContainer {
   max-width: 1000px;
 }
+
+.toast {
+  font-size: large;
+  font-weight: bold;
+  min-width: 20%;
+}

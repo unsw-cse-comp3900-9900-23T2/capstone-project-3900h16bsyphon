@@ -25,6 +25,9 @@ services:
       - DATABASE_HOST=database
     networks:
       - net
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   backend_prod:
     container_name: backend_prod
     build:
@@ -36,6 +39,8 @@ services:
       - DATABASE_HOST=database
     ports:
       - 8000:8000
+    volumes:
+      - images:/images
     networks:
       - net
     depends_on:
@@ -43,3 +48,8 @@ services:
 
 networks:
   net:
+
+volumes:
+  images:
+  pgdata:
+  

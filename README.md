@@ -83,7 +83,9 @@ aishanauman~/Desktop/capstone-project-3900h16bsyphon % docker compose -f docker-
  => => # https://nextjs.org/telemetry                                                                                                                                                                
  => => # info  - Linting and checking validity of types...                                                                                                                                           
 ```
-5. run `docker compose -f docker-compose-prod.yaml up`. This will launch the set of images you just pulled and built. This will, in a couple of seconds, launch the frontend and backend, with a database. Wait until you see the backend has successfully launched, and the frontend has successfully launched. inspect your docker output to see that this output:
+5. run `docker volume prune`, this will remove preexisting image volumes.
+
+6. run `docker compose -f docker-compose-prod.yaml up`. This will launch the set of images you just pulled and built. This will, in a couple of seconds, launch the frontend and backend, with a database. Wait until you see the backend has successfully launched, and the frontend has successfully launched. inspect your docker output to see that this output:
 ![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/19517e0a-a37a-4f66-805f-83d73b2fefbb)
 Can be seen (backend).
 Also, the frontend should be launched, with output which looks like:

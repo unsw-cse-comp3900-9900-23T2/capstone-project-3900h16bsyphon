@@ -2,7 +2,6 @@ import Carousel from 'react-material-ui-carousel';
 import styles from './AnalyticsChartCarousel.module.css';
 import AnalyticsBarChart from '../AnalyticsBarChart';
 import { AnalyticsWaitTimeData, TagAnalytics } from '../../types/courses';
-import AnalyticsPieChart from '../AnalyticsPieChart';
 import AnalyticsLineGraph from '../AnalyticsLineGraph';
 
 type AnalyticsChartCarouselProps = {
@@ -46,7 +45,7 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, courseId }: A
         />
       </div>
       <div className={styles.analyticsChartContainer}>
-        <AnalyticsPieChart 
+        <AnalyticsBarChart
           data={{
             labels: tagAnalytics?.sort((a, b) => a.name.localeCompare(b.name)).map((tag) => tag.name),
             datasets: [
@@ -54,20 +53,10 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, courseId }: A
                 label: '# of requests',
                 data: tagAnalytics
                   ? tagAnalytics.map((tag) => tag.requestIds.length)
-                  : 0,
-                backgroundColor: [
-                  '#BCD1F4',
-                  '#D3D3D3',
-                  '#B6EDB8',
-                  '#F4BC4D',
-                  '#D5CFFF',
-                  '#EDB6B6',
-                  '#EDB392',
-                  '#6F7CB2',
-                  '#B9490A'
-                ]
+                  : [],
+                backgroundColor: '#BCD1F4',
               }
-            ]
+            ],
           }}
           chartTitle={'Course tag distribution'}
         />

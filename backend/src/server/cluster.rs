@@ -144,17 +144,20 @@ pub async fn edit_cluster(
         .exec(db)
         .await?;
 
-    let items = body
-        .request_ids
-        .into_iter()
-        .map(|request_id| entities::clusters::ActiveModel {
-            request_id: ActiveValue::Set(request_id),
-            cluster_id: sea_orm::ActiveValue::Set(body.cluster_id),
-        });
+    if body.request_ids.len() > 1 {
+        let items = body
+            .request_ids
+            .into_iter()
+            .map(|request_id| entities::clusters::ActiveModel {
+                request_id: ActiveValue::Set(request_id),
+                cluster_id: sea_orm::ActiveValue::Set(body.cluster_id),
+            });
 
-    entities::clusters::Entity::insert_many(items)
-        .exec(db)
-        .await?;
+        entities::clusters::Entity::insert_many(items)
+            .exec(db)
+            .await?;
+    }
+
     let keys_to_invalidate = vec![SocketChannels::QueueData(queue_id)];
     lobby.do_send(HttpServerAction::InvalidateKeys(keys_to_invalidate));
     Ok(HttpResponse::Ok().json(()))

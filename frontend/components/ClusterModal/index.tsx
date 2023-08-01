@@ -56,12 +56,25 @@ const ClusterModal = (
     e.stopPropagation();
     console.log('selectedClustering', selectedClustering);
     if (selectedClustering.length < 2) {
-      if (!clusterId) return;
-      await authenticatedPutFetch('/queue/cluster/edit', {
-        cluster_id: clusterId,
-        request_ids: [],
-      });
-      setSelectedClustering([]);
+      if (clusterId) {
+        await authenticatedPutFetch('/queue/cluster/edit', {
+          cluster_id: clusterId,
+          request_ids: [],
+        });
+        setSelectedClustering([]);
+      } else {
+        toast('Need more than one request in cluster', {
+          position: 'bottom-left',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'light',
+          className: styles.toast,
+        });
+      }
       return;
     }
     let res;
@@ -149,9 +162,9 @@ const ClusterModal = (
               }}
             />
           </div>
-          {clusterableUserRequests.length > 0 ? clusterableUserRequests.map((request, index) => (
-            <CardActionArea 
-              key={`${index}`}
+          {clusterableUserRequests.length > 0 ? clusterableUserRequests.filter(r => r.isClusterable).map((request, index) => (
+            <CardActionArea
+              key={index}
               onClick={(e) => {
                 e.stopPropagation();
                 if (selectedClustering.some((r) => isCluster(r) ? r.clusterId === request.clusterId : r.requestId === (request as UserRequest).requestId)) {

@@ -30,6 +30,8 @@ use sea_orm::{
     QuerySelect,
 };
 
+use super::cluster::{leave_cluster, self};
+
 pub async fn create_request(
     token: ReqData<TokenClaims>,
     body: web::Json<CreateRequest>,
@@ -376,8 +378,9 @@ pub async fn request_info_not_web(body: RequestInfoBody) -> SyphonResult<QueueRe
 }
 
 pub async fn disable_cluster(
-    _token: ReqData<TokenClaims>,
+    token: ReqData<TokenClaims>,
     body: web::Json<RequestInfoBody>,
+    lobby: web::Data<Addr<Lobby>>
 ) -> SyphonResult<HttpResponse> {
     let db = db();
     let body = body.into_inner();
@@ -395,11 +398,27 @@ pub async fn disable_cluster(
     }
     .update(db)
     .await?;
-    // remove from any existing cluster
-    entities::clusters::Entity::delete_many()
+
+    let cluster_id = entities::clusters::Entity::find()
+        .select_only()
+        .column(entities::clusters::Column::ClusterId)
         .filter(entities::clusters::Column::RequestId.eq(body.request_id))
-        .exec(db)
+        .into_tuple()
+        .one(db)
         .await?;
+
+    // remove from any existing cluster
+    match(cluster_id) {
+        Some(cluster_id) => {
+            leave_cluster(token, actix_web::web::Json(LeaveClusterRequest {
+                request_id: body.request_id,
+                cluster_id
+            }), lobby).await?;
+        },
+        None => {
+            //
+        }
+    }
     Ok(HttpResponse::Ok().json(()))
 }
 
