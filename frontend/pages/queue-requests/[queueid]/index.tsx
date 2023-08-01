@@ -176,6 +176,7 @@ const QueueRequests = () => {
                         isTutorView={false}
                         joinClusterAction={request.requests.findIndex((r) => r.requestId === Number.parseInt(`${router.query.requestid}` as string)) === -1 && (ownRequest as UserRequest)?.isClusterable ? () => joinCluster(request.clusterId) : undefined}
                         leaveClusterAction={request.requests.findIndex((r) => r.requestId === Number.parseInt(`${router.query.requestid}` as string)) !== -1 ? () => leaveCluster(request.clusterId) : undefined}
+                        allRequests={requests}
                       />
                     </div>
                   )

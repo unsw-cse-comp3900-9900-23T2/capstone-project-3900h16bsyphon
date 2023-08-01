@@ -10,7 +10,7 @@ import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
 type RequestDetailsProps = {
   requestId: number | undefined;
-  isTutorView: boolean;
+  isTutorView?: boolean;
 };
 
 const RequestDetails = ({ requestId, isTutorView }: RequestDetailsProps) => {
