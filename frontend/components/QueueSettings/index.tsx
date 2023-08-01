@@ -9,15 +9,31 @@ import SyphonTimePicker from '../SyphonTimePicker';
 import FAQs from '../FAQs';
 import { authenticatedGetFetch, authenticatedPostFetch, authenticatedPutFetch, toCamelCase } from '../../utils';
 import TagsSelection from '../TagsSelection';
-import Header from '../Header';
 import { Tag } from '../../types/requests';
 import { useRouter } from 'next/router';
 
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import QueueCard from '../QueueCard';
 
 type QueueSettingsProps = {
     courseOfferingId: string | string[] | undefined;
     queueId?: string | string[] | undefined;
     isEdit: boolean;
+};
+
+type QueueCreationInfo = {
+  date: Dayjs;
+  startTime: Dayjs;
+  endTime: Dayjs;
+  tags: Tag[];
+  tagSelection: Tag[];
+  isVisible: boolean;
+  isAvailable: boolean;
+  isTimeLimit: boolean;
+  title: string;
+  timeLimit: number;
+  announcement: string;
 };
 
 const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps ) => {
@@ -34,6 +50,8 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
   const [course, setCourse] = useState('');
   const [error, setError] = useState<{title?: string}>({});
   const [announcement, setAnnouncement] = useState<string>('');
+
+  const [toBeCreatedList, setToBeCreatedList] = useState<QueueCreationInfo[]>([]);
 
   const router = useRouter();
   
@@ -81,34 +99,108 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
     fetchTags();
   }, [courseOfferingId]);
 
-  const handleCreate = async () => {
-    if (title === '') {
-      setError({title: 'Title cannot be empty'});
-      return;
-    }
-    const body = {
-      title,
-      start_time: startTime.format('YYYY-MM-DDTHH:mm:ss'),
-      end_time: endTime.format('YYYY-MM-DDTHH:mm:ss'),
-      tags: tagSelection?.map((tag) => ({
-        tag_id: tag.tagId,
-        is_priority: !!tag.isPriority,
-        name: tag.name,
-      })),
-      is_visible: isVisible,
-      is_available: isAvailable,
-      time_limit: timeLimit,
-      announcement,
-      course_id: Number.parseInt(courseOfferingId as string),
-    };
-    let res = await authenticatedPostFetch('/queue/create', body);
+  const handleCreateAll = async () => {
+    const body = toBeCreatedList.map(q => {
+      return {
+        title: q.title,
+        start_time: q.startTime.format('YYYY-MM-DDTHH:mm:ss'),
+        end_time: q.endTime.format('YYYY-MM-DDTHH:mm:ss'),
+        tags: q.tagSelection?.map((tag) => ({
+          tag_id: tag.tagId,
+          is_priority: !!tag.isPriority,
+          name: tag.name,
+        })),
+        is_visible: q.isVisible,
+        is_available: q.isAvailable,
+        time_limit: q.timeLimit,
+        announcement: q.announcement,
+        course_id: Number.parseInt(courseOfferingId as string),
+      };
+    });
+    let res = await authenticatedPostFetch('/queue/bulk_create', body);
     let data = await res.json();
-    router.push(`/active-queue/${data.queue_id}`);
+    router.push(`/course/${courseOfferingId}`);
+  };
+
+  const [indexInBulkList, setIndexInBulkList] = useState<number | undefined>(undefined);
+
+  const handleAddAnother = () => {
+    if (title === '') {
+      window.scrollTo({top: 0, behavior: 'smooth'});
+      return setError({title: 'Title cannot be empty'});
+    }
+    setDataInBulkList(true);
+    resetCurrentQueueData();
+  };
+
+  const resetCurrentQueueData = () => {
+    setDate(dayjs(new Date()));
+    setTimeStart(dayjs(new Date()));
+    setTimeEnd(dayjs(new Date()).add(2, 'hour'));
+    setTags([{tagId: 1, name: 'A tag', isPriority: false}]);
+    setTagSelection([]);
+    setIsVisible(true);
+    setIsAvailable(true);
+    setIsTimeLimit(false);
+    setTitle('');
+    setTimeLimit(0);
+    setCourse('');
+    setError({});
+    setAnnouncement('');
+  };
+
+  const redirectToCardInBulkList = (e: any, idx: number) => {
+    e.stopPropagation();
+    // Save current changes to the list if not been added
+    if (indexInBulkList !== undefined) {
+      setDataInBulkList();
+    }
+    // load data from idx
+    const data = toBeCreatedList[idx];
+    setDate(data.date);
+    setTimeStart(data.startTime);
+    setTimeEnd(data.endTime);
+    setTags(data.tags);
+    setTagSelection(data.tagSelection);
+    setIsVisible(data.isVisible);
+    setIsAvailable(data.isAvailable);
+    setIsTimeLimit(data.isTimeLimit);
+    setTitle(data.title);
+    setTimeLimit(data.timeLimit);
+    setAnnouncement(data.announcement);
+
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    setIndexInBulkList(idx);
+  };
+
+  const setDataInBulkList = (forceNewQueue?: boolean) => {
+    const data = constructBulkListData();
+    if (indexInBulkList === undefined || forceNewQueue) {
+      setToBeCreatedList(prev => [...prev, data]);
+    } else {
+      setToBeCreatedList(prev => [...prev.slice(0, indexInBulkList), data, ...prev.slice(indexInBulkList + 1)]);
+    }
+  };
+  const constructBulkListData = (): QueueCreationInfo => {
+    return {
+      date,
+      startTime,
+      endTime,
+      tags,
+      tagSelection,
+      isVisible,
+      isAvailable,
+      isTimeLimit,
+      title,
+      timeLimit,
+      announcement,
+    };
   };
 
   const handleSaveChanges = async () => {
     if (title === '') {
       setError({title: 'Title cannot be empty'});
+      window.scrollTo({top: 0, behavior: 'smooth'});
       return;
     }
     const body = {
@@ -135,9 +227,10 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
   };
 
 
+  console.log('toBeCreatedList.length', toBeCreatedList.length);
+
   return (
     <>
-      <Header/>
       <div className={style.container}> 
         <Box className={style.cardBox}>
           <Card className={style.cardContainer}>
@@ -193,13 +286,69 @@ const QueueSettings = ({courseOfferingId, queueId, isEdit } : QueueSettingsProps
             <div className={style.faq}>
               <FAQs courseOfferingId={courseOfferingId} tutor={true}/>
             </div>
-            {isEdit? <Button variant="contained" className={style.button} onClick={handleSaveChanges}>Save Changes</Button> 
-              : <Button variant="contained" className={style.button} onClick={handleCreate}>Create Queue</Button>}
+            {isEdit ?
+              <Button variant="contained" className={style.button} onClick={handleSaveChanges}>Save Changes</Button> 
+              : (<>
+                <span>
+                  <Button variant="contained" className={style.button} onClick={handleAddAnother}>Add as New Queue</Button>
+                </span>
+              </>
+              )}
+          </Card>
+        </Box>
+        <div style = {{marginTop: '1.5rem'}} />
+        <Box className={style.cardBox}>
+          <Card className={style.cardContainer}>
+            {
+              !isEdit && (
+                <>
+                  <Typography variant="h5" className={style.pageTitle}>Queues to be Created:</Typography>
+                </>
+              )
+            }
+            {!isEdit &&
+              <div className={style.cards}> {
+                toBeCreatedList.map((q, idx) => <QueueCard
+                  key={idx}
+                  title={q.title}
+                  queueId={0}
+                  location={['Online']}
+                  courseAdmins={['John Smith']}
+                  isEdit={false}
+                  isTutor={true}
+                  overrideRedirect={(e) => redirectToCardInBulkList(e, idx)}
+                />)}
+              </div>
+            }
+            {!isEdit &&
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  margin: '1rem'
+                }}>
+                  <Button
+                    variant="contained"
+                    className={style.button}
+                    onClick={handleCreateAll}
+                    disabled={toBeCreatedList.length <= 0}
+                    style={{margin: 'auto'}}
+                  >
+                  Create All & Finish
+                  </Button>
+                </div>
+              </div>
+            }
           </Card>
         </Box>
       </div>
     </>
   );
 };
+
 export default QueueSettings;
 

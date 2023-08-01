@@ -30,7 +30,7 @@ use sea_orm::{
     PaginatorTrait, QueryFilter, QuerySelect, RelationTrait,
 };
 
-use futures::future::{join_all, try_join_all};
+use futures::future::{join_all, try_join_all, try_join};
 use serde_json::json;
 
 pub async fn create_queue(
@@ -764,8 +764,9 @@ pub async fn bulk_create_queue(
     let q_fut = body
         .into_iter()
         .map(|req| create_queue_not_web(token.username, req));
-    let queues = try_join_all(q_fut).await?;
-    Ok(HttpResponse::Ok().json(queues))
+    let queues = join_all(q_fut).await;
+    log::debug!("PROG: FINISHED BULK RES: {:?}", queues);
+    Ok(HttpResponse::Ok().json(""))
 }
 
 pub async fn create_queue_not_web(
@@ -799,18 +800,25 @@ pub async fn create_queue_not_web(
             Ok(tag.clone())
         }
     });
-    let queue_tags =
-        try_join_all(tags_fut)
-            .await?
-            .into_iter()
-            .map(|tag| entities::queue_tags::ActiveModel {
-                tag_id: ActiveValue::Set(tag.tag_id),
-                queue_id: ActiveValue::Set(queue.queue_id),
-                is_priority: ActiveValue::Set(tag.is_priority),
-            });
-    entities::queue_tags::Entity::insert_many(queue_tags)
-        .exec(db)
-        .await?;
+    let tags = try_join_all(tags_fut).await?;
+    log::debug!("PROG: FINISHED TAGS");
+
+    let queue_tags = tags
+        .into_iter()
+        .map(|tag| {
+            {
+                log::debug!("INTAG: {:?}", tag);
+                entities::queue_tags::ActiveModel {
+                    tag_id: ActiveValue::Set(tag.tag_id),
+                    queue_id: ActiveValue::Set(queue.queue_id),
+                    is_priority: ActiveValue::Set(tag.is_priority),
+                }
+            }
+            .insert(db)
+        })
+        .collect::<Vec<_>>();
+    try_join_all(queue_tags).await?;
+    log::debug!("PROG: FINISHED all creat");
 
     Ok(queue)
 }

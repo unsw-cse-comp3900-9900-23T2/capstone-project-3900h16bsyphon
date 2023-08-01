@@ -7,6 +7,7 @@ import TagBox from '../TagBox';
 import { CardActionArea } from '@mui/material';
 import { useRouter } from 'next/router';
 import { authenticatedGetFetch } from '../../utils';
+import React from 'react';
 
 type QueueCardProps = {
   title: string;
@@ -19,6 +20,7 @@ type QueueCardProps = {
   isTutor: boolean;
   isPrevious?: boolean;
   isQueueAnalyticsLive?: boolean;
+  overrideRedirect?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 };
 
 export default function QueueCard({
@@ -32,6 +34,7 @@ export default function QueueCard({
   isTutor,
   isPrevious,
   isQueueAnalyticsLive,
+  overrideRedirect,
 }: QueueCardProps) {
   const router = useRouter();
   const findWhereToGo = async () => {
@@ -52,9 +55,17 @@ export default function QueueCard({
     }
     return '/403';
   };
+
+  const redirect = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if (overrideRedirect !== undefined) {
+      return overrideRedirect(e);
+    }
+    router.push(await findWhereToGo());
+  };
+
   return (
     <Card className={styles.card}>
-      <CardActionArea onClick={async () => router.push(await findWhereToGo())}>
+      <CardActionArea onClick={e => redirect(e)}>
         <CardContent>
           <div className={styles.chipContainer}>
             {courseAdmins?.map((c, index) => (
