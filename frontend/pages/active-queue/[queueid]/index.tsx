@@ -1,11 +1,11 @@
-import { Box, Button, Card, FormControl, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, Typography } from '@mui/material';
+import { Box, Button, Card, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import styles from './ActiveQueue.module.css';
 import { useRouter } from 'next/router';
 import StudentQueueRequestCard from '../../../components/StudentQueueRequestCard';
 import MetaData from '../../../components/MetaData';
 import Header from '../../../components/Header';
 import { useEffect, useState } from 'react';
-import { authenticatedGetFetch, authenticatedPostFetch, authenticatedPutFetch, toCamelCase } from '../../../utils';
+import { authenticatedGetFetch, authenticatedPutFetch, toCamelCase } from '../../../utils';
 import { ClusterRequest, Tag, UserRequest, isCluster } from '../../../types/requests';
 import dayjs from 'dayjs';
 import InfoIcon from '@mui/icons-material/Info';
@@ -14,7 +14,7 @@ import useSound from 'use-sound';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import StudentQueueClusterRequestCard from '../../../components/StudentQueueClusterRequestCard';
-import CreateClusterModal from '../../../components/CreateClusterModal';
+import CreateClusterModal from '../../../components/ClusterModal';
 
 const ActiveQueue = () => {
   const router = useRouter();
@@ -48,13 +48,16 @@ const ActiveQueue = () => {
       let newRequestsData = (lastJsonMessage as any).requests;
       console.debug('newRequestsData', newRequestsData);
       for (const r of newRequestsData) {
+        if (requests.length === 0) break;
         if (!isCluster(r)) {
           if (!(requests.some((req) => (isCluster(req) ? req.requests.some((req2) => req2.requestId === r.request_id) : req.requestId === r.request_id)))) {
+            console.log('new request');
             setNoti(true);
             break;
           }
         } else {
           if (!(r.requests.some((req) => (requests.some((req2) => isCluster(req) ? (req2 as ClusterRequest).requests.some((req3) => req3.requestId === req.requestId) : (req2 as UserRequest).requestId === req.requestId))))){
+            console.log('new request aa');
             setNoti(true);
             break;
           }
@@ -65,6 +68,7 @@ const ActiveQueue = () => {
   }, [lastJsonMessage]);
 
   useEffect(() => {
+    if (!noti) return;
     play();
     toast('new student in queue!', {
       position: 'bottom-left',
@@ -247,7 +251,7 @@ const ActiveQueue = () => {
               <MenuItem key={'key'} value='prevRequestCount'>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} by number of previous requests</MenuItem>
             </Select>
           </FormControl>
-          <CreateClusterModal queueId={Number.parseInt(`${router.query.queueid}`)} requests={requests}/>
+          <CreateClusterModal queueId={Number.parseInt(`${router.query.queueid}`)} requests={requests} button={<Button  className={styles.genericButton}>Create Cluster</Button>} />
           <Button className={styles.closeQueueButton} variant='contained' onClick={handleCloseQueue}>Close Queue</Button>
         </div>
         <Box className={styles.cardBox}>
@@ -273,6 +277,7 @@ const ActiveQueue = () => {
                     clusterId={request.clusterId}
                     requests={request.requests}
                     isTutorView={true}
+                    allRequests={requests}
                   />
                 )
               ))

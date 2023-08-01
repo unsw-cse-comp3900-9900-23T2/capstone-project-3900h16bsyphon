@@ -1,5 +1,5 @@
 import dayjs, { Dayjs } from 'dayjs';
-import { Status, Duration } from './types/requests';
+import { Status, Duration, UserRequest, ClusterRequest } from './types/requests';
 
 const setCookie = (cookieName: string, cookieValue: string) => {
   document.cookie = `${cookieName}=${cookieValue};path=/`;
@@ -165,4 +165,35 @@ export const createTimeInterval = (startTime: Dayjs | null, endTime: Dayjs | nul
     currentTime = currentTime.add(1, 'hour');
   }
   return hoursArray;
+};
+
+export const transformRequests = (reqList: UserRequest[]): (UserRequest | ClusterRequest)[]  => {
+  // collapse requests with the same clusterId
+  let clusterIdToRequest = new Map<number, UserRequest[]>();
+  reqList.forEach((r) => {
+    if (!r.clusterId) return;
+    let clusterList = clusterIdToRequest.get(r.clusterId);
+    if (!clusterList) {
+      clusterIdToRequest.set(r.clusterId, [r]);
+    } else {
+      clusterList.push(r);
+    }
+  });
+  let newReqList: (UserRequest | ClusterRequest)[] = [];
+  for (const request of reqList) {
+    if (!request.clusterId) {
+      newReqList.push(request);
+    } else {
+      let clusterList = clusterIdToRequest.get(request.clusterId);
+      // only look for the first request
+      if (!clusterList || clusterList[0].requestId !== request.requestId)
+        continue;
+      
+      newReqList.push({
+        requests: clusterList,
+        clusterId: request.clusterId,
+      });
+    }
+  }
+  return newReqList;
 };

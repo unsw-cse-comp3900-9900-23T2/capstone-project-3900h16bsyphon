@@ -4,6 +4,7 @@
     background-color: var(--colour-main-purple-200);
     color: var(--colour-main-purple-900);
     padding: 5px 25px;
+    min-width: 20%;
 }
 
 .genericButton:hover {
@@ -43,8 +44,6 @@
 .buttonContainer {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    min-width: 20%;
 }
 
 .requestCard {

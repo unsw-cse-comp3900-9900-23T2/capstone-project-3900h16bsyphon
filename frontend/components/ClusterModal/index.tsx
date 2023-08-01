@@ -1,8 +1,8 @@
 import { Button, Card, CardActionArea, IconButton, Modal, TextField, Typography } from '@mui/material';
-import styles from './CreateClusterModal.module.css';
-import { useEffect, useState } from 'react';
+import styles from './ClusterModal.module.css';
+import React, { ReactElement, useEffect, useState } from 'react';
 import { ClusterRequest, Tag, UserRequest, isCluster } from '../../types/requests';
-import { authenticatedGetFetch, authenticatedPostFetch, formatZid } from '../../utils';
+import { authenticatedGetFetch, authenticatedPostFetch, authenticatedPutFetch, formatZid } from '../../utils';
 import { toast } from 'react-toastify';
 import TagsSelection from '../TagsSelection';
 import TagBox from '../TagBox';
@@ -11,25 +11,29 @@ import CloseIcon from '@mui/icons-material/Close';
 type CreateClusterModalProps = {
   queueId: number;
   requests: (UserRequest | ClusterRequest)[];
+  button: ReactElement;
+  // both only provided only when editing a cluster
+  clusterId?: number;
+  selectedRequests?: UserRequest[];
 };
 
 
-const CreateClusterModal = (
-  { queueId, requests }: CreateClusterModalProps
+const ClusterModal = (
+  { queueId, requests, button, clusterId, selectedRequests }: CreateClusterModalProps
 ) => {
 
   const [open, setOpen] = useState(false);
-  const [selectedClustering, setSelectedClustering] = useState<(UserRequest)[]>([]);
+  const [selectedClustering, setSelectedClustering] = useState<(UserRequest)[]>(selectedRequests ?? []);
   const [clusterableUserRequests, setClusterableUserRequests] = useState<UserRequest[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
 
   useEffect(() => {
-    const userReqs = requests.filter((r) => !isCluster(r)) as UserRequest[];
-    setClusterableUserRequests(userReqs.filter((r) => r.isClusterable));
-  }, [requests]);
+    const userReqs = requests.filter((r) => !isCluster(r) || r.clusterId === clusterId);
+    setClusterableUserRequests(userReqs.flatMap((r) => isCluster(r) ? r.requests : [r]));
+  }, [clusterId, requests]);
 
-  useEffect(() => {
+  useEffect(() => { 
     const getTags = async () => {
       let res = await authenticatedGetFetch('/queue/tags', { queue_id: queueId.toString() });
       if (res.ok) {
@@ -48,13 +52,30 @@ const CreateClusterModal = (
     }
   };
 
-  const handleClusterSubmit = async () => {
+  const handleClusterSubmit = async (e: { stopPropagation: () => void; }) => {
+    e.stopPropagation();
     console.log('selectedClustering', selectedClustering);
-    if (selectedClustering.length < 2) return;
-    let res = await authenticatedPostFetch('/queue/cluster/create', {
-      queue_id: queueId,
-      request_ids: selectedClustering.map((r) => !isCluster(r) && r.requestId),
-    });
+    if (selectedClustering.length < 2) {
+      if (!clusterId) return;
+      await authenticatedPutFetch('/queue/cluster/edit', {
+        cluster_id: clusterId,
+        request_ids: [],
+      });
+      setSelectedClustering([]);
+      return;
+    }
+    let res;
+    if (!clusterId) {
+      res = await authenticatedPostFetch('/queue/cluster/create', {
+        queue_id: queueId,
+        request_ids: selectedClustering.map((r) => !isCluster(r) && r.requestId),
+      });
+    } else {
+      res = await authenticatedPutFetch('/queue/cluster/edit', {
+        cluster_id: clusterId,
+        request_ids: selectedClustering.map((r) => !isCluster(r) && r.requestId),
+      });
+    }
     if (!res.ok) {
       let err = await res.json();
       toast(err, {
@@ -69,25 +90,26 @@ const CreateClusterModal = (
         className: styles.toast,
       });
     }
-    setSelectedClustering([]);
+    setOpen(false);
   };
 
   useEffect(() => {
+    if (selectedTags.length === 0) return;
     setSelectedClustering(clusterableUserRequests.filter((r) => r.tags.some((t) => selectedTags.some((st) => st.name === t.name))));
   }, [selectedTags, clusterableUserRequests]);
 
   return (
-    <div>
-      <div className={styles.buttonContainer}>
-        <Button onClick={() => setOpen(true)} className={styles.genericButton}> Create Cluster</Button>
+    <div onClick={e => e.stopPropagation()}>
+      <div className={styles.buttonContainer} onClick={(e) => {e.stopPropagation(); setOpen(true);} }>
+        {button}
       </div>
       <Modal 
         open={open}
         onClose={() => setOpen(false)}
       >
-        <div className={styles.container}>
+        <div className={styles.container} onClick={e => e.stopPropagation()}>
           <IconButton
-            onClick={() => setOpen(false)}
+            onClick={(e) => {e.stopPropagation(); setOpen(false);}}
             size="small"
             aria-label="close modal button"
             className={styles.closeButton}
@@ -95,21 +117,22 @@ const CreateClusterModal = (
             <CloseIcon />
           </IconButton>
           <div className={styles.titleContainer}> 
-            <Typography variant="h4" className={styles.title}>Create Cluster</Typography>
+            <Typography variant="h4" >{clusterId ? 'Edit' : 'Create'} Cluster</Typography>
           </div>
           <div className={styles.searchBarContainer}>
             <TagsSelection 
               tags={tags} 
               isCreator={false} 
-              tagSelection={selectedTags} 
+              tagSelection={selectedTags}
               setTagSelection={setSelectedTags} 
             />
-            <TextField 
-              className={styles.searchBar}
+            <TextField
               label="Search"
               variant="outlined"
               fullWidth
+              onClick={e => e.stopPropagation()}
               onChange={(e) => {
+                e.stopPropagation();
                 let search = e.target.value.toLowerCase();
                 if (search === '') {
                   setSelectedClustering([]);
@@ -129,7 +152,8 @@ const CreateClusterModal = (
           {clusterableUserRequests.length > 0 ? clusterableUserRequests.map((request, index) => (
             <CardActionArea 
               key={`${index}`}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 if (selectedClustering.some((r) => isCluster(r) ? r.clusterId === request.clusterId : r.requestId === (request as UserRequest).requestId)) {
                   setSelectedClustering(selectedClustering.filter((r) => isCluster(r) ? r.clusterId !== request.clusterId : r.requestId !== (request as UserRequest).requestId));
                 } else {
@@ -152,12 +176,14 @@ const CreateClusterModal = (
           )) :
             <Typography variant="body1">No requests to cluster</Typography>
           }
-          {clusterableUserRequests.length > 0 && <Button onClick={handleClusterSubmit} className={styles.createClusterButton}>Create Cluster</Button>}
+          {clusterableUserRequests.length > 0 && <Button onClick={handleClusterSubmit} className={styles.createClusterButton}>
+            {clusterId ? 'Edit' : 'Create'} Cluster
+          </Button>}
         </div>
       </Modal>
     </div>
   );
 };
 
-export default CreateClusterModal;
+export default ClusterModal;
 

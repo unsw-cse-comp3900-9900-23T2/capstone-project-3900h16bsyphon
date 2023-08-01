@@ -62,6 +62,16 @@
     color: var(--colour-main-green-900);
 }
 
+.editButton {
+    font-weight: bold;
+    background-color: var(--colour-main-grey-400);
+    color: var(--colour-main-grey-900);
+}
+
+.editButton:hover {
+    background-color: var(--colour-main-grey-200);
+}
+
 .notFoundButton {
     font-weight: bold;
     background-color: var(--colour-main-red-200);
