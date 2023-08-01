@@ -94,13 +94,14 @@ pub struct TagAnalytics {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConsultationAnalyticsBody {
-    pub start_time: Option<NaiveDateTime>,
-    pub end_time: Option<NaiveDateTime>,
+    pub start_time: NaiveDateTime,
+    pub end_time: NaiveDateTime,
     pub course_id: i32
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConsultationAnalyticsReturnModal {
+    pub hour: NaiveDateTime,
     pub num_students_seen: i32,
     pub num_students_unseen: i32,
     pub avg_wait_time: RequestDuration,

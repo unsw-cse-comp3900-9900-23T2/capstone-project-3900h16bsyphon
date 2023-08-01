@@ -5,7 +5,7 @@ import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 import styles from './CourseAnalytics.module.css';
 import Header from '../../../components/Header';
 import MetaData from '../../../components/MetaData';
-import { AnalyticsWaitTimeData, TagAnalytics } from '../../../types/courses';
+import { AnalyticsWaitTimeData, ConsultationAnalytics, TagAnalytics } from '../../../types/courses';
 import { Button, Typography } from '@mui/material';
 import AnalyticsChartCarousel from '../../../components/AnalyticsChartCarousel';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -35,6 +35,7 @@ const CourseAnalytics = () => {
   const [waitTimeAnalytics, setWaitTimeAnalytics] =
     useState<AnalyticsWaitTimeData>();
   const [tagAnalytics, setTagAnalytics] = useState<TagAnalytics>();
+  const [consultationAnalytics, setConsultationAnalytics] = useState<ConsultationAnalytics>();
 
   const parseTags = (d: TagAnalytics) => {
     const tagAnalytics = d.reduce((accumulator, tag) => {
@@ -114,6 +115,13 @@ const CourseAnalytics = () => {
     console.log(startTime?.format('YYYY-MM-DDTHH:mm:ss'));
     console.log(endTime?.format('YYYY-MM-DDTHH:mm:ss'));
     console.log(router.query.courseid);
+    const res = await authenticatedGetFetch('/course/consultation_analytics', {
+      start_time: startTime?.format('YYYY-MM-DDTHH:mm:ss') || '',
+      end_time: endTime?.format('YYYY-MM-DDTHH:mm:ss') || '',
+      course_id: `${router.query.courseid}`,
+    });
+    const d = await res.json();
+    setConsultationAnalytics(toCamelCase(d));
   };
   
   return (
@@ -152,7 +160,7 @@ const CourseAnalytics = () => {
                 <Button onClick={handleSubmit} className={styles.submitBtn}>Submit</Button>
               </div>
               <div className={styles.chartCarouselContainer}>
-                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics} startTime={startTime} endTime={endTime} />
+                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics} startTime={startTime} endTime={endTime} consultationAnalytics={consultationAnalytics} />
               </div>
             </div>
             <div className={styles.queuesContainer}>

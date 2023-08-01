@@ -33,7 +33,7 @@ export const authenticatedPostFetch = async (route: string, body: any) => {
   });
 };
 
-export const authenticatedGetFetch = async (route: string, queryStrings: Record<string, string>) => {
+export const authenticatedGetFetch = async (route: string, queryStrings?: Record<string, string>) => {
   return fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}${route}?${new URLSearchParams(queryStrings)}`, {
     method: 'GET',
     headers: {
