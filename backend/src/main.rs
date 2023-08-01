@@ -159,7 +159,6 @@ async fn main() -> std::io::Result<()> {
                                 "get",
                                 web::get().to(server::request::all_requests_for_cluster),
                             )
-                            .route("delete", web::delete().to(server::cluster::delete_cluster))
                             .route("edit", web::put().to(server::cluster::edit_cluster))
                             .route("join", web::put().to(server::cluster::join_cluster))
                             .route("leave", web::put().to(server::cluster::leave_cluster)),
