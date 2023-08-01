@@ -697,32 +697,23 @@ pub async fn get_consultation_analytics(body: Query<ConsultationAnalyticsBody>) 
         // TODO: debug all these calculations
         for consult in &request_list {
             // calculate num students unseen
-            num_students_unseen = entities::request_status_log::Entity::find()
-                .left_join(entities::requests::Entity)
+            num_students_unseen += entities::request_status_log::Entity::find()
                 .filter(entities::request_status_log::Column::RequestId.eq(consult.request_id))
                 .filter(entities::request_status_log::Column::Status.eq(Statuses::Unseen))
-                .select_only()
-                .column(entities::requests::Column::Zid)
-                .distinct()
                 .count(db)
-                .await
-                .unwrap_or(0) as i32;
+                .await?;
 
-            log::info!("num students unseen: {:?}", num_students_unseen);
+            log::warn!("num students unseen: {:?}", num_students_unseen);
+            log::warn!("consult id: {:?}", consult.request_id);
 
             // calculate num students seen
-            num_students_seen = entities::request_status_log::Entity::find()
-                .left_join(entities::requests::Entity)
+            num_students_seen += entities::request_status_log::Entity::find()
                 .filter(entities::request_status_log::Column::RequestId.eq(consult.request_id))
                 .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
-                .select_only()
-                .column(entities::requests::Column::Zid)
-                .distinct()
                 .count(db)
-                .await
-                .unwrap_or(0) as i32;
+                .await?;
 
-            log::info!("num students seen: {:?}", num_students_seen);
+            log::warn!("num students seen: {:?}", num_students_seen);
 
             // calculate avg wait time
             let wait_start_times = request_list

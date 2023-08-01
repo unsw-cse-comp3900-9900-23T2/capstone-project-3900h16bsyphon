@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,8 +10,14 @@ import {
   Legend,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { Dayjs } from 'dayjs';
-import { createTimeInterval } from '../../utils';
+import dayjs, { Dayjs } from 'dayjs';
+import { authenticatedGetFetch, createTimeInterval, toCamelCase } from '../../utils';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { Button } from '@mui/material';
+import { DateTimePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import styles from './AnalyticsLineGraph.module.css';
+import router from 'next/router';
 import { ConsultationAnalytics } from '../../types/courses';
 
 ChartJS.register(
@@ -25,17 +31,28 @@ ChartJS.register(
 );
 
 type AnalyticsLineGraphProps = {
-  startTime: Dayjs | null;
-  endTime: Dayjs | null;
-  consultationAnalytics?: ConsultationAnalytics;
+  courseId: string | string[] | undefined;
 };
 
-export default function AnalyticsLineGraph({ startTime, endTime, consultationAnalytics }: AnalyticsLineGraphProps) {
+export default function AnalyticsLineGraph({ courseId }: AnalyticsLineGraphProps) {
+  const [consultationAnalytics, setConsultationAnalytics] = useState<ConsultationAnalytics>();
+  const [startTime, setStartTime] = useState<Dayjs | null>(dayjs(new Date()));
+  const [endTime, setEndTime] = useState<Dayjs | null>(dayjs(new Date()).add(2, 'hour'));
   let text: string = `Consultation demand breakdown between ${startTime?.format('MMMM D, YYYY h:mm A')} - ${endTime?.format('MMMM D, YYYY h:mm A')}`;
-  console.log(consultationAnalytics);
+
   const timeArr = createTimeInterval(startTime, endTime);
   let labels: string[] = timeArr.map((time) => time);
   
+  const handleSubmit = async () => {
+    const res = await authenticatedGetFetch('/course/consultation_analytics', {
+      start_time: startTime?.format('YYYY-MM-DDTHH:mm:ss') || '',
+      end_time: endTime?.format('YYYY-MM-DDTHH:mm:ss') || '',
+      course_id: `${router.query.courseid}`,
+    });
+    const d = await res.json();
+    setConsultationAnalytics(toCamelCase(d));
+  };
+
   const data = {
     labels,
     datasets: [
@@ -84,5 +101,26 @@ export default function AnalyticsLineGraph({ startTime, endTime, consultationAna
     },
   };
 
-  return <Line options={options} data={data} />;
+  return (
+    <div className={styles.container}>
+      <div className={styles.calendarContainer}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DateTimePicker
+            label="Start time"
+            value={startTime}
+            onChange={(time) => setStartTime(time)}
+          />
+          <DateTimePicker
+            label="End time"
+            value={endTime}
+            onChange={(time) => setEndTime(time)}
+          />
+        </LocalizationProvider>
+        <Button onClick={handleSubmit} className={styles.submitBtn}>Submit</Button>
+      </div>
+      <div className={styles.lineGraphContainer}>
+        <Line options={options} data={data} />
+      </div>
+    </div>
+  );
 }

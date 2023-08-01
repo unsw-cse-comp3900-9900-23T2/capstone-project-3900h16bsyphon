@@ -5,17 +5,12 @@ import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 import styles from './CourseAnalytics.module.css';
 import Header from '../../../components/Header';
 import MetaData from '../../../components/MetaData';
-import { AnalyticsWaitTimeData, ConsultationAnalytics, TagAnalytics } from '../../../types/courses';
+import { AnalyticsWaitTimeData, TagAnalytics } from '../../../types/courses';
 import { Button, Typography } from '@mui/material';
 import AnalyticsChartCarousel from '../../../components/AnalyticsChartCarousel';
-import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs, { Dayjs } from 'dayjs';
 
 const CourseAnalytics = () => {
   const router = useRouter();
-  const [startTime, setStartTime] = useState<Dayjs | null>(dayjs(new Date()));
-  const [endTime, setEndTime] = useState<Dayjs | null>(dayjs(new Date()).add(2, 'hour'));
   const [data, setData] = useState([
     {
       queueId: 1,
@@ -35,7 +30,6 @@ const CourseAnalytics = () => {
   const [waitTimeAnalytics, setWaitTimeAnalytics] =
     useState<AnalyticsWaitTimeData>();
   const [tagAnalytics, setTagAnalytics] = useState<TagAnalytics>();
-  const [consultationAnalytics, setConsultationAnalytics] = useState<ConsultationAnalytics>();
 
   const parseTags = (d: TagAnalytics) => {
     const tagAnalytics = d.reduce((accumulator, tag) => {
@@ -109,20 +103,7 @@ const CourseAnalytics = () => {
     getTutored();
     getWaitTimeAnalytics();
     getTagAnalytics();
-  }, [courseData.courseCode, router.query.courseid, startTime, endTime]);
-  
-  const handleSubmit = async () => {
-    console.log(startTime?.format('YYYY-MM-DDTHH:mm:ss'));
-    console.log(endTime?.format('YYYY-MM-DDTHH:mm:ss'));
-    console.log(router.query.courseid);
-    const res = await authenticatedGetFetch('/course/consultation_analytics', {
-      start_time: startTime?.format('YYYY-MM-DDTHH:mm:ss') || '',
-      end_time: endTime?.format('YYYY-MM-DDTHH:mm:ss') || '',
-      course_id: `${router.query.courseid}`,
-    });
-    const d = await res.json();
-    setConsultationAnalytics(toCamelCase(d));
-  };
+  }, [courseData.courseCode, router.query.courseid]);
   
   return (
     <>
@@ -144,23 +125,8 @@ const CourseAnalytics = () => {
           </div>
           <div className={styles.courseAnalyticsContent}>
             <div className={styles.statsContainer}>
-              <div className={styles.calendarContainer}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DateTimePicker
-                    label="Start time"
-                    value={startTime}
-                    onChange={(time) => setStartTime(time)}
-                  />
-                  <DateTimePicker
-                    label="End time"
-                    value={endTime}
-                    onChange={(time) => setEndTime(time)}
-                  />
-                </LocalizationProvider>
-                <Button onClick={handleSubmit} className={styles.submitBtn}>Submit</Button>
-              </div>
               <div className={styles.chartCarouselContainer}>
-                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics} startTime={startTime} endTime={endTime} consultationAnalytics={consultationAnalytics} />
+                <AnalyticsChartCarousel waitTimeAnalytics={waitTimeAnalytics} tagAnalytics={tagAnalytics} courseId={router.query.courseId}/>
               </div>
             </div>
             <div className={styles.queuesContainer}>

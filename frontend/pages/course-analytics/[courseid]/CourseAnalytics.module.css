@@ -43,13 +43,6 @@
   gap: 15px;
 }
 
-.calendarContainer {
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .queuesContainer {
   display: flex;
   flex-direction: column;
@@ -76,14 +69,4 @@
   flex-direction: column;
   flex: 7;
   width: 100%;
-}
-
-.submitBtn {
-  background-color: var(--colour-main-purple-200);
-  color: var(--colour-main-purple-900);
-}
-
-.submitBtn:hover {
-  background-color: var(--colour-main-purple-400);
-  color: var(--colour-main-purple-900);
 }

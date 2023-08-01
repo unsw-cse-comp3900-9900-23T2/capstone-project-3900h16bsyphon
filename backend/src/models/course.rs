@@ -102,8 +102,8 @@ pub struct ConsultationAnalyticsBody {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConsultationAnalyticsReturnModal {
     pub hour: NaiveDateTime,
-    pub num_students_seen: i32,
-    pub num_students_unseen: i32,
+    pub num_students_seen: u64,
+    pub num_students_unseen: u64,
     pub avg_wait_time: RequestDuration,
     pub time_spent_idle: RequestDuration,
 }

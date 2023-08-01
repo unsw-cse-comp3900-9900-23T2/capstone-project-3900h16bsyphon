@@ -1,21 +1,18 @@
 import Carousel from 'react-material-ui-carousel';
 import styles from './AnalyticsChartCarousel.module.css';
 import AnalyticsBarChart from '../AnalyticsBarChart';
-import { AnalyticsWaitTimeData, ConsultationAnalytics, TagAnalytics } from '../../types/courses';
+import { AnalyticsWaitTimeData, TagAnalytics } from '../../types/courses';
 import AnalyticsPieChart from '../AnalyticsPieChart';
 import AnalyticsLineGraph from '../AnalyticsLineGraph';
-import { Dayjs } from 'dayjs';
 
 type AnalyticsChartCarouselProps = {
   waitTimeAnalytics?: AnalyticsWaitTimeData;
   tagAnalytics?: TagAnalytics;
-  startTime: Dayjs | null,
-  endTime: Dayjs | null;
-  consultationAnalytics?: ConsultationAnalytics;
+  courseId: string | string[] | undefined;
 };
 
 // add more props here for other charts 
-const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, startTime, endTime, consultationAnalytics }: AnalyticsChartCarouselProps ) => {
+const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, courseId }: AnalyticsChartCarouselProps ) => {
   return (
     <Carousel
       navButtonsProps={{
@@ -27,7 +24,7 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, startTime, en
       autoPlay={false}
     >
       <div className={styles.analyticsChartContainer}>
-        <AnalyticsLineGraph startTime={startTime} endTime={endTime} consultationAnalytics={consultationAnalytics} />
+        <AnalyticsLineGraph courseId={courseId}/>
       </div>
       <div className={styles.analyticsChartContainer}>
         <AnalyticsBarChart
