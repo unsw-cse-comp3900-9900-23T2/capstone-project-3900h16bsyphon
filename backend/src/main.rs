@@ -3,7 +3,7 @@ use actix_cors::Cors;
 use actix_files::Files;
 use actix_web::{
     http, middleware,
-    web::{self, scope, Data},
+    web::{self, route, scope, Data},
     App, HttpServer,
 };
 use actix_web_httpauth::middleware::HttpAuthentication;
@@ -60,7 +60,7 @@ async fn main() -> std::io::Result<()> {
                     )
                     .route(
                         "/notifications",
-                        web::get().to(server::sockets::conn_notifications)
+                        web::get().to(server::sockets::conn_notifications),
                     )
                     .route("/request", web::get().to(server::sockets::conn_request))
                     .route("/queue", web::get().to(server::sockets::conn_queue))
@@ -231,8 +231,12 @@ async fn main() -> std::io::Result<()> {
                         web::get().to(server::notifications::unseen_notifications),
                     )
                     .route(
-                        "/mark_seen",
+                        "/mark_all_seen",
                         web::post().to(server::notifications::mark_notifications_as_seen),
+                    )
+                    .route(
+                        "/dismiss",
+                        web::post().to(server::notifications::dismiss_notif),
                     ),
             )
             .route("/{tail:.*}", web::get().to(server::res404))
