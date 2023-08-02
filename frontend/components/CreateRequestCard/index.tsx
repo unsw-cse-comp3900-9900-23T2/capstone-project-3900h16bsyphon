@@ -237,7 +237,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
                   {oldFiles.map((file, index) => (
                     <TableRow key={index}>
                       {/* eslint-disable-next-line @next/next/no-img-element*/}
-                      <TableCell> <img src={file} alt={`image ${index}`} /> </TableCell>
+                      <TableCell> <img className={styles.uploadedImage} src={file} alt={`image ${index}`} /> </TableCell>
                       <TableCell> <Button onClick={() => {
                         let oldCopy = [...oldFiles];
                         let old = oldCopy.splice(index, 1)[0];
@@ -250,9 +250,9 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
                     </TableRow>
                   ))}
                   {files.map((file, index) => (
-                    <TableRow key={index}>
+                    <TableRow className={styles.imageRow} key={index}>
                       {/* eslint-disable-next-line @next/next/no-img-element*/}
-                      <TableCell> <img src={URL.createObjectURL(file)} alt={`image ${index}`} /> </TableCell>
+                      <TableCell> <img className={styles.uploadedImage} src={URL.createObjectURL(file)} alt={`image ${index}`} /> </TableCell>
                       <TableCell> <Button onClick={() => {
                         let filesCopy = [...files];
                         filesCopy.splice(index, 1);

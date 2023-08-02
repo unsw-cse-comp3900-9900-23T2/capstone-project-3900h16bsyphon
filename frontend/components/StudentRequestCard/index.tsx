@@ -4,6 +4,7 @@ import styles from './StudentRequestCard.module.css';
 import TagBox from '../TagBox';
 import { determineBackgroundColour, formatZid } from '../../utils';
 import { Status, Tag } from '../../types/requests';
+import ImageCarousel from '../ImageCarousel';
 
 type StudentRequestCardProps = {
   zid: number;
@@ -74,18 +75,9 @@ const StudentRequestCard = ({
       <div>
         <Typography variant="body1">{description}</Typography>
       </div>
-      <div>
-        {
-          images?.map((image, i) => {
-            return (
-              <div key={i}>
-                {/*eslint-disable-next-line @next/next/no-img-element*/}
-                <img src={`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}${image}`} alt="request" />
-              </div>
-            );
-          })
-        }
-      </div>
+
+      {images.length > 0 && <ImageCarousel images={images} />}
+
     </CardContent>
   </Card>
 );
