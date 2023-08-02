@@ -16,6 +16,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20230618_062036_auth_data::Migration),
             Box::new(m20230625_103838_create_all_tables::Migration),
             Box::new(m20230705_080834_tag_deduplication::Migration),
+            Box::new(m20230802_041755_create_notifs::Migration),
         ]
     }
 }
