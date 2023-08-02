@@ -24,7 +24,6 @@ const CourseOfferingCard = ({ title, inviteCode, courseOfferingId } : CourseOffe
         </Typography>
       </CardContent>
       <CardActions>
-        <Link href={`/course/${courseOfferingId}`}><Button disableElevation className={styles.queueBtn}>QUEUES</Button></Link>
         <Link href={`/course-analytics/${courseOfferingId}`}><Button disableElevation className={styles.analyticsBtn}>ANALYTICS</Button></Link>
         <Link href={`/course/${courseOfferingId}`}><Button disableElevation className={styles.tutorPageBtn}>TUTOR PAGE</Button></Link>
         <TutorInviteModal inviteCode={inviteCode}/>
