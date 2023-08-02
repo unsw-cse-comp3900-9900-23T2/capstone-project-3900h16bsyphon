@@ -12,6 +12,7 @@ import {
 import { Status } from '../../../types/requests';
 import TimeSummaryCard from '../../../components/TimeSummaryCard';
 import RequestDetails from '../../../components/RequestDetails';
+import Error from '../../../pages/_error';
 
 const Request = () => {
   const router = useRouter();
@@ -29,6 +30,7 @@ const Request = () => {
       const res = await authenticatedGetFetch('/request/get_info', {
         request_id: `${router.query.requestid}`,
       });
+      if (!res.ok) return <Error statusCode={res.status} />;
       let d = await res.json();
       setQueueData(toCamelCase(d));
       setStatus(d.status);

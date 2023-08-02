@@ -7,7 +7,7 @@ import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 import { QueueAnalyticsData, QueueRequestSummaryData } from '../../../types/queues';
 import QueueRequestsSummaryCard from '../../../components/QueueRequestsSummaryCard';
 import QueueAnalyticsSummaryCard from '../../../components/QueueAnalyticsSummaryCard';
-
+import Error from '../../../pages/_error';
 
 const requests: QueueRequestSummaryData[] = [
   {
@@ -54,7 +54,7 @@ const QueueAnalytics = () => {
       const res = await authenticatedGetFetch('/queue/analytics', { queue_id: `${router.query.queueid}`});
       if (!res.ok) {
         console.log('error: issue with queue analytics, check network tab');
-        return;
+        return <Error statusCode={res.status} />;
       }
       const d = await res.json();
       setQueueAnalytics(toCamelCase(d));

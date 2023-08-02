@@ -10,6 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../utils';
 import { CourseOfferingData } from '../../types/courses';
 import { UserProfile } from '../../types/profile';
+import Error from '../../pages/_error';
 
 const Dashboard: NextPage = () => {
   const [courseOfferings, setCourseOfferings] = useState<CourseOfferingData[]>([]);
@@ -20,7 +21,7 @@ const Dashboard: NextPage = () => {
       let res = await authenticatedGetFetch('/course/list', {});
       if (!res.ok) {
         console.error('authentication failed, or something broke, check network tab');
-        return;
+        return <Error statusCode={res.status} />;
       }
       let courseOfferings = await res.json();
       setCourseOfferings(toCamelCase(courseOfferings));
@@ -30,7 +31,7 @@ const Dashboard: NextPage = () => {
       let res = await authenticatedGetFetch('/course/get_tutored', {});
       if (!res.ok) {
         console.error('authentication failed, or something broke, check network tab');
-        return;
+        return <Error statusCode={res.status} />;
       }
       let courses = await res.json() as any;
       setMyCourses(toCamelCase(courses));
@@ -39,7 +40,7 @@ const Dashboard: NextPage = () => {
       const res = await authenticatedGetFetch('/user/profile', {});
       if (!res.ok) {
         console.error('authentication failed, or something broke, check network tab');
-        return;
+        return <Error statusCode={res.status} />;
       }
       setMyProfile(toCamelCase(await res.json()));
     };

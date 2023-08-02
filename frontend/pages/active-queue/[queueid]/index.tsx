@@ -15,6 +15,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import StudentQueueClusterRequestCard from '../../../components/StudentQueueClusterRequestCard';
 import CreateClusterModal from '../../../components/ClusterModal';
+import Error from '../../../pages/_error';
 
 const ActiveQueue = () => {
   const router = useRouter();
@@ -121,7 +122,7 @@ const ActiveQueue = () => {
       let res = await authenticatedGetFetch('/request/all_requests_for_queue', {queue_id: `${router.query.queueid}`});
       // yolo assume OK
       let d = await res.json();
-
+      if (!res.ok) return <Error statusCode={res.status} />;
       setRequests(transformRequests(toCamelCase(d)));
     };
     let getQueueData = async () => {
