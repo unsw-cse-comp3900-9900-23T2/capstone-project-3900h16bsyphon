@@ -1,6 +1,6 @@
 use sea_orm_migration::prelude::*;
 
-use crate::m20230618_062036_auth_data::UserData;
+use crate::m20230625_103838_create_all_tables::Users;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -10,23 +10,29 @@ impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         // Replace the sample below with your own migration scripts
         manager
-        .create_table(
-            Table::create()
-            .table(Notification::Table)
-            .if_not_exists()
-            .col(ColumnDef::new(Notification::NotifId).integer().auto_increment().not_null().primary_key())
-            .col(ColumnDef::new(Notification::Zid).integer().not_null())
-            .col(ColumnDef::new(Notification::Content).string().not_null())
-            .col(ColumnDef::new(Notification::CreatedAt).boolean().not_null())
-            .col(ColumnDef::new(Notification::Seen).boolean().not_null().default(Expr::value(false)))
-            .foreign_key(
-                ForeignKey::create()
-                .from(UserData::Table, UserData::Zid)
-                .to(Notification::Table, Notification::Zid),
+            .create_table(
+                Table::create()
+                    .table(Notification::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(Notification::NotifId)
+                            .integer()
+                            .auto_increment()
+                            .not_null()
+                            .primary_key(),
+                    )
+                    .col(ColumnDef::new(Notification::Zid).integer().not_null())
+                    .col(ColumnDef::new(Notification::Content).string().not_null())
+                    .col(ColumnDef::new(Notification::CreatedAt).boolean().not_null())
+                    .col(ColumnDef::new(Notification::Seen).boolean().not_null())
+                    .foreign_key(
+                        ForeignKey::create()
+                            .from(Notification::Table, Notification::Zid)
+                            .to(Users::Table, Users::Zid),
+                    )
+                    .to_owned(),
             )
-            .to_owned()
-        )
-        .await
+            .await
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
