@@ -76,7 +76,7 @@ const StudentRequestCard = ({
         <Typography variant="body1">{description}</Typography>
       </div>
 
-      <ImageCarousel images={images} />
+      {images.length > 0 && <ImageCarousel images={images} />}
 
     </CardContent>
   </Card>
