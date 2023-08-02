@@ -276,7 +276,7 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
               isVisible={isVisible}
               setIsVisible={setIsVisible}
               timeLimit={timeLimit}
-              setTimeLimit = {setTimeLimit}
+              setTimeLimit={setTimeLimit}
             />
             <div className={style.faq}>
               <FAQs courseOfferingId={courseOfferingId} tutor={true} />
