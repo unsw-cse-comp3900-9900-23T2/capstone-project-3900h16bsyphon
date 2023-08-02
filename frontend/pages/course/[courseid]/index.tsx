@@ -89,17 +89,17 @@ const ViewQueue = () => {
             .filter((d) => isTutor || d.isVisible)
             .length === 0 && <p>No upcoming queues</p>}
         </div>
-        <h1 className={styles.heading}>Previous</h1>
-        <div className={styles.cards}>
-          {data
-            .filter((d) => Date.parse(d.endTime) < Date.now())
-            .filter((d) => isTutor || d.isVisible)
-            .map((d, index) => <QueueCard isPrevious={true} isTutor={isTutor} queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} seen={d.seen} unseen={d.unseen}/> )}
-          {data
-            .filter((d) => Date.parse(d.endTime) < Date.now())
-            .filter((d) => isTutor || d.isVisible)
-            .length === 0 && <p>No previous queues</p>}
-        </div>
+        {isTutor && <><h1 className={styles.heading}>Previous</h1>
+          <div className={styles.cards}>
+            {data
+              .filter((d) => Date.parse(d.endTime) < Date.now())
+              .filter((d) => isTutor || d.isVisible)
+              .map((d, index) => <QueueCard isPrevious={true} isTutor={isTutor} queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} seen={d.seen} unseen={d.unseen}/> )}
+            {data
+              .filter((d) => Date.parse(d.endTime) < Date.now())
+              .filter((d) => isTutor || d.isVisible)
+              .length === 0 && <p>No previous queues</p>}
+          </div></>}
       </div>
     </>
   );
