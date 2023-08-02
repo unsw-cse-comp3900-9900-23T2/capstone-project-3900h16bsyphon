@@ -65,7 +65,7 @@ const ActiveQueue = () => {
       }
       setRequests(transformRequests(toCamelCase(newRequestsData)));
     }
-  }, [lastJsonMessage]);
+  }, [lastJsonMessage, requests]);
 
   useEffect(() => {
     if (!noti) return;
