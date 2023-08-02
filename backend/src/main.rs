@@ -48,6 +48,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .wrap(cors)
             .app_data(lobby.clone())
+            .app_data(web::JsonConfig::default().limit(1024 * 1024 * 50 * 100))
             .service(server::echo)
             .route("/", web::get().to(server::hello))
             .service(Files::new("/images", "/images"))
