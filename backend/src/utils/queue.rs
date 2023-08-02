@@ -68,27 +68,40 @@ pub async fn handle_possible_queue_capacity_overflow(
     let capacity_left = num_requests_until_close_not_web(queue_id).await? as usize;
     let unseen_requests = unseen_requests_in_queue(queue_id).await?;
 
+    log::debug!(
+        "Queue({}): capacity_left: {}, unseen_requests: {}",
+        queue_id,
+        capacity_left,
+        unseen_requests
+    );
+
     if capacity_left >= unseen_requests {
+        log::debug!("Queue({}): no overflow", queue_id);
         return Ok(None);
     }
 
     // Have ensured that overflow is happening, so deal w/ it
-    create_capacity_overflow_notification(
-        zid,
-        queue_id,
-        course_code_queue(queue_id).await?,
-        capacity_left,
-        unseen_requests,
-    ).await?;
-
-    // Notif Created succesfully, so we actually need to dipatch an action
     let course_id = course_code_queue(queue_id).await?;
+    let admin_zids = get_admin_zids_for_course(course_id).await?;
 
-    let actions = get_admin_zids_for_course(course_id)
-        .await?
+    log::debug!("Admins = {:?}", admin_zids);
+    for zid in &admin_zids {
+        create_capacity_overflow_notification(
+            *zid,
+            queue_id,
+            course_code_queue(queue_id).await?,
+            capacity_left,
+            unseen_requests,
+        ).await.map_err(|e| {
+            log::debug!("Error creating capacity overflow notification: {:?}", e);
+        }).ok();
+    }
+
+    let actions = admin_zids
         .into_iter()
         .map(|zid| SocketChannels::Notifications(zid))
         .collect::<Vec<_>>();
+    log::debug!("actions = {:?}", actions);
 
     match actions.is_empty() {
         true => Ok(None),
@@ -104,10 +117,13 @@ pub async fn create_capacity_overflow_notification(
     unseen_reqs: usize,
 ) -> SyphonResult<entities::notification::Model> {
     
-    let content = format!(
-        "In queue {} for course {} there are {} unseen requests but capacity for only {} more requests. Consider adding more tutors.",
-        queue_id, course_id, unseen_reqs, cap_left, 
+    let title = format!("{} Session Overloaded", course_id);
+    let desc = format!(
+        "In queue {} there are {} unseen requests but capacity for only {} more requests. Consider adding more tutors.",
+        queue_id, unseen_reqs, cap_left,
     );
+    // Contract: title and desc separated by first colon
+    let content = format!("{}:{}", title, desc);
 
     let notif = entities::notification::ActiveModel {
         seen: ActiveValue::Set(false),
