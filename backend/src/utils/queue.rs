@@ -62,13 +62,12 @@ pub async fn unseen_requests_in_queue(queue_id: i32) -> SyphonResult<usize> {
 // }
 
 pub async fn handle_possible_queue_capacity_overflow(
-    zid: i32,
     queue_id: i32
 ) -> SyphonResult<Option<Vec<SocketChannels>>> {
     let capacity_left = num_requests_until_close_not_web(queue_id).await? as usize;
     let unseen_requests = unseen_requests_in_queue(queue_id).await?;
 
-    log::debug!(
+    log::error!(
         "Queue({}): capacity_left: {}, unseen_requests: {}",
         queue_id,
         capacity_left,
@@ -76,15 +75,16 @@ pub async fn handle_possible_queue_capacity_overflow(
     );
 
     if capacity_left >= unseen_requests {
-        log::debug!("Queue({}): no overflow", queue_id);
+        log::error!("Queue({}): no overflow", queue_id);
         return Ok(None);
     }
+    log::error!("Is overflow");
 
     // Have ensured that overflow is happening, so deal w/ it
     let course_id = course_code_queue(queue_id).await?;
     let admin_zids = get_admin_zids_for_course(course_id).await?;
 
-    log::debug!("Admins = {:?}", admin_zids);
+    log::error!("Admins = {:?}", admin_zids);
     for zid in &admin_zids {
         create_capacity_overflow_notification(
             *zid,
@@ -93,7 +93,7 @@ pub async fn handle_possible_queue_capacity_overflow(
             capacity_left,
             unseen_requests,
         ).await.map_err(|e| {
-            log::debug!("Error creating capacity overflow notification: {:?}", e);
+            log::error!("Error creating capacity overflow notification: {:?}", e);
         }).ok();
     }
 
@@ -101,7 +101,7 @@ pub async fn handle_possible_queue_capacity_overflow(
         .into_iter()
         .map(|zid| SocketChannels::Notifications(zid))
         .collect::<Vec<_>>();
-    log::debug!("actions = {:?}", actions);
+    log::error!("actions = {:?}", actions);
 
     match actions.is_empty() {
         true => Ok(None),

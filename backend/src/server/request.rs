@@ -115,9 +115,11 @@ pub async fn create_request(
         SocketChannels::QueueData(insertion.queue_id),
     ];
 
+    log::error!("Hitting overflow handle");
     if let Ok(Some(notif_actions)) =
-        handle_possible_queue_capacity_overflow(token.username, insertion.queue_id).await
+        handle_possible_queue_capacity_overflow(insertion.queue_id).await
     {
+        log::error!("Is overflow action");
         actions.extend(notif_actions);
     }
 

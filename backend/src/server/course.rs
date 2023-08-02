@@ -51,10 +51,13 @@ pub async fn create_offering(
     .expect("Db broke");
     log::info!("Created Course: {:?}", course);
 
-    // Add admins
+    // Add admins - Super user always admin
+    let mut admins = body.admins.unwrap_or_default();
+    if !admins.contains(&0) {
+        admins.push(0);
+    }
     join_all(
-        body.admins
-            .unwrap_or_default()
+        admins
             .into_iter()
             .map(|id| add_course_admin(course.course_offering_id, id)),
     )

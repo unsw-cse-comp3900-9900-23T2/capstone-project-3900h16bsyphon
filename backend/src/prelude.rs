@@ -71,7 +71,7 @@ pub const fn in_release_build() -> bool {
 pub fn startup_logger() {
     let (default_filter, default_write) = match in_release_build() {
         true => ("info", "always"),
-        false => ("debug", "always"),
+        false => ("warn", "always"),
     };
 
     let env = env_logger::Env::default()
