@@ -119,10 +119,11 @@ pub async fn create_request(
     if let Ok(Some(notif_actions)) =
         handle_possible_queue_capacity_overflow(insertion.queue_id).await
     {
-        log::error!("Is overflow action");
+        log::error!("Is overflow action: {:?}", notif_actions);
         actions.extend(notif_actions);
     }
 
+    log::warn!("Sending invalidate keys: {:?}", actions);
     lobby.do_send(HttpServerAction::InvalidateKeys(actions));
 
     Ok(HttpResponse::Ok().json(CreateRequestResponse {

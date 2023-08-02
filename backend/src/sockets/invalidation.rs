@@ -16,7 +16,7 @@ impl Handler<HttpServerAction> for Lobby {
     type Result = ();
 
     fn handle(&mut self, msg: HttpServerAction, ctx: &mut Self::Context) -> Self::Result {
-        log::debug!("Lobby Handling HttpServerAction: {:?}", msg);
+        log::warn!("Lobby Handling HttpServerAction: {:?}", msg);
         match msg {
             HttpServerAction::InvalidateKeys(keys) => {
                 keys.into_iter().for_each(|k| self.invalidate_key(k, ctx))
@@ -112,11 +112,12 @@ impl Lobby {
     }
 
     fn invalidate_chat(&mut self, _key: i32, _ctx: &mut <Self as Actor>::Context) {
-        log::error!("Chat is handled directly between the actor and the connection");
+        log::error!("Chat is handled direntry(key).or_default().clone();ectly between the actor and the connection");
     }
 
     fn invalidate_notifications(&mut self, key: i32, ctx: &mut <Self as Actor>::Context) {
-        let targets = self.annoucements.get(&key).cloned().unwrap_or_default();
+        let targets = self.notifications.entry(key).or_default().clone();
+        log::warn!("Invalidating notifications for {} of targets: {:?}", key, targets);
         if targets.is_empty() {
             return;
         }

@@ -65,7 +65,8 @@ const ActiveQueue = () => {
       }
       setRequests(transformRequests(toCamelCase(newRequestsData)));
     }
-  }, [lastJsonMessage, requests]);
+    // TODO: i think this requeusts causes a circle
+  }, [lastJsonMessage, /* requests */]);
 
   useEffect(() => {
     if (!noti) return;
