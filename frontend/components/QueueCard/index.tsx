@@ -52,7 +52,7 @@ export default function QueueCard({
     });
     let value = await res.json();
     if (value.is_open) {
-      return `/create-request/${queueId}`;
+      router.push(`/create-request/${queueId}`);
     }
     return <Error statusCode={res.status} />;
   };

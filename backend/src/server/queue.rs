@@ -372,8 +372,8 @@ pub async fn get_queue_summary_v2(
         .column(entities::users::Column::Zid)
         .column(entities::users::Column::FirstName)
         .column(entities::users::Column::LastName)
-        .filter(entities::requests::Column::QueueId.eq(query.queue_id))
-        .distinct_on([entities::request_status_log::Column::TutorId])
+        .filter(entities::queue_tutors::Column::QueueId.eq(query.queue_id))
+        .distinct_on([entities::users::Column::Zid])
         .into_model::<TutorInformationModel>()
         .all(db)
         .await?;
@@ -501,6 +501,8 @@ pub async fn get_queue_summary_v2(
             .select_only()
             .column(entities::request_tags::Column::RequestId)
             .filter(entities::request_tags::Column::TagId.eq(tag.tag_id))
+            .distinct_on([entities::request_tags::Column::RequestId])
+            .into_model::<RequestId>()
             .all(db)
             .await?;
 
