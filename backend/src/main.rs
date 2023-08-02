@@ -215,6 +215,13 @@ async fn main() -> std::io::Result<()> {
                     .route("/delete", web::delete().to(server::faqs::delete_faqs))
                     .route("/update", web::put().to(server::faqs::update_faqs)),
             )
+            .service(
+                scope("/notifs")
+                    .wrap(amw.clone())
+                    .route("/all", web::get().to(server::notifications::all_notifications))
+                    .route("/unseen", web::get().to(server::notifications::unseen_notifications))
+                    .route("/mark_seen", web::post().to(server::notifications::mark_notifications_as_seen)),
+            )
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))
             .route("/{tail:.*}", web::put().to(server::res404))

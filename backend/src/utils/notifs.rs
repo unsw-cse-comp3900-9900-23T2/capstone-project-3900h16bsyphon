@@ -1,4 +1,8 @@
-use sea_orm::{EntityTrait, ModelTrait, QueryFilter, ColumnTrait};
+use futures::future::join_all;
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, IntoActiveModel, ModelTrait,
+    QueryFilter,
+};
 
 use crate::{entities, models::SyphonResult};
 
@@ -16,4 +20,43 @@ pub async fn all_unseen_notifs(zid: i32) -> SyphonResult<Vec<entities::notificat
         .await?;
 
     Ok(notifs)
+}
+
+pub async fn all_notifs(zid: i32) -> SyphonResult<Vec<entities::notification::Model>> {
+    let db = db();
+    let notifs = entities::users::Entity::find_by_id(zid)
+        .one(db)
+        .await?
+        .expect("user will exist - called internally")
+        .find_related(entities::notification::Entity)
+        .all(db)
+        .await?;
+
+    Ok(notifs)
+}
+
+pub async fn mark_notifs_as_seen(
+    zid: i32,
+) -> SyphonResult<Vec<entities::notification::Model>> {
+    let db = db();
+    let notifs = all_notifs(zid).await?;
+
+    let update_fut = notifs.clone().into_iter().map(|n| {
+        entities::notification::ActiveModel {
+            seen: match n.seen {
+                true => ActiveValue::Unchanged(true),
+                false => ActiveValue::Set(false),
+            },
+            ..n.into()
+        }
+        .update(db)
+    });
+
+    let updated_notifs = join_all(update_fut)
+        .await
+        .into_iter()
+        .filter_map(Result::ok)
+        .collect::<Vec<_>>();
+
+    Ok(updated_notifs)
 }
