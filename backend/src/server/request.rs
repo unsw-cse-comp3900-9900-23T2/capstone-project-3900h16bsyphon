@@ -30,7 +30,7 @@ use sea_orm::{
     QuerySelect,
 };
 
-use super::cluster::{leave_cluster, self};
+use super::cluster::leave_cluster;
 
 pub async fn create_request(
     token: ReqData<TokenClaims>,
@@ -408,7 +408,7 @@ pub async fn disable_cluster(
         .await?;
 
     // remove from any existing cluster
-    match(cluster_id) {
+    match cluster_id {
         Some(cluster_id) => {
             leave_cluster(token, actix_web::web::Json(LeaveClusterRequest {
                 request_id: body.request_id,

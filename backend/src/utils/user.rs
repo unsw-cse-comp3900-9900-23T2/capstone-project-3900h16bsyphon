@@ -57,8 +57,12 @@ pub async fn is_tutor_queue(queue_id: i32, zid: i32) -> SyphonResult<bool> {
         .ok_or(SyphonError::QueueNotExist(queue_id))?
         .course_offering_id;
 
+    is_tutor_course(course_id, zid).await
+}
+
+pub async fn is_tutor_course(course_id: i32, zid: i32) -> SyphonResult<bool> {
     Ok(entities::tutors::Entity::find_by_id((zid, course_id))
-        .one(db)
+        .one(db())
         .await?
         .is_some())
 }

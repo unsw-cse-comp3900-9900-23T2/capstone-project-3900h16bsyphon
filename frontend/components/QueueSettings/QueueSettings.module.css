@@ -58,3 +58,11 @@
   width: 100%;
   max-width: 1000px;
 }
+
+.cards {
+  display: grid;
+  /* TODO: clean up styles */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
