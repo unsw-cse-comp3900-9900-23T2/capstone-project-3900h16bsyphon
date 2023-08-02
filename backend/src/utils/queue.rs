@@ -124,6 +124,7 @@ pub async fn create_capacity_overflow_notification(
     );
     // Contract: title and desc separated by first colon
     let content = format!("{}:{}", title, desc);
+    log::debug!("Notif Content: {:#?}", content);
 
     let notif = entities::notification::ActiveModel {
         seen: ActiveValue::Set(false),
@@ -134,6 +135,7 @@ pub async fn create_capacity_overflow_notification(
     }
     .insert(db())
     .await?;
+    log::debug!("Notif: {:#?}", notif);
 
     Ok(notif)
 }
