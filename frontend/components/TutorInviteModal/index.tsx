@@ -28,7 +28,7 @@ const TutorInviteModal = ({ inviteCode }: TutorInviteModalProps) => {
         disableElevation
         className={styles.tutorLinkBtn}
       >
-				TUTOR LINK
+				TUTOR CODE
       </Button>
       <Modal
         open={open}
@@ -39,7 +39,7 @@ const TutorInviteModal = ({ inviteCode }: TutorInviteModalProps) => {
         <div className={styles.container}>
           <div className={styles.titleContainer}>
             <h2 className={styles.title}>
-              Generate tutor invite link
+              Generate tutor invite code
             </h2>
             <IconButton onClick={handleClose} size="small"
               aria-label="close modal button">
