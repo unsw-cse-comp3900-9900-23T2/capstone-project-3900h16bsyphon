@@ -28,7 +28,6 @@ type QueueCreationInfo = {
   tagSelection: Tag[];
   isVisible: boolean;
   isAvailable: boolean;
-  isTimeLimit: boolean;
   title: string;
   timeLimit: number;
   announcement: string;
@@ -42,7 +41,6 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
   const [tagSelection, setTagSelection] = useState<Tag[]>([]);
   const [isVisible, setIsVisible] = useState(true);
   const [isAvailable, setIsAvailable] = useState(true);
-  const [isTimeLimit, setIsTimeLimit] = useState(false);
   const [title, setTitle] = useState('');
   const [timeLimit, setTimeLimit] = useState(0);
   const [course, setCourse] = useState('');
@@ -64,7 +62,6 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
       setTimeEnd(dayjs(queue.endTime));
       setIsVisible(queue.isVisible);
       setIsAvailable(queue.isAvailable);
-      setIsTimeLimit(queue.isTimeLimit);
       setTitle(queue.title);
       setTimeLimit(queue.timeLimit);
       setAnnouncement(queue.announcement);
@@ -139,7 +136,6 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
     setTagSelection([]);
     setIsVisible(true);
     setIsAvailable(true);
-    setIsTimeLimit(false);
     setTitle('');
     setTimeLimit(0);
     setCourse('');
@@ -162,7 +158,6 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
     setTagSelection(data.tagSelection);
     setIsVisible(data.isVisible);
     setIsAvailable(data.isAvailable);
-    setIsTimeLimit(data.isTimeLimit);
     setTitle(data.title);
     setTimeLimit(data.timeLimit);
     setAnnouncement(data.announcement);
@@ -188,7 +183,6 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
       tagSelection,
       isVisible,
       isAvailable,
-      isTimeLimit,
       title,
       timeLimit,
       announcement,
@@ -223,6 +217,11 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
     }
     router.push(`/active-queue/${queueId}`);
   };
+
+  useEffect(() => {
+    setTimeStart(startTime => date.add(startTime.hour(), 'hour').add(startTime.minute(), 'minute'));
+    setTimeEnd(endTime => date.add(endTime.hour(), 'hour').add(endTime.minute(), 'minute'));
+  }, [date]);
 
 
   console.log('toBeCreatedList.length', toBeCreatedList.length);
@@ -276,10 +275,8 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
               setIsAvailable={setIsAvailable}
               isVisible={isVisible}
               setIsVisible={setIsVisible}
-              isTimeLimit={isTimeLimit}
-              setIsTimeLimit={setIsTimeLimit}
               timeLimit={timeLimit}
-              setTimeLimit={setTimeLimit}
+              setTimeLimit = {setTimeLimit}
             />
             <div className={style.faq}>
               <FAQs courseOfferingId={courseOfferingId} tutor={true} />
