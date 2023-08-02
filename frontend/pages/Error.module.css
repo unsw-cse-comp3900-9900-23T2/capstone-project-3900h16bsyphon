@@ -1,0 +1,23 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 90vh;
+}
+
+.redirectBtn {
+  background-color: var(--colour-main-purple-200);
+  color: var(--colour-main-purple-900);
+}
+
+.redirectBtn:hover {
+  background-color: var(--colour-main-purple-400);
+  color: var(--colour-main-purple-900);
+}
+
+.contentContainer {
+  padding-top: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

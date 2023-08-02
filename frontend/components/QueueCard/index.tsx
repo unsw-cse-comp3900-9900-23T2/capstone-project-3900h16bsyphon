@@ -8,6 +8,7 @@ import { CardActionArea } from '@mui/material';
 import { useRouter } from 'next/router';
 import { authenticatedGetFetch } from '../../utils';
 import React from 'react';
+import Error from '../../pages/_error';
 
 type QueueCardProps = {
   title: string;
@@ -53,7 +54,7 @@ export default function QueueCard({
     if (value.is_open) {
       return `/create-request/${queueId}`;
     }
-    return '/403';
+    return <Error statusCode={res.status} />;
   };
 
   const redirect = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
