@@ -1,11 +1,14 @@
 import IconButton from '@mui/material/IconButton';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Modal from '@mui/material/Modal';
 import styles from './NotificationsModal.module.css';
 import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
 import NotificationsCard from '../NotificationsCard';
+import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
+import { getToken } from '../../utils';
+import { useRouter } from 'next/router';
 
 const data = [
   {
@@ -22,6 +25,23 @@ const NotificationsModal = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  const router = useRouter();
+
+  const { sendJsonMessage, lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/notifications', {
+    onOpen: () => {
+      console.log('connected [notification]');
+    },
+    shouldReconnect: () => true,
+  }, !!router);
+
+  useEffect(() => {
+    if (!lastJsonMessage) return;
+    console.log('lastJsonMessage', lastJsonMessage);
+    if ((lastJsonMessage as any)?.type === 'notification') {
+      console.log('lastJsonMessage: notif', lastJsonMessage);
+    }
+  }, [lastJsonMessage]);
 
   return (
     <div>

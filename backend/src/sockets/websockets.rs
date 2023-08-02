@@ -94,10 +94,17 @@ impl WsConn {
     /// You MUST ensure that the actor has been authed before calling this.
     fn connect_to_lobby(&self, ctx: &mut <Self as Actor>::Context) {
         log::debug!("Connecting to lobby: {}", self.id);
+        // TODO: cleanup notif to not actly have a field
+        let channels = self.channels.clone().into_iter().map(|c| {
+            match c {
+                SocketChannels::Notifications(_) => SocketChannels::Notifications(self.get_zid()),
+                chan => chan,
+            }
+        }).collect::<Vec<_>>();
         self.lobby_addr
             .send(Connect {
                 addr: ctx.address().recipient(),
-                channels: self.channels.clone(),
+                channels,
                 self_id: self.id,
                 zid: self.get_zid(),
             })

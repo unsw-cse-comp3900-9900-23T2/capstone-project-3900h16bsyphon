@@ -58,6 +58,10 @@ async fn main() -> std::io::Result<()> {
                         "/announcements",
                         web::get().to(server::sockets::conn_announcements),
                     )
+                    .route(
+                        "/notifications",
+                        web::get().to(server::sockets::conn_notifications)
+                    )
                     .route("/request", web::get().to(server::sockets::conn_request))
                     .route("/queue", web::get().to(server::sockets::conn_queue))
                     .route("/chat", web::get().to(server::sockets::conn_chat)),

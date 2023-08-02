@@ -88,26 +88,26 @@ pub async fn create_request(
     .await?;
 
     // save the image to the docker volume
-    let file_loc = format!("/images/{}", insertion.request_id);
-    fs::create_dir(file_loc)?;
-    let engine = engine::GeneralPurpose::new(
-        &base64::alphabet::STANDARD,
-        general_purpose::GeneralPurposeConfig::new(),
-    );
-    let images_insertion = request_creation.files.into_iter().map(|file| {
-        let file_loc = format!("/images/{}/{}", insertion.request_id, file.file_name);
-        fs::write(
-            file_loc.as_str(),
-            engine.decode(file.file_content.as_bytes()).unwrap(),
-        )
-        .unwrap();
-        entities::request_images::ActiveModel {
-            request_id: ActiveValue::Set(insertion.request_id),
-            image_url: ActiveValue::Set(file_loc),
-        }
-        .insert(db)
-    });
-    join_all(images_insertion).await;
+    // let file_loc = format!("/images/{}", insertion.request_id);
+    // fs::create_dir(file_loc)?;
+    // let engine = engine::GeneralPurpose::new(
+        // &base64::alphabet::STANDARD,
+        // general_purpose::GeneralPurposeConfig::new(),
+    // );
+    // let images_insertion = request_creation.files.into_iter().map(|file| {
+        // let file_loc = format!("/images/{}/{}", insertion.request_id, file.file_name);
+        // fs::write(
+            // file_loc.as_str(),
+            // engine.decode(file.file_content.as_bytes()).unwrap(),
+        // )
+        // .unwrap();
+        // entities::request_images::ActiveModel {
+            // request_id: ActiveValue::Set(insertion.request_id),
+            // image_url: ActiveValue::Set(file_loc),
+        // }
+        // .insert(db)
+    // });
+    // join_all(images_insertion).await;
 
     // Default actions that will always send
     let mut actions = vec![
