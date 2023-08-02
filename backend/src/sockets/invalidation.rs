@@ -7,6 +7,8 @@ use crate::server::{
     request::{all_requests_for_queue_not_web, request_info_not_web},
 };
 use crate::sockets::messages::WsMessage;
+use crate::utils;
+use crate::utils::notifs::all_unseen_notifs;
 
 use super::{lobby::Lobby, messages::HttpServerAction, SocketChannels};
 
@@ -106,14 +108,35 @@ impl Lobby {
     }
 
     fn invalidate_announcements(&mut self, _key: i32, _ctx: &mut <Self as Actor>::Context) {
-        unimplemented!("Announcements not handled yet")
+        unimplemented!("Announcements not handled here")
     }
 
     fn invalidate_chat(&mut self, _key: i32, _ctx: &mut <Self as Actor>::Context) {
         log::error!("Chat is handled directly between the actor and the connection");
     }
 
-    fn invalidate_notifications(&mut self, _key: i32, _ctx: &mut <Self as Actor>::Context) {
-        unimplemented!("Notifications not handled yet")
+    fn invalidate_notifications(&mut self, key: i32, ctx: &mut <Self as Actor>::Context) {
+        let targets = self.annoucements.get(&key).cloned().unwrap_or_default();
+        if targets.is_empty() {
+            return;
+        }
+        let notifs_fut = all_unseen_notifs(key);
+        notifs_fut
+            .into_actor(self)
+            .then(move |notifs, lobby, _ctx| {
+                let msgs: Vec<WsMessage> = match notifs {
+                    Ok(notifs) => notifs.into_iter().map(WsMessage::from).collect(),
+                    Err(e) => {
+                        log::error!("Failed to invalidate notifications for {}: {}", key, e);
+                        return fut::ready(());
+                    }
+                };
+                for msg in msgs {
+                    lobby.broadcast_message(msg, &targets);
+                }
+
+                fut::ready(())
+            })
+            .wait(ctx);
     }
 }

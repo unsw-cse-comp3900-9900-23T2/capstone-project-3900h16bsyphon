@@ -3,6 +3,7 @@ use log::debug;
 use serde_json::json;
 use uuid::Uuid;
 
+use crate::entities;
 use crate::entities::queues::Model as QueueModel;
 use crate::models::QueueRequest;
 
@@ -28,6 +29,9 @@ pub enum WsMessage {
         queue_id: i32,
         content: (QueueModel, Vec<QueueRequest>),
     },
+    Notification {
+        content: String,
+    }
 }
 
 /// Actions from the client, that have been parsed by the WsConn
@@ -36,8 +40,7 @@ pub enum WsMessage {
 /// them to further clients as needed
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Message)]
 #[rtype(result = "()")]
-pub enum WsAction {
-    /// This doesn't do anything, i just use it as a stub
+pub enum WsAction { /// This doesn't do anything, i just use it as a stub
     /// for when i need to return smth and dont want `todo!()`
     Def,
     /// Client asking to send a message to a given request
@@ -119,6 +122,7 @@ impl WsMessage {
             WsMessage::MessageOut { .. } => "message",
             WsMessage::RequestData { .. } => "request_data",
             WsMessage::QueueData { .. } => "queue_data",
+            WsMessage::Notification { .. } => "notification",
         }
         .into()
     }
@@ -148,6 +152,9 @@ impl WsMessage {
                 "queue_id": queue_id,
                 "queue": content.0,
                 "requests": content.1,
+            }),
+            WsMessage::Notification { content } => json!({
+                "content": content,
             }),
         }
     }
@@ -197,4 +204,12 @@ fn get_int(key: &str, json: &serde_json::Value) -> Result<i32, WsActionParseErro
             .ok_or(WsActionParseError::InvalidType)?,
     )
     .map_err(|_| WsActionParseError::InvalidType)
+}
+
+impl From<entities::notification::Model> for WsMessage {
+    fn from(notif: entities::notification::Model) -> Self {
+        WsMessage::Notification {
+            content: notif.content,
+        }
+    }
 }
