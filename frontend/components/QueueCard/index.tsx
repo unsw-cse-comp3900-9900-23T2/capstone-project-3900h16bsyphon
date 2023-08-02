@@ -40,11 +40,11 @@ export default function QueueCard({
   const router = useRouter();
   const findWhereToGo = async () => {
     if (isQueueAnalyticsLive) {
-      return `/queue-analytics/${queueId}`;
+      router.push(`/queue-analytics/${queueId}`);
     } else if (isTutor && !isPrevious) {
-      return `/active-queue/${queueId}`;
+      router.push(`/active-queue/${queueId}`);
     } else if (isTutor && isPrevious) {
-      return `/queue-summary/${queueId}`;
+      router.push(`/queue-summary/${queueId}`);
     }
     // if student, we need to find if the queue is open or not
     let res = await authenticatedGetFetch('/queue/is_open', {
@@ -61,7 +61,7 @@ export default function QueueCard({
     if (overrideRedirect !== undefined) {
       return overrideRedirect(e);
     }
-    router.push(await findWhereToGo());
+    await findWhereToGo();
   };
 
   return (
