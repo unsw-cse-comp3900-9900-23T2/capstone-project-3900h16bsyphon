@@ -8,6 +8,7 @@ use base64::engine::general_purpose;
 use base64::{engine, Engine};
 use chrono::Utc;
 use chrono_tz::Australia::Sydney;
+use hmac::digest::typenum::private::IsNotEqualPrivate;
 use log::debug;
 use serde_json::json;
 
@@ -21,6 +22,10 @@ use crate::sockets::lobby::Lobby;
 use crate::sockets::messages::HttpServerAction;
 use crate::sockets::SocketChannels;
 use crate::utils::db::db;
+use crate::utils::queue::{
+    handle_possible_queue_capacity_overflow, num_requests_until_close_not_web,
+    unseen_requests_in_queue,
+};
 use crate::utils::request::move_request;
 use crate::utils::unbox;
 use futures::future::join_all;
@@ -104,11 +109,19 @@ pub async fn create_request(
     });
     join_all(images_insertion).await;
 
-    let action = HttpServerAction::InvalidateKeys(vec![
+    // Default actions that will always send
+    let mut actions = vec![
         SocketChannels::Request(insertion.request_id),
         SocketChannels::QueueData(insertion.queue_id),
-    ]);
-    lobby.do_send(action);
+    ];
+
+    if let Ok(Some(notif_actions)) =
+        handle_possible_queue_capacity_overflow(token.username, insertion.queue_id).await
+    {
+        actions.extend(notif_actions);
+    }
+
+    lobby.do_send(HttpServerAction::InvalidateKeys(actions));
 
     Ok(HttpResponse::Ok().json(CreateRequestResponse {
         request_id: insertion.request_id,
@@ -380,7 +393,7 @@ pub async fn request_info_not_web(body: RequestInfoBody) -> SyphonResult<QueueRe
 pub async fn disable_cluster(
     token: ReqData<TokenClaims>,
     body: web::Json<RequestInfoBody>,
-    lobby: web::Data<Addr<Lobby>>
+    lobby: web::Data<Addr<Lobby>>,
 ) -> SyphonResult<HttpResponse> {
     let db = db();
     let body = body.into_inner();
@@ -410,11 +423,16 @@ pub async fn disable_cluster(
     // remove from any existing cluster
     match cluster_id {
         Some(cluster_id) => {
-            leave_cluster(token, actix_web::web::Json(LeaveClusterRequest {
-                request_id: body.request_id,
-                cluster_id
-            }), lobby).await?;
-        },
+            leave_cluster(
+                token,
+                actix_web::web::Json(LeaveClusterRequest {
+                    request_id: body.request_id,
+                    cluster_id,
+                }),
+                lobby,
+            )
+            .await?;
+        }
         None => {
             //
         }

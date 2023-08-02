@@ -10,7 +10,7 @@ pub struct Model {
     pub notif_id: i32,
     pub zid: i32,
     pub content: String,
-    pub created_at: bool,
+    pub created_at: DateTime,
     pub seen: bool,
 }
 

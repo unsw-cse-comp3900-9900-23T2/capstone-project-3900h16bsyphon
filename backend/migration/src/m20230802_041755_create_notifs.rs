@@ -23,7 +23,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(Notification::Zid).integer().not_null())
                     .col(ColumnDef::new(Notification::Content).string().not_null())
-                    .col(ColumnDef::new(Notification::CreatedAt).boolean().not_null())
+                    .col(ColumnDef::new(Notification::CreatedAt).date_time().not_null())
                     .col(ColumnDef::new(Notification::Seen).boolean().not_null())
                     .foreign_key(
                         ForeignKey::create()

@@ -1,6 +1,8 @@
 pub mod auth;
+pub mod course;
 pub mod db;
 pub mod notifs;
+pub mod queue;
 pub mod request;
 pub mod user;
 
