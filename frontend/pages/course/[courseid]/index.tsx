@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../../utils';
+import Error from '../../../pages/_error';
 
 const ViewQueue = () => {
   const router = useRouter();
@@ -31,17 +32,20 @@ const ViewQueue = () => {
     let getQueues = async () => {
       if (!router.query.courseid) return;
       const res = await authenticatedGetFetch('/queue/get_by_course', {course_id: `${router.query.courseid}`});
+      if (!res.ok) return <Error statusCode={res.status} />;
       let d = await res.json();
       setData(toCamelCase(d));
     };
     let getCourse = async () => {
       if (!router.query.courseid) return;
       const res = await authenticatedGetFetch('/course/get', {course_id: `${router.query.courseid}`});
+      if (!res.ok) return <Error statusCode={res.status} />;
       let d = await res.json();
       setCourseData(toCamelCase(d));
     };
     let getTutored = async () => {
       const res = await authenticatedGetFetch('/course/get_tutored', {});
+      if (!res.ok) return <Error statusCode={res.status} />;
       let d = await res.json();
       setIsTutor(
         toCamelCase(d).some((course: {courseCode: string}) => course.courseCode === courseData.courseCode)

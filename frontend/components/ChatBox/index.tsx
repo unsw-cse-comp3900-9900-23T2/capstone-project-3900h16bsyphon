@@ -1,4 +1,4 @@
-import {Button, List, Grid, TextField } from '@mui/material';
+import {Button, Grid, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import styles from './Chat.module.css';
 import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';

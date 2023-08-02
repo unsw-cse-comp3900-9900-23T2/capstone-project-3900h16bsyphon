@@ -23,6 +23,7 @@ import { Tag } from '../../types/requests';
 import TagBox from '../TagBox';
 import { Delete, QuestionMark } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
+import Error from '../../pages/_error';
 
 type CreateRequestCardProps = {
   isEditMode?: boolean;
@@ -56,7 +57,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
       const res = await authenticatedGetFetch('/request/get_info', { request_id: `${requestId}` });
       if (!res.ok) {
         console.error('authentication failed, or something broke with fetching request in CreateRequestCard, check network tab');
-        return;
+        return <Error statusCode={res.status} />;
       }
       const requestInfo = toCamelCase(await res.json());
       setTitle(requestInfo.title);
@@ -77,11 +78,13 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
   useEffect(() => {
     const fetchTags = async () => {
       const res = await authenticatedGetFetch('/queue/tags', { queue_id: `${currentQueueId}` });
+      if (!res.ok) return <Error statusCode={res.status} />;
       const data = await res.json();
       setTags(toCamelCase(data));
     };
     const fetchPreviousRequests = async () => {
       const res = await authenticatedGetFetch('/history/previous_tags', { queue_id: `${currentQueueId}` });
+      if (!res.ok) return <Error statusCode={res.status} />;
       setTagHistory(await res.json());
     };
     if (!currentQueueId) return;
