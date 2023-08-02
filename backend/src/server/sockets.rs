@@ -20,16 +20,16 @@ pub async fn start_socket_conn(
 
 pub fn conn_notifications(
     req: HttpRequest,
-    queue_id: web::Path<i32>,
+    zid: web::Path<i32>,
     stream: web::Payload,
     lobby_addr: web::Data<Addr<Lobby>>,
 ) -> Result<HttpResponse, actix_web::Error> {
     let queue_id = queue_id.into_inner();
 
-    log::info!("Starting Notification({}) socket", queue_id);
+    log::info!("Starting Notification({}) socket", zid);
 
     let conn = WsConn::new(
-        vec![SocketChannels::Notifications(queue_id)],
+        vec![SocketChannels::Notifications(zid)],
         unbox(lobby_addr),
     );
     actix_web_actors::ws::start(conn, &req, stream)

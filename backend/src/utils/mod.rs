@@ -1,5 +1,6 @@
 pub mod auth;
 pub mod db;
+pub mod notifs;
 pub mod request;
 pub mod user;
 
