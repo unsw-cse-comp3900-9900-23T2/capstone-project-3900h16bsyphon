@@ -803,7 +803,11 @@ pub async fn create_queue_not_web(
             Ok(tag.clone())
         }
     });
-    let tags = try_join_all(tags_fut).await?;
+    let tags = join_all(tags_fut)
+        .await
+        .into_iter()
+        .filter_map(Result::ok)
+        .collect::<Vec<_>>();
     log::debug!("PROG: FINISHED TAGS");
 
     let queue_tags = tags
