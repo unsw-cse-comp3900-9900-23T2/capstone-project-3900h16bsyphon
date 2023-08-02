@@ -84,3 +84,9 @@
     display: flex;
     flex-direction: column;
 }
+
+.uploadedImage {
+    height: 300px;
+    width: auto;
+    max-width: 800px;
+}

@@ -75,9 +75,9 @@ const StudentRequestCard = ({
       <div>
         <Typography variant="body1">{description}</Typography>
       </div>
-      <div>
-        <ImageCarousel images={images} />
-      </div>
+
+      <ImageCarousel images={images} />
+
     </CardContent>
   </Card>
 );

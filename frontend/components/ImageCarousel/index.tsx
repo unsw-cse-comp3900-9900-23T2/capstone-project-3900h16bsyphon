@@ -6,6 +6,7 @@ type ImageCarouselProps = {
 };
 
 const ImageCarousel = ({ images }: ImageCarouselProps) => {
+  console.log('images: ', images);
   return <>
     <Carousel
       navButtonsProps={{
@@ -18,9 +19,9 @@ const ImageCarousel = ({ images }: ImageCarouselProps) => {
     >
       {images.map((image, i) => {
         return (
-          <div className={styles.imageContainer} key={i}>
+          <div className={styles.carouselItemContainer} key={i}>
             {/*eslint-disable-next-line @next/next/no-img-element*/}
-            <img src={`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}${image}`} alt="request" />
+            <img className={styles.imageContainer} src={`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}${image}`} alt="request" />
           </div>
         );
       })}
