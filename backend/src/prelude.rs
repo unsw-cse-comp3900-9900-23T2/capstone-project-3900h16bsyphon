@@ -1,14 +1,11 @@
 //! This file contains all the prelude imports for the project.
 //! Helps in keeping `main.rs` clean.
 
-use crate::entities;
 use crate::models::CreateUserBody;
 use crate::server::auth::create_user;
-use crate::utils::db::db;
 pub use crate::utils::db::initialise_db;
 use actix_web::web::Json;
 use actix_web::ResponseError;
-use sea_orm::EntityTrait;
 
 /// Secret used to hash passwords.
 /// Requires `SECRET` to be set as and environemnt variable or in

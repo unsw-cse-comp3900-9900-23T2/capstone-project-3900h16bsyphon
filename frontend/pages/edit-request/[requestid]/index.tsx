@@ -3,6 +3,7 @@ import CreateRequestCard from '../../../components/CreateRequestCard';
 import Header from '../../../components/Header';
 import styles from './EditRequest.module.css';
 import { useRouter } from 'next/router';
+import MetaData from '../../../components/MetaData';
 
 
 const EditRequest = () => {
@@ -14,6 +15,7 @@ const EditRequest = () => {
   }, [router.query.requestid]);
 
   return <>
+    <MetaData />
     <Header />
     <div className={styles.pageContainer}>
       <CreateRequestCard requestId={requestId} isEditMode={true} queueId={undefined} />
