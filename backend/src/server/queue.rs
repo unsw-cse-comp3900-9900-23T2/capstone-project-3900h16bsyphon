@@ -13,6 +13,7 @@ use crate::{
     sockets::{lobby::Lobby, messages::HttpServerAction, SocketChannels},
     utils::{
         db::db,
+        queue::num_requests_until_close_not_web,
         user::{is_tutor_course, validate_user},
     },
 };
@@ -22,9 +23,6 @@ use actix_web::{
     web::{self, Query, ReqData},
     HttpResponse,
 };
-use actix_web_actors::ws::start;
-use chrono::{DateTime, Duration, Utc};
-use chrono_tz::Australia::Sydney;
 use itertools::izip;
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, EntityOrSelect, EntityTrait, JoinType,
@@ -320,30 +318,7 @@ pub async fn get_student_count(query: Query<GetQueueRequestCount>) -> SyphonResu
 pub async fn num_requests_until_close(
     query: Query<GetRemainingStudents>,
 ) -> SyphonResult<HttpResponse> {
-    let db = db();
-
-    // get the end time of the queue
-    let queue = entities::queues::Entity::find_by_id(query.queue_id)
-        .one(db)
-        .await?
-        .ok_or(SyphonError::QueueNotExist(query.queue_id))?;
-
-    // https://www.youtube.com/watch?v=rksaoaqt3JA
-    // FIXME: find a better way to convert end time
-    let end_time =
-        DateTime::<Utc>::from_utc(queue.end_time, Utc).with_timezone(&Sydney) - Duration::hours(10);
-    let curr_time = Utc::now().with_timezone(&Sydney);
-
-    // calculate time remaining
-    let difference = (end_time - curr_time).num_minutes();
-
-    // calculate the number of requests that can be resolved until the queue closes
-    let res = match queue.time_limit {
-        Some(0) => difference / 15,
-        Some(_) => difference / queue.time_limit.unwrap() as i64,
-        None => difference / 15,
-    };
-    log::debug!("res: {}", res);
+    let res = num_requests_until_close_not_web(query.queue_id).await?;
     Ok(HttpResponse::Ok().json(res))
 }
 
@@ -506,7 +481,11 @@ pub async fn get_queue_summary_v2(
             .all(db)
             .await?;
 
-        let mut total_duration = RequestDuration { hours: 0, minutes: 0, seconds: 0 };
+        let mut total_duration = RequestDuration {
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+        };
         // for each request, find start time and end time
         for request in requests_for_tag.iter() {
             let start_time = entities::request_status_log::Entity::find()
@@ -550,8 +529,11 @@ pub async fn get_queue_summary_v2(
                 _ => {}
             }
         }
-        
-        queue_tag_summary_data.push( QueueTagSummaryData { tag: tag.clone(), duration: total_duration })
+
+        queue_tag_summary_data.push(QueueTagSummaryData {
+            tag: tag.clone(),
+            duration: total_duration,
+        })
     }
 
     //////////////////////////////////// Queue Timestamps /////////////////////////////////////////

@@ -67,6 +67,7 @@ const ActiveQueue = () => {
       }
       setRequests(transformRequests(toCamelCase(newRequestsData)));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastJsonMessage]);
 
   useEffect(() => {

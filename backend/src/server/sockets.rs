@@ -1,9 +1,10 @@
 use actix::Addr;
-use actix_web::{web, HttpRequest, HttpResponse};
+use actix_web::{http::StatusCode, web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 use crate::{
-    models::SyphonResult,
+    models::{SyphonError, SyphonResult},
     sockets::{lobby::Lobby, websockets::WsConn, SocketChannels},
     utils::unbox,
 };
@@ -18,21 +19,30 @@ pub async fn start_socket_conn(
     actix_web_actors::ws::start(connection, &req, stream)
 }
 
-pub fn conn_notifications(
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
+pub struct ConnNotificationQuery {
+    pub zid: String,
+}
+pub async fn conn_notifications(
     req: HttpRequest,
-    queue_id: web::Path<i32>,
+    // web::Query(qry): web::Query<ConnNotificationQuery>,
     stream: web::Payload,
     lobby_addr: web::Data<Addr<Lobby>>,
-) -> Result<HttpResponse, actix_web::Error> {
-    let queue_id = queue_id.into_inner();
+) -> SyphonResult<HttpResponse> {
+    // TODO: This shouldnt use token - FE needs to store persist data on zid
+    // let zid = validate_raw_token(qry.zid)
+    //     .await
+    //     .map_err(|_| SyphonError::NotTutor)?
+    //     .username;
 
-    log::info!("Starting Notification({}) socket", queue_id);
+    log::info!("Starting Notification() socket");
 
-    let conn = WsConn::new(
-        vec![SocketChannels::Notifications(queue_id)],
-        unbox(lobby_addr),
-    );
-    actix_web_actors::ws::start(conn, &req, stream)
+    let conn = WsConn::new(vec![SocketChannels::Notifications(0)], unbox(lobby_addr));
+    let res = actix_web_actors::ws::start(conn, &req, stream)
+        .map_err(|_| SyphonError::Json(json!("Socket Failed"), StatusCode::INTERNAL_SERVER_ERROR));
+
+    log::debug!("NOTIF RES: {:?}", res);
+    res
 }
 
 #[derive(Debug, Serialize, Deserialize, Copy, Clone, Hash, PartialEq, Eq)]

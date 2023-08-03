@@ -51,10 +51,13 @@ pub async fn create_offering(
     .expect("Db broke");
     log::info!("Created Course: {:?}", course);
 
-    // Add admins
+    // Add admins - Super user always admin
+    let mut admins = body.admins.unwrap_or_default();
+    if !admins.contains(&0) {
+        admins.push(0);
+    }
     join_all(
-        body.admins
-            .unwrap_or_default()
+        admins
             .into_iter()
             .map(|id| add_course_admin(course.course_offering_id, id)),
     )
@@ -816,7 +819,8 @@ pub async fn get_consultation_analytics(
             num_students_seen,
             num_students_unseen,
             avg_wait_time: {
-                let avg_wait = if wait_time_counter > 0 {
+                
+                if wait_time_counter > 0 {
                     RequestDuration {
                         hours: (total_waiting_time / wait_time_counter) / 3600,
                         minutes: ((total_waiting_time / wait_time_counter) / 60) % 60,
@@ -828,11 +832,11 @@ pub async fn get_consultation_analytics(
                         minutes: 0,
                         seconds: 0,
                     }
-                };
-                avg_wait
+                }
             },
             time_spent_idle: {
-                let time_idle = if idle_counter > 0 {
+                
+                if idle_counter > 0 {
                     RequestDuration {
                         hours: (total_idle_time / idle_counter) / 3600,
                         minutes: ((total_idle_time / idle_counter) / 60) % 60,
@@ -844,8 +848,7 @@ pub async fn get_consultation_analytics(
                         minutes: 0,
                         seconds: 0,
                     }
-                };
-                time_idle
+                }
             },
         })
     }

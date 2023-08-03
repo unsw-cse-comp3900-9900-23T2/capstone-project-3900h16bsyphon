@@ -32,6 +32,7 @@ pub struct Lobby {
     pub(super) annoucements: HashMap<i32, BTreeSet<Uuid>>,
     // TODO: queue data - more complex
     pub(super) queues: HashMap<i32, BTreeSet<Uuid>>,
+    pub(super) notifications: HashMap<i32, BTreeSet<Uuid>>,
 }
 
 impl Lobby {
@@ -56,6 +57,20 @@ impl Lobby {
 
 impl Actor for Lobby {
     type Context = Context<Self>;
+
+    fn started(&mut self, _ctx: &mut Self::Context) {
+        log::info!("Lobby Started");
+    }
+
+    fn stopping(&mut self, _ctx: &mut Self::Context) -> actix::Running {
+        log::error!("LOBBY STOPPING");
+        actix::Running::Stop
+    }
+
+    fn stopped(&mut self, _ctx: &mut Self::Context) {
+        log::error!("LOBBY STOPPED");
+        log::error!("LOBBY STOPPED");
+    }
 }
 
 impl Handler<Disconnect> for Lobby {
@@ -79,7 +94,7 @@ impl Handler<Disconnect> for Lobby {
 
         for channel in channels {
             match channel {
-                SocketChannels::Notifications(_) => todo!(),
+                SocketChannels::Notifications(zid) => self.notifications.entry(zid),
                 SocketChannels::QueueData(q_id) => self.queues.entry(q_id),
                 SocketChannels::Announcements(q_id) => self.annoucements.entry(q_id),
                 SocketChannels::Chat(r_id) => self.chat_rooms.entry(r_id),
@@ -143,7 +158,7 @@ impl Handler<Connect> for Lobby {
         for channel in &channels {
             log::debug!("Inserting into channel {:?}", channel);
             match channel {
-                SocketChannels::Notifications(_queue_id) => todo!(),
+                SocketChannels::Notifications(zid) => self.notifications.entry(*zid),
                 SocketChannels::QueueData(q_id) => self.queues.entry(*q_id),
                 SocketChannels::Announcements(q_id) => self.annoucements.entry(*q_id),
                 SocketChannels::Chat(req_id) => self.chat_rooms.entry(*req_id),
