@@ -239,20 +239,23 @@ const ActiveQueue = () => {
       </Card>
       <div className={styles.body}>
         <div className={styles.buttonContainer}>
-          <FormControl size='small' >
-            <InputLabel sx={{ textAlign: 'center', right: '0'}} className={styles.label} shrink={false} id="sort-queue-select-label"> Sort Queue </InputLabel>
+          <FormControl size='small'>
+            <InputLabel sx={{ textAlign: 'center', right: '0'}} className={styles.label} shrink={false} id="sort-queue-select-label">SORT QUEUE</InputLabel>
             <Select
               labelId="sort-queue-select-label"
               id="sort-queue-select"
               className={styles.select}
               displayEmpty
               onChange={handleSubmit}
+              sx={{
+                boxShadow: 1,
+              }}
             >
               {tags.map((tag) => (<MenuItem key={tag.tagId} value={tag.tagId}>{tag.isPriority ? 'Unprioritise':  'Prioritise'} &quot;{tag.name}&quot;</MenuItem>))}
-              <MenuItem key={'key'} value='prevRequestCount'>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} by number of previous requests</MenuItem>
+              <MenuItem key={'key'} value='prevRequestCount' sx={{ whiteSpace: 'unset', wordBreak: 'break-all'}}>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} by previous request count</MenuItem>
             </Select>
           </FormControl>
-          <CreateClusterModal queueId={Number.parseInt(`${router.query.queueid}`)} requests={requests} button={<Button  className={styles.genericButton}>Create Cluster</Button>} />
+          <CreateClusterModal queueId={Number.parseInt(`${router.query.queueid}`)} requests={requests} button={<Button className={styles.genericButton} variant="contained">Create Cluster</Button>} />
           <Button className={styles.closeQueueButton} variant='contained' onClick={handleCloseQueue}>Close Queue</Button>
         </div>
         <Box className={styles.cardBox}>
