@@ -10,6 +10,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 type CreateClusterModalProps = {
   queueId: number;
+  // All clusterable requests
   requests: (UserRequest | ClusterRequest)[];
   button: ReactElement;
   // both only provided only when editing a cluster
@@ -108,7 +109,7 @@ const ClusterModal = (
 
   useEffect(() => {
     if (selectedTags.length === 0) return;
-    setSelectedClustering(clusterableUserRequests.filter((r) => r.tags.some((t) => selectedTags.some((st) => st.name === t.name))));
+    setSelectedClustering(clusterableUserRequests.filter((r) => r.isClusterable && r.tags.some((t) => selectedTags.some((st) => st.name === t.name))));
   }, [selectedTags, clusterableUserRequests]);
 
   return (
@@ -133,34 +134,40 @@ const ClusterModal = (
             <Typography variant="h4" >{clusterId ? 'Edit' : 'Create'} Cluster</Typography>
           </div>
           <div className={styles.searchBarContainer}>
-            <TagsSelection 
-              tags={tags} 
-              isCreator={false} 
-              tagSelection={selectedTags}
-              setTagSelection={setSelectedTags} 
-            />
-            <TextField
-              label="Search"
-              variant="outlined"
-              fullWidth
-              onClick={e => e.stopPropagation()}
-              onChange={(e) => {
-                e.stopPropagation();
-                let search = e.target.value.toLowerCase();
-                if (search === '') {
-                  setSelectedClustering([]);
-                  return;
-                }
-                try {
-                  const regex = new RegExp(search);
-                  setSelectedClustering(clusterableUserRequests.filter((r) => regex.test(r.title.toLowerCase()) || regex.test(r.description.toLowerCase())));
-                } catch (e) {
-                  console.log('invalid regex');
-                  console.log(e);
-                  setSelectedClustering([]);
-                }
-              }}
-            />
+            <div className={styles.searchTag}>
+              <Typography paddingX={1}>Tag Search:</Typography>
+              <TagsSelection 
+                tags={tags} 
+                isCreator={false} 
+                tagSelection={selectedTags}
+                setTagSelection={setSelectedTags} 
+              />
+            </div>
+            <div className={styles.searchTag}>
+              <Typography>Regex Search:</Typography>
+              <TextField
+                label="Search"
+                variant="outlined"
+                fullWidth
+                onClick={e => e.stopPropagation()}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  let search = e.target.value.toLowerCase();
+                  if (search === '') {
+                    setSelectedClustering([]);
+                    return;
+                  }
+                  try {
+                    const regex = new RegExp(search);
+                    setSelectedClustering(clusterableUserRequests.filter((r) => (regex.test(r.title.toLowerCase()) || regex.test(r.description.toLowerCase()) && r.isClusterable)));
+                  } catch (e) {
+                    console.log('invalid regex');
+                    console.log(e);
+                    setSelectedClustering([]);
+                  }
+                }}
+              />
+            </div>
           </div>
           {clusterableUserRequests.length > 0 ? clusterableUserRequests.filter(r => r.isClusterable).map((request, index) => (
             <CardActionArea

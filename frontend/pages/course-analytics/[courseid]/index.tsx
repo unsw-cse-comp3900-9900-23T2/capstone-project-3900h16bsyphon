@@ -8,6 +8,7 @@ import MetaData from '../../../components/MetaData';
 import { AnalyticsWaitTimeData, TagAnalytics } from '../../../types/courses';
 import { Button, Typography } from '@mui/material';
 import AnalyticsChartCarousel from '../../../components/AnalyticsChartCarousel';
+import Error from '../../../pages/_error';
 
 const CourseAnalytics = () => {
   const router = useRouter();
@@ -61,6 +62,7 @@ const CourseAnalytics = () => {
       const res = await authenticatedGetFetch('/course/get', {
         course_id: `${router.query.courseid}`,
       });
+      if (!res.ok) return <Error statusCode={res.status} />;
       const d = await res.json();
       setCourseData(toCamelCase(d));
     };

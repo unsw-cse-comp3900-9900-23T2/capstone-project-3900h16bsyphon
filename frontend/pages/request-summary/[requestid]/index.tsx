@@ -4,10 +4,11 @@ import styles from './RequestSummary.module.css';
 import StudentRequestCard from '../../../components/StudentRequestCard';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { authenticatedGetFetch, formatZid, toCamelCase, changeBackgroundColour, changeTextColour, convertTime, getActualDuration } from '../../../utils';
+import { authenticatedGetFetch, formatZid, toCamelCase, getActualDuration } from '../../../utils';
 import { Status, UserRequestSummary } from '../../../types/requests';
 import TagBox from '../../../components/TagBox';
 import OverallTimeSummary from '../../../components/OverallTimeSummary';
+import Error from '../../_error';
 
 const RequestSummary = () => {
   const router = useRouter();
@@ -40,14 +41,13 @@ const RequestSummary = () => {
   useEffect(() => {
     const getRequest = async () => {
       const res: Response = await authenticatedGetFetch('/request/get_info', {request_id: `${router.query.requestid}`});
-      if (res.status === 404) {
-        router.push('/404');
-      } else if (res.status === 403) {
-        router.push('/403');
+      if (!res.ok) {
+        return <Error statusCode={res.status} />;
       } else if (res.status === 200) {
         const d = await res.json();
         setData(toCamelCase(d));
       }
+      if (!res.ok) return <Error statusCode={res.status} />;
     };
     const getRequestSummary = async () => {
       const res: Response = await authenticatedGetFetch('/request/summary', {request_id: `${router.query.requestid}`});

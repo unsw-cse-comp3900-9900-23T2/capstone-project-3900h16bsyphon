@@ -8,6 +8,12 @@ export type CourseOfferingData = {
     tutorInviteCode: string;
 };
 
+export type CourseOfferingInfo = {
+    title: string;
+    courseCode: string;
+    courseOfferingId: number;
+}
+
 export type AnalyticsWaitTime = {
     fullName: string,
     averageWait: number, 

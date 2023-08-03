@@ -1,0 +1,9 @@
+.imageContainer {
+  height: auto;
+  width: 100%;
+  max-height: 500px;
+}
+
+.carouselItemContainer {
+  padding: 0px 50px;
+}

@@ -4,6 +4,7 @@ import { authenticatedGetFetch, toCamelCase } from '../../../utils';
 import styles from './UserProfilePage.module.css';
 import Header from '../../../components/Header';
 import { useRouter } from 'next/router';
+import Error from '../../_error';
 
 type CoursePermission = {
   courseCode: string,
@@ -41,7 +42,7 @@ export default function UserProfile() {
       );
       if (!res.ok) {
         console.error('authentication failed, or something broke, check network tab');
-        return;
+        return <Error statusCode={res.status} />;
       }
       setResponseData(toCamelCase(await res.json()));
     };

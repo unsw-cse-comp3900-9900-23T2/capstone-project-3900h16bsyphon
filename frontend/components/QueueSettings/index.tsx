@@ -28,7 +28,6 @@ type QueueCreationInfo = {
   tagSelection: Tag[];
   isVisible: boolean;
   isAvailable: boolean;
-  isTimeLimit: boolean;
   title: string;
   timeLimit: number;
   announcement: string;
@@ -42,11 +41,10 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
   const [tagSelection, setTagSelection] = useState<Tag[]>([]);
   const [isVisible, setIsVisible] = useState(true);
   const [isAvailable, setIsAvailable] = useState(true);
-  const [isTimeLimit, setIsTimeLimit] = useState(false);
   const [title, setTitle] = useState('');
   const [timeLimit, setTimeLimit] = useState(0);
   const [course, setCourse] = useState('');
-  const [error, setError] = useState<{ title?: string }>({});
+  const [error, setError] = useState<{ title?: string, tags?: string }>({});
   const [announcement, setAnnouncement] = useState<string>('');
 
   const [toBeCreatedList, setToBeCreatedList] = useState<QueueCreationInfo[]>([]);
@@ -64,7 +62,6 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
       setTimeEnd(dayjs(queue.endTime));
       setIsVisible(queue.isVisible);
       setIsAvailable(queue.isAvailable);
-      setIsTimeLimit(queue.isTimeLimit);
       setTitle(queue.title);
       setTimeLimit(queue.timeLimit);
       setAnnouncement(queue.announcement);
@@ -115,8 +112,7 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
         course_id: Number.parseInt(courseOfferingId as string),
       };
     });
-    let res = await authenticatedPostFetch('/queue/bulk_create', body);
-    let data = await res.json();
+    await authenticatedPostFetch('/queue/bulk_create', body);
     router.push(`/course/${courseOfferingId}`);
   };
 
@@ -126,6 +122,10 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
     if (title === '') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return setError({ title: 'Title cannot be empty' });
+    }
+    if (tagSelection.length === 0) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return setError({ tags: 'Tags cannot be empty' });
     }
     setDataInBulkList(true);
     resetCurrentQueueData();
@@ -139,7 +139,6 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
     setTagSelection([]);
     setIsVisible(true);
     setIsAvailable(true);
-    setIsTimeLimit(false);
     setTitle('');
     setTimeLimit(0);
     setCourse('');
@@ -162,7 +161,6 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
     setTagSelection(data.tagSelection);
     setIsVisible(data.isVisible);
     setIsAvailable(data.isAvailable);
-    setIsTimeLimit(data.isTimeLimit);
     setTitle(data.title);
     setTimeLimit(data.timeLimit);
     setAnnouncement(data.announcement);
@@ -188,7 +186,6 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
       tagSelection,
       isVisible,
       isAvailable,
-      isTimeLimit,
       title,
       timeLimit,
       announcement,
@@ -201,6 +198,12 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
+    if (tagSelection.length === 0) {
+      setError({ tags: 'Tags cannot be empty' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    setError({});
     const body = {
       queue_id: Number.parseInt(queueId as string),
       title: title,
@@ -223,6 +226,11 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
     }
     router.push(`/active-queue/${queueId}`);
   };
+
+  useEffect(() => {
+    setTimeStart(startTime => date.add(startTime.hour(), 'hour').add(startTime.minute(), 'minute'));
+    setTimeEnd(endTime => date.add(endTime.hour(), 'hour').add(endTime.minute(), 'minute'));
+  }, [date]);
 
 
   console.log('toBeCreatedList.length', toBeCreatedList.length);
@@ -259,6 +267,7 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
             />
             <Typography variant='body1' className={style.title}>Tags (you must choose at least one)</Typography>
             <TagsSelection tagSelection={tagSelection} tags={tags} setTagSelection={setTagSelection} isCreator />
+            {error.tags && <Typography width='100%' maxWidth={1000} variant='body2' color='error'>{error.tags}</Typography>}
             <Typography variant="body1" className={style.title}>Announcement (optional) </Typography>
             <FormGroup className={style.formGroup}>
               <TextField
@@ -276,8 +285,6 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
               setIsAvailable={setIsAvailable}
               isVisible={isVisible}
               setIsVisible={setIsVisible}
-              isTimeLimit={isTimeLimit}
-              setIsTimeLimit={setIsTimeLimit}
               timeLimit={timeLimit}
               setTimeLimit={setTimeLimit}
             />

@@ -8,6 +8,7 @@ import { CardActionArea } from '@mui/material';
 import { useRouter } from 'next/router';
 import { authenticatedGetFetch } from '../../utils';
 import React from 'react';
+import Error from '../../pages/_error';
 
 type QueueCardProps = {
   title: string;
@@ -39,11 +40,11 @@ export default function QueueCard({
   const router = useRouter();
   const findWhereToGo = async () => {
     if (isQueueAnalyticsLive) {
-      return `/queue-analytics/${queueId}`;
+      router.push(`/queue-analytics/${queueId}`);
     } else if (isTutor && !isPrevious) {
-      return `/active-queue/${queueId}`;
+      router.push(`/active-queue/${queueId}`);
     } else if (isTutor && isPrevious) {
-      return `/queue-summary/${queueId}`;
+      router.push(`/queue-summary/${queueId}`);
     }
     // if student, we need to find if the queue is open or not
     let res = await authenticatedGetFetch('/queue/is_open', {
@@ -51,16 +52,17 @@ export default function QueueCard({
     });
     let value = await res.json();
     if (value.is_open) {
-      return `/create-request/${queueId}`;
+      router.push(`/create-request/${queueId}`);
+      return;
     }
-    return '/403';
+    return <Error statusCode={res.status} />;
   };
 
   const redirect = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (overrideRedirect !== undefined) {
       return overrideRedirect(e);
     }
-    router.push(await findWhereToGo());
+    await findWhereToGo();
   };
 
   return (

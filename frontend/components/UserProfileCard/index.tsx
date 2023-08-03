@@ -34,8 +34,8 @@ export default function UserProfileCard({
     setCoursesTutored(tutor);
   },[tutor]);
 
-  const navigateToDashboard = () => {
-    router.push('/dashboard');
+  const navigateBack = () => {
+    router.back();
   };
 
   return (
@@ -118,7 +118,7 @@ export default function UserProfileCard({
 
           <div className={styles.buttonContainer}>
             <AddCoursePermissionsModal coursesTutored={coursesTutored} setCoursesTutored={setCoursesTutored} tutorId={zid}/>
-            <Button onClick={navigateToDashboard} className={styles.backButton} variant='contained' size='medium'>Back</Button>
+            <Button onClick={navigateBack} className={styles.backButton} variant='contained' size='medium'>Back</Button>
           </div>
         </CardContent>
       </Card>

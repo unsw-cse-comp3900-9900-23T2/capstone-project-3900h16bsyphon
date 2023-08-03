@@ -48,17 +48,20 @@ const ChatBox = ({requestId, studentZid, isStudent} : ChatBoxProps) => {
 
   return (
     <Grid container spacing={1} className={styles.container}>
-      <Grid item xs={12} className={styles.messageContainer}>
-        {messages.map((message, index) => (
-          (isStudent && message.sender === studentZid) || (!isStudent && message.sender !== studentZid) ?
-            <div key={index} className={styles.myMessage}>
-              {message.content}
-            </div>
-            :
-            <div key={index} className={styles.otherMessage}>
-              {message.content}
-            </div>
-        ))}
+      <Grid item xs={12} >
+        <div className={styles.messageContainer}>
+          {messages.map((message, index) => (
+            (isStudent && message.sender === studentZid) || (!isStudent && message.sender !== studentZid) ?
+              <div key={index} className={styles.myMessage}>
+                {message.content}
+              </div>
+              :
+              <div key={index} className={styles.otherMessage}>
+                {message.content}
+              </div>
+          ))}
+
+        </div>
       </Grid>
       <Grid item xs={12} className={styles.inputContainer}>
         <TextField
