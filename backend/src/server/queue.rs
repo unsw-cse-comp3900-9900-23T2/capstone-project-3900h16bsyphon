@@ -969,7 +969,7 @@ pub async fn bulk_create_queue(
     let tags = gen_tags_from_queue_req(&body2).await?;
     let q_fut = body
         .into_iter()
-        .map(|req| create_queue_not_web(token.username, req, tags));
+        .map(|req| create_queue_not_web(token.username, req, &tags));
     let (oks, errs) = (join_all(q_fut).await)
         .into_iter()
         .partition::<Vec<_>, _>(Result::is_ok);
@@ -1031,7 +1031,7 @@ pub async fn gen_tags_from_queue_req(
 pub async fn create_queue_not_web(
     zid: i32,
     body: CreateQueueRequest,
-    tagmap: HashMap<String, Tag>,
+    tagmap: &HashMap<String, Tag>,
 ) -> SyphonResult<entities::queues::Model> {
     let db: &sea_orm::DatabaseConnection = db();
 
@@ -1059,7 +1059,8 @@ pub async fn create_queue_not_web(
                     q_tag,
                     e
                 );
-            });
+            })
+            .ok();
         }
     }
 
