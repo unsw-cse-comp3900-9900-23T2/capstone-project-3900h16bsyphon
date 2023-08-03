@@ -38,9 +38,10 @@ pub struct DismissNotifQuery {
 
 pub async fn dismiss_notif(
     _token: ReqData<TokenClaims>,
-    web::Json(body): web::Json<DismissNotifQuery>,
+    body: web::Json<DismissNotifQuery>,
 ) -> SyphonResult<HttpResponse> {
     let db = db();
+    let body = body.into_inner();
     log::warn!("DISMISSING NOTIF: {:?}", body);
 
     let notif_existing = entities::notification::Entity::find_by_id(body.notif_id)

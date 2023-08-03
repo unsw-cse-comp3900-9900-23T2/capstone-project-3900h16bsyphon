@@ -18,8 +18,9 @@ const NotificationsCard = ({ title, description, notifId, causeRefresh }: Notifi
   // TODO: replace content
 
   const handleDismiss = async () => {
+    console.log('notifId', notifId);
     const res = await authenticatedPostFetch('/notifs/dismiss', {
-      'notif_id': notifId,
+      'notif_id': Number.parseInt(`${notifId}`),
     });
     if (!res.ok) {
       console.error('failed to dismiss notification. check network tab');
