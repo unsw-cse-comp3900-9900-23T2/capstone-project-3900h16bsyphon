@@ -251,9 +251,10 @@ const ActiveQueue = () => {
               sx={{
                 boxShadow: 1,
               }}
+              onClick={() => setSelection(true)}
             >
-              {tags.map((tag) => (<MenuItem key={tag.tagId} value={tag.tagId} onClick={() => setSelection(true)} sx={{ textAlign: 'center', right: '0' }}>{tag.isPriority ? 'Unprioritise':  'Prioritise'} &quot;{tag.name}&quot;</MenuItem>))}
-              <MenuItem key={'key'} value='prevRequestCount' onClick={() => setSelection(true)}>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} by previous request count</MenuItem>
+              {tags.map((tag) => (<MenuItem key={tag.tagId} value={tag.tagId} sx={{ textAlign: 'center', right: '0' }}>{tag.isPriority ? 'Unprioritise':  'Prioritise'} &quot;{tag.name}&quot;</MenuItem>))}
+              <MenuItem key={'key'} value='prevRequestCount'>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} by previous request count</MenuItem>
             </Select>
           </FormControl>
           <CreateClusterModal queueId={Number.parseInt(`${router.query.queueid}`)} requests={requests} button={<Button className={styles.genericButton} variant="contained">Create Cluster</Button>} />
