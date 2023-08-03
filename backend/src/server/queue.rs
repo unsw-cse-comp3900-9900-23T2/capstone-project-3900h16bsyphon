@@ -31,7 +31,7 @@ use sea_orm::{
     PaginatorTrait, QueryFilter, QuerySelect, RelationTrait,
 };
 
-use futures::future::{join_all, try_join, try_join_all};
+use futures::future::{join_all, try_join_all};
 use serde_json::json;
 
 pub async fn create_queue(

@@ -75,11 +75,19 @@
 }
 
 .searchBarContainer {
+  display: flex;
+  flex-direction: column;
   max-width: 1000px;
+  row-gap: 10px;
 }
 
 .toast {
   font-size: large;
   font-weight: bold;
   min-width: 20%;
+}
+
+.searchTag {
+  display: flex;
+  flex-direction: row;
 }

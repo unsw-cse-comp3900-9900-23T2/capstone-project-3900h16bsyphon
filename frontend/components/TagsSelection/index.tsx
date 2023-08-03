@@ -35,7 +35,7 @@ const TagsSelection = ({ tags, tagSelection, isCreator, setTagSelection, color =
           setTagSelection(value.map((tag) => {
             return (typeof tag === 'string') ? { tagId: -1, name: tag, isPriority: false } : tag;
           }));
-        }}       
+        }}
         options={tags}
         multiple
         value={tagSelection}

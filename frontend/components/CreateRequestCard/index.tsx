@@ -37,6 +37,7 @@ const MIN_DESCRIPTION = 50;
 const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCardProps) => {
   const router = useRouter();
   const [title, setTitle] = useState('');
+  const [error, setError] = useState<{title?: string, description?: string, tags?: string}>({});
   const [titleWordCount, setTitleWordCount] = useState(0);
   const [description, setDescription] = useState('');
   const [descriptionWordCount, setDescriptionWordCount] = useState(0);
@@ -195,6 +196,8 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
                 setTitle(event.target.value);
               }}
               placeholder='Give a descriptive overview of the issue'
+              error={!!error.title}
+              helperText={error.title}
               fullWidth />
           </div>
           <div {...getRootProps()}>
@@ -213,6 +216,8 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 setDescription(event.target.value);
               }}
+              error={!!error.description}
+              helperText={error.description}
               onPaste={(e) => Array.from(e.clipboardData.items).forEach((f: DataTransferItem) => f.kind === 'file' && uploadFile([f.getAsFile() as File]))}
               placeholder='Give a detailed description of the issue. Include any error messages and what you have done so far to try and solve this.'
               id="outlined-input"
@@ -223,6 +228,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
               Tags
             </Typography>
             <TagsSelection tagSelection={tagSelection} tags={tags} setTagSelection={setTagSelection} color='black' backgroundColor='#e3e3e3' />
+            {error.tags && <Typography color='error'>{error.tags}</Typography>}
           </div>
           <div>
             <Typography variant="subtitle1">
@@ -253,7 +259,7 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
                     </TableRow>
                   ))}
                   {files.map((file, index) => (
-                    <TableRow className={styles.imageRow} key={index}>
+                    <TableRow key={index}>
                       {/* eslint-disable-next-line @next/next/no-img-element*/}
                       <TableCell> <img className={styles.uploadedImage} src={URL.createObjectURL(file)} alt={`image ${index}`} /> </TableCell>
                       <TableCell> <Button onClick={() => {
@@ -274,7 +280,28 @@ const CreateRequestCard = ({ isEditMode, queueId, requestId }: CreateRequestCard
           />
           <div className={styles.buttonContainer}>
             <Button onClick={() => router.back()} className={styles.backButton} variant='contained' size='medium'>Back</Button>
-            <Button onClick={isEditMode ? handleEditRequestSubmit : handleCreateRequestSubmit} className={styles.createButton} variant='contained' size='medium'>{isEditMode ? 'Edit' : 'Create'} Request</Button>
+            <Button onClick={() => {
+              if (titleWordCount < MIN_TITLE) {
+                setError((e) => ({...e, title: `Title must be at least ${MIN_TITLE} words` }));
+              } else {
+                setError((e) => ({...e, title: undefined }));
+              }
+              if (descriptionWordCount < MIN_DESCRIPTION) {
+                return setError((e) => ({...e, description: `Description must be at least ${MIN_DESCRIPTION} words` }));
+              } else {
+                setError((e) => ({...e, description: undefined }));
+              }
+              if (tagSelection.length === 0) {
+                return setError((e) => ({...e, tags: 'You must select at least one tag' }));
+              } else {
+                setError((e) => ({...e, tags: undefined }));
+              }
+              if (isEditMode) {
+                handleEditRequestSubmit();
+              } else {
+                handleCreateRequestSubmit();
+              }
+            }} className={styles.createButton} variant='contained' size='medium'>{isEditMode ? 'Edit' : 'Create'} Request</Button>
           </div>
         </CardContent>
       </Card>

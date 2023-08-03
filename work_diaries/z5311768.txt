@@ -40,3 +40,8 @@ week 9
 - fixed docker issue on arm64v8 computers
 - done screenshots
 - done with clustering
+
+week 10
+- write report
+- finish cards to allow for cluster editing
+- meetings (a bunch of them to make sure we fix issues, assign report or coordinate our presentation)
