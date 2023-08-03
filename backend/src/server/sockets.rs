@@ -6,7 +6,7 @@ use serde_json::json;
 use crate::{
     models::{SyphonError, SyphonResult},
     sockets::{lobby::Lobby, websockets::WsConn, SocketChannels},
-    utils::{unbox},
+    utils::unbox,
 };
 
 pub async fn start_socket_conn(
@@ -35,11 +35,12 @@ pub async fn conn_notifications(
     //     .map_err(|_| SyphonError::NotTutor)?
     //     .username;
 
-    log::debug!("Starting Notification() socket");
+    log::info!("Starting Notification() socket");
 
     let conn = WsConn::new(vec![SocketChannels::Notifications(0)], unbox(lobby_addr));
     let res = actix_web_actors::ws::start(conn, &req, stream)
         .map_err(|_| SyphonError::Json(json!("Socket Failed"), StatusCode::INTERNAL_SERVER_ERROR));
+
     log::debug!("NOTIF RES: {:?}", res);
     res
 }

@@ -167,8 +167,6 @@ impl Handler<Connect> for Lobby {
             .or_default()
             .insert(uuid);
 
-            log::warn!("CHAN NOTIF: {:?}", self.notifications);
-
             if let SocketChannels::Chat(req_id) = channel {
                 self.send_chat_playback(*req_id, uuid);
             }

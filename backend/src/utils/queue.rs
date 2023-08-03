@@ -75,16 +75,16 @@ pub async fn handle_possible_queue_capacity_overflow(
     );
 
     if capacity_left >= unseen_requests {
-        log::error!("Queue({}): no overflow", queue_id);
+        log::debug!("Queue({}): no overflow", queue_id);
         return Ok(None);
     }
-    log::error!("Is overflow");
+    log::debug!("Is overflow");
 
     // Have ensured that overflow is happening, so deal w/ it
     let course_id = course_code_queue(queue_id).await?;
     let admin_zids = get_admin_zids_for_course(course_id).await?;
 
-    log::error!("Admins = {:?}", admin_zids);
+    log::debug!("Admins = {:?}", admin_zids);
     for zid in &admin_zids {
         create_capacity_overflow_notification(
             *zid,
@@ -104,7 +104,7 @@ pub async fn handle_possible_queue_capacity_overflow(
         .into_iter()
         .map(SocketChannels::Notifications)
         .collect::<Vec<_>>();
-    log::error!("actions = {:?}", actions);
+    log::debug!("actions = {:?}", actions);
 
     match actions.is_empty() {
         true => Ok(None),
