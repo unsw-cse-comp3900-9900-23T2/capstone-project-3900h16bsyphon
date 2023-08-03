@@ -174,7 +174,7 @@ async fn main() -> std::io::Result<()> {
                         web::post().to(server::queue::bulk_create_queue),
                     )
                     .route("/get", web::get().to(server::queue::get_queue_by_id))
-                    .route("/summary", web::get().to(server::queue::get_queue_summary))
+                    .route("/summary", web::get().to(server::queue::get_queue_summary_v2))
                     .route(
                         "/analytics",
                         web::get().to(server::queue::get_queue_analytics),
