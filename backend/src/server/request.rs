@@ -101,7 +101,9 @@ pub async fn create_request(
         let file_loc = format!("/images/{}/{}", insertion.request_id, file.file_name);
         fs::write(
             file_loc.as_str(),
-            engine.decode(file.file_content.as_bytes()).expect("base64 decode failed"),
+            engine
+                .decode(file.file_content.as_bytes())
+                .expect("base64 decode failed"),
         )
         .map_err(|e| {
             log::error!("Error while writing image: {:?}", e);
