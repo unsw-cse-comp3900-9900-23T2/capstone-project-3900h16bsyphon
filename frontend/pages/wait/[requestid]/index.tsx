@@ -30,8 +30,9 @@ const WaitingScreen = () => {
     lastName: 'Doe',
     status: Status.Unseen,
     title: 'Pls help me with printing this array - im so stuck!',
-    queueId: 1,
+    queueId: undefined,
     courseOfferingId: 1,
+    announcement: '',
     tags: [
       {
         name: 'tag',
@@ -158,7 +159,7 @@ const WaitingScreen = () => {
 
   // websocket for queue data:
   let { lastJsonMessage: lastJsonMessageQueue } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
-    queryParams: {queue_id: requestData.queueId},
+    queryParams: {queue_id: requestData.queueId as any},
     onOpen: () => {
       console.log('connected [queue data]');
     }, 
