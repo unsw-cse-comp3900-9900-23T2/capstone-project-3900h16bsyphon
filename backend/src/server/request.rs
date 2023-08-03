@@ -88,23 +88,33 @@ pub async fn create_request(
 
     // save the image to the docker volume
     let file_loc = format!("/images/{}", insertion.request_id);
-    fs::create_dir(file_loc)?;
+    fs::create_dir(&file_loc).map_err(|e| {
+        log::error!("Could not create dir: {file_loc}");
+        e
+    })?;
     let engine = engine::GeneralPurpose::new(
         &base64::alphabet::STANDARD,
         general_purpose::GeneralPurposeConfig::new(),
     );
-    let images_insertion = request_creation.files.into_iter().map(|file| {
+    let images_insertion = request_creation.files.into_iter().filter_map(|file| {
         let file_loc = format!("/images/{}/{}", insertion.request_id, file.file_name);
         fs::write(
             file_loc.as_str(),
-            engine.decode(file.file_content.as_bytes()).unwrap(),
+            engine
+                .decode(file.file_content.as_bytes())
+                .expect("base64 decode failed"),
         )
-        .unwrap();
-        entities::request_images::ActiveModel {
-            request_id: ActiveValue::Set(insertion.request_id),
-            image_url: ActiveValue::Set(file_loc),
-        }
-        .insert(db)
+        .map_err(|e| {
+            log::error!("Error while writing image: {:?}", e);
+        })
+        .ok()?;
+        Some(
+            entities::request_images::ActiveModel {
+                request_id: ActiveValue::Set(insertion.request_id),
+                image_url: ActiveValue::Set(file_loc),
+            }
+            .insert(db),
+        )
     });
     join_all(images_insertion).await;
 
@@ -114,15 +124,15 @@ pub async fn create_request(
         SocketChannels::QueueData(insertion.queue_id),
     ];
 
-    log::error!("Hitting overflow handle");
+    log::debug!("Hitting overflow handle");
     if let Ok(Some(notif_actions)) =
         handle_possible_queue_capacity_overflow(insertion.queue_id).await
     {
-        log::error!("Is overflow action: {:?}", notif_actions);
+        log::debug!("Is overflow action: {:?}", notif_actions);
         actions.extend(notif_actions);
     }
 
-    log::warn!("Sending invalidate keys: {:?}", actions);
+    log::debug!("Sending invalidate keys: {:?}", actions);
     lobby.do_send(HttpServerAction::InvalidateKeys(actions));
 
     Ok(HttpResponse::Ok().json(CreateRequestResponse {

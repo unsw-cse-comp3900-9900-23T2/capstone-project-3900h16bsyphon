@@ -41,10 +41,7 @@ pub async fn mark_notifs_as_seen(zid: i32) -> SyphonResult<Vec<entities::notific
 
     let update_fut = notifs.clone().into_iter().map(|n| {
         entities::notification::ActiveModel {
-            seen: match n.seen {
-                true => ActiveValue::Unchanged(true),
-                false => ActiveValue::Set(false),
-            },
+            seen: ActiveValue::Set(true),
             ..n.into()
         }
         .update(db)
@@ -55,6 +52,7 @@ pub async fn mark_notifs_as_seen(zid: i32) -> SyphonResult<Vec<entities::notific
         .into_iter()
         .filter_map(Result::ok)
         .collect::<Vec<_>>();
+    log::warn!("updated_notifs = {:?}", updated_notifs);
 
     Ok(updated_notifs)
 }

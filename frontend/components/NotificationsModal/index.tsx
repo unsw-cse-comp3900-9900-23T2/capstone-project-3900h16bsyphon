@@ -7,20 +7,8 @@ import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
 import NotificationsCard from '../NotificationsCard';
 import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
-import { authenticatedGetFetch, getToken } from '../../utils';
+import { authenticatedGetFetch, toCamelCase } from '../../utils';
 import { useRouter } from 'next/router';
-import { setRef } from '@mui/material';
-
-const data = [
-  {
-    title: 'COMP1511 Help Session overloaded',
-    description: '1 Tutor has been assigned to complete 10 requests in 45 minutes! Consider assigning more tutors!'
-  },
-  {
-    title: 'COMP211 Help Session overloaded',
-    description: '1 Tutor has been assigned to complete 10 requests in 45 minutes! Consider assigning more tutors!'
-  }
-];
 
 type Notification = {
   notifId: number;
@@ -53,7 +41,8 @@ const NotificationsModal = () => {
         console.error('failed to fetch notifications. check network tab');
         return;
       }
-      setNotifs(await res.json());
+      // toCamelCase
+      setNotifs(toCamelCase(await res.json()));
     };
     fetchNotifs();
   }, [lastJsonMessage, refresh, open]);
