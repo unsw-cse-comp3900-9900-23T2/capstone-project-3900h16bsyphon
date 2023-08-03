@@ -394,15 +394,12 @@ pub async fn get_queue_summary_v2(
                 .one(db)
                 .await?;
 
-            match start_time {
-                Some(start_time) => {
-                    total_request_time += request
-                        .event_time
-                        .signed_duration_since(start_time.event_time)
-                        .num_minutes();
-                    total_resolve_count += 1;
-                }
-                None => {}
+            if let Some(start_time) = start_time {
+                total_request_time += request
+                    .event_time
+                    .signed_duration_since(start_time.event_time)
+                    .num_minutes();
+                total_resolve_count += 1;
             }
         }
 
@@ -511,22 +508,19 @@ pub async fn get_queue_summary_v2(
                 .into_model::<TimeStampModel>()
                 .one(db)
                 .await?;
-            match (start_time, end_time) {
-                (Some(start), Some(end)) => {
-                    total_duration.minutes += end
-                        .event_time
-                        .signed_duration_since(start.event_time)
-                        .num_minutes();
-                    total_duration.hours += end
-                        .event_time
-                        .signed_duration_since(start.event_time)
-                        .num_hours();
-                    total_duration.seconds += end
-                        .event_time
-                        .signed_duration_since(start.event_time)
-                        .num_seconds();
-                }
-                _ => {}
+            if let (Some(start), Some(end)) = (start_time, end_time) {
+                total_duration.minutes += end
+                    .event_time
+                    .signed_duration_since(start.event_time)
+                    .num_minutes();
+                total_duration.hours += end
+                    .event_time
+                    .signed_duration_since(start.event_time)
+                    .num_hours();
+                total_duration.seconds += end
+                    .event_time
+                    .signed_duration_since(start.event_time)
+                    .num_seconds();
             }
         }
 

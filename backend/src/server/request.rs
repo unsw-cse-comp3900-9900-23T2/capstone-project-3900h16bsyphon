@@ -22,9 +22,7 @@ use crate::sockets::lobby::Lobby;
 use crate::sockets::messages::HttpServerAction;
 use crate::sockets::SocketChannels;
 use crate::utils::db::db;
-use crate::utils::queue::{
-    handle_possible_queue_capacity_overflow,
-};
+use crate::utils::queue::handle_possible_queue_capacity_overflow;
 use crate::utils::request::move_request;
 use crate::utils::unbox;
 use futures::future::join_all;
@@ -433,21 +431,16 @@ pub async fn disable_cluster(
         .await?;
 
     // remove from any existing cluster
-    match cluster_id {
-        Some(cluster_id) => {
-            leave_cluster(
-                token,
-                actix_web::web::Json(LeaveClusterRequest {
-                    request_id: body.request_id,
-                    cluster_id,
-                }),
-                lobby,
-            )
-            .await?;
-        }
-        None => {
-            //
-        }
+    if let Some(cluster_id) = cluster_id {
+        leave_cluster(
+            token,
+            actix_web::web::Json(LeaveClusterRequest {
+                request_id: body.request_id,
+                cluster_id,
+            }),
+            lobby,
+        )
+        .await?;
     }
     Ok(HttpResponse::Ok().json(()))
 }
