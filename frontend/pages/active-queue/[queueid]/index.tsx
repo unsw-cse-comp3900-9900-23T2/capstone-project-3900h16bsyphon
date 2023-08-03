@@ -169,6 +169,7 @@ const ActiveQueue = () => {
         tag_id: tagId,
       }
     );
+    router.reload();
   };
 
   const flipRequestCountPriority = async () => {
