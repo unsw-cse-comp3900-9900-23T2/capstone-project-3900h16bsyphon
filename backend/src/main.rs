@@ -3,7 +3,7 @@ use actix_cors::Cors;
 use actix_files::Files;
 use actix_web::{
     http, middleware,
-    web::{self, route, scope, Data},
+    web::{self, scope, Data},
     App, HttpServer,
 };
 use actix_web_httpauth::middleware::HttpAuthentication;

@@ -1,17 +1,17 @@
-use actix_web::{web, HttpResponse};
+
 use chrono::{DateTime, Duration, Utc};
 use chrono_tz::Australia::Sydney;
 use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait, ModelTrait};
 
 use crate::{
     entities,
-    models::{self, queue},
-    sockets::{messages::HttpServerAction, SocketChannels},
+    models::{self},
+    sockets::{SocketChannels},
     utils::db::db,
 };
 use models::{SyphonError, SyphonResult};
 
-use super::{course::get_admin_zids_for_course, db};
+use super::{course::get_admin_zids_for_course};
 
 pub async fn num_requests_until_close_not_web(queue_id: i32) -> SyphonResult<i64> {
     let db = db();
@@ -102,7 +102,7 @@ pub async fn handle_possible_queue_capacity_overflow(
 
     let actions = admin_zids
         .into_iter()
-        .map(|zid| SocketChannels::Notifications(zid))
+        .map(SocketChannels::Notifications)
         .collect::<Vec<_>>();
     log::error!("actions = {:?}", actions);
 

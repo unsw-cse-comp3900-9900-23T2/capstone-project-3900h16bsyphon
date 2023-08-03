@@ -8,7 +8,7 @@ use base64::engine::general_purpose;
 use base64::{engine, Engine};
 use chrono::Utc;
 use chrono_tz::Australia::Sydney;
-use hmac::digest::typenum::private::IsNotEqualPrivate;
+
 use log::debug;
 use serde_json::json;
 
@@ -23,8 +23,7 @@ use crate::sockets::messages::HttpServerAction;
 use crate::sockets::SocketChannels;
 use crate::utils::db::db;
 use crate::utils::queue::{
-    handle_possible_queue_capacity_overflow, num_requests_until_close_not_web,
-    unseen_requests_in_queue,
+    handle_possible_queue_capacity_overflow,
 };
 use crate::utils::request::move_request;
 use crate::utils::unbox;

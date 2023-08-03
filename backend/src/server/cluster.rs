@@ -52,7 +52,7 @@ pub async fn cluster_requests(
         &mut body
             .request_ids
             .into_iter()
-            .map(|r| SocketChannels::Request(r))
+            .map(SocketChannels::Request)
             .collect(),
     );
 

@@ -6,7 +6,7 @@ use serde_json::json;
 use crate::{
     models::{SyphonError, SyphonResult},
     sockets::{lobby::Lobby, websockets::WsConn, SocketChannels},
-    utils::{auth::validate_raw_token, unbox},
+    utils::{unbox},
 };
 
 pub async fn start_socket_conn(

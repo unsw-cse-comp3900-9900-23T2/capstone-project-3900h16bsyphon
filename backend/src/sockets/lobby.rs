@@ -58,11 +58,11 @@ impl Lobby {
 impl Actor for Lobby {
     type Context = Context<Self>;
 
-    fn started(&mut self, ctx: &mut Self::Context) {
+    fn started(&mut self, _ctx: &mut Self::Context) {
         log::info!("Lobby Started");
     }
 
-    fn stopping(&mut self, ctx: &mut Self::Context) -> actix::Running {
+    fn stopping(&mut self, _ctx: &mut Self::Context) -> actix::Running {
         log::error!("LOBBY STOPPING");
         actix::Running::Stop
     }
