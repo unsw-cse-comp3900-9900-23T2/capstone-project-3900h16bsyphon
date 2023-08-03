@@ -52,7 +52,7 @@ pub async fn cluster_requests(
         &mut body
             .request_ids
             .into_iter()
-            .map(|r| SocketChannels::Request(r))
+            .map(SocketChannels::Request)
             .collect(),
     );
 
@@ -145,13 +145,13 @@ pub async fn edit_cluster(
         .await?;
 
     if body.request_ids.len() > 1 {
-        let items = body
-            .request_ids
-            .into_iter()
-            .map(|request_id| entities::clusters::ActiveModel {
-                request_id: ActiveValue::Set(request_id),
-                cluster_id: sea_orm::ActiveValue::Set(body.cluster_id),
-            });
+        let items =
+            body.request_ids
+                .into_iter()
+                .map(|request_id| entities::clusters::ActiveModel {
+                    request_id: ActiveValue::Set(request_id),
+                    cluster_id: sea_orm::ActiveValue::Set(body.cluster_id),
+                });
 
         entities::clusters::Entity::insert_many(items)
             .exec(db)

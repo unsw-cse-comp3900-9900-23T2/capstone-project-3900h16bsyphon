@@ -10,6 +10,7 @@ pub mod course;
 pub mod faqs;
 pub mod history;
 pub mod logs;
+pub mod notifications;
 pub mod queue;
 pub mod request;
 pub mod sockets;

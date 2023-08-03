@@ -59,6 +59,10 @@ async fn main() -> std::io::Result<()> {
                         "/announcements",
                         web::get().to(server::sockets::conn_announcements),
                     )
+                    .route(
+                        "/notifications",
+                        web::get().to(server::sockets::conn_notifications),
+                    )
                     .route("/request", web::get().to(server::sockets::conn_request))
                     .route("/queue", web::get().to(server::sockets::conn_queue))
                     .route("/chat", web::get().to(server::sockets::conn_chat)),
@@ -174,7 +178,10 @@ async fn main() -> std::io::Result<()> {
                         web::post().to(server::queue::bulk_create_queue),
                     )
                     .route("/get", web::get().to(server::queue::get_queue_by_id))
-                    .route("/summary", web::get().to(server::queue::get_queue_summary))
+                    .route(
+                        "/summary",
+                        web::get().to(server::queue::get_queue_summary_v2),
+                    )
                     .route(
                         "/analytics",
                         web::get().to(server::queue::get_queue_analytics),
@@ -215,6 +222,26 @@ async fn main() -> std::io::Result<()> {
                     .route("/list", web::get().to(server::faqs::list_faqs))
                     .route("/delete", web::delete().to(server::faqs::delete_faqs))
                     .route("/update", web::put().to(server::faqs::update_faqs)),
+            )
+            .service(
+                scope("/notifs")
+                    .wrap(amw.clone())
+                    .route(
+                        "/all",
+                        web::get().to(server::notifications::all_notifications),
+                    )
+                    .route(
+                        "/unseen",
+                        web::get().to(server::notifications::unseen_notifications),
+                    )
+                    .route(
+                        "/mark_all_seen",
+                        web::post().to(server::notifications::mark_notifications_as_seen),
+                    )
+                    .route(
+                        "/dismiss",
+                        web::post().to(server::notifications::dismiss_notif),
+                    ),
             )
             .route("/{tail:.*}", web::get().to(server::res404))
             .route("/{tail:.*}", web::post().to(server::res404))

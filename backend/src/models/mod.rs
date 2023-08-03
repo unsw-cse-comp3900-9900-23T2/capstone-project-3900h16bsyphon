@@ -56,7 +56,8 @@ impl SyphonError {
             SyphonError::QueueNotExist(id) => Ok(format!("Queue does not exist: {}", id)),
             SyphonError::ActixError(e) => Ok(e.as_response_error().to_string()),
             SyphonError::IoError(e) => Ok(e.to_string()),
-        }.map_err(|e| {
+        }
+        .map_err(|e| {
             log::error!("Error serialising error body: {:?} with result {}", self, e);
             e
         })

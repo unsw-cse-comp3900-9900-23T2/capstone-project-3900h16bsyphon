@@ -4,15 +4,31 @@ import Typography from '@mui/material/Typography';
 import styles from './NotificationsCard.module.css';
 import CardActions from '@mui/material/CardActions';
 import Button from '@mui/material/Button';
+import { authenticatedPostFetch } from '../../utils';
 
 // TODO: update props
 type NotificationsCardProps = {
   title: string;
   description: string;
+  notifId: number;
+  causeRefresh?: () => void;
 }
 
-const NotificationsCard = ({ title, description }: NotificationsCardProps) => {
+const NotificationsCard = ({ title, description, notifId, causeRefresh }: NotificationsCardProps) => {
   // TODO: replace content
+
+  const handleDismiss = async () => {
+    console.log('notifId', notifId);
+    const res = await authenticatedPostFetch('/notifs/dismiss', {
+      'notif_id': Number.parseInt(`${notifId}`),
+    });
+    if (!res.ok) {
+      console.error('failed to dismiss notification. check network tab');
+      return;
+    }
+    if (causeRefresh) causeRefresh();
+  };
+
   return (
     <div>
       <Card className={styles.card}>
@@ -24,7 +40,7 @@ const NotificationsCard = ({ title, description }: NotificationsCardProps) => {
         </CardContent>
         <CardActions>
           {/* TODO: add functionality */}
-          <Button className={styles.button}>Dismiss</Button>
+          <Button className={styles.button} onClick={handleDismiss}>Dismiss</Button>
         </CardActions>
       </Card>
     </div>

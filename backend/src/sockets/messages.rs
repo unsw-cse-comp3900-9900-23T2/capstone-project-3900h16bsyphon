@@ -3,6 +3,7 @@ use log::debug;
 use serde_json::json;
 use uuid::Uuid;
 
+use crate::entities;
 use crate::entities::queues::Model as QueueModel;
 use crate::models::QueueRequest;
 
@@ -27,6 +28,9 @@ pub enum WsMessage {
     QueueData {
         queue_id: i32,
         content: (QueueModel, Vec<QueueRequest>),
+    },
+    Notification {
+        content: String,
     },
 }
 
@@ -119,6 +123,7 @@ impl WsMessage {
             WsMessage::MessageOut { .. } => "message",
             WsMessage::RequestData { .. } => "request_data",
             WsMessage::QueueData { .. } => "queue_data",
+            WsMessage::Notification { .. } => "notification",
         }
         .into()
     }
@@ -148,6 +153,9 @@ impl WsMessage {
                 "queue_id": queue_id,
                 "queue": content.0,
                 "requests": content.1,
+            }),
+            WsMessage::Notification { content } => json!({
+                "content": content,
             }),
         }
     }
@@ -197,4 +205,12 @@ fn get_int(key: &str, json: &serde_json::Value) -> Result<i32, WsActionParseErro
             .ok_or(WsActionParseError::InvalidType)?,
     )
     .map_err(|_| WsActionParseError::InvalidType)
+}
+
+impl From<entities::notification::Model> for WsMessage {
+    fn from(notif: entities::notification::Model) -> Self {
+        WsMessage::Notification {
+            content: notif.content,
+        }
+    }
 }

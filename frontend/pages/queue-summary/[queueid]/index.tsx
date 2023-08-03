@@ -1,16 +1,16 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import Header from '../../../components/Header';
 import styles from './QueueSummary.module.css';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase, getActualDuration } from '../../../utils';
-import { Status, Tag } from '../../../types/requests';
 import { QueueAnalyticsData, QueueRequestSummaryData, QueueSummaryData } from '../../../types/queues';
 import OverallTimeSummary from '../../../components/OverallTimeSummary';
 import QueueTutorSummaryCard from '../../../components/QueueTutorSummaryCard';
 import QueueTagSummaryCard from '../../../components/QueueTagSummaryCard';
 import QueueRequestsSummaryCard from '../../../components/QueueRequestsSummaryCard';
 import QueueAnalyticsSummaryCard from '../../../components/QueueAnalyticsSummaryCard';
+import Error from '../../../pages/_error';
 
 const tags = [
   {
@@ -105,7 +105,7 @@ const QueueSummary = () => {
       const res = await authenticatedGetFetch('/queue/summary', {queue_id: `${router.query.queueid}`});
       if (!res.ok) {
         console.log('something went wrong with queue summary, see network tab');
-        return;
+        return <Error statusCode={res.status} />;
       }
       const data = await res.json();
       setSummaryData(toCamelCase(data));

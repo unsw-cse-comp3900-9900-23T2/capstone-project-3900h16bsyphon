@@ -4,6 +4,7 @@ pub use super::clusters::Entity as Clusters;
 pub use super::course_offerings::Entity as CourseOfferings;
 pub use super::faqs::Entity as Faqs;
 pub use super::messages::Entity as Messages;
+pub use super::notification::Entity as Notification;
 pub use super::queue_tags::Entity as QueueTags;
 pub use super::queue_tutors::Entity as QueueTutors;
 pub use super::queues::Entity as Queues;

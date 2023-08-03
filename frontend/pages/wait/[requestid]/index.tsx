@@ -19,6 +19,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FAQsModal from '../../../components/FAQsModal';
 import MetaData from '../../../components/MetaData';
+import Error from 'next/error';
 
 const WaitingScreen = () => {
   const router = useRouter();
@@ -68,14 +69,9 @@ const WaitingScreen = () => {
       let res = await authenticatedGetFetch('/request/get_info', {
         request_id: `${router.query.requestid}`,
       });
-      if (res.status === 404) {
-        router.push('/404');
-      } else if (res.status === 403) {
-        router.push('/403');
-      } else if (res.status === 200) {
-        let d = await res.json();
-        setData(toCamelCase(d));
-      }
+      if (!res.ok) return <Error statusCode={res.status} />;
+      let d = await res.json();
+      setData(toCamelCase(d));
     };
     if (!router.query.requestid) {
       return;

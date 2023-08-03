@@ -9,17 +9,19 @@ import CreateCourseOfferingModal from '../../components/CreateCourseOfferingModa
 import React, { useEffect, useState } from 'react';
 import { authenticatedGetFetch, toCamelCase } from '../../utils';
 import { CourseOfferingData } from '../../types/courses';
+import { UserProfile } from '../../types/profile';
+import Error from '../../pages/_error';
 
 const Dashboard: NextPage = () => {
   const [courseOfferings, setCourseOfferings] = useState<CourseOfferingData[]>([]);
   const [myCourses, setMyCourses] = useState<CourseOfferingData[]>([]);
-  const [myProfile, setMyProfile ] = useState<any>({});
+  const [myProfile, setMyProfile ] = useState<UserProfile | undefined>(undefined);
   useEffect(() => {
     const fetchCourseOfferings = async () => {
       let res = await authenticatedGetFetch('/course/list', {});
       if (!res.ok) {
         console.error('authentication failed, or something broke, check network tab');
-        return;
+        return <Error statusCode={res.status} />;
       }
       let courseOfferings = await res.json();
       setCourseOfferings(toCamelCase(courseOfferings));
@@ -29,7 +31,7 @@ const Dashboard: NextPage = () => {
       let res = await authenticatedGetFetch('/course/get_tutored', {});
       if (!res.ok) {
         console.error('authentication failed, or something broke, check network tab');
-        return;
+        return <Error statusCode={res.status} />;
       }
       let courses = await res.json() as any;
       setMyCourses(toCamelCase(courses));
@@ -38,7 +40,7 @@ const Dashboard: NextPage = () => {
       const res = await authenticatedGetFetch('/user/profile', {});
       if (!res.ok) {
         console.error('authentication failed, or something broke, check network tab');
-        return;
+        return <Error statusCode={res.status} />;
       }
       setMyProfile(toCamelCase(await res.json()));
     };
@@ -53,24 +55,25 @@ const Dashboard: NextPage = () => {
       <Header />
       <div className={styles.container}>
         <div className={styles.dashboard}>
-          { myProfile.isOrgAdmin &&
-            <>
+        
+          <>
+            { myProfile?.isOrgAdmin &&
               <div className={styles.courseOffering}>
                 <h1 className={styles.heading}>Select course offering</h1>
                 <CreateCourseOfferingModal />
               </div>
-              <div className={styles.cards}>
-                {courseOfferings?.map(d => (
-                  <CourseOfferingCard
-                    key={d.courseOfferingId}
-                    title={`${d.courseCode} - ${d.title}`}
-                    inviteCode={d.tutorInviteCode}
-                    courseOfferingId={d.courseOfferingId}
-                  />
-                ))}
-              </div>
-            </>
-          }
+            }
+            <div className={styles.cards}>
+              {courseOfferings?.filter((offering) => myProfile?.courseAdmin.map((t) => t.courseCode).includes(offering.courseCode)).map(d => (
+                <CourseOfferingCard
+                  key={d.courseOfferingId}
+                  title={`${d.courseCode} - ${d.title}`}
+                  inviteCode={d.tutorInviteCode}
+                  courseOfferingId={d.courseOfferingId}
+                />
+              ))}
+            </div>
+          </>
           <div className={styles.tutorSection}>
             <h1>Courses you tutor</h1>
             <div className={styles.section}>

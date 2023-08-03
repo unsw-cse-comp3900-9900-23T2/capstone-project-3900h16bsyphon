@@ -1,27 +1,69 @@
 import IconButton from '@mui/material/IconButton';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Modal from '@mui/material/Modal';
 import styles from './NotificationsModal.module.css';
 import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
 import NotificationsCard from '../NotificationsCard';
+import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
+import { authenticatedGetFetch, toCamelCase } from '../../utils';
+import { useRouter } from 'next/router';
 
-const data = [
-  {
-    title: 'COMP1511 Help Session overloaded',
-    description: '1 Tutor has been assigned to complete 10 requests in 45 minutes! Consider assigning more tutors!'
-  },
-  {
-    title: 'COMP211 Help Session overloaded',
-    description: '1 Tutor has been assigned to complete 10 requests in 45 minutes! Consider assigning more tutors!'
-  }
-];
+type Notification = {
+  notifId: number;
+  zid: number,
+  content: string,
+  createdAt: Date,
+  seen: boolean,
+}
 
 const NotificationsModal = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const [notifs, setNotifs] = useState<Notification[]>([]);
+  const [refresh, setRefresh] = useState(false);
+
+  const router = useRouter();
+
+  const { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/notifications', {
+    onOpen: () => {
+      console.log('connected [notification]');
+    },
+    shouldReconnect: () => true,
+  }, !!router);
+
+  useEffect(() => {
+    const fetchNotifs = async () => {
+      const res = await authenticatedGetFetch('/notifs/all');
+      if (!res.ok) {
+        console.error('failed to fetch notifications. check network tab');
+        return;
+      }
+      // toCamelCase
+      setNotifs(toCamelCase(await res.json()));
+    };
+    fetchNotifs();
+  }, [lastJsonMessage, refresh, open]);
+  console.log('notifs', notifs);
+
+  const getTitle = (content: string): string => {
+    const split = content.split(':');
+    return split.length > 0 ? split[0] : 'Notification';
+  };
+
+  const getDescription = (content: string): string => {
+    const split = content.split(':');
+    if (split.length <= 1) {
+      return 'No description';
+    }
+    return split[1];
+  };
+
+  const causeRefresh = () => {
+    setRefresh(!refresh);
+  };
 
   return (
     <div>
@@ -45,12 +87,14 @@ const NotificationsModal = () => {
               <CloseIcon />
             </IconButton>
           </div>
-          {data !== null && data.length !== 0 ? (
-            data.map((d, index) => (
+          {notifs !== null && notifs.length !== 0 ? (
+            notifs.filter(d => !d.seen).map((d, index) => (
               <NotificationsCard
                 key={index}
-                title={d.title}
-                description={d.description}
+                title={getTitle(d.content)}
+                description={getDescription(d.content)}
+                notifId={d.notifId}
+                causeRefresh={causeRefresh}
               />
             ))
           ) : (

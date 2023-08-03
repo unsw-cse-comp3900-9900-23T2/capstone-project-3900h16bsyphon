@@ -15,6 +15,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import StudentQueueClusterRequestCard from '../../../components/StudentQueueClusterRequestCard';
 import CreateClusterModal from '../../../components/ClusterModal';
+import Error from '../../../pages/_error';
 
 const ActiveQueue = () => {
   const router = useRouter();
@@ -31,6 +32,7 @@ const ActiveQueue = () => {
   const [studentCount, setStudentCount] = useState(0);
   const [numReqsUntilClose, setNumReqsUntilClose] = useState(0);
   const [noti, setNoti] = useState(false);
+  const [selection, setSelection] = useState(false);
 
   let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
     queryParams: {queue_id: requestData.queueId as unknown as number},
@@ -65,6 +67,7 @@ const ActiveQueue = () => {
       }
       setRequests(transformRequests(toCamelCase(newRequestsData)));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastJsonMessage]);
 
   useEffect(() => {
@@ -121,7 +124,7 @@ const ActiveQueue = () => {
       let res = await authenticatedGetFetch('/request/all_requests_for_queue', {queue_id: `${router.query.queueid}`});
       // yolo assume OK
       let d = await res.json();
-
+      if (!res.ok) return <Error statusCode={res.status} />;
       setRequests(transformRequests(toCamelCase(d)));
     };
     let getQueueData = async () => {
@@ -238,20 +241,24 @@ const ActiveQueue = () => {
       </Card>
       <div className={styles.body}>
         <div className={styles.buttonContainer}>
-          <FormControl size='small' >
-            <InputLabel sx={{ textAlign: 'center', right: '0'}} className={styles.label} shrink={false} id="sort-queue-select-label"> Sort Queue </InputLabel>
+          <FormControl size='small'>
+            {!selection && <InputLabel sx={{ textAlign: 'center', right: '0' }} className={styles.label} shrink={false} id="sort-queue-select-label">SORT QUEUE</InputLabel>}
             <Select
               labelId="sort-queue-select-label"
               id="sort-queue-select"
               className={styles.select}
               displayEmpty
               onChange={handleSubmit}
+              sx={{
+                boxShadow: 1,
+              }}
+              onClick={() => setSelection(true)}
             >
-              {tags.map((tag) => (<MenuItem key={tag.tagId} value={tag.tagId}>{tag.isPriority ? 'Unprioritise':  'Prioritise'} &quot;{tag.name}&quot;</MenuItem>))}
-              <MenuItem key={'key'} value='prevRequestCount'>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} by number of previous requests</MenuItem>
+              {tags.map((tag) => (<MenuItem key={tag.tagId} value={tag.tagId} sx={{ textAlign: 'center', right: '0' }}>{tag.isPriority ? 'Unprioritise':  'Prioritise'} &quot;{tag.name}&quot;</MenuItem>))}
+              <MenuItem key={'key'} value='prevRequestCount'>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} by previous request count</MenuItem>
             </Select>
           </FormControl>
-          <CreateClusterModal queueId={Number.parseInt(`${router.query.queueid}`)} requests={requests} button={<Button  className={styles.genericButton}>Create Cluster</Button>} />
+          <CreateClusterModal queueId={Number.parseInt(`${router.query.queueid}`)} requests={requests} button={<Button className={styles.genericButton} variant="contained">Create Cluster</Button>} />
           <Button className={styles.closeQueueButton} variant='contained' onClick={handleCloseQueue}>Close Queue</Button>
         </div>
         <Box className={styles.cardBox}>

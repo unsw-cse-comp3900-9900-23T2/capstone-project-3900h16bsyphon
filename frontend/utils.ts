@@ -22,7 +22,7 @@ const getCookie = (cookieName: string) => {
 };
 
 export const authenticatedPostFetch = async (route: string, body: any) => {
-  console.log(JSON.stringify(body));
+  console.log('body', JSON.stringify(body));
   return fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}${route}`, {
     method: 'POST',
     headers: {
