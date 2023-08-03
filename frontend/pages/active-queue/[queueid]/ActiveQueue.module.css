@@ -54,19 +54,24 @@
     padding: 5px 25px;
 }
 
+.genericButton:hover {
+    background-color: var(--colour-main-purple-400);
+}
+
 .label {
     font-weight: bold;
     text-align: center;
     align-content: center;
     flex-grow: 1;
+    color: black;
 }
 
 .select {
-    background-color: var(--colour-main-purple-400);
     font-weight: bold;
     color: black;
     padding: 5px 25px;
     height: 45px;
+    background-color: var(--colour-main-grey-200);
 }
 
 .settingsButton:hover {
