@@ -7,7 +7,6 @@ use crate::server::{
     request::{all_requests_for_queue_not_web, request_info_not_web},
 };
 use crate::sockets::messages::WsMessage;
-use crate::utils;
 use crate::utils::notifs::all_unseen_notifs;
 
 use super::{lobby::Lobby, messages::HttpServerAction, SocketChannels};
@@ -16,7 +15,7 @@ impl Handler<HttpServerAction> for Lobby {
     type Result = ();
 
     fn handle(&mut self, msg: HttpServerAction, ctx: &mut Self::Context) -> Self::Result {
-        log::warn!("Lobby Handling HttpServerAction: {:?}", msg);
+        log::debug!("Lobby Handling HttpServerAction: {:?}", msg);
         match msg {
             HttpServerAction::InvalidateKeys(keys) => {
                 keys.into_iter().for_each(|k| self.invalidate_key(k, ctx))
@@ -117,7 +116,11 @@ impl Lobby {
 
     fn invalidate_notifications(&mut self, key: i32, ctx: &mut <Self as Actor>::Context) {
         let targets = self.notifications.entry(key).or_default().clone();
-        log::warn!("Invalidating notifications for {} of targets: {:?}", key, targets);
+        log::debug!(
+            "Invalidating notifications for {} of targets: {:?}",
+            key,
+            targets
+        );
         if targets.is_empty() {
             return;
         }

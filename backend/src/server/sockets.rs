@@ -35,14 +35,12 @@ pub async fn conn_notifications(
     //     .map_err(|_| SyphonError::NotTutor)?
     //     .username;
 
-    log::error!("Starting Notification() socket");
+    log::debug!("Starting Notification() socket");
 
     let conn = WsConn::new(vec![SocketChannels::Notifications(0)], unbox(lobby_addr));
-    let res = actix_web_actors::ws::start(conn, &req, stream).map_err(|_| SyphonError::Json(
-        json!("Socket Failed"),
-        StatusCode::INTERNAL_SERVER_ERROR,
-    ));
-    log::error!("NOTIF RES: {:?}", res);
+    let res = actix_web_actors::ws::start(conn, &req, stream)
+        .map_err(|_| SyphonError::Json(json!("Socket Failed"), StatusCode::INTERNAL_SERVER_ERROR));
+    log::debug!("NOTIF RES: {:?}", res);
     res
 }
 

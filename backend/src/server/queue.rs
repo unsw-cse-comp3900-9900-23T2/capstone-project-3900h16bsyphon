@@ -481,7 +481,11 @@ pub async fn get_queue_summary_v2(
             .all(db)
             .await?;
 
-        let mut total_duration = RequestDuration { hours: 0, minutes: 0, seconds: 0 };
+        let mut total_duration = RequestDuration {
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+        };
         // for each request, find start time and end time
         for request in requests_for_tag.iter() {
             let start_time = entities::request_status_log::Entity::find()
@@ -525,8 +529,11 @@ pub async fn get_queue_summary_v2(
                 _ => {}
             }
         }
-        
-        queue_tag_summary_data.push( QueueTagSummaryData { tag: tag.clone(), duration: total_duration })
+
+        queue_tag_summary_data.push(QueueTagSummaryData {
+            tag: tag.clone(),
+            duration: total_duration,
+        })
     }
 
     //////////////////////////////////// Queue Timestamps /////////////////////////////////////////

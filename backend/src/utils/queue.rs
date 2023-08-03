@@ -11,7 +11,7 @@ use crate::{
 };
 use models::{SyphonError, SyphonResult};
 
-use super::{db, course::get_admin_zids_for_course};
+use super::{course::get_admin_zids_for_course, db};
 
 pub async fn num_requests_until_close_not_web(queue_id: i32) -> SyphonResult<i64> {
     let db = db();
@@ -62,7 +62,7 @@ pub async fn unseen_requests_in_queue(queue_id: i32) -> SyphonResult<usize> {
 // }
 
 pub async fn handle_possible_queue_capacity_overflow(
-    queue_id: i32
+    queue_id: i32,
 ) -> SyphonResult<Option<Vec<SocketChannels>>> {
     let capacity_left = num_requests_until_close_not_web(queue_id).await? as usize;
     let unseen_requests = unseen_requests_in_queue(queue_id).await?;
@@ -92,9 +92,12 @@ pub async fn handle_possible_queue_capacity_overflow(
             course_code_queue(queue_id).await?,
             capacity_left,
             unseen_requests,
-        ).await.map_err(|e| {
+        )
+        .await
+        .map_err(|e| {
             log::error!("Error creating capacity overflow notification: {:?}", e);
-        }).ok();
+        })
+        .ok();
     }
 
     let actions = admin_zids
@@ -116,7 +119,6 @@ pub async fn create_capacity_overflow_notification(
     cap_left: usize,
     unseen_reqs: usize,
 ) -> SyphonResult<entities::notification::Model> {
-    
     let title = format!("{} Session Overloaded", course_id);
     let desc = format!(
         "In queue {} there are {} unseen requests but capacity for only {} more requests. Consider adding more tutors.",

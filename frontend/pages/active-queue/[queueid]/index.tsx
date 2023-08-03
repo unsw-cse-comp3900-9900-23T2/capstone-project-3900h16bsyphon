@@ -67,8 +67,8 @@ const ActiveQueue = () => {
       }
       setRequests(transformRequests(toCamelCase(newRequestsData)));
     }
-    // TODO: i think this requeusts causes a circle
-  }, [lastJsonMessage, /* requests */]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastJsonMessage]);
 
   useEffect(() => {
     if (!noti) return;

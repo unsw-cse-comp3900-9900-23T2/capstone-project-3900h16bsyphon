@@ -71,7 +71,6 @@ impl Actor for Lobby {
         log::error!("LOBBY STOPPED");
         log::error!("LOBBY STOPPED");
     }
-
 }
 
 impl Handler<Disconnect> for Lobby {

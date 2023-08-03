@@ -35,9 +35,7 @@ pub async fn all_notifs(zid: i32) -> SyphonResult<Vec<entities::notification::Mo
     Ok(notifs)
 }
 
-pub async fn mark_notifs_as_seen(
-    zid: i32,
-) -> SyphonResult<Vec<entities::notification::Model>> {
+pub async fn mark_notifs_as_seen(zid: i32) -> SyphonResult<Vec<entities::notification::Model>> {
     let db = db();
     let notifs = all_notifs(zid).await?;
 

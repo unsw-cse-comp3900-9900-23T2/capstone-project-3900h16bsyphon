@@ -31,7 +31,7 @@ pub enum WsMessage {
     },
     Notification {
         content: String,
-    }
+    },
 }
 
 /// Actions from the client, that have been parsed by the WsConn
@@ -40,7 +40,8 @@ pub enum WsMessage {
 /// them to further clients as needed
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Message)]
 #[rtype(result = "()")]
-pub enum WsAction { /// This doesn't do anything, i just use it as a stub
+pub enum WsAction {
+    /// This doesn't do anything, i just use it as a stub
     /// for when i need to return smth and dont want `todo!()`
     Def,
     /// Client asking to send a message to a given request
