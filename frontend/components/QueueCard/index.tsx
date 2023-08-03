@@ -52,8 +52,10 @@ export default function QueueCard({
     });
     let value = await res.json();
     if (value.is_open) {
-      router.push(`/create-request/${queueId}`);
-      return;
+      if (!isTutor) {
+        router.push(`/create-request/${queueId}`);
+        return;
+      } 
     }
     return <Error statusCode={res.status} />;
   };
