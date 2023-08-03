@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     entities::{self, sea_orm_active_enums::Statuses},
     models::{
@@ -31,14 +33,6 @@ use sea_orm::{
 
 use futures::future::{join_all, try_join_all};
 use serde_json::json;
-
-pub async fn create_queue(
-    token: ReqData<TokenClaims>,
-    req_body: web::Json<CreateQueueRequest>,
-) -> SyphonResult<HttpResponse> {
-    let queue = create_queue_not_web(token.username, req_body.into_inner()).await?;
-    Ok(HttpResponse::Ok().json(queue))
-}
 
 pub async fn get_queue_by_id(
     _token: ReqData<TokenClaims>,
@@ -971,9 +965,11 @@ pub async fn bulk_create_queue(
     token: ReqData<TokenClaims>,
     web::Json(body): web::Json<Vec<CreateQueueRequest>>,
 ) -> SyphonResult<HttpResponse> {
+    let body2 = body.clone();
+    let tags = gen_tags_from_queue_req(&body2).await?;
     let q_fut = body
         .into_iter()
-        .map(|req| create_queue_not_web(token.username, req));
+        .map(|req| create_queue_not_web(token.username, req, tags));
     let (oks, errs) = (join_all(q_fut).await)
         .into_iter()
         .partition::<Vec<_>, _>(Result::is_ok);
@@ -982,9 +978,60 @@ pub async fn bulk_create_queue(
     Ok(HttpResponse::Ok().json(oks))
 }
 
+pub async fn gen_tags_from_queue_req(
+    reqs: &[CreateQueueRequest],
+) -> SyphonResult<HashMap<String, Tag>> {
+    let raw_tags: Vec<_> = reqs.iter().map(|r| r.tags.clone()).flatten().collect();
+
+    let mut tagmap: HashMap<String, Tag> = HashMap::new();
+
+    for tag in raw_tags {
+        let tag_entry = tagmap.entry(tag.name.clone()).or_insert(tag.clone());
+        if tag_entry.tag_id == -1 && tag.tag_id != -1 {
+            tag_entry.tag_id = tag.tag_id;
+        }
+    }
+
+    let db = db();
+    let tagmap_fut = tagmap.into_iter().map(|(name, tag)| async {
+        if tag.tag_id == -1 {
+            let tag_res = entities::tags::ActiveModel {
+                tag_id: ActiveValue::NotSet,
+                name: ActiveValue::Set(name.clone()),
+            }
+            .insert(db)
+            .await;
+            match tag_res {
+                Ok(new_tag) => Ok((
+                    name,
+                    Tag {
+                        tag_id: new_tag.tag_id,
+                        ..tag
+                    },
+                )),
+                Err(e) => {
+                    log::error!("Error creating tag: {:?} {:?}", tag, e);
+                    Err(e)
+                }
+            }
+        } else {
+            Ok((name, tag))
+        }
+    });
+
+    let final_tagmap = join_all(tagmap_fut)
+        .await
+        .into_iter()
+        .filter_map(Result::ok)
+        .collect::<HashMap<_, _>>();
+
+    Ok(final_tagmap)
+}
+
 pub async fn create_queue_not_web(
     zid: i32,
     body: CreateQueueRequest,
+    tagmap: HashMap<String, Tag>,
 ) -> SyphonResult<entities::queues::Model> {
     let db: &sea_orm::DatabaseConnection = db();
 
@@ -996,45 +1043,26 @@ pub async fn create_queue_not_web(
         .insert(db)
         .await?;
 
-    let tags_fut = body.tags.into_iter().map(|tag| async move {
-        if tag.tag_id == -1 {
-            entities::tags::ActiveModel {
-                tag_id: ActiveValue::NotSet,
-                name: ActiveValue::Set(tag.name.clone()),
+    for q_tag in body.tags {
+        if let Some(tag) = tagmap.get(&q_tag.name) {
+            entities::queue_tags::ActiveModel {
+                tag_id: ActiveValue::Set(tag.tag_id),
+                queue_id: ActiveValue::Set(queue.queue_id),
+                is_priority: ActiveValue::Set(tag.is_priority),
             }
             .insert(db)
             .await
-            .map(|t| Tag {
-                tag_id: t.tag_id,
-                name: t.name,
-                is_priority: tag.is_priority,
-            })
-        } else {
-            Ok(tag.clone())
+            .map_err(|e| {
+                log::error!(
+                    "Error creating queue({}) tag: {:?} {:?}",
+                    queue.queue_id,
+                    q_tag,
+                    e
+                );
+            });
         }
-    });
-    let tags = join_all(tags_fut)
-        .await
-        .into_iter()
-        .filter_map(Result::ok)
-        .collect::<Vec<_>>();
-    log::debug!("PROG: FINISHED TAGS");
+    }
 
-    let queue_tags = tags
-        .into_iter()
-        .map(|tag| {
-            {
-                log::debug!("INTAG: {:?}", tag);
-                entities::queue_tags::ActiveModel {
-                    tag_id: ActiveValue::Set(tag.tag_id),
-                    queue_id: ActiveValue::Set(queue.queue_id),
-                    is_priority: ActiveValue::Set(tag.is_priority),
-                }
-            }
-            .insert(db)
-        })
-        .collect::<Vec<_>>();
-    try_join_all(queue_tags).await?;
     log::debug!("PROG: FINISHED all creat");
 
     Ok(queue)

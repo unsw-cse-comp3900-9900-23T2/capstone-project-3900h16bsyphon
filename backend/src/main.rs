@@ -172,7 +172,6 @@ async fn main() -> std::io::Result<()> {
                         "/set_is_sorted_by_previous_request_count",
                         web::put().to(server::queue::set_is_sorted_by_previous_request_count),
                     )
-                    .route("/create", web::post().to(server::queue::create_queue))
                     .route(
                         "/bulk_create",
                         web::post().to(server::queue::bulk_create_queue),
