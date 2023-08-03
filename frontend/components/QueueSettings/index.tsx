@@ -228,8 +228,9 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
   };
 
   useEffect(() => {
-    setTimeStart(startTime => date.add(startTime.hour(), 'hour').add(startTime.minute(), 'minute'));
-    setTimeEnd(endTime => date.add(endTime.hour(), 'hour').add(endTime.minute(), 'minute'));
+    const justDate = date.set('hour',0).set('minute', 0).set('second', 0).set('millisecond', 0);
+    setTimeStart(startTime => justDate.add(startTime.hour(), 'hour').add(startTime.minute(), 'minute'));
+    setTimeEnd(endTime => justDate.add(endTime.hour(), 'hour').add(endTime.minute(), 'minute'));
   }, [date]);
 
 
