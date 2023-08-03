@@ -32,6 +32,7 @@ const ActiveQueue = () => {
   const [studentCount, setStudentCount] = useState(0);
   const [numReqsUntilClose, setNumReqsUntilClose] = useState(0);
   const [noti, setNoti] = useState(false);
+  const [selection, setSelection] = useState(false);
 
   let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
     queryParams: {queue_id: requestData.queueId as unknown as number},
@@ -240,7 +241,7 @@ const ActiveQueue = () => {
       <div className={styles.body}>
         <div className={styles.buttonContainer}>
           <FormControl size='small'>
-            <InputLabel sx={{ textAlign: 'center', right: '0'}} className={styles.label} shrink={false} id="sort-queue-select-label">SORT QUEUE</InputLabel>
+            {!selection && <InputLabel sx={{ textAlign: 'center', right: '0' }} className={styles.label} shrink={false} id="sort-queue-select-label">SORT QUEUE</InputLabel>}
             <Select
               labelId="sort-queue-select-label"
               id="sort-queue-select"
@@ -251,8 +252,8 @@ const ActiveQueue = () => {
                 boxShadow: 1,
               }}
             >
-              {tags.map((tag) => (<MenuItem key={tag.tagId} value={tag.tagId}>{tag.isPriority ? 'Unprioritise':  'Prioritise'} &quot;{tag.name}&quot;</MenuItem>))}
-              <MenuItem key={'key'} value='prevRequestCount' sx={{ whiteSpace: 'unset', wordBreak: 'break-all'}}>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} by previous request count</MenuItem>
+              {tags.map((tag) => (<MenuItem key={tag.tagId} value={tag.tagId} onClick={() => setSelection(true)} sx={{ textAlign: 'center', right: '0' }}>{tag.isPriority ? 'Unprioritise':  'Prioritise'} &quot;{tag.name}&quot;</MenuItem>))}
+              <MenuItem key={'key'} value='prevRequestCount' onClick={() => setSelection(true)}>{requestData.isSortedByPreviousRequestCount ? 'Unprioritise':  'Prioritise'} by previous request count</MenuItem>
             </Select>
           </FormControl>
           <CreateClusterModal queueId={Number.parseInt(`${router.query.queueid}`)} requests={requests} button={<Button className={styles.genericButton} variant="contained">Create Cluster</Button>} />
