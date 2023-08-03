@@ -16,3 +16,35 @@ Week 4:
 - Frontend for queue creation (skeleton).
 - POST request to create queue and backend for queue creation.
 - Assited request creation through pair programming. 
+
+Week 5:
+- FAQs Frontend using data grid
+- FAQs backend (create and read)
+
+Week 6:
+- FAQs Backend (update and delete operations)
+- Chat frontend:
+    - request page (tutor's)
+    - waiting screen (student's)
+
+Week 7:
+- Chat integration with backend sockets
+- Pushing queue updates through sockets
+- Notis for queue updates:
+    - announcement toast on FE
+    - noti with sound when student joining queue on tutor's screen
+    
+Week 8:
+- Demo playtest
+- Fixed socket bugs where router is not loaded in time for socket connection
+
+Week 9:
+- Cluster creation modal frontend
+- Let students assign themselves to a cluster and create a cluster
+    - created join and leave cluster route on the backend
+    - created students' view of requests in queue with join/leave buttons
+
+
+Week 10:
+- fixed bugs on date/time of edit-queue and remove unnecessary state (isTimeLimit)
+- final demo
