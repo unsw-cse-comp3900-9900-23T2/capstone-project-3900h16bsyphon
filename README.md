@@ -169,9 +169,16 @@ You also have the option of using a VM to run Syphon. This is not reccomended, a
 #### Prerequisites
 1. install the VM software and image by following the instructions provided on the [COMP3900 moodle page](https://moodle.telt.unsw.edu.au/mod/page/view.php?id=5727690).
 2. Launch the VM software chosen, and load the COMP3900 image as defined by the guide above.
-3. install postgres using `sudo apt install psql`.
-4. install nvm by following the instructions [here](https://github.com/nvm-sh/nvm)
-5. install cargo by following the instructions [here](https://rustup.rs/)
+3. update your dependencies using `sudo apt update; sudo apt upgrade`. This takes about 20 minutes.
+4. install postgres using `sudo apt install posgresql`.
+5. Set up a username by the name of syphon, and password admin. to do this, run: `sudo nano /etc/postgresql/12/main/pg_hba.conf`  then scroll down to check the file to matchs this screenshot exactly. You may have to change the one for `postgres` to md5, and the one for `local` to `trust`:
+![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/ce38821f-870c-4d59-b742-b248b0da7965)
+6. you can then create a syphon user. to create it, `sudo -u postgres createuser --superuser syphon -P`, then follow the prompts to make the password `admin`.
+8. install nvm by following the instructions [here](https://github.com/nvm-sh/nvm)
+9. install node 18: `nvm install 18; nvm use 18`
+10. install curl: `sudo apt install curl`
+11. install the dependencies required by the backend: `sudo apt install build-essential pkg-config libssl-dev`.
+12. install cargo by following the instructions [here](https://rustup.rs/). Follow prompts for a normal installation.
 
 #### Installation
 4. download the submission file.
@@ -179,6 +186,7 @@ You also have the option of using a VM to run Syphon. This is not reccomended, a
 6. enter the submission file.
 7. open 2 terminals in this directory.
 8. to run the frontend, run:  `cd frontend; npm install && npm run build && npm start` in your first terminal.
-9. in your second terminal, you should first create a syphon user, then a syphon database with the username `syphon` and password `admin`.
-10. Continuing on the second terminal, you must run the migrations to set up the schemas. to do this, run `cd backend; cargo run --manifest-file ./migration/Cargo.toml -- up`
-11. finally, run a production build of the backend using `cargo -r run`
+9. edit the file at `backend/.env` to have POSTGRES_PORT=5432.
+10. Continuing on the second terminal, you must run the migrations to set up the schemas. to do this, run `cd backend; cargo run --manifest-path ./migration/Cargo.toml -- up`
+![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/3ee49d5a-fc71-4948-9a2d-d75be8922e8c)
+11. finally, run a production build of the backend using `cargo run -r`. Wait until it is done building. After that, you should be able to navigate to `http://localhost:3000` using firefox.
