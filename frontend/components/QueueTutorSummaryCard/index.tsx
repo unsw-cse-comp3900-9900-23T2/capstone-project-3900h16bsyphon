@@ -1,12 +1,11 @@
 import { Card, Typography } from '@mui/material';
 import styles from './QueueTutorSummaryCard.module.css';
-import { changeBackgroundColour, changeTextColour, formatZid } from '../../utils';
+import { formatZid } from '../../utils';
 import TagBox from '../TagBox';
 import { QueueTutorSummaryData } from '../../types/queues';
 import DurationBox from '../DurationBox';
 
 const QueueTutorSummaryCard = ({ zid, firstName, lastName, totalSeen, totalSeeing, averageTime, tagsWorkedOn}: QueueTutorSummaryData) => {
-  
   return <>
     <Card className={styles.infoCard}>
       <div className={styles.infoCardTitleContainer}>

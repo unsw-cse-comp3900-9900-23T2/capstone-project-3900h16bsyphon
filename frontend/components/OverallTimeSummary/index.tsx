@@ -2,7 +2,6 @@ import { Card, Typography } from '@mui/material';
 import styles from './OverallTimeSummary.module.css';
 import { Duration, TimeStamp } from '../../types/requests';
 import { convertTime } from '../../utils';
-import TagBox from '../TagBox';
 import DurationBox from '../DurationBox';
 
 type OverallTimeSummaryProps = {

@@ -22,6 +22,7 @@ type QueueCardProps = {
   isPrevious?: boolean;
   isUpcoming?: boolean;
   isQueueAnalyticsLive?: boolean;
+  // eslint-disable-next-line no-unused-vars
   overrideRedirect?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 };
 
