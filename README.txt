@@ -10,7 +10,7 @@ TODO: Copy instructions for installing docker
 
 #### Installation
 1. Unzip the submission file.
-2. Enter the unzipped file: `cd capstone-project-3900h16bsyphon`
+2. Enter the unzipped file.
 3. ensure docker is installed and open. Use `docker ps` to check. The output should be:
 ```
 peedee@PeterLaptop:~$ docker ps
