@@ -166,13 +166,19 @@ Requests to the database will not cause logging to your docker container.
 
 ### VM
 You also have the option of using a VM to run Syphon. This is not reccomended, and is intended to be a backup option if you cannot not meet the prerequisites for installing Docker.
+#### Prerequisites
+1. install the VM software and image by following the instructions provided on the [COMP3900 moodle page](https://moodle.telt.unsw.edu.au/mod/page/view.php?id=5727690).
+2. Launch the VM software chosen, and load the COMP3900 image as defined by the guide above.
+3. install postgres using `sudo apt install psql`.
+4. install nvm by following the instructions [here](https://github.com/nvm-sh/nvm)
+5. install cargo by following the instructions [here](https://rustup.rs/)
 
-
-## local
-first, ensure that systemfd and cargo-watch are installed:
-```
-cargo install systemfd
-cargo install cargo-watch
-```
-in one terminal, run "cd backend; bash run_backend.sh"
-in another, run "cd frontend; npm install; npm run dev"
+#### Installation
+4. download the submission file.
+5. unzip the submission file.
+6. enter the submission file.
+7. open 2 terminals in this directory.
+8. to run the frontend, run:  `cd frontend; npm install && npm run build && npm start` in your first terminal.
+9. in your second terminal, you should first create a syphon user, then a syphon database with the username `syphon` and password `admin`.
+10. Continuing on the second terminal, you must run the migrations to set up the schemas. to do this, run `cd backend; cargo run --manifest-file ./migration/Cargo.toml -- up`
+11. finally, run a production build of the backend using `cargo -r run`
