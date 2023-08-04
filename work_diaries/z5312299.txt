@@ -33,4 +33,5 @@ Week 9:
 
 Week 10:
 - Finish consultation analytics feature
-- Write up assigned parts of the report (third party functionalities + other stuff)
+- 3900 final demo
+- Write up assigned parts of the report (third party functionalities, queue lodging functionalities + ui ux section)

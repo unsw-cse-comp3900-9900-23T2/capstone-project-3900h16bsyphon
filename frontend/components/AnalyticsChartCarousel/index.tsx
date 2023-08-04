@@ -23,9 +23,6 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, courseId }: A
       autoPlay={false}
     >
       <div className={styles.analyticsChartContainer}>
-        <AnalyticsLineGraph courseId={courseId}/>
-      </div>
-      <div className={styles.analyticsChartContainer}>
         <AnalyticsBarChart
           data={{
             labels: waitTimeAnalytics?.waitTimes.map(
@@ -60,6 +57,9 @@ const AnalyticsChartCarousel = ({ waitTimeAnalytics, tagAnalytics, courseId }: A
           }}
           chartTitle={'Course tag distribution'}
         />
+      </div>
+      <div className={styles.analyticsChartContainer}>
+        <AnalyticsLineGraph courseId={courseId}/>
       </div>
     </Carousel>
   );
