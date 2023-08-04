@@ -190,5 +190,5 @@ You also have the option of using a VM to run Syphon. This is not reccomended, a
 9. edit the file at `backend/.env` to have POSTGRES_PORT=5432.
 10. Continuing on the second terminal, you must run the migrations to set up the schemas. to do this, run `cd backend; cargo run --manifest-path ./migration/Cargo.toml -- up`
 ![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/3ee49d5a-fc71-4948-9a2d-d75be8922e8c)
-11. create an images file by running `mkdir /images`.
+11. create an images file by running `sudo mkdir /images`.
 12. finally, run a production build of the backend using `cargo run -r`. Wait until it is done building. After that, you should be able to navigate to `http://localhost:3000` using firefox.
