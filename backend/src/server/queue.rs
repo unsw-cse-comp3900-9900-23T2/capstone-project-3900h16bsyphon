@@ -341,17 +341,27 @@ pub async fn get_queue_summary_v2(
         .ok_or(SyphonError::QueueNotExist(query.queue_id))?;
 
     // get list of tutors for the queue
-    let tutor_info_list = entities::queue_tutors::Entity::find()
+    let tutor_info_list = entities::request_status_log::Entity::find()
         .select_only()
         .left_join(entities::users::Entity)
-        .column(entities::users::Column::Zid)
+        .left_join(entities::requests::Entity)
+        .column(entities::requests::Column::Zid)
+        .column(entities::request_status_log::Column::TutorId)
         .column(entities::users::Column::FirstName)
         .column(entities::users::Column::LastName)
-        .filter(entities::queue_tutors::Column::QueueId.eq(query.queue_id))
-        .distinct_on([entities::users::Column::Zid])
-        .into_model::<TutorInformationModel>()
+        .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+        .distinct_on([entities::request_status_log::Column::TutorId])
+        .into_model::<RequestTutorInformationModel>()
         .all(db)
-        .await?;
+        .await?
+        .into_iter()
+        .filter(|x| x.zid != x.tutor_id)
+        .map(|x| TutorInformationModel {
+            zid: x.tutor_id,
+            first_name: x.first_name,
+            last_name: x.last_name,
+        })
+        .collect::<Vec<_>>();
 
     ////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////// tutor summaries //////////////////////////////////////////////
@@ -376,6 +386,7 @@ pub async fn get_queue_summary_v2(
             .filter(entities::request_status_log::Column::TutorId.eq(tutor.zid))
             .filter(entities::request_status_log::Column::Status.eq(Statuses::Seen))
             .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+            .into_model::<RequestStatusTimeInfo>()
             .all(db)
             .await?;
 
@@ -386,11 +397,13 @@ pub async fn get_queue_summary_v2(
         for request in requests_resolved.iter() {
             // get start time stamp
             let start_time = entities::request_status_log::Entity::find()
+                .left_join(entities::requests::Entity)
                 .select_only()
                 .column(entities::request_status_log::Column::EventTime)
                 .filter(entities::request_status_log::Column::TutorId.eq(tutor.zid))
                 .filter(entities::request_status_log::Column::Status.eq(Statuses::Seeing))
                 .filter(entities::requests::Column::QueueId.eq(query.queue_id))
+                .into_model::<TimeStampModel>()
                 .one(db)
                 .await?;
 
