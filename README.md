@@ -1,4 +1,5 @@
 # capstone-project-3900h16bsyphon
+This is a .txt file, but is best experienced as a markdown file as it contains screenshots and links. Hop to https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/edit/main/README.md to read it as a markdown file, or open README.md in a markdown viewer (such as your browser).
 
 ## how to run
 ### Docker
