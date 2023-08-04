@@ -135,7 +135,7 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
     setDate(dayjs(new Date()));
     setTimeStart(dayjs(new Date()));
     setTimeEnd(dayjs(new Date()).add(2, 'hour'));
-    setTags([{ tagId: 1, name: 'A tag', isPriority: false }]);
+    setTags([]);
     setTagSelection([]);
     setIsVisible(true);
     setIsAvailable(true);
