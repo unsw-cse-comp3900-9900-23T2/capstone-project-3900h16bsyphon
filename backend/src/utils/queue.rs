@@ -1,4 +1,3 @@
-
 use chrono::{DateTime, Duration, Utc};
 use chrono_tz::Australia::Sydney;
 use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait, ModelTrait};
@@ -6,12 +5,12 @@ use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait, ModelTrait};
 use crate::{
     entities,
     models::{self},
-    sockets::{SocketChannels},
+    sockets::SocketChannels,
     utils::db::db,
 };
 use models::{SyphonError, SyphonResult};
 
-use super::{course::get_admin_zids_for_course};
+use super::course::get_admin_zids_for_course;
 
 pub async fn num_requests_until_close_not_web(queue_id: i32) -> SyphonResult<i64> {
     let db = db();

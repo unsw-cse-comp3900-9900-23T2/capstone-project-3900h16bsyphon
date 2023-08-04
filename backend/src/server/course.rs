@@ -6,8 +6,9 @@ use crate::{
         INV_CODE_LEN,
     },
     utils::{
+        course::get_admins_for_course,
         db::db,
-        user::{validate_admin, validate_user}, course::get_admins_for_course,
+        user::{validate_admin, validate_user},
     },
 };
 use crate::{entities::sea_orm_active_enums::Statuses, models::course::*};
@@ -416,12 +417,17 @@ pub async fn get_course_admins(
     let db = db();
 
     let admins = get_admins_for_course(query.course_id).await?;
-    
+
     let mut result = Vec::new();
 
     for admin in admins.iter() {
-        let admin_details = entities::users::Entity::find_by_id(admin.zid).one(db).await?.unwrap();
-        result.push( CourseAdmin { name: admin_details.first_name.clone() + " " + &admin_details.last_name })
+        let admin_details = entities::users::Entity::find_by_id(admin.zid)
+            .one(db)
+            .await?
+            .unwrap();
+        result.push(CourseAdmin {
+            name: admin_details.first_name.clone() + " " + &admin_details.last_name,
+        })
     }
 
     Ok(HttpResponse::Ok().json(result))

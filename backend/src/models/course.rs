@@ -56,7 +56,6 @@ pub struct CourseAdmin {
     pub name: String,
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
 pub struct TutorAnalyticsInfo {
     pub zid: i32,

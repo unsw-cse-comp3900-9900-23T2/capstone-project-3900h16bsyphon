@@ -1,12 +1,6 @@
-
-
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 
-
-use crate::{
-    entities,
-    models::{SyphonResult},
-};
+use crate::{entities, models::SyphonResult};
 
 use super::db::db;
 
