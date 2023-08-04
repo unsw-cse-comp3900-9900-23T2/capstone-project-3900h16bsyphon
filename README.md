@@ -1,9 +1,9 @@
 # capstone-project-3900h16bsyphon
 This is a .txt file, but is best experienced as a markdown file as it contains screenshots and links. Hop to https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/edit/main/README.md to read it as a markdown file, or open README.md in a markdown viewer (such as your browser).
 
-## how to run
+## How To Run
 ### Docker
-you have the option of using docker to run the project. This is recommended.
+You have the option of using docker to run the project - this is recommended.
 #### Prerequisites
 Follow these instructions: https://docs.docker.com/desktop/ to install docker desktop if you don't have it already. This is a bundle containing the docker daemon, docker CLI, docker compose CLI, and docker desktop client. This will be used as a way to both run the project and inspect it.
 
@@ -26,18 +26,18 @@ For Mac, you must simply ensure you have enough space on your machine to run doc
 
 Then, click here:
 ![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/126629e8-c8da-456d-908b-f9e742f13ab5)
-To start installation. Determine if you are running on apple sillicon or intel. If your machine is from before 2019, it is using intel. If it is after, it is likely using Apple sillicon. Check your system information to determine if your processor is Intel or Apple.
+To start installation. Determine if you are running on Apple Sillicon or Intel. If your machine is from before 2019, it is using intel. If it is after, it is likely using Apple sillicon. Check your system information to determine if your processor is Intel or Apple.
 ##### Linux
 
 
-For linux, you must be on Ubuntu, Debian, or Fadora, and should use [this link](https://docs.docker.com/desktop/install/linux-install/) to install docker. These are the distributions we also recommend. If you are on Arch, you can attempt to use the [arch installer](https://docs.docker.com/desktop/install/archlinux/) but we provide no guarantees that this will function. 
-If you are on linux, you must be on an x86 architecture. Refer to the system requirements for docker for more details.
+For Linux, you must be on Ubuntu, Debian, or Fadora, and should use [this link](https://docs.docker.com/desktop/install/linux-install/) to install docker. These are the distributions we also recommend. If you are on Arch, you can attempt to use the [arch installer](https://docs.docker.com/desktop/install/archlinux/) but we provide no guarantees that this will function. 
+If you are on Linux, you must be on an x86 architecture. Refer to the system requirements for docker for more details.
 
 ----
 
 After this is done, ensure no other projects are running in docker. Use `docker system prune` to remove all dangling containers, images, and volumes. When you launch docker desktop, ensure that you have no images, containers, or volumes at all.
 
-ensure that your output for the following commands match:
+Verify that there are no dangling containers, images, and volumes by ensure that your output for the following commands match:
 ```
 $ docker container ls
 CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
@@ -46,12 +46,12 @@ REPOSITORY                      TAG       IMAGE ID       CREATED        SIZE
 $ docker volume ls
 DRIVER    VOLUME NAME
 ```
-If there is any other output, make sure you delete these other containers, images, and volumes before proceeding.
+If there is any other output, make sure you delete these other containers, images, and volumes before proceeding. If you cannot delete via the CLI, use the Docker Desktop UI in order to select all Containers, Volumes, Images to manually delete. 
 
 #### Installation
 1. Unzip the submission file.
-2. Enter the unzipped file.
-3. ensure docker is installed and open. Use `docker ps` to check. The output should be:
+2. Change directories into the unzipped file.
+3. Ensure docker is installed and open. Use `docker ps` to check. The output should be:
 ```
 peedee@PeterLaptop:~$ docker ps
 CONTAINER ID   IMAGE             COMMAND                  CREATED      STATUS        PORTS                     NAMES
@@ -67,8 +67,9 @@ Cannot connect to the Docker daemon at unix:///Users/aishanauman/.docker/run/doc
 ```
 or some other output mentioning how docker is not installed or running. If this happens, this means that docker desktop is not running. Ensure it is running and live by making sure you see this screen on docker desktop:
 ![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/1a976ce3-7490-4a9a-a6cd-db6b86f499fe)
-1. run `docker volume prune`, this will remove preexisting docker image volumes that you may already have from previous builds.
-2. run `docker compose -f docker-compose-prod.yaml build` for a production environment. This will build the production builds of both the backend and frontend. This will pull docker containers related to rust, node, and postgres, and then copy the syphon code into it to build a full docker image with our backend and frontend. This command may take up to an hour to build depending on your depending on your internet connection and what images you may already have cached.
+1. Run `docker volume prune`, this will remove preexisting docker image volumes that you may already have from previous builds.
+2. Run `docker compose -f docker-compose-prod.yaml build` for a production environment. This will build the production builds of both the backend and frontend. This will pull docker containers related to rust, node, and postgres, and then copy the syphon code into it to build a full docker image with our backend and frontend. This command may take up to a maximum of an hour to build depending on your depending on your internet connection and what images you may already have cached.
+
 Here is the output that will occur when you do this:
 ```
 aishanauman~/Desktop/capstone-project-3900h16bsyphon % docker compose -f docker-compose-prod.yaml build
@@ -125,7 +126,7 @@ aishanauman~/Desktop/capstone-project-3900h16bsyphon % docker compose -f docker-
  => => # info  - Linting and checking validity of types...                                                                                                                                           
 ```
 
-1. run `docker compose -f docker-compose-prod.yaml up`. This will launch the set of images you just pulled and built. This will, in a couple of seconds, launch the frontend and backend, with a database. Wait until you see the backend has successfully launched, and the frontend has successfully launched. inspect your docker output to see that this output:
+3. Run `docker compose -f docker-compose-prod.yaml up`. This will launch the set of images which have just been created from the previous command. It will launch the frontend and backend, as well as the database. Wait until you see the backend has successfully launched, and the frontend has successfully launched. inspect your docker output to see that this output:
 ![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/19517e0a-a37a-4f66-805f-83d73b2fefbb)
 Can be seen (backend).
 Also, the frontend should be launched, with output which looks like:
@@ -143,7 +144,7 @@ for the project to be exposed. If they are in use, one of a few things are going
 
 1. 8000 is used:
 
-backend will say something like
+Backend will say something like
 ```
 ADDR already in use
 ```
@@ -151,44 +152,42 @@ then crash.
 
 2. 3000 is used:
 
-frontend will say something that is **not**
+Frontend will say something that is **not** (this will likely lead to cors errors).
 ```
 running on localhost:3000
 ```
-this will likely lead to cors errors.
 
-3. 15432 is used:
+1. 15432 is used:
 
+This often occurs if you installed postgres before and forgot to delete it after you stopped using it. The database you connect to will NOT have Syphon data in it, and instead be the one connected on that port. It may say something like "cannot find database 'syphon'" or "user 'syphon' does not exist"
 
-This often occurs if you installed postgres before and forgot to delete it after you stopped using it. 
-the database you connect to will NOT have syphon data in it, and instead be the one connected on that port. 
-it may say something like "cannot find database 'syphon'" or "user 'syphon' does not exist"
 Requests to the database will not cause logging to your docker container.
 
+If any of the above errors occur, please ensure you kill all processes currently running on those ports and retry step 3.
 ### VM
 You also have the option of using a VM to run Syphon. This is not reccomended, and is intended to be a backup option if you cannot not meet the prerequisites for installing Docker.
 #### Prerequisites
-1. install the VM software and image by following the instructions provided on the [COMP3900 moodle page](https://moodle.telt.unsw.edu.au/mod/page/view.php?id=5727690).
+1. Install the VM software and image by following the instructions provided on the [COMP3900 moodle page](https://moodle.telt.unsw.edu.au/mod/page/view.php?id=5727690).
 2. Launch the VM software chosen, and load the COMP3900 image as defined by the guide above.
-3. update your dependencies using `sudo apt update; sudo apt upgrade`. This takes about 20 minutes.
-4. install postgres using `sudo apt install posgresql`.
+3. Update your dependencies using `sudo apt update; sudo apt upgrade`. This takes about 20 minutes.
+4. Install postgres using `sudo apt install posgresql`.
 5. Set up a username by the name of syphon, and password admin. to do this, run: `sudo nano /etc/postgresql/12/main/pg_hba.conf`  then scroll down to check the file to matchs this screenshot exactly. You may have to change the one for `postgres` to md5, and the one for `local` to `trust`:
 ![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/ce38821f-870c-4d59-b742-b248b0da7965)
-6. you can then create a syphon user. to create it, `sudo -u postgres createuser --superuser syphon -P`, then follow the prompts to make the password `admin`.
-8. install nvm by following the instructions [here](https://github.com/nvm-sh/nvm)
-9. install node 18: `nvm install 18; nvm use 18`
-10. install curl: `sudo apt install curl`
-11. install the dependencies required by the backend: `sudo apt install build-essential pkg-config libssl-dev`.
-12. install cargo by following the instructions [here](https://rustup.rs/). Follow prompts for a normal installation.
+6. You must then create a syphon database user. To create, run `sudo -u postgres createuser --superuser syphon -P`, then follow the prompts to set the password as `admin`.
+8. Install nvm by following the instructions [here](https://github.com/nvm-sh/nvm)
+9. Install node 18: `nvm install 18; nvm use 18`
+10. Install curl: `sudo apt install curl`
+11. Install the dependencies required by the backend: `sudo apt install build-essential pkg-config libssl-dev`.
+12. Install cargo by following the instructions [here](https://rustup.rs/). Follow prompts for a normal installation.
 
 #### Installation
-4. download the submission file.
-5. unzip the submission file.
-6. enter the submission file.
-7. open 2 terminals in this directory.
-8. to run the frontend, run:  `cd frontend; npm install && npm run build && npm start` in your first terminal.
-9. edit the file at `backend/.env` to have POSTGRES_PORT=5432.
+4. Download the submission file.
+5. Unzip the submission file.
+6. Change directories into the submission file.
+7. Open 2 seperate terminals in this directory.
+8. To run the frontend, run:  `cd frontend; npm install && npm run build && npm start` in your first terminal.
+9. Edit the file at `backend/.env` to have POSTGRES_PORT=5432.
 10. Continuing on the second terminal, you must run the migrations to set up the schemas. to do this, run `cd backend; cargo run --manifest-path ./migration/Cargo.toml -- up`
 ![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/3ee49d5a-fc71-4948-9a2d-d75be8922e8c)
-11. create an images file by running `sudo mkdir /images`.
-12. finally, run a production build of the backend using `cargo run -r`. Wait until it is done building. After that, you should be able to navigate to `http://localhost:3000` using firefox.
+11. Create an images file by running `sudo mkdir /images`.
+12. Finally, run a production build of the backend using `cargo run -r`. Wait until it is done building. After that, you should be able to navigate to `http://localhost:3000` using firefox.
