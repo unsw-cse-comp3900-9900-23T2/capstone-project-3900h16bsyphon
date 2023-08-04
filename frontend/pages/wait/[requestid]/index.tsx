@@ -265,7 +265,7 @@ const WaitingScreen = () => {
             >
               Edit Request
             </Button>
-            <Button
+            {isClusterable && <Button
               className={styles.greyButton}
               variant="contained"
               onClick={() =>
@@ -273,7 +273,7 @@ const WaitingScreen = () => {
               }
             >
               View Queue
-            </Button>
+            </Button>}
             <FAQsModal courseOfferingId={queueData?.courseOfferingId} />
             <InformationCard
               content={[
