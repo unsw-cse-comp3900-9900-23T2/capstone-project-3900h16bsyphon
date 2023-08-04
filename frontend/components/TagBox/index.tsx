@@ -1,8 +1,6 @@
 import { CardActionArea, Typography } from '@mui/material';
 import styles from './TagBox.module.css';
-import type { JSX } from 'react';
-// eslint-disable-next-line no-duplicate-imports
-import React from 'react';
+import React, { JSX } from 'react';
 import { useRouter } from 'next/router';
 
 type TagBoxProps = {

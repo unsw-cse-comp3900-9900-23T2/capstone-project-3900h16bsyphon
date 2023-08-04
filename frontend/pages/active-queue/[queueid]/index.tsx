@@ -85,6 +85,7 @@ const ActiveQueue = () => {
       className: styles.toast,
     });
     setNoti(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noti]);
 
 

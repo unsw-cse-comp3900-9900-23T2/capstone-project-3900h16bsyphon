@@ -63,10 +63,6 @@ const RequestSummary = () => {
     getRequestSummary();
   }, [router.query.requestid]);
 
-  const getDurationString = () => {
-    return 'Duration: ' + requestSummary.duration?.hours.toString() + ' hours ' + requestSummary.duration?.minutes.toString() + ' mins ' + requestSummary.duration?.seconds.toString() + ' seconds';
-  };
-
   return (
     <>
       <Header />
