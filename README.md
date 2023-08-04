@@ -4,9 +4,48 @@
 ### Docker
 you have the option of using docker to run the project. This is recommended.
 #### Prerequisites
-Follow these instructions: https://docs.docker.com/desktop/ to install docker if you don't have it already. This will give you docker desktop, which is bundled with both the docker and docker compose CLIs. This will be used as a way to both run the project and inspect it.
+Follow these instructions: https://docs.docker.com/desktop/ to install docker desktop if you don't have it already. This is a bundle containing the docker daemon, docker CLI, docker compose CLI, and docker desktop client. This will be used as a way to both run the project and inspect it.
 
-TODO: Copy instructions for installing docker
+----
+
+##### Windows
+For windows machines, it is a prerequisite that you have WSL installed, with enough allocated space. If you do not have WSL, you will require about 20GB of free space to install it, and at least another 10GB to safely install Syphon.
+
+First, click here and select your operating system:
+
+![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/d0283425-e119-40d8-9601-0466f3597def)
+
+then click here:
+
+![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/df08f56c-2ef6-4123-92b0-bf4557a20343)
+
+and follow the installer.
+##### Mac
+For Mac, you must simply ensure you have enough space on your machine to run docker desktop. Refer to the requirements on the [installation page](https://docs.docker.com/desktop/install/mac-install/).
+
+Then, click here:
+![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/126629e8-c8da-456d-908b-f9e742f13ab5)
+To start installation. Determine if you are running on apple sillicon or intel. If your machine is from before 2019, it is using intel. If it is after, it is likely using Apple sillicon. Check your system information to determine if your processor is Intel or Apple.
+##### Linux
+
+
+For linux, you must be on Ubuntu, Debian, or Fadora, and should use [this link](https://docs.docker.com/desktop/install/linux-install/) to install docker. These are the distributions we also recommend. If you are on Arch, you can attempt to use the [arch installer](https://docs.docker.com/desktop/install/archlinux/) but we provide no guarantees that this will function. 
+If you are on linux, you must be on an x86 architecture. Refer to the system requirements for docker for more details.
+
+----
+
+After this is done, ensure no other projects are running in docker. Use `docker system prune` to remove all dangling containers, images, and volumes. When you launch docker desktop, ensure that you have no images, containers, or volumes at all.
+
+ensure that your output for the following commands match:
+```
+$ docker container ls
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+$ docker image ls
+REPOSITORY                      TAG       IMAGE ID       CREATED        SIZE
+$ docker volume ls
+DRIVER    VOLUME NAME
+```
+If there is any other output, make sure you delete these other containers, images, and volumes before proceeding.
 
 #### Installation
 1. Unzip the submission file.
@@ -27,8 +66,8 @@ Cannot connect to the Docker daemon at unix:///Users/aishanauman/.docker/run/doc
 ```
 or some other output mentioning how docker is not installed or running. If this happens, this means that docker desktop is not running. Ensure it is running and live by making sure you see this screen on docker desktop:
 ![image](https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/assets/64952797/1a976ce3-7490-4a9a-a6cd-db6b86f499fe)
-4. run `docker volume prune`, this will remove preexisting docker image volumes that you may already have cached from previous builds.
-5. run `docker compose -f docker-compose-prod.yaml build` for a prod environment. This will build the production builds of both the backend and frontend. This will pull docker containers related to rust, node, and postgres, and then copy the syphon code into it to build a full docker image with our backend and frontend. This command may take up to an hour to build depending on your depending on your internet connection and what images you may already have cached.
+4. run `docker volume prune`, this will remove preexisting docker image volumes that you may already have from previous builds.
+5. run `docker compose -f docker-compose-prod.yaml build` for a production environment. This will build the production builds of both the backend and frontend. This will pull docker containers related to rust, node, and postgres, and then copy the syphon code into it to build a full docker image with our backend and frontend. This command may take up to an hour to build depending on your depending on your internet connection and what images you may already have cached.
 Here is the output that will occur when you do this:
 ```
 aishanauman~/Desktop/capstone-project-3900h16bsyphon % docker compose -f docker-compose-prod.yaml build
@@ -124,6 +163,10 @@ This often occurs if you installed postgres before and forgot to delete it after
 the database you connect to will NOT have syphon data in it, and instead be the one connected on that port. 
 it may say something like "cannot find database 'syphon'" or "user 'syphon' does not exist"
 Requests to the database will not cause logging to your docker container.
+
+### VM
+You also have the option of using a VM to run Syphon. This is not reccomended, and is intended to be a backup option if you cannot not meet the prerequisites for installing Docker.
+
 
 ## local
 first, ensure that systemfd and cargo-watch are installed:
