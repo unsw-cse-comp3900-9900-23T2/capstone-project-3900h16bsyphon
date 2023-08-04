@@ -1,0 +1,50 @@
+Week 1:
+- Help a workshop to introduce people to rust.
+- Worked on project requeust form.
+
+Week 2:
+- Worked on proposal.
+- Writing user stories for jira
+
+Week 3:
+- Fleshing out user stories w/ a corresponding figma design on the storyboard
+
+Week 4:
+- Write authentication middleware
+- Migratoin for the user object
+- Added signup/login
+
+Week 5:
+- Add org admins
+- finalise course_offering PR
+- Write workshop for seaORM
+
+Week 6:
+- Refactor backend to be more modular (janitor work)
+- Add SyphonError variant for better Error handling on the backend
+- Fix issues that occur because of `block_on` causing concurrency issues
+- Route to change status
+
+Week 7:
+- Write architecture for the sockets
+- Finish setting up the sockets
+
+Week 8:
+- Finalise the subscription model for sockets
+- Add data invalidation for the sockets correctly
+- Implement the sockets on the frontend
+  - Help debug their use in chat
+  - migrate requeusdt and active-queue to use sockets on the frontend
+    - Also includes the second half of the seen/unseen feature
+    - Allow re-ordering of reueusts by tutor
+
+
+Week 9:
+- Nothing / minor style stuff
+
+Week 10:
+- fix tags not being unique
+- add bulk queue creation
+- add notification on queue being too full
+- project report
+
