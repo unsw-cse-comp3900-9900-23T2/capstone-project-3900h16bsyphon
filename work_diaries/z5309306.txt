@@ -28,3 +28,53 @@ Request so I focussed on those two pages. This week - I really only had time to 
 aim to finish the rest of my assigned tasks next week before the end of the first sprint. Also, a 
 primary goal of mine in this sprint is to familiarise myself with backend code so that I am able to
 easily integrate my frontend and backend components.
+
+Week 5
+This week I was working on finishing off the tickets I was assigned in preparation for the Sprint end
+and demonstration. I was mainly working on learning the backend and how to work with Rust and SeaORM 
+on how to insert records into the database as well as fetch records from the database to display. This 
+week took a while as familiarising myself with the backend was tough. This week, we also had our Sprint 1
+demonstration which did not go as smoothly as expected, however, we discussed a lot of our pain points 
+in the retrospective meeting and ensured that all our issues were addressed before next sprint.
+
+Week 6
+We began this week with two workshops both on Frontend and Backend code once we had cleaned it up after 
+sprint 1. We then discussed the changes which had been made and good code practices to start employing 
+to ensure that we keep the codebase to a high quality. I began making progress towards my sprint 2 cards
+in the second half of this week i worked on finishing off the following cards:
+- queue link for students
+- self resolve student
+
+Week 7
+This week was spent continuing on with my cards. I worked on edit request functionality for the first
+half of the week. This took longer than expected as I had to refactor a couple frontend components to 
+make them more extendable and reusable for future. The components which I worked on was creating a
+CreateRequest card which can be used for both create-request and edit-request pages. Furthermore, I 
+refactored the Autocomplete component in the frontend which is used as a tag selector to work with 
+TagIds rather than tag names.
+
+
+Week 8
+This week I continued to work on my cards in preparation for the demo this week. I mainly worked on 
+finishing the frontend and backend for Queue Summary which proved to be a tough challenge. I spent 
+quite a bit of time working on the many queries requried in order to finish this feature. I required A
+bit of assistance on this from Peter and Hussain as working with SeaORM was still a bit of a pain points
+when having to generate more complex queries. Once I finished my remaining cards, our team had a meeting
+to prepare for the demonstration. Here we tested all functionalities we were going to demo as well as 
+determined an order for how we are going to demo the functionalities so that it is coherent and understandable.
+
+
+Week 9
+This week I mainly worked on my cards for Sprint 3. I first began working on the queue analytics screen
+which was mostly backend work to fetch statistics about live queues. Once done, I moved onto my second
+ticket which is tutor wait time analytics for the course analytics page. I was able to have both my PRs 
+merged in by Sunday of this week meaning I have more time next week to work on documentation and the report. 
+
+Week 10
+This week was mainly spent working on documentation for the final report. Since I had finished all
+my assigned tickets for Sprint 3 by the end of week 9, I was focussing on the report. I primarily worked
+on the user manual for the entire project and documented every single feature which we developed in 
+the Syphon application. Furthermore, we also created a short slide show presentation for our final
+demo presentation to ensure that we cover all talking points mentioned in the marking criteria. Finally, 
+I spent some time cleaning up some areas of the code base and making final tweaks to ensure everything
+is working as expected. 

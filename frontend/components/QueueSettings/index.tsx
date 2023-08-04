@@ -20,6 +20,10 @@ type QueueSettingsProps = {
   isEdit: boolean;
 };
 
+type CourseAdmin = {
+  name: string
+};
+
 type QueueCreationInfo = {
   date: Dayjs;
   startTime: Dayjs;
@@ -37,13 +41,14 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
   const [date, setDate] = useState<Dayjs>(dayjs(new Date()));
   const [startTime, setTimeStart] = useState<Dayjs>(dayjs(new Date()));
   const [endTime, setTimeEnd] = useState<Dayjs>(dayjs(new Date()).add(2, 'hour'));
-  const [tags, setTags] = useState<Tag[]>([{ tagId: 1, name: 'A tag', isPriority: false }]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [tagSelection, setTagSelection] = useState<Tag[]>([]);
   const [isVisible, setIsVisible] = useState(true);
   const [isAvailable, setIsAvailable] = useState(true);
   const [title, setTitle] = useState('');
   const [timeLimit, setTimeLimit] = useState(0);
   const [course, setCourse] = useState('');
+  const [courseAdmins, setCourseAdmins] = useState<CourseAdmin[]>([]);
   const [error, setError] = useState<{ title?: string, tags?: string }>({});
   const [announcement, setAnnouncement] = useState<string>('');
 
@@ -89,9 +94,16 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
       setTags(toCamelCase(data));
     };
 
+    const fetchCourseAdmins = async () => {
+      const res = await authenticatedGetFetch('/course/get_admins', { course_id: courseOfferingId as string });
+      const data = await res.json();
+      setCourseAdmins(toCamelCase(data));
+    };
+
     if (!courseOfferingId) return;
     fetchCourse();
     fetchTags();
+    fetchCourseAdmins();
   }, [courseOfferingId]);
 
   const handleCreateAll = async () => {
@@ -135,7 +147,7 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
     setDate(dayjs(new Date()));
     setTimeStart(dayjs(new Date()));
     setTimeEnd(dayjs(new Date()).add(2, 'hour'));
-    setTags([{ tagId: 1, name: 'A tag', isPriority: false }]);
+    setTags([]);
     setTagSelection([]);
     setIsVisible(true);
     setIsAvailable(true);
@@ -318,8 +330,8 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
                   key={idx}
                   title={q.title}
                   queueId={0}
-                  location={['Online']}
-                  courseAdmins={['John Smith']}
+                  location={[]}
+                  courseAdmins={courseAdmins?.map(x => x.name)}
                   isEdit={false}
                   isTutor={true}
                   overrideRedirect={(e) => redirectToCardInBulkList(e, idx)}

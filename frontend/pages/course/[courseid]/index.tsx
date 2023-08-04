@@ -83,7 +83,7 @@ const ViewQueue = () => {
           {data
             .filter((d) => Date.parse(d.startTime) > Date.now())
             .filter((d) => isTutor || d.isVisible)
-            .map((d, index) => <QueueCard isTutor={isTutor} queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit}/>)}
+            .map((d, index) => <QueueCard isUpcoming isTutor={isTutor} queueId={d.queueId} key={index} title={d.title} location={[]} courseAdmins={d.courseAdmins} isEdit={d.isEdit}/>)}
           {data
             .filter((d) => Date.parse(d.startTime) > Date.now())
             .filter((d) => isTutor || d.isVisible)

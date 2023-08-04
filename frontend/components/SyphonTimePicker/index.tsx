@@ -4,7 +4,11 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import pageStyle from '../../pages/create-queue/[courseid]/CreateQueue.module.css';
-import { Dayjs } from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import dayjs, { Dayjs } from 'dayjs';
+
+
 import style from './SyphonTimePicker.module.css';
 
 type SyphonTimePickerProps = {
@@ -15,6 +19,9 @@ type SyphonTimePickerProps = {
 }
 
 const SyphonTimePicker = (props: SyphonTimePickerProps) => {
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
+  dayjs.tz.setDefault('Australia/Sydney');
   return (
     <div className={style.timePicker}>
       <FormGroup className={pageStyle.formGroup} row={true}>
