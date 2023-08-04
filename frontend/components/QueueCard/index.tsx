@@ -20,6 +20,7 @@ type QueueCardProps = {
   isEdit?: boolean;
   isTutor: boolean;
   isPrevious?: boolean;
+  isUpcoming?: boolean;
   isQueueAnalyticsLive?: boolean;
   overrideRedirect?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 };
@@ -34,6 +35,7 @@ export default function QueueCard({
   queueId,
   isTutor,
   isPrevious,
+  isUpcoming,
   isQueueAnalyticsLive,
   overrideRedirect,
 }: QueueCardProps) {
@@ -41,7 +43,9 @@ export default function QueueCard({
   const findWhereToGo = async () => {
     if (isQueueAnalyticsLive) {
       router.push(`/queue-analytics/${queueId}`);
-    } else if (isTutor && !isPrevious) {
+    } else if (isTutor && isUpcoming) {
+      router.push(`/edit-queue/${queueId}`);
+    } else if (isTutor && !isPrevious && !isUpcoming) {
       router.push(`/active-queue/${queueId}`);
     } else if (isTutor && isPrevious) {
       router.push(`/queue-summary/${queueId}`);
@@ -52,10 +56,10 @@ export default function QueueCard({
     });
     let value = await res.json();
     if (value.is_open) {
-      if (!isTutor) {
+      if (!isTutor && !isPrevious && !isUpcoming) {
         router.push(`/create-request/${queueId}`);
         return;
-      } 
+      }
     }
     return <Error statusCode={res.status} />;
   };
