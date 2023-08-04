@@ -51,6 +51,12 @@ pub struct JoinWithTutorLink {
     pub tutor_link: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CourseAdmin {
+    pub name: String,
+}
+
+
 #[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
 pub struct TutorAnalyticsInfo {
     pub zid: i32,

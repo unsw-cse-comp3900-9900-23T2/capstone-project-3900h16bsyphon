@@ -7,7 +7,7 @@ use crate::{
     },
     utils::{
         db::db,
-        user::{validate_admin, validate_user},
+        user::{validate_admin, validate_user}, course::get_admins_for_course,
     },
 };
 use crate::{entities::sea_orm_active_enums::Statuses, models::course::*};
@@ -408,6 +408,23 @@ pub async fn join_with_tutor_link(
         .expect("db broke");
 
     HttpResponse::Ok().json(web::Json(course))
+}
+
+pub async fn get_course_admins(
+    query: web::Query<GetOfferingByIdQuery>,
+) -> SyphonResult<HttpResponse> {
+    let db = db();
+
+    let admins = get_admins_for_course(query.course_id).await?;
+    
+    let mut result = Vec::new();
+
+    for admin in admins.iter() {
+        let admin_details = entities::users::Entity::find_by_id(admin.zid).one(db).await?.unwrap();
+        result.push( CourseAdmin { name: admin_details.first_name.clone() + " " + &admin_details.last_name })
+    }
+
+    Ok(HttpResponse::Ok().json(result))
 }
 
 pub async fn get_wait_time_analytics(

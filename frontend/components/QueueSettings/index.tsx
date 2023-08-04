@@ -20,6 +20,10 @@ type QueueSettingsProps = {
   isEdit: boolean;
 };
 
+type CourseAdmin = {
+  name: string
+};
+
 type QueueCreationInfo = {
   date: Dayjs;
   startTime: Dayjs;
@@ -44,6 +48,7 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
   const [title, setTitle] = useState('');
   const [timeLimit, setTimeLimit] = useState(0);
   const [course, setCourse] = useState('');
+  const [courseAdmins, setCourseAdmins] = useState<CourseAdmin[]>([]);
   const [error, setError] = useState<{ title?: string, tags?: string }>({});
   const [announcement, setAnnouncement] = useState<string>('');
 
@@ -89,9 +94,16 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
       setTags(toCamelCase(data));
     };
 
+    const fetchCourseAdmins = async () => {
+      const res = await authenticatedGetFetch('/course/get_admins', { course_id: courseOfferingId as string });
+      const data = await res.json();
+      setCourseAdmins(toCamelCase(data));
+    };
+
     if (!courseOfferingId) return;
     fetchCourse();
     fetchTags();
+    fetchCourseAdmins();
   }, [courseOfferingId]);
 
   const handleCreateAll = async () => {
@@ -318,8 +330,8 @@ const QueueSettings = ({ courseOfferingId, queueId, isEdit }: QueueSettingsProps
                   key={idx}
                   title={q.title}
                   queueId={0}
-                  location={['Online']}
-                  courseAdmins={['John Smith']}
+                  location={[]}
+                  courseAdmins={courseAdmins?.map(x => x.name)}
                   isEdit={false}
                   isTutor={true}
                   overrideRedirect={(e) => redirectToCardInBulkList(e, idx)}
