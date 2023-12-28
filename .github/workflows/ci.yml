@@ -1,0 +1,27 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  push_image:
+    name: Push Image to registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checking out repository
+        uses: actions/checkout@v3
+      - name: Set up Python (latest)
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10.5"
+  trigger_deploy:
+    name: Take latest image and run it on Peter's GCP account
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checking out repository
+        uses: actions/checkout@v3
+      - name: Set up Python (latest)
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10.5"
