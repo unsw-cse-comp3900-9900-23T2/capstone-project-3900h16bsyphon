@@ -37,8 +37,10 @@ jobs:
         with:
           source: './backend'
           service: 'syphon-backend'
+          region: 'australia-southeast1'
       - name: Deploy Frontend
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           source: './frontend'
           service: 'syphon-frontend'
+          region: 'australia-southeast1'
