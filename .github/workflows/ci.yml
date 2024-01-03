@@ -25,6 +25,7 @@ jobs:
         with:
           project_id: 'syphon-409512'
           workload_identity_provider: projects/686838931985/locations/global/workloadIdentityPools/github/providers/my-repo
+          service_account: github-action-gcp@syphon-409512.iam.gserviceaccount.com
       - name: write backend secrets
         run: echo "$ENV_FILE" >> backend/.env
         env:
