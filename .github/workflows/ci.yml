@@ -12,7 +12,7 @@ jobs:
   trigger_deploy:
     name: create an image and run it on Peter's GCP account on cloud run
     runs-on: ubuntu-latest
-    environment:  Peter\'s GCP
+    environment: "Peter's GCP"
     steps:
       - name: Checking out repository
         uses: actions/checkout@v4
