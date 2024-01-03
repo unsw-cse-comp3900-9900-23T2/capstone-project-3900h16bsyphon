@@ -1,9 +1,12 @@
 # capstone-project-3900h16bsyphon
-This is a .txt file, but is best experienced as a markdown file as it contains screenshots and links. Hop to https://github.com/unsw-cse-comp3900-9900-23T2/capstone-project-3900h16bsyphon/edit/main/README.md to read it as a markdown file, or open README.md in a markdown viewer (such as your browser).
 
 ## How To Run
+
+### GCP
+this project is deployed through GCP cloud run, using a supabase database. visit https://syphon-frontend-ugan2hyxwq-ts.a.run.app/ to see it!
+
 ### Docker
-You have the option of using docker to run the project - this is recommended.
+You have the option of using docker to run the project - this is recommended if you are looking to develop syphon, or otherwise looking to run this project locally.
 #### Prerequisites
 Follow these instructions: https://docs.docker.com/desktop/ to install docker desktop if you don't have it already. This is a bundle containing the docker daemon, docker CLI, docker compose CLI, and docker desktop client. This will be used as a way to both run the project and inspect it.
 
@@ -49,9 +52,8 @@ DRIVER    VOLUME NAME
 If there is any other output, make sure you delete these other containers, images, and volumes before proceeding. If you cannot delete via the CLI, use the Docker Desktop UI in order to select all Containers, Volumes, Images to manually delete. 
 
 #### Installation
-1. Unzip the submission file.
-2. Change directories into the unzipped file.
-3. Ensure docker is installed and open. Use `docker ps` to check. The output should be:
+1. clone this repository
+2. Ensure docker is installed and open. Use `docker ps` to check. The output should be:
 ```
 peedee@PeterLaptop:~$ docker ps
 CONTAINER ID   IMAGE             COMMAND                  CREATED      STATUS        PORTS                     NAMES

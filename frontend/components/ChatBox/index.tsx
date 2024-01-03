@@ -22,7 +22,7 @@ const ChatBox = ({requestId, studentZid, isStudent} : ChatBoxProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
 
-  const { sendJsonMessage, lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/chat', {
+  const { sendJsonMessage, lastJsonMessage } = useAuthenticatedWebSocket('ws/chat', {
     queryParams: {request_id: requestId as string | number},
     shouldReconnect: () => true,
   }, !!requestId);

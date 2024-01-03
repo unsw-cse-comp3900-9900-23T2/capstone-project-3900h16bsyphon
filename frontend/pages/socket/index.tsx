@@ -4,7 +4,7 @@ import useAuthenticatedWebSocket from '../../hooks/useAuthenticatedWebSocket';
 
 
 const Socket = () => {
-  const { sendJsonMessage, lastMessage, readyState } = useAuthenticatedWebSocket('ws:127.0.0.1:8000/ws/dumb');
+  const { sendJsonMessage, lastMessage, readyState } = useAuthenticatedWebSocket('ws/dumb');
   const [messageHistory, setMessageHistory] = useState<MessageEvent<any>[]>([]);
   
   const connectionStatus = {

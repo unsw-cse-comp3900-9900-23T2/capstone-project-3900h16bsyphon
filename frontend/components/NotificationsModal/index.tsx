@@ -27,7 +27,7 @@ const NotificationsModal = () => {
 
   const router = useRouter();
 
-  const { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/notifications', {
+  const { lastJsonMessage } = useAuthenticatedWebSocket('ws/notifications', {
     onOpen: () => {
       console.log('connected [notification]');
     },

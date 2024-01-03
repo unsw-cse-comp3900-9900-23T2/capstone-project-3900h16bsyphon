@@ -23,7 +23,7 @@ const QueueRequests = () => {
     requests,
   });
 
-  let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
+  let { lastJsonMessage } = useAuthenticatedWebSocket('ws/queue', {
     queryParams: {queue_id: `${router.query.queueid}` as unknown as number},
     onOpen: () => {
       console.log('connected [queue data]');

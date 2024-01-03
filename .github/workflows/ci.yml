@@ -4,29 +4,40 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
-  push_image:
-    name: Push Image to registry
-    runs-on: ubuntu-latest
-    environment: Peter's GCP
-    steps:
-      - name: Checking out repository
-        uses: actions/checkout@v3
-      - name: Set up Python (latest)
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10.5"
-      - name: uses environ
-        run: echo ${{ env.FAKE_SECRET }}
-        env:
-          FAKE_SECRET: ${{ secrets.FAKE_SECRET }}
   trigger_deploy:
-    name: Take latest image and run it on Peter's GCP account
+    name: create an image and run it on Peter's GCP account on cloud run
     runs-on: ubuntu-latest
+    environment:  Peter\'s GCP
     steps:
       - name: Checking out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up Python (latest)
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10.5"
+      - name: Set up GCP auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: 'syphon-409512'
+          workload_identity_provider: projects/686838931985/locations/global/workloadIdentityPools/github/providers/my-repo
+      - name: write backend secrets
+        run: echo "$ENV_FILE" >> backend/.env
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+      - name: write frontend env file
+        run: echo "NEXT_PUBLIC_BACKEND_API_BASE_URL=${{ vars.BACKEND_URL }}" >> frontend/.env
+      
+      - name: Deploy Backend
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          source: './backend'
+          service: 'syphon-backend'
+      - name: Deploy Frontend
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          source: './frontend'
+          service: 'syphon-frontend'

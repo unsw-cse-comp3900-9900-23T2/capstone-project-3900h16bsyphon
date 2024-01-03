@@ -81,7 +81,7 @@ const WaitingScreen = () => {
   }, [router.query.requestid, router, requestData.isClusterable]);
 
   // Set up websocket for live-request data updates
-  let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/request', {
+  let { lastJsonMessage } = useAuthenticatedWebSocket('ws/request', {
     queryParams: {
       request_id: `${router.query.requestid}`,
     },
@@ -158,7 +158,7 @@ const WaitingScreen = () => {
   };
 
   // websocket for queue data:
-  let { lastJsonMessage: lastJsonMessageQueue } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
+  let { lastJsonMessage: lastJsonMessageQueue } = useAuthenticatedWebSocket('ws/queue', {
     queryParams: {queue_id: requestData.queueId as any},
     onOpen: () => {
       console.log('connected [queue data]');

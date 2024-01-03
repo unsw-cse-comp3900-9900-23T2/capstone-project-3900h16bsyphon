@@ -1,22 +1,20 @@
 version: '3.8'
 
 services:
-  frontend:
+  frontend_prod:
     build:
       context: ./frontend
-    container_name: frontend
+    container_name: frontend_prod
     ports:
       - '3000:3000'
     env_file:
       - ./frontend/.env
     environment:
-      - BACKEND_HOST=backend
-    volumes:
-      # Bind mount volume for live frontend updates while developing
-      - ./frontend:/client
+      - BACKEND_HOST=backend_prod
     networks:
       - net
-  database:
+  database_prod:
+    container_name: database_prod
     image: 'postgres:latest'
     ports:
       - 15432:5432
@@ -28,7 +26,9 @@ services:
       - net
     volumes:
       - pgdata:/var/lib/postgresql/data
-  backend:
+
+  backend_prod:
+    container_name: backend_prod
     build:
       context: backend
     env_file:
@@ -37,15 +37,12 @@ services:
       - DATABASE_HOST=database
     ports:
       - 8000:8000
+    volumes:
+      - images:/images
     networks:
       - net
-    volumes:
-      # Bind mount volume for live backend updates while developing
-      - ./backend/src:/app/src
-      - ./backend/migration:/app/migration
-      - images:/images
     depends_on:
-      - database
+      - database_prod
 
 networks:
   net:

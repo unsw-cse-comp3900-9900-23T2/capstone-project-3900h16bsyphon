@@ -29,7 +29,6 @@ async fn main() -> std::io::Result<()> {
 
     register_org_admins().await;
     let lobby = Data::new(Lobby::default().start());
-
     // Auth middleware
     let amw = HttpAuthentication::bearer(validator);
 
@@ -38,6 +37,7 @@ async fn main() -> std::io::Result<()> {
             .allowed_origin("http://localhost:3000")
             .allowed_origin("http://127.0.0.1:3000")
             .allowed_origin("http://frontend:3000")
+            .allowed_origin("https://syphon-frontend-ugan2hyxwq-ts.a.run.app")
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)

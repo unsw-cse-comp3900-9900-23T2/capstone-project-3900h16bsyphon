@@ -1,18 +1,16 @@
-FROM node:lts-alpine
+FROM node:lts-alpine as builder
 
 # Set the current working directory inside the container
-WORKDIR /client
-
-# Copy packages.json and package-lock.json into the container
+WORKDIR /app
 COPY package.json package-lock.json ./
-
-# Install node modules inside the container using the copied package-lock.json
 RUN npm ci
-
-# Copy the entire project into the container
 COPY . .
+RUN npm run build
 
-EXPOSE 3000
+FROM node:lts-alpine
+COPY --from=builder /app/.next /.next
+COPY --from=builder /app/public /public
 
-# Run the server
-ENTRYPOINT npm run dev
+COPY package.json package-lock.json ./
+RUN npm ci
+CMD npm start

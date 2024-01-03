@@ -34,7 +34,7 @@ const ActiveQueue = () => {
   const [noti, setNoti] = useState(false);
   const [selection, setSelection] = useState(false);
 
-  let { lastJsonMessage } = useAuthenticatedWebSocket('ws:localhost:8000/ws/queue', {
+  let { lastJsonMessage } = useAuthenticatedWebSocket('ws/queue', {
     queryParams: {queue_id: requestData.queueId as unknown as number},
     onOpen: () => {
       console.log('connected [queue data]');

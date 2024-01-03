@@ -1,7 +1,6 @@
 set -a # automatically export all variables
 DATABASE_HOST=localhost
-BACKEND_HOST=localhost
-source .env
+source .env.dev
 set +a # stop exporting variables
 
 docker compose up -d database
