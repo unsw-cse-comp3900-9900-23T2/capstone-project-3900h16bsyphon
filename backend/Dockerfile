@@ -1,4 +1,4 @@
-FROM rust:1.70.0-buster as chef
+FROM rust:1-buster as chef
 
 RUN cargo install cargo-chef
 
