@@ -33,5 +33,5 @@ COPY --from=builder /app/run_prod.sh .
 COPY --from=builder /app/.env .
 
 RUN mkdir /images
-
+RUN chmod 777 /app/run_prod.sh
 ENTRYPOINT /app/run_prod.sh
